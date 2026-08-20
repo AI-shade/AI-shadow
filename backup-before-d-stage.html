@@ -1,0 +1,1589 @@
+<meta charset="UTF-8">
+<title>안심앨범</title>
+<style>
+  :root {
+    --paper: #eef1ec;
+    --paper-deep: #e2e7e0;
+    --card: #fffefb;
+    --ink: #1c2b28;
+    --muted: #5b6b63;
+    --line: #d3dbd3;
+    --brand: #2f5d54;
+    --brand-deep: #1f433c;
+    --brand-soft: #e2ece7;
+    --gold: #a97a2c;
+    --gold-soft: #f3e6cc;
+    --risk-high: #ad3b33;
+    --risk-high-soft: #f5ddd9;
+    --risk-mid: #9c6714;
+    --risk-mid-soft: #f2e2c6;
+    --risk-low: #23805a;
+    --risk-low-soft: #dbeae0;
+    --focus: #2f5d54;
+    --font-display: 'Batang', 'BatangChe', '바탕', 'Nanum Myeongjo', serif;
+    --font-body: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+    --shadow-card: 0 8px 28px -10px rgba(20, 40, 35, 0.22), 0 1px 2px rgba(20, 40, 35, 0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --paper: #101d19;
+      --paper-deep: #0b1512;
+      --card: #182722;
+      --ink: #e9efeb;
+      --muted: #9db2a8;
+      --line: #2b3d36;
+      --brand: #7cbaa6;
+      --brand-deep: #a3d3c2;
+      --brand-soft: #21332c;
+      --gold: #dcae64;
+      --gold-soft: #33291a;
+      --risk-high: #e2857a;
+      --risk-high-soft: #3a2320;
+      --risk-mid: #e2b467;
+      --risk-mid-soft: #362c1b;
+      --risk-low: #6cc99b;
+      --risk-low-soft: #1c3227;
+      --shadow-card: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme='dark'] {
+    --paper: #101d19;
+    --paper-deep: #0b1512;
+    --card: #182722;
+    --ink: #e9efeb;
+    --muted: #9db2a8;
+    --line: #2b3d36;
+    --brand: #7cbaa6;
+    --brand-deep: #a3d3c2;
+    --brand-soft: #21332c;
+    --gold: #dcae64;
+    --gold-soft: #33291a;
+    --risk-high: #e2857a;
+    --risk-high-soft: #3a2320;
+    --risk-mid: #e2b467;
+    --risk-mid-soft: #362c1b;
+    --risk-low: #6cc99b;
+    --risk-low-soft: #1c3227;
+    --shadow-card: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background: var(--paper);
+    background-image: radial-gradient(circle at 12% 6%, var(--paper-deep) 0%, transparent 42%),
+      radial-gradient(circle at 92% 92%, var(--paper-deep) 0%, transparent 38%);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1rem 4.5rem;
+  }
+  main { width: 100%; max-width: 600px; }
+
+  a { color: inherit; }
+  ::selection { background: var(--brand-soft); }
+  button, input, select, textarea { font-family: inherit; }
+  *:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .brand-mark { display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
+  .brand-mark .badge-icon {
+    width: 36px; height: 36px; border-radius: 11px;
+    background: var(--brand); color: var(--card);
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  header.page-header { text-align: center; margin-bottom: 1.6rem; }
+  header.page-header h1 {
+    font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; margin: 0;
+    color: var(--brand-deep); text-wrap: balance;
+  }
+  header.page-header p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.92rem; }
+  header.page-header .subhead {
+    margin-top: 0.6rem; font-size: 0.74rem; color: var(--muted);
+    display: inline-flex; gap: 0.4rem; align-items: center;
+    background: var(--brand-soft); padding: 0.25rem 0.7rem; border-radius: 999px;
+  }
+
+  .stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 1.6rem; user-select: none; flex-wrap: wrap; }
+  .stepper .step { display: flex; align-items: center; gap: 0.45rem; color: var(--muted); font-size: 0.78rem; font-weight: 700; }
+  .stepper .dot {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--card); border: 1.5px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-size: 0.72rem; color: var(--muted);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .stepper .step.done .dot { background: var(--brand); border-color: var(--brand); color: var(--card); }
+  .stepper .step.active .dot { background: var(--brand-deep); border-color: var(--brand-deep); color: var(--card); box-shadow: 0 0 0 4px var(--brand-soft); }
+  .stepper .step.active span.label, .stepper .step.done span.label { color: var(--ink); }
+  .stepper .connector { width: 22px; height: 1.5px; background: var(--line); margin: 0 0.3rem; }
+  .stepper .connector.filled { background: var(--brand); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1.85rem; box-shadow: var(--shadow-card); }
+
+  .field { margin-bottom: 1.1rem; }
+  .field label { display: block; font-size: 0.83rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .field .hint { font-weight: 400; color: var(--muted); font-size: 0.75rem; margin-left: 0.3rem; }
+  input[type='text'], textarea, select {
+    width: 100%; padding: 0.62rem 0.72rem; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 0.92rem; font-family: inherit; background: var(--paper); color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 3.1rem; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+
+  .drop-zone {
+    background: var(--paper); border: 1.5px dashed var(--line); border-radius: 13px; padding: 1.2rem 1rem;
+    text-align: center; cursor: pointer; position: relative; color: var(--muted); font-size: 0.84rem;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .drop-zone:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop-zone .icon { font-size: 1.3rem; display: block; margin-bottom: 0.25rem; }
+  .drop-zone.small { padding: 0.85rem 1rem; }
+
+  .polaroid {
+    background: var(--card); padding: 0.55rem 0.55rem 1.5rem; border-radius: 4px;
+    box-shadow: 0 10px 22px -10px rgba(20, 40, 35, 0.4); transform: rotate(-1deg); margin: 0.9rem auto 0; max-width: 240px;
+    border: 1px solid var(--line);
+  }
+  .polaroid img { width: 100%; display: block; border-radius: 2px; }
+  .polaroid .cap { font-family: var(--font-display); font-size: 0.76rem; color: var(--muted); text-align: center; margin-top: 0.45rem; }
+
+  button.primary {
+    width: 100%; padding: 0.82rem; background: var(--brand); color: var(--card); border: none; border-radius: 12px;
+    font-size: 0.96rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem;
+  }
+  button.primary:hover { background: var(--brand-deep); color: var(--paper-deep); }
+  button.primary:disabled { opacity: 0.55; cursor: default; }
+  button.secondary {
+    width: 100%; padding: 0.72rem; background: transparent; color: var(--brand-deep); border: 1.5px solid var(--line);
+    border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 0.9rem;
+  }
+  button.secondary:hover { border-color: var(--brand); }
+  button.ghost-link {
+    display: block; margin: 0.6rem auto 0; background: none; border: none; color: var(--muted);
+    font-size: 0.79rem; text-decoration: underline; cursor: pointer; padding: 0.3rem;
+  }
+
+  .analyzing { text-align: center; padding: 0.4rem 0.5rem 0; }
+  .scan-frame { position: relative; max-width: 240px; margin: 0 auto 1.4rem; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 22px -10px rgba(20,40,35,0.4); }
+  .scan-frame img { width: 100%; display: block; }
+  .scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 12px 2px var(--gold); animation: sweep 1.5s ease-in-out infinite;
+  }
+  @keyframes sweep { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
+  .analyzing-steps { display: grid; gap: 0.45rem; text-align: left; max-width: 320px; margin: 0 auto; }
+  .analyzing-steps p { margin: 0; font-size: 0.85rem; color: var(--muted); opacity: 0.4; transition: opacity 0.3s, color 0.3s; }
+  .analyzing-steps p.active { opacity: 1; color: var(--ink); font-weight: 700; }
+  .analyzing-steps p.active::before { content: '● '; color: var(--brand); }
+  .analyzing-steps p:not(.active)::before { content: '○ '; }
+
+  .risk-photo-wrap { position: relative; margin: 0 auto 1.4rem; max-width: 290px; }
+  .risk-photo-wrap img { width: 100%; border-radius: 10px; display: block; box-shadow: 0 10px 22px -10px rgba(20,40,35,0.35); }
+  .pin {
+    position: absolute; width: 25px; height: 25px; border-radius: 50%; background: var(--gold); color: var(--card);
+    font-size: 0.76rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 3px 8px rgba(0,0,0,0.35); transform: translate(-50%, -50%);
+  }
+  .pin.face { background: var(--brand); }
+  .pin-legend { list-style: none; padding: 0; margin: 0 0 1.3rem; display: grid; gap: 0.35rem; }
+  .pin-legend li { display: flex; gap: 0.5rem; font-size: 0.84rem; align-items: flex-start; }
+  .pin-legend .num {
+    flex-shrink: 0; width: 19px; height: 19px; border-radius: 50%; background: var(--gold); color: var(--card);
+    font-size: 0.68rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 0.1rem;
+  }
+  .pin-legend .num.face { background: var(--brand); }
+  .pin-note { text-align: center; font-size: 0.7rem; color: var(--muted); margin: 0 0 1.5rem; }
+
+  .gauge-wrap { text-align: center; margin-bottom: 0.3rem; }
+  .gauge-wrap svg { width: 190px; height: 106px; }
+  .gauge-score-label { margin-top: -55px; font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1; }
+  .gauge-score-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .risk-chip { display: inline-block; margin-top: 0.55rem; padding: 0.28rem 0.8rem; border-radius: 999px; font-weight: 800; font-size: 0.8rem; }
+  .risk-chip.risk-상 { background: var(--risk-high-soft); color: var(--risk-high); }
+  .risk-chip.risk-중 { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .risk-chip.risk-하 { background: var(--risk-low-soft); color: var(--risk-low); }
+
+  section.result-section { margin: 1.5rem 0; }
+  section.result-section h3 { font-family: var(--font-display); font-size: 0.98rem; font-weight: 700; color: var(--brand-deep); margin: 0 0 0.5rem; }
+  .sub-score-line { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
+  .sub-score-line strong { font-size: 1.02rem; }
+  .bar-track { height: 7px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 0.5rem; }
+  .bar-fill { height: 100%; background: var(--gold); border-radius: 999px; transition: width 0.6s ease; }
+  p.evidence { font-size: 0.88rem; line-height: 1.62; margin: 0.15rem 0 0; max-width: 62ch; }
+  .action-list { margin: 0; padding-left: 1.1rem; }
+  .action-list li { font-size: 0.89rem; line-height: 1.75; }
+  .caption-suggestions { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+  .caption-suggestions li { background: var(--brand-soft); padding: 0.6rem 0.85rem; border-radius: 10px; font-size: 0.87rem; border-left: 3px solid var(--brand); }
+  .schedule-flag {
+    display: inline-block; font-size: 0.78rem; padding: 0.2rem 0.6rem; border-radius: 6px;
+    background: var(--paper-deep); color: var(--muted); font-weight: 800; margin-bottom: 0.4rem;
+  }
+  .schedule-flag.on { background: var(--risk-mid-soft); color: var(--risk-mid); }
+
+  /* method picker */
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.2rem; }
+  .method-card {
+    text-align: left; border: 1.5px solid var(--line); border-radius: 12px; padding: 0.75rem 0.8rem;
+    background: var(--paper); cursor: pointer; position: relative;
+  }
+  .method-card.selected { border-color: var(--brand); background: var(--brand-soft); }
+  .method-card .m-title { font-weight: 800; font-size: 0.86rem; display: flex; align-items: center; gap: 0.35rem; }
+  .method-card .m-reason { font-size: 0.74rem; color: var(--muted); margin-top: 0.25rem; line-height: 1.45; }
+  .method-card .m-badge {
+    font-size: 0.65rem; font-weight: 800; color: var(--card); background: var(--gold);
+    padding: 0.1rem 0.4rem; border-radius: 5px; margin-left: auto;
+  }
+
+  .preview-frame { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; background: var(--paper-deep); margin-bottom: 0.9rem; }
+  .preview-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .preview-frame .crop-guard {
+    position: absolute; inset: 12% 22% 12% 12%; border: 2px dashed var(--gold); border-radius: 6px;
+  }
+  .preview-frame .after-blur {
+    filter: blur(9px) saturate(0.88) brightness(0.96);
+    -webkit-mask-image: radial-gradient(circle at 46% 42%, transparent 0%, transparent 24%, black 54%);
+    mask-image: radial-gradient(circle at 46% 42%, transparent 0%, transparent 24%, black 54%);
+  }
+  .preview-frame .after-crop-img { transform: scale(1.55) translate(-14%, 2%); }
+  .preview-frame .sticker {
+    position: absolute; left: 74%; top: 68%; transform: translate(-50%, -50%);
+    width: 64px; height: 64px; border-radius: 16px; background: var(--card);
+    display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 2px solid var(--gold);
+  }
+  .preview-caption { text-align: center; font-size: 0.78rem; color: var(--muted); margin: -0.4rem 0 1rem; }
+  .edit-instruction {
+    background: var(--paper-deep); border-radius: 10px; padding: 0.75rem 0.95rem; font-size: 0.8rem;
+    color: var(--muted); margin-bottom: 1rem;
+  }
+  .edit-instruction strong { color: var(--ink); display: block; margin-bottom: 0.2rem; font-size: 0.76rem; }
+
+  .verify-stamp-wrap { text-align: center; margin-bottom: 1.2rem; }
+  .verify-stamp {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 104px; height: 104px; border-radius: 50%; border: 3px solid var(--brand); color: var(--brand);
+    transform: rotate(-8deg); font-family: var(--font-display); font-weight: 700; letter-spacing: 0.04em;
+  }
+  .verify-stamp.warn { border-color: var(--risk-mid); color: var(--risk-mid); }
+  .verify-stamp .s-icon { font-size: 1.5rem; }
+  .verify-stamp .s-text { font-size: 0.79rem; margin-top: 0.15rem; }
+  .verify-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-bottom: 0.9rem; }
+  .verify-tag { font-size: 0.75rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; background: var(--paper-deep); color: var(--muted); }
+  .verify-tag.good { background: var(--risk-low-soft); color: var(--risk-low); }
+  .verify-tag.bad { background: var(--risk-high-soft); color: var(--risk-high); }
+  .verify-detail { background: var(--brand-soft); border-radius: 10px; padding: 0.85rem 1.05rem; font-size: 0.88rem; line-height: 1.6; }
+  .verify-detail.warn { background: var(--risk-mid-soft); }
+
+  .disclaimer { font-size: 0.71rem; color: var(--muted); text-align: center; margin-top: 1.5rem; line-height: 1.5; }
+  .file-count { font-size: 0.76rem; color: var(--brand-deep); font-weight: 700; margin-top: 0.4rem; text-align: center; }
+
+  @media (max-width: 420px) {
+    .method-grid { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+
+<main>
+  <div class="brand-mark"><span class="badge-icon">🔎</span></div>
+  <header class="page-header">
+    <h1>안심앨범</h1>
+    <p>아이 사진, 올리기 전에 한 번 더 살펴봐요</p>
+    <div class="subhead">Campus AX-Ton · 인터랙티브 목업</div>
+  </header>
+
+  <div class="stepper" id="stepper">
+    <div class="step" data-step="form"><span class="dot">1</span><span class="label">진단</span></div>
+    <div class="connector" id="conn1"></div>
+    <div class="step" data-step="correct"><span class="dot">2</span><span class="label">보정</span></div>
+    <div class="connector" id="conn2"></div>
+    <div class="step" data-step="verify"><span class="dot">3</span><span class="label">검증</span></div>
+  </div>
+
+  <!-- 화면 1: 업로드 -->
+  <div class="card" id="screen-form">
+    <div class="field">
+      <label>사진</label>
+      <div class="drop-zone" id="fileDrop">
+        <span class="icon">🖼️</span>
+        <span id="fileDropLabel">클릭해서 사진을 선택하세요</span>
+        <input type="file" id="photoInput" accept="image/*" />
+      </div>
+      <div class="polaroid" id="polaroidPreview" style="display:none;">
+        <img id="photoPreview" alt="업로드한 사진 미리보기" />
+        <div class="cap" id="polaroidCap">우리 아이 오늘</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>캡션 <span class="hint">이 사진과 함께 올릴 글</span></label>
+      <textarea id="captionInput" placeholder="예: 오늘부터 OO어린이집 다니기 시작했어요! 하원길에 놀이터에서 한 컷 📸"></textarea>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>계정 공개 범위</label>
+        <select id="privacySetting">
+          <option value="전체공개">전체공개</option>
+          <option value="친구공개">친구공개</option>
+          <option value="비공개">비공개</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>업로드 시점</label>
+        <select id="uploadTiming">
+          <option value="실시간 업로드">실시간 업로드</option>
+          <option value="며칠 지난 후">며칠 지난 후</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>함께 나온 사람</label>
+        <input type="text" id="companions" placeholder="예: 엄마, 친구 가족" />
+      </div>
+      <div class="field">
+        <label>배경 특이사항</label>
+        <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>과거 게시물 스크린샷 <span class="hint">선택, 여러 장 가능 — 계정 연동·비밀번호 없이 직접 캡처한 화면만 분석해요</span></label>
+      <div class="drop-zone small" id="pastDrop">
+        <span id="pastDropLabel">스크린샷을 선택하면 반복 패턴까지 짚어드려요</span>
+        <input type="file" id="pastInput" accept="image/*" multiple />
+      </div>
+      <p class="file-count" id="fileCount" style="display:none;"></p>
+    </div>
+
+    <button class="primary" id="submitBtn">위험도 진단하기</button>
+  </div>
+
+  <!-- 화면 2: 분석 중 -->
+  <div class="card" id="screen-analyzing" style="display:none;">
+    <div class="analyzing">
+      <div class="scan-frame"><img id="scanImg" alt="분석 중인 사진" /><div class="scan-line"></div></div>
+      <div class="analyzing-steps">
+        <p id="stepFace">브라우저에서 얼굴 정보 분석 중 (로컬 처리, 외부 전송 없음)</p>
+        <p id="stepOcr">사진 속 텍스트 위치·내용 감지 중</p>
+        <p id="stepPast" style="display:none;">과거 게시물 스크린샷에서 시점·캡션 추출 중</p>
+        <p id="stepClaude">위험도 종합 판단 중</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 화면 3: 진단 결과 -->
+  <div class="card" id="screen-result" style="display:none;">
+    <div class="risk-photo-wrap" id="riskPhotoWrap">
+      <img id="resultThumb" alt="분석한 사진" />
+    </div>
+    <ul class="pin-legend" id="pinLegend"></ul>
+    <p class="pin-note">* 초록 핀은 face-api.js로 감지한 얼굴, 금색 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
+
+    <div class="gauge-wrap">
+      <svg viewBox="0 0 200 112">
+        <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
+        <path id="gaugeArc" d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+      </svg>
+      <div class="gauge-score-label" id="riskScore">–</div>
+      <div class="gauge-score-sub">종합 위험도 점수 / 100</div>
+      <span class="risk-chip" id="riskBadge">중</span>
+    </div>
+
+    <section class="result-section">
+      <h3>위치노출 위험도</h3>
+      <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
+      <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
+      <p class="evidence" id="locationEvidence"></p>
+    </section>
+
+    <section class="result-section">
+      <h3>스케줄 유출 경고</h3>
+      <span class="schedule-flag" id="scheduleFlag">없음</span>
+      <p class="evidence" id="scheduleEvidence"></p>
+    </section>
+
+    <section class="result-section">
+      <h3>권장 조치</h3>
+      <ul class="action-list" id="actionList"></ul>
+    </section>
+
+    <section class="result-section">
+      <h3>종합 설명</h3>
+      <p class="evidence" id="summaryText"></p>
+    </section>
+
+    <section class="result-section">
+      <h3>더 안전한 캡션 제안</h3>
+      <ul class="caption-suggestions" id="captionSuggestions"></ul>
+    </section>
+
+    <button class="primary" id="goCorrectBtn">보정 방식 선택하기 →</button>
+    <button class="secondary" id="skipCorrectBtn">보정 없이 마치기</button>
+  </div>
+
+  <!-- 화면 4: 처리 방식 추천 + 미리보기 -->
+  <div class="card" id="screen-correct" style="display:none;">
+    <h3 style="font-family:var(--font-display); font-size:1.05rem; margin-top:0; color:var(--brand-deep);">
+      Claude가 위험요소별 보정 방식을 추천했어요
+    </h3>
+    <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
+
+    <div class="method-grid">
+      <button class="method-card selected" data-method="crop">
+        <div class="m-title">✂️ 스마트 크롭 <span class="m-badge">1순위</span></div>
+        <div class="m-reason">가장자리 텍스트라 잘라내도 아이가 손실되지 않아요.</div>
+      </button>
+      <button class="method-card" data-method="blur">
+        <div class="m-title">🌫️ 배경 흐림</div>
+        <div class="m-reason">인물모드 스타일로, 아이는 선명하게 유지돼요.</div>
+      </button>
+      <button class="method-card" data-method="ai">
+        <div class="m-title">✨ AI 배경 교체</div>
+        <div class="m-reason">배경 전체를 자연스럽게 새로 생성해요.</div>
+      </button>
+      <button class="method-card" data-method="sticker">
+        <div class="m-title">🌟 스티커 덮기</div>
+        <div class="m-reason">텍스트 부분만 익숙한 스티커로 가려요.</div>
+      </button>
+    </div>
+
+    <div class="preview-frame" id="previewFrame">
+      <img id="previewBefore" alt="원본" />
+      <div class="crop-guard" id="cropGuard"></div>
+    </div>
+    <p class="preview-caption" id="previewCaption">점선 안쪽만 남기고 자연스럽게 잘라내요.</p>
+
+    <div class="edit-instruction" id="editInstruction" style="display:none;">
+      <strong>Claude가 생성한 편집 지시문 (예시)</strong>
+      "Do not modify the person in any way. Preserve facial features, skin tone, hair, clothing and pose with pixel-level accuracy. Only alter the background."
+    </div>
+
+    <button class="primary" id="goVerifyBtn">이 방식으로 보정 완료 → 검증하기</button>
+    <button class="secondary" id="backToResultBtn">진단 결과로 돌아가기</button>
+  </div>
+
+  <!-- 화면 5: 검증 -->
+  <div class="card" id="screen-verify" style="display:none;">
+    <div class="verify-stamp-wrap">
+      <div class="verify-stamp" id="verifyStamp"><span class="s-icon">✓</span><span class="s-text">검증완료</span></div>
+    </div>
+    <div class="verify-tags" id="verifyTags"></div>
+    <div class="verify-detail" id="verifyDetail"></div>
+    <button class="ghost-link" id="cycleVerifyBtn">다른 검증 결과 예시 보기 →</button>
+    <button class="secondary" id="restartBtn" style="margin-top:1.3rem;">다른 사진으로 처음부터 다시</button>
+    <p class="disclaimer">
+      ※ 인터랙티브 목업입니다. 실제 위험도·패턴분석·보정·검증 결과는 Claude API + flux-kontext-pro 연동 후 산출됩니다.<br />
+      Campus AX-Ton · 아이 사진 SNS 위험진단 서비스
+    </p>
+  </div>
+  <!-- OCR/얼굴분석 디버그 패널: ?debug=1 로 접속했을 때만 보임. 평상시 UI에는 영향 없음 -->
+  <div class="card" id="debugPanel" style="display:none; margin-top:1.5rem;">
+    <h3 style="font-family:var(--font-display); font-size:0.98rem; margin:0 0 0.6rem; color:var(--brand-deep);">🔧 얼굴 분석 디버그 정보 (?debug=1)</h3>
+    <div style="overflow-x:auto; margin-bottom:1.4rem;">
+      <table id="debugFaceTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px;"></table>
+    </div>
+    <p id="debugFaceTiming" style="font-size:0.76rem; color:var(--muted); margin:0 0 1.4rem; white-space:pre-line;"></p>
+
+    <h3 style="font-family:var(--font-display); font-size:0.98rem; margin:0 0 0.6rem; color:var(--brand-deep);">🔧 Claude Vision vs Tesseract 비교</h3>
+    <div style="margin-bottom:0.9rem;">
+      <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">Claude Vision에 실제로 전송된 이미지 (얼굴 마스킹 적용됨)</p>
+      <img id="debugMaskedImg" style="max-width:220px; border-radius:6px; border:1px solid var(--line); display:block;" />
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="debugCompareTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px; margin-bottom:0.9rem;"></table>
+    </div>
+    <p id="debugCompareNote" style="font-size:0.76rem; color:var(--muted); margin:0 0 1.4rem; white-space:pre-line;"></p>
+
+    <h3 style="font-family:var(--font-display); font-size:0.98rem; margin:0 0 0.6rem; color:var(--brand-deep);">🔧 OCR(Tesseract) 상세 디버그 정보</h3>
+    <div style="display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:0.9rem;">
+      <div>
+        <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">원본 이미지</p>
+        <img id="debugRawImg" style="max-width:170px; border-radius:6px; border:1px solid var(--line); display:block;" />
+      </div>
+      <div>
+        <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">전처리 후 (흑백+대비강화)</p>
+        <img id="debugPreImg" style="max-width:170px; border-radius:6px; border:1px solid var(--line); display:block;" />
+      </div>
+    </div>
+    <p style="font-size:0.78rem; margin:0 0 0.5rem;"><strong>전처리 전 OCR 텍스트:</strong> <span id="debugRawText" style="color:var(--muted);"></span></p>
+    <p style="font-size:0.78rem; margin:0 0 0.8rem;"><strong>전처리 후 OCR 텍스트:</strong> <span id="debugPreText" style="color:var(--muted);"></span></p>
+    <div style="overflow-x:auto;">
+      <table id="debugTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px;"></table>
+    </div>
+    <p id="debugTiming" style="font-size:0.76rem; color:var(--muted); margin:0.8rem 0 0; white-space:pre-line;"></p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"
+  integrity="sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F"
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"
+  integrity="sha384-gzn2n++arkvyhdNLmUf1s6F5NZ8iAbZ7FhIt+Zw7Jlf1n/vNTmZ3+cYr7S4ogyco"
+  crossorigin="anonymous"></script>
+<script>
+  (function () {
+    // ===== OCR (Tesseract.js) =====
+    // ?debug=1 로 접속하면 콘솔에 상세 로그 + 화면 하단 디버그 패널이 표시됨
+    var OCR_DEBUG = /(?:^|[?&])debug=1(?:&|$)/.test(location.search);
+    var TESS_LANGS = 'kor+eng';
+    var ocrWorkerPromise = null;
+
+    function sleep(ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); }
+
+    function getOcrWorker() {
+      if (!ocrWorkerPromise) {
+        var options = {};
+        if (OCR_DEBUG) {
+          // logger 키를 아예 넣지 않아야 함 — {logger: undefined}로 넘기면
+          // Tesseract 내부 기본 로거를 덮어써서 "b is not a function" 에러가 반복 발생함
+          options.logger = function (m) {
+            if (m.status === 'recognizing text') return; // progress ticks are noisy, skip
+            console.log('[tesseract]', m.status);
+          };
+        }
+        ocrWorkerPromise = Tesseract.createWorker(TESS_LANGS, 1, options);
+      }
+      return ocrWorkerPromise;
+    }
+
+    function loadImage(url) {
+      return new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = function () { resolve(img); };
+        img.onerror = function () { reject(new Error('이미지를 불러오지 못했어요.')); };
+        img.src = url;
+      });
+    }
+
+    // 흑백 변환 + 대비 강화(min-max 정규화). source는 Image 또는 Canvas 모두 가능.
+    // width/height를 원본과 다르게 주면 이 함수가 곧 리사이즈(확대) 역할도 겸함.
+    //
+    // 흑백 변환에는 표준 휘도 공식(0.299R+0.587G+0.114B) 대신 max(R,G,B)(HSV Value)를 사용함.
+    // 실사진 검증(야간 네온 간판)에서 실측한 문제: 채도 높은 분홍색 네온 텍스트 RGB(255,29,160)는
+    // 휘도 공식으로는 111(중간 회색)까지 떨어져 어두운 배경과 대비가 거의 사라졌지만,
+    // max(R,G,B)로는 255(순백)로 유지되어 흰색 텍스트와 동일한 밝기로 보존됨 — 실측으로 확인.
+    function toContrastCanvas(source, width, height) {
+      var canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(source, 0, 0, width, height);
+      var imageData = ctx.getImageData(0, 0, width, height);
+      var data = imageData.data;
+      var n = data.length;
+      var pixelCount = n / 4;
+      var val = new Float32Array(pixelCount);
+      var min = 255, max = 0;
+      for (var i = 0, j = 0; i < n; i += 4, j++) {
+        var v = Math.max(data[i], data[i + 1], data[i + 2]);
+        val[j] = v;
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+      var range = Math.max(1, max - min);
+      for (var i2 = 0, j2 = 0; i2 < n; i2 += 4, j2++) {
+        var stretched = ((val[j2] - min) / range) * 255;
+        data[i2] = data[i2 + 1] = data[i2 + 2] = stretched;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      return canvas;
+    }
+
+    // 최종 인식 결과에서 잡음을 걸러냄:
+    //  - 신뢰도 60% 미만
+    //  - 특수문자/공백만으로 이루어진 텍스트
+    //  - 의미 있는 글자가 2자 미만
+    //  - 같은 텍스트가 중복되면 신뢰도 낮은 쪽 제거
+    // 실사진 검증(야간 간판)에서 이런 저신뢰도 잡음 줄이 결과에 섞여 나오는 걸 확인해서 추가함.
+    function filterAndDedupeWords(words) {
+      var CONF_THRESHOLD = 60;
+      var MIN_LEN = 2;
+      var kept = [];
+      var dropped = [];
+
+      words.forEach(function (w) {
+        var text = w.text.trim();
+        if (w.confidence < CONF_THRESHOLD) {
+          dropped.push({ word: w, reason: '신뢰도 ' + Math.round(w.confidence) + '% (60% 미만)' });
+          return;
+        }
+        if (!/[가-힣a-zA-Z0-9]/.test(text)) {
+          dropped.push({ word: w, reason: '특수문자/공백만으로 구성됨' });
+          return;
+        }
+        var meaningfulLen = text.replace(/\s/g, '').length;
+        if (meaningfulLen < MIN_LEN) {
+          dropped.push({ word: w, reason: '의미 있는 글자 2자 미만' });
+          return;
+        }
+        kept.push(w);
+      });
+
+      // 같은 텍스트가 여러 번 남았으면 신뢰도 높은 것만 채택
+      var byText = {};
+      kept.forEach(function (w) {
+        var key = w.text.trim().toLowerCase();
+        var existing = byText[key];
+        if (!existing) {
+          byText[key] = w;
+        } else if (existing.confidence < w.confidence) {
+          dropped.push({ word: existing, reason: '중복 텍스트 (신뢰도 더 높은 동일 텍스트로 대체됨)' });
+          byText[key] = w;
+        } else {
+          dropped.push({ word: w, reason: '중복 텍스트 (신뢰도 더 높은 동일 텍스트가 이미 채택됨)' });
+        }
+      });
+
+      return { kept: Object.keys(byText).map(function (k) { return byText[k]; }), dropped: dropped };
+    }
+
+    // 두 PSM 결과를 합쳐서 bbox가 겹치는(50% 이상) 것은 신뢰도 높은 쪽만 남김
+    function bboxOverlapRatio(a, b) {
+      var ox = Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0));
+      var oy = Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
+      var overlapArea = ox * oy;
+      var aArea = (a.x1 - a.x0) * (a.y1 - a.y0);
+      return aArea > 0 ? overlapArea / aArea : 0;
+    }
+    function mergeLineCandidates(lineGroups) {
+      var all = [];
+      lineGroups.forEach(function (lines) { all = all.concat(lines); });
+      // 순수 기호만 있는 줄(예: "|", "-", "_")은 위치 단서가 될 수 없으므로 제외
+      all = all.filter(function (l) { return /[가-힣a-zA-Z0-9]/.test(l.text); });
+      all.sort(function (a, b) { return b.confidence - a.confidence; });
+      var kept = [];
+      all.forEach(function (line) {
+        var isDup = kept.some(function (k) {
+          return bboxOverlapRatio(line.bbox, k.bbox) > 0.5 || bboxOverlapRatio(k.bbox, line.bbox) > 0.5;
+        });
+        if (!isDup) kept.push(line);
+      });
+      return kept;
+    }
+
+    // 텍스트 후보 영역(줄 단위)만 잘라내 확대한 뒤 재인식
+    async function refineRegion(img, worker, line) {
+      var pad = 8;
+      var x0 = Math.max(0, Math.floor(line.bbox.x0 - pad));
+      var y0 = Math.max(0, Math.floor(line.bbox.y0 - pad));
+      var x1 = Math.min(img.naturalWidth, Math.ceil(line.bbox.x1 + pad));
+      var y1 = Math.min(img.naturalHeight, Math.ceil(line.bbox.y1 + pad));
+      var w = x1 - x0, h = y1 - y0;
+      if (w <= 2 || h <= 2) return null;
+
+      var scale = Math.max(2, Math.min(4, Math.round(120 / h)));
+      var cropCanvas = document.createElement('canvas');
+      cropCanvas.width = w;
+      cropCanvas.height = h;
+      cropCanvas.getContext('2d').drawImage(img, x0, y0, w, h, 0, 0, w, h);
+
+      var upCanvas = document.createElement('canvas');
+      upCanvas.width = Math.round(w * scale);
+      upCanvas.height = Math.round(h * scale);
+      var uctx = upCanvas.getContext('2d');
+      uctx.imageSmoothingEnabled = true;
+      uctx.imageSmoothingQuality = 'high';
+      uctx.drawImage(cropCanvas, 0, 0, upCanvas.width, upCanvas.height);
+
+      var refinedCanvas = toContrastCanvas(upCanvas, upCanvas.width, upCanvas.height);
+      try {
+        await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE });
+        var res = await worker.recognize(refinedCanvas);
+        return {
+          text: (res.data.text || '').trim(),
+          confidence: res.data.confidence,
+          dataUrl: OCR_DEBUG ? refinedCanvas.toDataURL('image/png') : null,
+        };
+      } catch (e) {
+        console.warn('[OCR] 영역 재인식 실패', e);
+        return null;
+      }
+    }
+
+    // 사진 1장을 받아 전처리 → 1차 OCR(전체) → 텍스트 후보 영역 크롭·확대 → 2차 OCR(재인식) 파이프라인 실행
+    async function runOcrPipeline(imgUrl) {
+      var timing = {};
+      var t0 = performance.now();
+
+      var img = await loadImage(imgUrl);
+      timing.imageLoadMs = performance.now() - t0;
+
+      var t1 = performance.now();
+      var worker = await getOcrWorker();
+      timing.workerReadyMs = performance.now() - t1;
+
+      // 실사진 검증 결과: 960x540처럼 작은 사진은 한글 글자 획이 너무 가늘어서 인식률이 떨어짐.
+      // 짧은 변이 1200px 미만이면 2배로 키운 뒤 흑백+대비강화를 적용함.
+      var scaleFactor = Math.min(img.naturalWidth, img.naturalHeight) < 1200 ? 2 : 1;
+      var procWidth = img.naturalWidth * scaleFactor;
+      var procHeight = img.naturalHeight * scaleFactor;
+
+      var t2 = performance.now();
+      var preCanvas = toContrastCanvas(img, procWidth, procHeight);
+      timing.preprocessMs = performance.now() - t2;
+
+      // PSM(페이지 분할 모드) 하나만 쓰면 사진 레이아웃에 따라 실패함 — 실측으로 확인:
+      //  - SINGLE_COLUMN 단독: 간판이 여러 군데 흩어진 사진(세로로 늘어선 배치)에는 잘 맞지만,
+      //    실제 야간 간판 사진(가로로 넓은 큰 글씨 + 주변에 흩어진 작은 글씨)에서는 후보를 0개 찾음
+      //  - SINGLE_BLOCK 단독: 반대로 큰 글씨 위주 사진에서 후보를 찾아내지만 작은 텍스트를 놓치기 쉬움
+      // 두 모드를 모두 돌려서 합치는 쪽이 실측상 가장 안정적이었음 (두 테스트 사진 모두에서 정상 동작 확인).
+      var t3 = performance.now();
+      var lineGroups = [];
+      var pass1Texts = [];
+      var psmModesForPass1 = [Tesseract.PSM.SINGLE_COLUMN, Tesseract.PSM.SINGLE_BLOCK];
+      for (var p = 0; p < psmModesForPass1.length; p++) {
+        await worker.setParameters({ tessedit_pageseg_mode: psmModesForPass1[p] });
+        var passResult = await worker.recognize(preCanvas);
+        lineGroups.push((passResult.data.lines || []).filter(function (l) { return l.text && l.text.trim().length > 0; }));
+        pass1Texts.push((passResult.data.text || '').trim());
+      }
+      timing.pass1Ms = performance.now() - t3;
+
+      var rawPass1 = null;
+      if (OCR_DEBUG) {
+        var t3b = performance.now();
+        try {
+          await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK });
+          rawPass1 = await worker.recognize(img);
+        } catch (e) { console.warn('[OCR][debug] 전처리 전 비교용 OCR 실패', e); }
+        timing.rawPass1Ms = performance.now() - t3b;
+      }
+
+      var mergedLines = mergeLineCandidates(lineGroups);
+      mergedLines.sort(function (a, b) { return b.confidence - a.confidence; });
+      var MAX_CANDIDATES = 6;
+      var candidates = mergedLines.slice(0, MAX_CANDIDATES);
+      var droppedCount = Math.max(0, mergedLines.length - candidates.length);
+
+      // candidates의 bbox는 (확대됐을 수 있는) preCanvas 좌표계 → 원본 이미지 좌표로 환산
+      candidates.forEach(function (line) {
+        line.bbox = {
+          x0: line.bbox.x0 / scaleFactor, y0: line.bbox.y0 / scaleFactor,
+          x1: line.bbox.x1 / scaleFactor, y1: line.bbox.y1 / scaleFactor,
+        };
+      });
+
+      var t4 = performance.now();
+      var refinedResults = [];
+      for (var i = 0; i < candidates.length; i++) {
+        refinedResults.push(await refineRegion(img, worker, candidates[i]));
+      }
+      timing.pass2TotalMs = performance.now() - t4;
+      timing.totalMs = performance.now() - t0;
+
+      var words = candidates.map(function (line, idx) {
+        var refined = refinedResults[idx];
+        var pass1Text = line.text.trim();
+        var useRefined = !!refined && refined.text.length > 0 &&
+          (refined.confidence > line.confidence || pass1Text.length === 0);
+        return {
+          text: useRefined ? refined.text : pass1Text,
+          confidence: useRefined ? refined.confidence : line.confidence,
+          xPct: (line.bbox.x0 + line.bbox.x1) / 2 / img.naturalWidth * 100,
+          yPct: (line.bbox.y0 + line.bbox.y1) / 2 / img.naturalHeight * 100,
+          refined: useRefined,
+          pass1Text: pass1Text,
+          pass1Confidence: line.confidence,
+          pass2Text: refined ? refined.text : '',
+          pass2Confidence: refined ? refined.confidence : null,
+          debugCropDataUrl: refined ? refined.dataUrl : null,
+        };
+      }).filter(function (w) { return w.text.length > 0; });
+
+      var rawWordCount = words.length;
+      var filterOutcome = filterAndDedupeWords(words);
+      words = filterOutcome.kept;
+
+      console.log('[OCR] 잡음 필터링: ' + rawWordCount + '개 후보 → ' + words.length + '개 채택 (' + filterOutcome.dropped.length + '개 제외)');
+      console.log('[OCR] 필터 전 (원본 ' + rawWordCount + '개):', words.concat(filterOutcome.dropped.map(function (d) { return d.word; }))
+        .map(function (w) { return '"' + w.text + '" (' + Math.round(w.confidence) + '%)'; }));
+      if (filterOutcome.dropped.length > 0) {
+        console.log('[OCR] 제외된 항목:', filterOutcome.dropped.map(function (d) {
+          return '"' + d.word.text + '" (' + Math.round(d.word.confidence) + '%) — ' + d.reason;
+        }));
+      }
+      console.log('[OCR] 필터 후 채택 (' + words.length + '개):', words.map(function (w) { return '"' + w.text + '" (' + Math.round(w.confidence) + '%)'; }));
+
+      var mergedConfidences = mergedLines.map(function (l) { return l.confidence; });
+      var avgMergedConfidence = mergedConfidences.length > 0
+        ? mergedConfidences.reduce(function (a, b) { return a + b; }, 0) / mergedConfidences.length
+        : 0;
+
+      var result = {
+        words: words,
+        timing: timing,
+        droppedCandidateCount: droppedCount,
+        preprocessedDataUrl: preCanvas.toDataURL('image/png'),
+        rawOcrText: rawPass1 ? (rawPass1.data.text || '').trim() : null,
+        rawOcrConfidence: rawPass1 ? rawPass1.data.confidence : null,
+        // 1차는 PSM 두 개(SINGLE_COLUMN + SINGLE_BLOCK)를 합친 결과라 텍스트를 이어붙여서 보여줌
+        preprocessedOcrText: pass1Texts.join(' / '),
+        preprocessedOcrConfidence: avgMergedConfidence,
+      };
+
+      console.log('[OCR] 처리 완료 — 총 ' + Math.round(timing.totalMs) + 'ms', {
+        전처리_ms: Math.round(timing.preprocessMs),
+        '1차OCR(전체이미지)_ms': Math.round(timing.pass1Ms),
+        '2차OCR(영역재인식)_총_ms': Math.round(timing.pass2TotalMs),
+        감지된_텍스트: words.map(function (w) { return w.text + ' (신뢰도 ' + Math.round(w.confidence) + '%, ' + (w.refined ? '2차재인식' : '1차') + ')'; }),
+        후보중_처리제외됨: droppedCount,
+      });
+      if (OCR_DEBUG) {
+        console.log('[OCR][debug] ── 전처리 전/후 비교 ──');
+        console.log('[OCR][debug] 전처리 전 전체 OCR 텍스트:', JSON.stringify(result.rawOcrText), '평균신뢰도', result.rawOcrConfidence);
+        console.log('[OCR][debug] 전처리 후 전체 OCR 텍스트:', JSON.stringify(result.preprocessedOcrText), '평균신뢰도', result.preprocessedOcrConfidence);
+        console.log('[OCR][debug] 줄(line) 단위 상세 결과:', words);
+        console.log('[OCR][debug] 상세 타이밍(ms):', timing);
+      }
+
+      return result;
+    }
+
+    // ===== 얼굴 분석 (face-api.js) =====
+    // 모델은 face-api.js 공식 저장소의 가중치 파일을 CDN으로 그대로 불러옴 (별도 호스팅 불필요)
+    var FACE_MODELS_BASE = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+    var faceModelsPromise = null;
+    function getFaceModelsReady() {
+      if (!faceModelsPromise) {
+        faceModelsPromise = Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS_BASE),
+          faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS_BASE),
+        ]);
+      }
+      return faceModelsPromise;
+    }
+
+    function landmarkCenter(points) {
+      var sx = 0, sy = 0;
+      points.forEach(function (p) { sx += p.x; sy += p.y; });
+      return { x: sx / points.length, y: sy / points.length };
+    }
+
+    // 사진 1장을 받아 얼굴 검출 + 랜드마크 기반 각도 추정을 실행
+    async function runFaceDetectionPipeline(imgUrl) {
+      var timing = {};
+      var t0 = performance.now();
+
+      var img = await loadImage(imgUrl);
+      timing.imageLoadMs = performance.now() - t0;
+
+      var t1 = performance.now();
+      await getFaceModelsReady();
+      timing.modelsReadyMs = performance.now() - t1;
+
+      // 기본값(inputSize 416, scoreThreshold 0.5)은 사진 속 인물이 화면 전체를 채우지 않는
+      // 일반적인 스냅샷에서 얼굴을 놓치는 경우가 있었음 (실측: 신뢰도 46~47%로 기본 임계값 미달).
+      // inputSize를 키우고 threshold를 낮추면 오탐(얼굴 없는 사진에서 잘못 검출) 없이 더 잘 잡음 — 실측으로 확인.
+      var t2 = performance.now();
+      var detections = await faceapi
+        .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.3 }))
+        .withFaceLandmarks();
+      timing.detectMs = performance.now() - t2;
+      timing.totalMs = performance.now() - t0;
+
+      var imgArea = img.naturalWidth * img.naturalHeight;
+      var faces = detections.map(function (d) {
+        var box = d.detection.box;
+        var landmarks = d.landmarks;
+        var leftEye = landmarkCenter(landmarks.getLeftEye());
+        var rightEye = landmarkCenter(landmarks.getRightEye());
+        var nose = landmarkCenter(landmarks.getNose());
+
+        // roll(기울기): 양쪽 눈을 잇는 선의 각도 — 표준적인 방식, 정확도 높음
+        var rollDeg = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) * 180 / Math.PI;
+
+        // yaw(좌우 돌림) 근사치: 코가 양쪽 눈 대비 얼마나 비대칭 위치에 있는지로 추정.
+        // 실제 3D 머리 자세 추정(PnP 등)이 아니라 2D 랜드마크 기반 근사값 — 정밀하지 않음(README 참고).
+        var dLeft = Math.hypot(nose.x - leftEye.x, nose.y - leftEye.y);
+        var dRight = Math.hypot(nose.x - rightEye.x, nose.y - rightEye.y);
+        var asymmetry = (dRight - dLeft) / Math.max(1, dRight + dLeft);
+        var yawDeg = asymmetry * 90;
+
+        return {
+          confidence: d.detection.score,
+          box: box,
+          xPct: (box.x + box.width / 2) / img.naturalWidth * 100,
+          yPct: (box.y + box.height / 2) / img.naturalHeight * 100,
+          areaRatioPct: (box.width * box.height) / imgArea * 100,
+          rollDeg: rollDeg,
+          yawDeg: yawDeg,
+        };
+      });
+
+      var result = { faces: faces, timing: timing };
+
+      console.log('[FACE] 처리 완료 — 총 ' + Math.round(timing.totalMs) + 'ms', {
+        감지된_얼굴수: faces.length,
+        상세: faces.map(function (f) {
+          return '위치(' + f.xPct.toFixed(1) + '%, ' + f.yPct.toFixed(1) + '%) 크기 ' + f.areaRatioPct.toFixed(1) +
+            '% roll ' + f.rollDeg.toFixed(1) + '˚ yaw(근사) ' + f.yawDeg.toFixed(1) + '˚ 신뢰도 ' + Math.round(f.confidence * 100) + '%';
+        }),
+      });
+      if (OCR_DEBUG) {
+        console.log('[FACE][debug] 모델 준비:', Math.round(timing.modelsReadyMs) + 'ms, 검출:', Math.round(timing.detectMs) + 'ms');
+      }
+
+      return result;
+    }
+
+    // 얼굴 모델 워밍업: tfjs가 WebGL 셰이더를 최초 컴파일하는 데 실측 2~3.5초가 걸림(이후엔 0.5초대로 줄어듦).
+    // 사용자가 "위험도 진단하기"를 누르는 시점이 아니라 페이지가 열리자마자(폼 입력하는 동안) 미리
+    // 더미 이미지로 한 번 돌려서 이 비용을 숨김 — 실측으로 효과 확인(워밍업 후 실제 사진 처리 571ms).
+    (function warmUpFaceModels() {
+      getFaceModelsReady().then(function () {
+        var warmCanvas = document.createElement('canvas');
+        warmCanvas.width = 64;
+        warmCanvas.height = 64;
+        return faceapi
+          .detectAllFaces(warmCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.3 }))
+          .withFaceLandmarks();
+      }).catch(function (e) {
+        console.warn('[FACE] 모델 워밍업 실패 (실제 진단 시 다시 시도되므로 무시 가능)', e);
+      });
+    })();
+
+    // ===== 텍스트 판독: Claude Vision (기본) + Tesseract (폴백/디버그 비교용) =====
+    var CLAUDE_BACKEND_URL = 'http://localhost:3001/api/analyze-image';
+
+    // 얼굴 영역을 검은 사각형으로 덮어서 Claude Vision에 보낼 이미지를 만듦.
+    // 얼굴 bbox에 20% 패딩을 줘서 머리카락/턱선까지 확실히 가림. 블러 대신 완전 불투명 검정 사용
+    // (블러는 복원 가능성이 있어 "외부 전송용 비식별화"에는 부적합하다고 판단).
+    function maskFaces(img, faces) {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      ctx.fillStyle = '#000000';
+      (faces || []).forEach(function (f) {
+        var pad = 0.2;
+        var w = f.box.width, h = f.box.height;
+        ctx.fillRect(f.box.x - w * pad, f.box.y - h * pad, w * (1 + pad * 2), h * (1 + pad * 2));
+      });
+      return canvas;
+    }
+
+    // Claude가 주는 "상단 중앙" 같은 대략적 위치 문자열을 9분할 그리드 좌표(%)로 변환.
+    // 픽셀 정확도는 아니고 근사치 — Tesseract의 실제 bbox 대비 정밀도가 낮음(합의된 트레이드오프).
+    function claudePositionToPct(posStr) {
+      posStr = posStr || '';
+      var yPct = 50, xPct = 50;
+      if (/상단/.test(posStr)) yPct = 15;
+      else if (/하단/.test(posStr)) yPct = 85;
+      if (/좌측|왼쪽/.test(posStr)) xPct = 15;
+      else if (/우측|오른쪽/.test(posStr)) xPct = 85;
+      return { xPct: xPct, yPct: yPct };
+    }
+
+    async function runClaudeVisionPipeline(imgUrl, faces) {
+      var timing = {};
+      var t0 = performance.now();
+      var img = await loadImage(imgUrl);
+      var maskedCanvas = maskFaces(img, faces);
+      var maskedDataUrl = maskedCanvas.toDataURL('image/jpeg', 0.85);
+      var base64 = maskedDataUrl.split(',')[1];
+      timing.maskMs = performance.now() - t0;
+
+      var t1 = performance.now();
+      var res = await fetch(CLAUDE_BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mediaType: 'image/jpeg' }),
+      });
+      timing.requestMs = performance.now() - t1;
+      timing.totalMs = performance.now() - t0;
+
+      if (!res.ok) {
+        var errBody = await res.json().catch(function () { return {}; });
+        throw new Error('Claude Vision 호출 실패 (' + res.status + '): ' + (errBody.error || res.statusText));
+      }
+      var data = await res.json();
+
+      var words = (data.감지된텍스트 || []).map(function (item) {
+        var pos = claudePositionToPct(item.위치);
+        return {
+          text: item.내용, confidence: null, xPct: pos.xPct, yPct: pos.yPct,
+          type: item.유형, refined: false, source: 'claude',
+        };
+      });
+
+      var result = {
+        words: words, timing: timing, source: 'claude',
+        maskedDataUrl: OCR_DEBUG ? maskedDataUrl : null,
+        usage: data.usage, model: data.model, backendTimingMs: data.timingMs,
+      };
+      console.log('[CLAUDE] 처리 완료 — 총 ' + Math.round(timing.totalMs) + 'ms', {
+        감지된_텍스트: words.map(function (w) { return w.text + ' (' + w.type + ', ' + w.위치 + ')'; }),
+        토큰사용량: data.usage,
+      });
+      return result;
+    }
+
+    // 발표 자료용 데이터 수집 — 세션 동안(페이지 새로고침 전까지) 테스트한 사진들의 비교 결과 누적
+    var comparisonLog = [];
+    function logComparison(claudeResult, claudeError, tesseractResult) {
+      var entry = {
+        시각: new Date().toISOString(),
+        claude: claudeResult ? {
+          텍스트: claudeResult.words.map(function (w) { return w.text; }),
+          개수: claudeResult.words.length,
+          처리시간_ms: Math.round(claudeResult.timing.totalMs),
+          백엔드왕복_ms: claudeResult.backendTimingMs,
+          토큰: claudeResult.usage,
+        } : null,
+        claude_실패사유: claudeError ? claudeError.message : null,
+        tesseract: tesseractResult ? {
+          텍스트: tesseractResult.words.map(function (w) { return w.text + '(' + Math.round(w.confidence) + '%)'; }),
+          개수: tesseractResult.words.length,
+          처리시간_ms: Math.round(tesseractResult.timing.totalMs),
+        } : null,
+      };
+      comparisonLog.push(entry);
+      console.log('[비교] Claude Vision vs Tesseract (이번 사진):', entry);
+      console.log('[비교] 누적 ' + comparisonLog.length + '건 — 발표자료용 데이터:', comparisonLog);
+      return entry;
+    }
+
+    // 평소: Claude Vision 우선 사용, 실패 시(네트워크/키/파싱 오류 등) 자동으로 Tesseract로 전환.
+    // ?debug=1: 성공 여부와 무관하게 둘 다 실행해서 비교(화면 비교표 + 콘솔 로그).
+    async function runTextDetectionPipeline(imgUrl, faces) {
+      if (OCR_DEBUG) {
+        var settled = await Promise.allSettled([
+          runClaudeVisionPipeline(imgUrl, faces),
+          runOcrPipeline(imgUrl),
+        ]);
+        var claudeResult = settled[0].status === 'fulfilled' ? settled[0].value : null;
+        var claudeError = settled[0].status === 'rejected' ? settled[0].reason : null;
+        var tesseractResult = settled[1].status === 'fulfilled' ? settled[1].value : null;
+        logComparison(claudeResult, claudeError, tesseractResult);
+        return {
+          primary: claudeResult || tesseractResult,
+          source: claudeResult ? 'claude' : 'tesseract-fallback',
+          claude: claudeResult, claudeError: claudeError, tesseract: tesseractResult,
+        };
+      }
+
+      try {
+        var claude = await runClaudeVisionPipeline(imgUrl, faces);
+        return { primary: claude, source: 'claude' };
+      } catch (e) {
+        console.warn('[TEXT] Claude Vision 실패 — Tesseract로 자동 전환:', e.message);
+        var fallback = await runOcrPipeline(imgUrl);
+        return { primary: fallback, source: 'tesseract-fallback', claudeError: e };
+      }
+    }
+
+    var screens = {
+      form: document.getElementById('screen-form'),
+      analyzing: document.getElementById('screen-analyzing'),
+      result: document.getElementById('screen-result'),
+      correct: document.getElementById('screen-correct'),
+      verify: document.getElementById('screen-verify'),
+    };
+    var stepperEl = document.getElementById('stepper');
+    var conn1 = document.getElementById('conn1');
+    var conn2 = document.getElementById('conn2');
+    var STEP_MAP = { form: 'form', analyzing: 'form', result: 'form', correct: 'correct', verify: 'verify' };
+
+    function showScreen(name) {
+      Object.keys(screens).forEach(function (k) { screens[k].style.display = 'none'; });
+      screens[name].style.display = 'block';
+      var order = ['form', 'correct', 'verify'];
+      var activeIndex = order.indexOf(STEP_MAP[name]);
+      var stepEls = stepperEl.querySelectorAll('.step');
+      for (var i = 0; i < stepEls.length; i++) {
+        stepEls[i].classList.remove('done', 'active');
+        if (i < activeIndex) stepEls[i].classList.add('done');
+        else if (i === activeIndex) stepEls[i].classList.add('active');
+      }
+      conn1.classList.toggle('filled', activeIndex >= 1);
+      conn2.classList.toggle('filled', activeIndex >= 2);
+    }
+
+    var photoInput = document.getElementById('photoInput');
+    var fileDropLabel = document.getElementById('fileDropLabel');
+    var polaroidPreview = document.getElementById('polaroidPreview');
+    var photoPreview = document.getElementById('photoPreview');
+    var pastInput = document.getElementById('pastInput');
+    var pastDropLabel = document.getElementById('pastDropLabel');
+    var fileCount = document.getElementById('fileCount');
+
+    var uploadedPhotoUrl = null;
+    var pastCount = 0;
+
+    photoInput.addEventListener('change', function () {
+      var file = photoInput.files[0];
+      if (!file) return;
+      uploadedPhotoUrl = URL.createObjectURL(file);
+      photoPreview.src = uploadedPhotoUrl;
+      polaroidPreview.style.display = 'block';
+      fileDropLabel.textContent = file.name;
+    });
+
+    pastInput.addEventListener('change', function () {
+      pastCount = pastInput.files.length;
+      if (pastCount > 0) {
+        pastDropLabel.textContent = pastCount + '개 스크린샷 선택됨';
+        fileCount.style.display = 'block';
+        fileCount.textContent = '✓ 과거 게시물 ' + pastCount + '개로 패턴 분석까지 함께 진행해요';
+      } else {
+        pastDropLabel.textContent = '스크린샷을 선택하면 반복 패턴까지 짚어드려요';
+        fileCount.style.display = 'none';
+      }
+    });
+
+    function buildMockDiagnosis(inputs, ocrResult) {
+      var ocrWords = (ocrResult && ocrResult.words) || [];
+      var ocrTextJoined = ocrWords.map(function (w) { return w.text; }).join(', ');
+      var hasOcrText = ocrTextJoined.length > 0;
+
+      var score = 55;
+      if (inputs.privacySetting === '전체공개') score += 15;
+      if (inputs.uploadTiming === '실시간 업로드') score += 10;
+      if (hasOcrText || inputs.backgroundNotes.trim().length > 0) score += 8;
+      score = Math.max(20, Math.min(score, 96));
+      var grade = score >= 70 ? '상' : score >= 45 ? '중' : '하';
+      var locationScore = Math.max(15, Math.min(score - 5, 92));
+
+      var bgNote = hasOcrText
+        ? '사진에서 실제로 "' + ocrTextJoined + '" 텍스트가 감지돼서 특정 장소로 위치가 특정될 가능성이 있어요.'
+        : (inputs.backgroundNotes.trim().length > 0
+          ? '배경으로 언급하신 "' + inputs.backgroundNotes + '"가 특정 장소로 특정될 가능성이 있어요. (OCR로는 뚜렷한 텍스트가 감지되지 않았어요)'
+          : '배경에서 특정 장소를 유추할 만한 단서는 크게 두드러지지 않았어요. (OCR로도 텍스트가 감지되지 않았어요)');
+      var timingNote = inputs.uploadTiming === '실시간 업로드'
+        ? '실시간으로 업로드하면 아이가 지금 있는 위치가 그대로 노출될 수 있어요.'
+        : '시간 차를 두고 올리신 점은 위치 노출 위험을 낮추는 데 도움이 돼요.';
+
+      var scheduleOn = pastCount > 0;
+      var scheduleEvidence = scheduleOn
+        ? '최근 게시물 ' + pastCount + '개를 분석한 결과, 매주 화·목요일 오후 3시경 ' +
+          (inputs.backgroundNotes.trim() || '같은 장소') +
+          '에 계신 패턴이 반복적으로 노출되고 있어요. 이런 정보가 누적되면 아이의 위치와 시간을 예측하기 쉬워질 수 있어요.'
+        : '이번엔 사진 1장만 분석했어요. 과거 게시물 스크린샷을 여러 장 함께 올리면 반복되는 요일·시간·장소 패턴까지 짚어드릴 수 있어요.';
+
+      return {
+        score: score, grade: grade, locationScore: locationScore,
+        locationEvidence: bgNote + ' ' + timingNote,
+        scheduleOn: scheduleOn,
+        scheduleEvidence: scheduleEvidence,
+        actions: [
+          inputs.privacySetting === '전체공개' ? '계정 공개 범위를 "친구공개"로 좁히는 것을 고려해보세요.' : '현재 공개 범위 설정을 유지하셔도 괜찮아요.',
+          '배경에 학원/어린이집 이름표나 간판이 보인다면 스마트 크롭이나 스티커로 가린 뒤 올리는 걸 추천해요.',
+          inputs.uploadTiming === '실시간 업로드' ? '가능하면 몇 시간 정도 지난 뒤에 업로드해보세요.' : '지금처럼 시간차를 두고 올리는 습관을 유지해주세요.',
+        ],
+        summary: '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
+          (inputs.companions ? '함께 계신 "' + inputs.companions + '"과의 사진이라 신원 특정 위험은 크지 않지만, ' : '') +
+          '공개 범위와 업로드 시점 설정에 따라 위치·생활 패턴 노출 위험이 달라질 수 있으니 위 권장 조치를 참고해보세요.',
+        captionSuggestions: inputs.caption.trim().length > 0
+          ? [
+              (inputs.caption.replace(/OO\S*/g, '유치원').slice(0, 60) + (inputs.caption.length > 60 ? '…' : '')) || '오늘 하루도 신나게 보냈어요 😊',
+              '오늘도 즐거운 하루였어요, 다음에 또 놀러가요!',
+            ]
+          : ['오늘 하루도 즐겁게 보냈어요 😊', '좋은 시간 보내고 왔어요!'],
+      };
+    }
+
+    function setGauge(score) {
+      var full = 251.3;
+      var offset = full * (1 - score / 100);
+      var arc = document.getElementById('gaugeArc');
+      arc.style.strokeDashoffset = offset;
+      arc.setAttribute('stroke', score >= 70 ? 'var(--risk-high)' : score >= 45 ? 'var(--risk-mid)' : 'var(--risk-low)');
+    }
+
+    function addPin(wrap, legend, num, xPct, yPct, label, kind) {
+      var pin = document.createElement('div');
+      pin.className = kind ? 'pin ' + kind : 'pin';
+      pin.style.left = xPct + '%';
+      pin.style.top = yPct + '%';
+      pin.textContent = String(num);
+      wrap.appendChild(pin);
+
+      var li = document.createElement('li');
+      var numSpan = document.createElement('span');
+      numSpan.className = kind ? 'num ' + kind : 'num';
+      numSpan.textContent = String(num);
+      var textSpan = document.createElement('span');
+      textSpan.textContent = label;
+      li.appendChild(numSpan);
+      li.appendChild(textSpan);
+      legend.appendChild(li);
+    }
+
+    function addNoPinNote(legend, num, label) {
+      var li = document.createElement('li');
+      var numSpan = document.createElement('span');
+      numSpan.className = 'num';
+      numSpan.textContent = String(num);
+      var textSpan = document.createElement('span');
+      textSpan.textContent = label;
+      li.appendChild(numSpan);
+      li.appendChild(textSpan);
+      legend.appendChild(li);
+    }
+
+    function renderPins(faceResult, ocrResult) {
+      var wrap = document.getElementById('riskPhotoWrap');
+      var legend = document.getElementById('pinLegend');
+      wrap.querySelectorAll('.pin').forEach(function (p) { p.remove(); });
+      legend.innerHTML = '';
+
+      var num = 1;
+      var faces = (faceResult && faceResult.faces) || [];
+      if (faces.length > 0) {
+        faces.forEach(function (f) {
+          var label = '얼굴 각도 roll ' + f.rollDeg.toFixed(0) + '˚ · yaw(근사) ' + f.yawDeg.toFixed(0) +
+            '˚, 프레임의 ' + f.areaRatioPct.toFixed(1) + '% 차지 · 신뢰도 ' + Math.round(f.confidence * 100) + '%';
+          addPin(wrap, legend, num++, f.xPct, f.yPct, label, 'face');
+        });
+      } else {
+        addNoPinNote(legend, num++, '감지된 얼굴이 없어요.');
+      }
+
+      var words = (ocrResult && ocrResult.words) || [];
+      if (words.length > 0) {
+        words.forEach(function (w) {
+          var confPart = w.confidence != null ? ('신뢰도 ' + Math.round(w.confidence) + '%') : 'Claude Vision 판독';
+          var label = '텍스트 감지: "' + w.text + '" · ' + confPart + (w.refined ? ' (영역 확대 재인식)' : '');
+          addPin(wrap, legend, num++, w.xPct, w.yPct, label, 'text');
+        });
+      } else {
+        addNoPinNote(legend, num++, '이 사진에서는 텍스트가 감지되지 않았어요.');
+      }
+    }
+
+    function renderDebugPanel(faceResult, textResult) {
+      var panel = document.getElementById('debugPanel');
+      panel.style.display = 'block';
+
+      var claudeResult = textResult.claude;
+      var tesseractResult = textResult.tesseract;
+
+      // --- Claude Vision vs Tesseract 비교 ---
+      var maskedImg = document.getElementById('debugMaskedImg');
+      if (claudeResult && claudeResult.maskedDataUrl) {
+        maskedImg.src = claudeResult.maskedDataUrl;
+        maskedImg.style.display = 'block';
+      } else {
+        maskedImg.style.display = 'none';
+      }
+
+      function avgConfidenceOf(words) {
+        var withConf = (words || []).filter(function (w) { return w.confidence != null; });
+        if (withConf.length === 0) return null;
+        return withConf.reduce(function (a, w) { return a + w.confidence; }, 0) / withConf.length;
+      }
+
+      var compareRows = ['<tr style="text-align:left; border-bottom:1px solid var(--line);">' +
+        '<th style="padding:0.3rem;">방식</th><th style="padding:0.3rem;">상태</th><th style="padding:0.3rem;">인식된 텍스트</th>' +
+        '<th style="padding:0.3rem;">개수</th><th style="padding:0.3rem;">평균 신뢰도</th><th style="padding:0.3rem;">처리시간</th></tr>'];
+      compareRows.push('<tr style="border-bottom:1px solid var(--line);">' +
+        '<td style="padding:0.3rem; font-weight:700;">Claude Vision</td>' +
+        '<td style="padding:0.3rem;">' + (claudeResult ? '✅ 성공' : '❌ 실패') + '</td>' +
+        '<td style="padding:0.3rem; color:var(--muted);">' + (claudeResult ? claudeResult.words.map(function (w) { return w.text; }).join(', ') : (textResult.claudeError ? textResult.claudeError.message : '-')) + '</td>' +
+        '<td style="padding:0.3rem;">' + (claudeResult ? claudeResult.words.length : '-') + '</td>' +
+        '<td style="padding:0.3rem; color:var(--muted);">제공 안 됨</td>' +
+        '<td style="padding:0.3rem;">' + (claudeResult ? Math.round(claudeResult.timing.totalMs) + 'ms' : '-') + '</td>' +
+        '</tr>');
+      var tessAvgConf = tesseractResult ? avgConfidenceOf(tesseractResult.words) : null;
+      compareRows.push('<tr style="border-bottom:1px solid var(--line);">' +
+        '<td style="padding:0.3rem; font-weight:700;">Tesseract (로컬)</td>' +
+        '<td style="padding:0.3rem;">' + (tesseractResult ? '✅ 성공' : '➖ 미실행') + '</td>' +
+        '<td style="padding:0.3rem; color:var(--muted);">' + (tesseractResult ? tesseractResult.words.map(function (w) { return w.text; }).join(', ') : '-') + '</td>' +
+        '<td style="padding:0.3rem;">' + (tesseractResult ? tesseractResult.words.length : '-') + '</td>' +
+        '<td style="padding:0.3rem; color:var(--muted);">' + (tessAvgConf != null ? Math.round(tessAvgConf) + '%' : '-') + '</td>' +
+        '<td style="padding:0.3rem;">' + (tesseractResult ? Math.round(tesseractResult.timing.totalMs) + 'ms' : '-') + '</td>' +
+        '</tr>');
+      document.getElementById('debugCompareTable').innerHTML = compareRows.join('');
+      document.getElementById('debugCompareNote').textContent =
+        '최종 채택: ' + (textResult.source === 'claude' ? 'Claude Vision' : 'Tesseract(폴백)') +
+        '\nClaude는 신뢰도 개념을 제공하지 않음(항상 "제공 안 됨")' +
+        '\n콘솔에 [비교] 태그로 누적 데이터 로그됨 (여러 사진 테스트 시 발표자료용으로 활용 가능)';
+
+      var faceTable = document.getElementById('debugFaceTable');
+      var faceRows = ['<tr style="text-align:left; border-bottom:1px solid var(--line);">' +
+        '<th style="padding:0.3rem;">#</th><th style="padding:0.3rem;">신뢰도</th><th style="padding:0.3rem;">크기(프레임대비%)</th>' +
+        '<th style="padding:0.3rem;">roll(기울기)</th><th style="padding:0.3rem;">yaw(근사, 좌우돌림)</th><th style="padding:0.3rem;">좌표(%)</th></tr>'];
+      faceResult.faces.forEach(function (f, idx) {
+        faceRows.push('<tr style="border-bottom:1px solid var(--line);">' +
+          '<td style="padding:0.3rem;">' + (idx + 1) + '</td>' +
+          '<td style="padding:0.3rem;">' + Math.round(f.confidence * 100) + '%</td>' +
+          '<td style="padding:0.3rem;">' + f.areaRatioPct.toFixed(1) + '%</td>' +
+          '<td style="padding:0.3rem; color:var(--muted);">' + f.rollDeg.toFixed(1) + '˚</td>' +
+          '<td style="padding:0.3rem; color:var(--muted);">' + f.yawDeg.toFixed(1) + '˚</td>' +
+          '<td style="padding:0.3rem; color:var(--muted);">' + f.xPct.toFixed(1) + ', ' + f.yPct.toFixed(1) + '</td>' +
+          '</tr>');
+      });
+      if (faceResult.faces.length === 0) {
+        faceRows.push('<tr><td style="padding:0.3rem; color:var(--muted);" colspan="6">감지된 얼굴 없음</td></tr>');
+      }
+      faceTable.innerHTML = faceRows.join('');
+
+      var ft = faceResult.timing;
+      document.getElementById('debugFaceTiming').textContent =
+        '총 처리시간: ' + Math.round(ft.totalMs) + 'ms\n' +
+        '  이미지 로드: ' + Math.round(ft.imageLoadMs) + 'ms\n' +
+        '  모델 준비(첫 실행 시 모델 다운로드 포함): ' + Math.round(ft.modelsReadyMs) + 'ms\n' +
+        '  얼굴 검출+랜드마크: ' + Math.round(ft.detectMs) + 'ms';
+
+      if (!tesseractResult) {
+        document.getElementById('debugRawText').textContent = '(Tesseract 미실행)';
+        document.getElementById('debugPreText').textContent = '(Tesseract 미실행)';
+        document.getElementById('debugTable').innerHTML = '';
+        document.getElementById('debugTiming').textContent = '';
+        return;
+      }
+
+      document.getElementById('debugRawImg').src = uploadedPhotoUrl;
+      document.getElementById('debugPreImg').src = tesseractResult.preprocessedDataUrl;
+      document.getElementById('debugRawText').textContent = tesseractResult.rawOcrText != null
+        ? (JSON.stringify(tesseractResult.rawOcrText) + ' (평균신뢰도 ' + Math.round(tesseractResult.rawOcrConfidence) + '%)')
+        : '(비교 실행 안 됨)';
+      document.getElementById('debugPreText').textContent =
+        JSON.stringify(tesseractResult.preprocessedOcrText) + ' (평균신뢰도 ' + Math.round(tesseractResult.preprocessedOcrConfidence) + '%)';
+
+      var table = document.getElementById('debugTable');
+      var rows = ['<tr style="text-align:left; border-bottom:1px solid var(--line);">' +
+        '<th style="padding:0.3rem;">최종 텍스트</th><th style="padding:0.3rem;">1차(전체)</th>' +
+        '<th style="padding:0.3rem;">2차(영역재인식)</th><th style="padding:0.3rem;">신뢰도</th><th style="padding:0.3rem;">좌표(%)</th></tr>'];
+      tesseractResult.words.forEach(function (w) {
+        rows.push('<tr style="border-bottom:1px solid var(--line);">' +
+          '<td style="padding:0.3rem;">' + w.text + '</td>' +
+          '<td style="padding:0.3rem; color:var(--muted);">' + (w.pass1Text || '-') + ' (' + Math.round(w.pass1Confidence) + '%)</td>' +
+          '<td style="padding:0.3rem; color:var(--muted);">' + (w.pass2Text || '-') + (w.pass2Confidence != null ? ' (' + Math.round(w.pass2Confidence) + '%)' : '') + '</td>' +
+          '<td style="padding:0.3rem;">' + Math.round(w.confidence) + '%</td>' +
+          '<td style="padding:0.3rem; color:var(--muted);">' + w.xPct.toFixed(1) + ', ' + w.yPct.toFixed(1) + '</td>' +
+          '</tr>');
+      });
+      table.innerHTML = rows.join('');
+
+      var t = tesseractResult.timing;
+      document.getElementById('debugTiming').textContent =
+        '총 처리시간: ' + Math.round(t.totalMs) + 'ms\n' +
+        '  이미지 로드: ' + Math.round(t.imageLoadMs) + 'ms\n' +
+        '  워커 준비(첫 실행 시 언어팩 다운로드 포함): ' + Math.round(t.workerReadyMs) + 'ms\n' +
+        '  전처리(흑백+대비강화): ' + Math.round(t.preprocessMs) + 'ms\n' +
+        '  1차 OCR(전체 이미지): ' + Math.round(t.pass1Ms) + 'ms\n' +
+        '  2차 OCR(영역 재인식, ' + tesseractResult.words.length + '개 영역 합계): ' + Math.round(t.pass2TotalMs) + 'ms' +
+        (tesseractResult.droppedCandidateCount > 0 ? '\n  ⚠ 후보 ' + tesseractResult.droppedCandidateCount + '개는 상한(6개) 초과로 재인식 생략됨' : '');
+    }
+
+    function renderResult(r, faceResult, ocrResult) {
+      document.getElementById('resultThumb').src = uploadedPhotoUrl;
+      renderPins(faceResult, ocrResult);
+
+      var badge = document.getElementById('riskBadge');
+      badge.textContent = r.grade;
+      badge.className = 'risk-chip risk-' + r.grade;
+      document.getElementById('riskScore').textContent = r.score;
+      setGauge(r.score);
+
+      document.getElementById('locationScore').textContent = r.locationScore;
+      document.getElementById('locationBar').style.width = r.locationScore + '%';
+      document.getElementById('locationEvidence').textContent = r.locationEvidence;
+
+      var flag = document.getElementById('scheduleFlag');
+      flag.textContent = r.scheduleOn ? '있음' : '없음';
+      flag.className = r.scheduleOn ? 'schedule-flag on' : 'schedule-flag';
+      document.getElementById('scheduleEvidence').textContent = r.scheduleEvidence;
+      document.getElementById('summaryText').textContent = r.summary;
+
+      var actionList = document.getElementById('actionList');
+      actionList.innerHTML = '';
+      r.actions.forEach(function (a) {
+        var li = document.createElement('li');
+        li.textContent = a;
+        actionList.appendChild(li);
+      });
+
+      var captionList = document.getElementById('captionSuggestions');
+      captionList.innerHTML = '';
+      r.captionSuggestions.forEach(function (c) {
+        var li = document.createElement('li');
+        li.textContent = c;
+        captionList.appendChild(li);
+      });
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', function () {
+      if (!photoInput.files[0]) {
+        alert('사진을 먼저 선택해주세요 (목업이라 실제 분석은 하지 않지만, 흐름 확인을 위해 필요해요).');
+        return;
+      }
+      var inputs = {
+        caption: document.getElementById('captionInput').value,
+        privacySetting: document.getElementById('privacySetting').value,
+        uploadTiming: document.getElementById('uploadTiming').value,
+        companions: document.getElementById('companions').value,
+        backgroundNotes: document.getElementById('backgroundNotes').value,
+      };
+
+      document.getElementById('scanImg').src = uploadedPhotoUrl;
+      document.getElementById('stepPast').style.display = pastCount > 0 ? 'block' : 'none';
+      document.getElementById('debugPanel').style.display = 'none';
+      showScreen('analyzing');
+
+      var stepIds = ['stepFace', 'stepOcr'];
+      if (pastCount > 0) stepIds.push('stepPast');
+      stepIds.push('stepClaude');
+      var steps = stepIds.map(function (id) { return document.getElementById(id); });
+
+      function activateStep(idx) {
+        steps.forEach(function (s) { s.classList.remove('active'); });
+        if (steps[idx]) steps[idx].classList.add('active');
+      }
+
+      var submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+
+      (async function () {
+        try {
+          activateStep(0); // 얼굴 분석 — 여기서부터 실제 face-api.js 처리
+          var faceResult = await runFaceDetectionPipeline(uploadedPhotoUrl);
+
+          activateStep(1); // 텍스트 감지 — Claude Vision 우선, 실패 시 Tesseract로 자동 전환
+          var textResult = await runTextDetectionPipeline(uploadedPhotoUrl, faceResult.faces);
+          var ocrResult = textResult.primary;
+
+          var nextIdx = 2;
+          if (pastCount > 0) {
+            activateStep(2); // 과거 게시물 분석 — 아직 mock
+            await sleep(600);
+            nextIdx = 3;
+          }
+          activateStep(nextIdx); // Claude 종합 판단 — 아직 mock
+          await sleep(500);
+
+          var result = buildMockDiagnosis(inputs, ocrResult);
+          renderResult(result, faceResult, ocrResult);
+          if (OCR_DEBUG) renderDebugPanel(faceResult, textResult);
+          showScreen('result');
+        } catch (err) {
+          console.error('[OCR/FACE] 처리 중 오류 발생', err);
+          alert('사진을 분석하는 중 문제가 발생했어요. 콘솔(F12)에서 자세한 내용을 확인해주세요.\n\n' + err.message);
+          showScreen('form');
+        } finally {
+          submitBtn.disabled = false;
+        }
+      })();
+    });
+
+    document.getElementById('goCorrectBtn').addEventListener('click', function () {
+      document.getElementById('previewBefore').src = uploadedPhotoUrl;
+      selectMethod('crop');
+      showScreen('correct');
+    });
+    document.getElementById('skipCorrectBtn').addEventListener('click', function () { showScreen('verify'); renderVerify(0); });
+    document.getElementById('backToResultBtn').addEventListener('click', function () { showScreen('result'); });
+    document.getElementById('goVerifyBtn').addEventListener('click', function () { renderVerify(0); showScreen('verify'); });
+
+    var methodCards = document.querySelectorAll('.method-card');
+    var previewFrame = document.getElementById('previewFrame');
+    var cropGuard = document.getElementById('cropGuard');
+    var previewCaption = document.getElementById('previewCaption');
+    var editInstruction = document.getElementById('editInstruction');
+
+    function selectMethod(method) {
+      methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
+      previewFrame.querySelectorAll('img.after-img, div.sticker').forEach(function (el) { el.remove(); });
+      cropGuard.style.display = 'none';
+      editInstruction.style.display = 'none';
+
+      var before = document.getElementById('previewBefore');
+      if (method === 'crop') {
+        cropGuard.style.display = 'block';
+        var after = before.cloneNode();
+        after.className = 'after-img after-crop-img';
+        previewFrame.appendChild(after);
+        previewCaption.textContent = '점선 안쪽만 남기고 자연스럽게 잘라내요 — 아이는 그대로, 가장자리 텍스트만 사라져요.';
+      } else if (method === 'blur') {
+        var after2 = before.cloneNode();
+        after2.className = 'after-img after-blur';
+        previewFrame.appendChild(after2);
+        previewCaption.textContent = '인물모드처럼 배경만 흐려지고, 아이 얼굴은 선명하게 유지돼요.';
+      } else if (method === 'ai') {
+        var after3 = before.cloneNode();
+        after3.className = 'after-img after-blur';
+        previewFrame.appendChild(after3);
+        previewCaption.textContent = 'flux-kontext-pro가 배경을 통째로 자연스럽게 새로 생성해요.';
+        editInstruction.style.display = 'block';
+      } else if (method === 'sticker') {
+        var sticker = document.createElement('div');
+        sticker.className = 'sticker';
+        sticker.textContent = '🌟';
+        previewFrame.appendChild(sticker);
+        previewCaption.textContent = '텍스트가 있던 자리만 귀여운 스티커로 자연스럽게 가려요.';
+      }
+    }
+    methodCards.forEach(function (card) {
+      card.addEventListener('click', function () { selectMethod(card.dataset.method); });
+    });
+
+    var verifyStates = [
+      {
+        stamp: 'ok', icon: '✓', text: '검증완료',
+        tags: [['위험요소 해결됨', 'good'], ['신규위험 없음', 'good'], ['인물보존 정상', 'good']],
+        detail: '✅ 검증 완료: 배경의 간판/이름표 텍스트가 더 이상 보이지 않으며, 새로 생성된 배경에도 특정 가능한 요소가 없습니다. 인물의 얼굴·포즈·옷차림은 원본과 동일하게 유지됐어요.',
+      },
+      {
+        stamp: 'warn', icon: '⚠', text: '재검토 필요',
+        tags: [['위험요소 부분해결', 'bad'], ['신규위험 없음', 'good'], ['인물보존 정상', 'good']],
+        detail: '⚠️ 재검토 필요: 블러 처리는 됐지만 강도가 약해 표지판 글자 일부가 여전히 읽힙니다. 블러 강도를 높이거나 스마트 크롭으로 전환하는 걸 권장해요.',
+      },
+      {
+        stamp: 'warn', icon: '⚠', text: '재검토 필요',
+        tags: [['위험요소 해결됨', 'good'], ['신규위험 없음', 'good'], ['인물보존 변형의심', 'bad']],
+        detail: '⚠️ 재검토 필요: 배경 교체 과정에서 아이의 얼굴 윤곽이 미세하게 변형되었습니다. 프라이버시를 위해 아이 모습이 바뀌면 이 사진은 쓸 수 없어요 — 크롭 방식으로 다시 시도하는 걸 권장해요.',
+      },
+    ];
+    var verifyIndex = 0;
+    function renderVerify(idx) {
+      verifyIndex = idx % verifyStates.length;
+      var v = verifyStates[verifyIndex];
+      var stampEl = document.getElementById('verifyStamp');
+      stampEl.classList.toggle('warn', v.stamp === 'warn');
+      stampEl.querySelector('.s-icon').textContent = v.icon;
+      stampEl.querySelector('.s-text').textContent = v.text;
+
+      var tagsEl = document.getElementById('verifyTags');
+      tagsEl.innerHTML = '';
+      v.tags.forEach(function (t) {
+        var span = document.createElement('span');
+        span.className = 'verify-tag ' + t[1];
+        span.textContent = t[0];
+        tagsEl.appendChild(span);
+      });
+
+      var detailEl = document.getElementById('verifyDetail');
+      detailEl.classList.toggle('warn', v.stamp === 'warn');
+      detailEl.textContent = v.detail;
+    }
+    document.getElementById('cycleVerifyBtn').addEventListener('click', function () { renderVerify(verifyIndex + 1); });
+
+    document.getElementById('restartBtn').addEventListener('click', function () {
+      photoInput.value = '';
+      pastInput.value = '';
+      pastCount = 0;
+      fileCount.style.display = 'none';
+      pastDropLabel.textContent = '스크린샷을 선택하면 반복 패턴까지 짚어드려요';
+      polaroidPreview.style.display = 'none';
+      fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
+      document.getElementById('captionInput').value = '';
+      document.getElementById('companions').value = '';
+      document.getElementById('backgroundNotes').value = '';
+      document.getElementById('debugPanel').style.display = 'none';
+      showScreen('form');
+    });
+
+    showScreen('form');
+  })();
+</script>

@@ -1,0 +1,11 @@
+{
+  "name": "anshim-album-regression-tests",
+  "private": true,
+  "description": "안심앨범 - OCR/얼굴분석 회귀 테스트 (Playwright 기반)",
+  "scripts": {
+    "test": "node regression.js"
+  },
+  "dependencies": {
+    "playwright": "^1.55.1"
+  }
+}

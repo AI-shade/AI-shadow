@@ -1,0 +1,33 @@
+# 환경변수 / 실제 API 키 — 절대 커밋 금지
+.env
+server/.env
+**/.env
+!.env.example
+!**/.env.example
+
+# 의존성
+node_modules/
+**/node_modules/
+
+# 서버 로그
+server/server.log
+*.log
+
+# OS 잡파일
+.DS_Store
+Thumbs.db
+
+# 에디터 설정
+.vscode/
+.idea/
+
+# Claude Code 로컬 세션 설정 (개인용, 공유 불필요)
+.claude/
+
+# 실제 인물 얼굴이 포함된 검증용 사진 — 본인/지인 동의로 로컬 검증에만 사용,
+# 저장소에는 영구 보관하지 않음 (README 13번 섹션에 검증 결과만 기록)
+flux검증.jpg
+flux검증_비교.png
+flux검증_처리결과.png
+flux검증_클로즈업.png
+flux검증_클로즈업_인물.png
