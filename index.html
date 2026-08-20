@@ -955,6 +955,145 @@
     }
 
     // 사진 1장을 받아 전처리 → 1차 OCR(전체) → 텍스트 후보 영역 크롭·확대 → 2차 OCR(재인식) 파이프라인 실행
+    // ===== Claude 힌트 기반 텍스트 위치 확정 =====
+    // 문제: Claude Vision은 이 사진에서 텍스트 7개를 정확히 읽지만, 위치는 근사치라
+    // 크롭/마스크에 쓸 수 없다. 반대로 Tesseract는 위치가 정확하지만 사진 전체에서
+    // 작은 글자를 스스로 찾아내지 못해 1개만 잡았다.
+    //
+    // PSM 6종(SINGLE_COLUMN/SINGLE_BLOCK/SPARSE_TEXT/AUTO 등)·이미지 반전·이진화
+    // 임계값을 바꿔가며 Tesseract가 스스로 다 찾게 만들려는 시도는 전부 실패했다.
+    // 풀린 방법은 둘의 역할을 나누는 것이었다 —
+    //   Claude: 무엇이 어디쯤 있는지 / Tesseract: 그 근처의 정확한 좌표
+    //
+    // 핵심: Tesseract가 글자를 틀리게 읽어도 상관없다. 실제로 전화번호를
+    // "10 A0506-609 1"로 읽지만, 글자는 Claude 것을 쓰고 좌표만 가져다 쓰기 때문.
+    var HINT_CROP_W_PCT = 40;        // 힌트 주변을 오려낼 범위 (근사 위치가 어긋나도 담기게 넉넉히)
+    var HINT_CROP_H_PCT = 14;
+    var HINT_ZOOM = 4;               // 작은 글자는 확대해야 인식됨
+    var HINT_BINARY_THRESHOLD = 150; // 실측상 110보다 150이 잘 나왔음
+    var HINT_MIN_WORD_CONFIDENCE = 20;
+    // 좌표를 끝내 못 찾았을 때 쓰는 근사 박스 크기. 실제보다 넉넉하게 잡는다 —
+    // 아이 사진 앱에서는 위험요소를 놓치는 것보다 과하게 가리는 쪽이 낫다.
+    var APPROX_W_PCT = 26;
+    var APPROX_H_PCT = 12;
+
+    // 힌트 주변을 오려 확대하고, 밝은 글씨/어두운 배경을 검은 글씨/흰 바탕으로 뒤집는다
+    // (Tesseract는 흰 바탕에 검은 글씨를 기대한다 — 야간 간판 사진은 정반대다)
+    function cropRegionForHint(img, hint) {
+      var W = img.naturalWidth, H = img.naturalHeight;
+      var cw = W * HINT_CROP_W_PCT / 100, ch = H * HINT_CROP_H_PCT / 100;
+      var cx = Math.max(0, Math.min(W - cw, W * hint.xPct / 100 - cw / 2));
+      var cy = Math.max(0, Math.min(H - ch, H * hint.yPct / 100 - ch / 2));
+
+      var c = document.createElement('canvas');
+      c.width = Math.round(cw * HINT_ZOOM);
+      c.height = Math.round(ch * HINT_ZOOM);
+      var x = c.getContext('2d');
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(img, cx, cy, cw, ch, 0, 0, c.width, c.height);
+
+      var d = x.getImageData(0, 0, c.width, c.height);
+      for (var i = 0; i < d.data.length; i += 4) {
+        var g = 0.299 * d.data[i] + 0.587 * d.data[i + 1] + 0.114 * d.data[i + 2];
+        var v = 255 - (g < HINT_BINARY_THRESHOLD ? 0 : 255);
+        d.data[i] = d.data[i + 1] = d.data[i + 2] = v;
+      }
+      x.putImageData(d, 0, 0);
+      return { canvas: c, cx: cx, cy: cy, scale: HINT_ZOOM };
+    }
+
+    async function locateTextByHint(img, worker, hint) {
+      var region = cropRegionForHint(img, hint);
+      await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT });
+      var r = await worker.recognize(region.canvas);
+
+      // 인식된 단어들의 bbox를 전부 감싸는 박스를 만들어 원본 좌표계로 환산
+      var box = null;
+      ((r.data && r.data.lines) || []).forEach(function (line) {
+        (line.words || []).forEach(function (w) {
+          if (!w.text || !w.text.trim() || w.confidence <= HINT_MIN_WORD_CONFIDENCE) return;
+          var bb = {
+            x0: region.cx + w.bbox.x0 / region.scale, y0: region.cy + w.bbox.y0 / region.scale,
+            x1: region.cx + w.bbox.x1 / region.scale, y1: region.cy + w.bbox.y1 / region.scale,
+          };
+          box = box ? {
+            x0: Math.min(box.x0, bb.x0), y0: Math.min(box.y0, bb.y0),
+            x1: Math.max(box.x1, bb.x1), y1: Math.max(box.y1, bb.y1),
+          } : bb;
+        });
+      });
+      return box;
+    }
+
+    // Claude가 읽은 텍스트 중 "Tesseract가 이미 위치를 아는 것"을 골라낸다.
+    // 전체 스캔이 잘 잡는 큰 간판까지 힌트 방식으로 다시 찾으면 손해다 —
+    // 힌트 크롭 창(가로 40%)보다 간판이 넓어서 일부만 잘려 담기기 때문.
+    function normalizeForMatch(t) {
+      return String(t || '').replace(/[\s\-_.,·]/g, '');
+    }
+
+    function isAlreadyLocated(hint, located) {
+      return (located || []).some(function (w) {
+        // (1) 이미 찾은 박스 안에 힌트 위치가 들어오는가 (여유 2%p)
+        var inside = Math.abs(w.xPct - hint.xPct) <= (w.wPct / 2 + 2) &&
+                     Math.abs(w.yPct - hint.yPct) <= (w.hPct / 2 + 2);
+        if (inside) return true;
+        // (2) 글자가 겹치는가 — Tesseract가 "교지 누아블룸 _"처럼 지저분하게 읽어도
+        //     Claude의 "누아블룸"과 이어붙여 비교하면 같은 대상임을 알 수 있다
+        var a = normalizeForMatch(w.text), b = normalizeForMatch(hint.text);
+        return a.length >= 2 && b.length >= 2 && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0);
+      });
+    }
+
+    function pickUnlocatedHints(claudeWords, locatedWords) {
+      return (claudeWords || []).filter(function (h) {
+        return h && h.text && !isAlreadyLocated(h, locatedWords);
+      });
+    }
+
+    async function locateTextsByHints(imgUrl, hints) {
+      if (!hints || hints.length === 0) return [];
+      var img = await loadImage(imgUrl);
+      var W = img.naturalWidth, H = img.naturalHeight;
+      var worker = await getOcrWorker();
+
+      var out = [];
+      for (var i = 0; i < hints.length; i++) {
+        var h = hints[i];
+        var box = null;
+        try {
+          box = await locateTextByHint(img, worker, h);
+        } catch (e) {
+          console.warn('[위치확정] "' + h.text + '" 실패 — 근사 위치로 대체:', e.message);
+        }
+
+        if (box) {
+          out.push({
+            text: h.text, type: h.type, confidence: h.confidence,
+            xPct: (box.x0 + box.x1) / 2 / W * 100,
+            yPct: (box.y0 + box.y1) / 2 / H * 100,
+            wPct: (box.x1 - box.x0) / W * 100,
+            hPct: (box.y1 - box.y0) / H * 100,
+            approximate: false,
+          });
+        } else {
+          // 못 찾아도 버리지 않는다. Claude가 "여기 위험한 게 있다"고 알려준 것을
+          // 조용히 놓치는 것보다, 근사 위치를 넉넉히 덮는 쪽이 안전하다.
+          out.push({
+            text: h.text, type: h.type, confidence: h.confidence,
+            xPct: h.xPct, yPct: h.yPct,
+            wPct: Math.max(h.wPct || 0, APPROX_W_PCT),
+            hPct: Math.max(h.hPct || 0, APPROX_H_PCT),
+            approximate: true,
+          });
+        }
+      }
+
+      var precise = out.filter(function (w) { return !w.approximate; }).length;
+      console.log('[위치확정] 힌트 ' + hints.length + '개 → 정밀 ' + precise + '개, 근사 ' + (out.length - precise) + '개');
+      return out;
+    }
+
     async function runOcrPipeline(imgUrl) {
       var timing = {};
       var t0 = performance.now();
@@ -2500,11 +2639,23 @@
       try {
         var localOcr = await runOcrPipeline(uploadedPhotoUrl);
         correctionTextWords = localOcr.words;
-        var claudeCount = (lastOcrResult && lastOcrResult.words || []).length;
-        if (claudeCount > correctionTextWords.length) {
-          console.warn('[2단계보정] Claude Vision은 텍스트 ' + claudeCount + '개를 읽었지만, 위치 계산용 Tesseract는 ' +
-            correctionTextWords.length + '개만 찾음 — 나머지는 이번 보정에서 위치를 몰라 처리 못 함.');
+
+        // Tesseract 전체 스캔이 놓친 텍스트를, Claude가 준 근사 위치를 단서로 다시 찾는다.
+        // (예전에는 여기서 "위치를 몰라 처리 못 함"이라고 경고만 찍고 포기했다)
+        var claudeWords = (lastOcrResult && lastOcrResult.words) || [];
+        var missing = pickUnlocatedHints(claudeWords, correctionTextWords);
+        if (missing.length > 0) {
+          console.log('[2단계보정] Claude가 읽은 ' + claudeWords.length + '개 중 ' + missing.length +
+            '개는 전체 스캔이 위치를 못 찾음 — 근사 위치를 단서로 재탐색합니다:',
+            missing.map(function (w) { return '"' + w.text + '"'; }).join(', '));
+          try {
+            var recovered = await locateTextsByHints(uploadedPhotoUrl, missing);
+            correctionTextWords = correctionTextWords.concat(recovered);
+          } catch (e) {
+            console.warn('[2단계보정] 재탐색 실패 — 전체 스캔 결과만으로 진행:', e.message);
+          }
         }
+        console.log('[2단계보정] 보정에 쓸 텍스트 최종 ' + correctionTextWords.length + '개');
       } catch (e) {
         console.warn('[2단계보정] 위치 재계산 실패 — 빈 목록으로 진행:', e.message);
         correctionTextWords = [];
@@ -2918,6 +3069,10 @@
       roundUpTo32: roundUpTo32,
       buildInpaintMask: buildInpaintMask,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
+      runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
+      locateTextsByHints: locateTextsByHints,
+      pickUnlocatedHints: pickUnlocatedHints,
+      applyStickers: applyStickers,
     };
   })();
 </script>
