@@ -1,88 +1,71 @@
 <meta charset="UTF-8">
 <title>안심앨범</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  /* =========================================================================
-     안심앨범 — 시각 언어 (디자인시안.jpg / 가이드라인.md 기준)
-     크림색 종이 위 굵은 검정 산세리프, 여백 크게, 강조는 마젠타 한 곳.
-     흰색(--card)은 '사진이 얹히는 면'에만 쓴다 — 크림이 화면의 80%를 유지하도록.
-     ========================================================================= */
   :root {
-    --paper: #f0f0e0;        /* 크림 종이 — 화면 비중 80% */
-    --paper-deep: #e4e4d2;   /* 크림 한 단계 아래 (트랙·스켈레톤) */
-    --card: #ffffff;         /* 사진 마운트 전용 */
-    --ink: #000000;          /* 순검정 (회색 아님) */
-    --muted: #4a4a42;        /* 캡션 — 크림 위 7.65:1 */
-    --line: #e0e0d0;
-    --accent: #e31790;       /* 마젠타 — 화면당 한 곳. 위에 얹는 글씨는 검정(4.79:1) */
-
-    /* 구 토큰 유지: 마크업 인라인 스타일과 JS가 var(--...)로 참조하므로 이름을 지우지 않고 값만 교체 */
-    --brand: #000000;
-    --brand-deep: #000000;
-    --brand-soft: #e4e4d2;
-    --gold: #000000;
-    --gold-soft: #e4e4d2;
-
-    /* 위험 등급 — 의미 있는 색 유지 (가이드라인 2절 지정값, 크림 배경 기준 대비비) */
-    --risk-high: #8a1a12;    /* 8.16:1 */
-    --risk-mid:  #7a5200;    /* 6.01:1 */
-    --risk-low:  #1b5e3f;    /* 6.71:1 */
-    --risk-high-soft: #e4e4d2;
-    --risk-mid-soft: #e4e4d2;
-    --risk-low-soft: #e4e4d2;
-
-    --focus: #000000;
-    --font-body: 'Pretendard Variable', 'Pretendard', 'Malgun Gothic', '맑은 고딕',
-      -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto,
-      'Helvetica Neue', Arial, sans-serif;
-    --font-display: var(--font-body); /* 명조(바탕) 계열 제거 — 산세리프로 통일 */
-    --shadow-card: none;              /* 시안은 평평함. 그림자 대신 1px 실선 */
+    --paper: #eef1ec;
+    --paper-deep: #e2e7e0;
+    --card: #fffefb;
+    --ink: #1c2b28;
+    --muted: #5b6b63;
+    --line: #d3dbd3;
+    --brand: #2f5d54;
+    --brand-deep: #1f433c;
+    --brand-soft: #e2ece7;
+    --gold: #a97a2c;
+    --gold-soft: #f3e6cc;
+    --risk-high: #ad3b33;
+    --risk-high-soft: #f5ddd9;
+    --risk-mid: #9c6714;
+    --risk-mid-soft: #f2e2c6;
+    --risk-low: #23805a;
+    --risk-low-soft: #dbeae0;
+    --focus: #2f5d54;
+    --font-display: 'Batang', 'BatangChe', '바탕', 'Nanum Myeongjo', serif;
+    --font-body: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+    --shadow-card: 0 8px 28px -10px rgba(20, 40, 35, 0.22), 0 1px 2px rgba(20, 40, 35, 0.08);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      --paper: #12120c;
-      --paper-deep: #1e1e15;
-      --card: #24241a;
-      --ink: #f0f0e0;
-      --muted: #a8a89a;
-      --line: #35352a;
-      --brand: #f0f0e0;
-      --brand-deep: #f0f0e0;
-      --brand-soft: #1e1e15;
-      --gold: #f0f0e0;
-      --gold-soft: #1e1e15;
-      --risk-high: #f09a8e;
-      --risk-mid:  #e3b24f;
-      --risk-low:  #74cfa2;
-      --risk-high-soft: #1e1e15;
-      --risk-mid-soft: #1e1e15;
-      --risk-low-soft: #1e1e15;
-      --focus: #f0f0e0;
-      --shadow-card: none;
+      --paper: #101d19;
+      --paper-deep: #0b1512;
+      --card: #182722;
+      --ink: #e9efeb;
+      --muted: #9db2a8;
+      --line: #2b3d36;
+      --brand: #7cbaa6;
+      --brand-deep: #a3d3c2;
+      --brand-soft: #21332c;
+      --gold: #dcae64;
+      --gold-soft: #33291a;
+      --risk-high: #e2857a;
+      --risk-high-soft: #3a2320;
+      --risk-mid: #e2b467;
+      --risk-mid-soft: #362c1b;
+      --risk-low: #6cc99b;
+      --risk-low-soft: #1c3227;
+      --shadow-card: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
     }
   }
   :root[data-theme='dark'] {
-    --paper: #12120c;
-    --paper-deep: #1e1e15;
-    --card: #24241a;
-    --ink: #f0f0e0;
-    --muted: #a8a89a;
-    --line: #35352a;
-    --brand: #f0f0e0;
-    --brand-deep: #f0f0e0;
-    --brand-soft: #1e1e15;
-    --gold: #f0f0e0;
-    --gold-soft: #1e1e15;
-    --risk-high: #f09a8e;
-    --risk-mid:  #e3b24f;
-    --risk-low:  #74cfa2;
-    --risk-high-soft: #1e1e15;
-    --risk-mid-soft: #1e1e15;
-    --risk-low-soft: #1e1e15;
-    --focus: #f0f0e0;
-    --shadow-card: none;
+    --paper: #101d19;
+    --paper-deep: #0b1512;
+    --card: #182722;
+    --ink: #e9efeb;
+    --muted: #9db2a8;
+    --line: #2b3d36;
+    --brand: #7cbaa6;
+    --brand-deep: #a3d3c2;
+    --brand-soft: #21332c;
+    --gold: #dcae64;
+    --gold-soft: #33291a;
+    --risk-high: #e2857a;
+    --risk-high-soft: #3a2320;
+    --risk-mid: #e2b467;
+    --risk-mid-soft: #362c1b;
+    --risk-low: #6cc99b;
+    --risk-low-soft: #1c3227;
+    --shadow-card: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
   }
 
   * { box-sizing: border-box; }
@@ -91,16 +74,17 @@
     margin: 0;
     font-family: var(--font-body);
     background: var(--paper);
+    background-image: radial-gradient(circle at 12% 6%, var(--paper-deep) 0%, transparent 42%),
+      radial-gradient(circle at 92% 92%, var(--paper-deep) 0%, transparent 38%);
     color: var(--ink);
     display: flex;
     justify-content: center;
-    padding: 3.5rem 1.4rem 6rem;
-    -webkit-font-smoothing: antialiased;
+    padding: 2.5rem 1rem 4.5rem;
   }
-  main { width: 100%; max-width: 620px; }
+  main { width: 100%; max-width: 600px; }
 
   a { color: inherit; }
-  ::selection { background: var(--accent); color: #000; }
+  ::selection { background: var(--brand-soft); }
   button, input, select, textarea { font-family: inherit; }
   *:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
@@ -108,303 +92,195 @@
     *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
   }
 
-  /* ---- 모노라인 아이콘: 굵기 일정한 검정 선, 채우기 없음 (가이드라인 5절) ---- */
-  .mono-icon {
-    display: block; width: 100%; height: 100%;
-    fill: none; stroke: currentColor; stroke-width: 2.6;
-    stroke-linecap: round; stroke-linejoin: round;
-  }
-
-  /* ---- 마스트헤드: 왼쪽으로 몰고 오른쪽을 비움 (비대칭) ---- */
-  .brand-mark { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 1.1rem; }
+  .brand-mark { display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
   .brand-mark .badge-icon {
-    width: 34px; height: 34px; border-radius: 0; background: none; color: var(--ink);
-    display: block; padding: 0;
+    width: 36px; height: 36px; border-radius: 11px;
+    background: var(--brand); color: var(--card);
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
   }
-  header.page-header {
-    text-align: left; margin-bottom: 2.6rem;
-    display: grid; grid-template-columns: 1fr auto; column-gap: 1.5rem; align-items: start;
-    border-bottom: 1px solid var(--ink); padding-bottom: 1.4rem;
-  }
+  header.page-header { text-align: center; margin-bottom: 1.6rem; }
   header.page-header h1 {
-    grid-column: 1; grid-row: 1;
-    font-family: var(--font-display);
-    font-size: clamp(2.15rem, 9vw, 2.7rem);
-    font-weight: 800; letter-spacing: -0.035em; line-height: 0.95;
-    margin: 0; color: var(--ink); text-wrap: balance;
+    font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; margin: 0;
+    color: var(--brand-deep); text-wrap: balance;
   }
-  header.page-header p {
-    grid-column: 1; grid-row: 2;
-    margin: 0.85rem 0 0; color: var(--ink); font-size: 0.95rem; line-height: 1.6; max-width: 28ch;
-  }
-  /* 시안의 크레딧 블록: 영문은 대문자 + 넓은 자간, 한글은 그 아래 잔글씨 */
+  header.page-header p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.92rem; }
   header.page-header .subhead {
-    grid-column: 2; grid-row: 1; justify-self: end;
-    margin: 0.5rem 0 0; text-align: right; white-space: nowrap;
-    display: block; background: none; padding: 0; border-radius: 0; max-width: none;
-  }
-  header.page-header .subhead .lat {
-    display: block; font-size: 0.63rem; font-weight: 800; color: var(--ink);
-    text-transform: uppercase; letter-spacing: 0.14em;
-  }
-  header.page-header .subhead .ko {
-    display: block; margin-top: 0.3rem; font-size: 0.66rem; font-weight: 600;
-    letter-spacing: 0.02em; color: var(--muted);
-  }
-  @media (max-width: 460px) {
-    header.page-header { grid-template-columns: 1fr; }
-    header.page-header .subhead { grid-column: 1; grid-row: 3; justify-self: start; text-align: left; margin-top: 1.1rem; }
+    margin-top: 0.6rem; font-size: 0.74rem; color: var(--muted);
+    display: inline-flex; gap: 0.4rem; align-items: center;
+    background: var(--brand-soft); padding: 0.25rem 0.7rem; border-radius: 999px;
   }
 
-  /* ---- 진행 단계: 크레딧 한 줄처럼 왼쪽 정렬, 각진 번호 ---- */
-  .stepper { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 2.8rem; user-select: none; flex-wrap: wrap; row-gap: 0.5rem; }
-  .stepper .step { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; }
+  .stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 1.6rem; user-select: none; flex-wrap: wrap; }
+  .stepper .step { display: flex; align-items: center; gap: 0.45rem; color: var(--muted); font-size: 0.78rem; font-weight: 700; }
   .stepper .dot {
-    width: 22px; height: 22px; border-radius: 0; background: transparent; border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 800; color: var(--muted);
-    transition: background 0.25s, border-color 0.25s, color 0.25s;
+    width: 24px; height: 24px; border-radius: 50%; background: var(--card); border: 1.5px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-size: 0.72rem; color: var(--muted);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
   }
-  .stepper .step.done .dot { background: transparent; border-color: var(--ink); color: var(--ink); }
-  .stepper .step.active .dot { background: var(--ink); border-color: var(--ink); color: var(--paper); box-shadow: none; }
+  .stepper .step.done .dot { background: var(--brand); border-color: var(--brand); color: var(--card); }
+  .stepper .step.active .dot { background: var(--brand-deep); border-color: var(--brand-deep); color: var(--card); box-shadow: 0 0 0 4px var(--brand-soft); }
   .stepper .step.active span.label, .stepper .step.done span.label { color: var(--ink); }
-  .stepper .connector { width: 30px; height: 1px; background: var(--line); margin: 0 0.55rem; }
-  .stepper .connector.filled { background: var(--ink); }
+  .stepper .connector { width: 22px; height: 1.5px; background: var(--line); margin: 0 0.3rem; }
+  .stepper .connector.filled { background: var(--brand); }
 
-  /* ---- 카드: 그림자 없음, 각진 모서리, 여백 크게. 배경은 크림 유지(흰색은 사진용) ---- */
-  .card {
-    background: var(--paper); border: 1px solid var(--ink); border-radius: 2px;
-    padding: 2.4rem 2.1rem; box-shadow: var(--shadow-card);
-  }
-  @media (max-width: 460px) { .card { padding: 1.6rem 1.25rem; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1.85rem; box-shadow: var(--shadow-card); }
 
-  .field { margin-bottom: 1.6rem; }
-  .field label {
-    display: block; font-size: 0.72rem; font-weight: 700; margin-bottom: 0.5rem;
-    letter-spacing: 0.08em; color: var(--ink);
-  }
-  .field .hint { font-weight: 400; color: var(--muted); font-size: 0.7rem; margin-left: 0.4rem; letter-spacing: 0; }
+  .field { margin-bottom: 1.1rem; }
+  .field label { display: block; font-size: 0.83rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .field .hint { font-weight: 400; color: var(--muted); font-size: 0.75rem; margin-left: 0.3rem; }
   input[type='text'], textarea, select {
-    width: 100%; padding: 0.7rem 0.8rem; border: 1px solid var(--line); border-radius: 2px;
-    font-size: 0.95rem; font-family: inherit; background: var(--card); color: var(--ink);
+    width: 100%; padding: 0.62rem 0.72rem; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 0.92rem; font-family: inherit; background: var(--paper); color: var(--ink);
   }
-  input[type='text']:focus, textarea:focus, select:focus { border-color: var(--ink); }
-  ::placeholder { color: var(--muted); opacity: 0.75; }
-  textarea { resize: vertical; min-height: 3.4rem; line-height: 1.6; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  textarea { resize: vertical; min-height: 3.1rem; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
 
   .drop-zone {
-    background: transparent; border: 1.5px dashed var(--ink); border-radius: 2px; padding: 1.5rem 1.2rem;
-    text-align: left; cursor: pointer; position: relative; color: var(--muted); font-size: 0.85rem;
-    transition: background 0.15s;
+    background: var(--paper); border: 1.5px dashed var(--line); border-radius: 13px; padding: 1.2rem 1rem;
+    text-align: center; cursor: pointer; position: relative; color: var(--muted); font-size: 0.84rem;
+    transition: border-color 0.15s, background 0.15s;
   }
-  .drop-zone:hover { border-color: var(--ink); background: var(--paper-deep); }
+  .drop-zone:hover { border-color: var(--brand); background: var(--brand-soft); }
   .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-  .drop-zone .icon { display: block; width: 30px; height: 30px; margin: 0 0 0.7rem; color: var(--ink); font-size: 0; }
-  .drop-zone.small { padding: 1rem 1.2rem; }
+  .drop-zone .icon { font-size: 1.3rem; display: block; margin-bottom: 0.25rem; }
+  .drop-zone.small { padding: 0.85rem 1rem; }
 
-  /* 사진 마운트: 흰 종이. 회전·그림자 없이 평평하게. */
   .polaroid {
-    background: var(--card); padding: 0.6rem 0.6rem 0.9rem; border-radius: 2px;
-    box-shadow: none; transform: none; margin: 1.1rem 0 0; max-width: 240px;
+    background: var(--card); padding: 0.55rem 0.55rem 1.5rem; border-radius: 4px;
+    box-shadow: 0 10px 22px -10px rgba(20, 40, 35, 0.4); transform: rotate(-1deg); margin: 0.9rem auto 0; max-width: 240px;
     border: 1px solid var(--line);
   }
-  .polaroid img { width: 100%; display: block; border-radius: 0; }
-  .polaroid .cap {
-    font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
-    color: var(--muted); text-align: left; margin-top: 0.55rem;
-  }
+  .polaroid img { width: 100%; display: block; border-radius: 2px; }
+  .polaroid .cap { font-family: var(--font-display); font-size: 0.76rem; color: var(--muted); text-align: center; margin-top: 0.45rem; }
 
-  /* ---- 버튼 ---- */
   button.primary {
-    width: 100%; padding: 0.95rem; background: var(--accent); color: #000;
-    border: 2px solid var(--ink); border-radius: 2px;
-    font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em; cursor: pointer; margin-top: 1.6rem;
-    transition: background 0.18s, color 0.18s;
+    width: 100%; padding: 0.82rem; background: var(--brand); color: var(--card); border: none; border-radius: 12px;
+    font-size: 0.96rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem;
   }
-  /* 버튼이 연이어 쌓일 때는 간격을 일정하게 (기본 1.6rem은 본문 다음에 올 때만) */
-  button.secondary + button.primary, button.ghost-link + button.primary { margin-top: 0.7rem; }
-  button.primary:hover { background: var(--ink); color: var(--paper); }
-  button.primary:disabled { background: transparent; color: var(--muted); border-color: var(--line); cursor: default; }
+  button.primary:hover { background: var(--brand-deep); color: var(--paper-deep); }
+  button.primary:disabled { opacity: 0.55; cursor: default; }
   button.secondary {
-    width: 100%; padding: 0.85rem; background: transparent; color: var(--ink); border: 1px solid var(--ink);
-    border-radius: 2px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 0.7rem;
-    transition: background 0.18s, color 0.18s;
+    width: 100%; padding: 0.72rem; background: transparent; color: var(--brand-deep); border: 1.5px solid var(--line);
+    border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 0.9rem;
   }
-  button.secondary:hover { background: var(--ink); color: var(--paper); }
+  button.secondary:hover { border-color: var(--brand); }
   button.ghost-link {
-    display: block; margin: 1rem 0 0; background: none; border: none; color: var(--muted);
-    font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em; text-decoration: underline;
-    text-underline-offset: 3px; cursor: pointer; padding: 0.3rem 0;
+    display: block; margin: 0.6rem auto 0; background: none; border: none; color: var(--muted);
+    font-size: 0.79rem; text-decoration: underline; cursor: pointer; padding: 0.3rem;
   }
-  button.ghost-link:hover { color: var(--ink); }
 
-  /* ---- 분석 중 ---- */
-  .analyzing { text-align: left; padding: 0; }
-  .scan-frame {
-    position: relative; max-width: 240px; margin: 0 0 2rem; border-radius: 2px; overflow: hidden;
-    box-shadow: none; border: 1px solid var(--line); background: var(--card);
-  }
+  .analyzing { text-align: center; padding: 0.4rem 0.5rem 0; }
+  .scan-frame { position: relative; max-width: 240px; margin: 0 auto 1.4rem; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 22px -10px rgba(20,40,35,0.4); }
   .scan-frame img { width: 100%; display: block; }
   .scan-line {
     position: absolute; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--ink), transparent);
-    animation: sweep 1.5s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 12px 2px var(--gold); animation: sweep 1.5s ease-in-out infinite;
   }
   @keyframes sweep { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
-  .analyzing-steps { display: grid; gap: 0.6rem; text-align: left; max-width: 100%; margin: 0; }
-  .analyzing-steps p { margin: 0; font-size: 0.88rem; color: var(--muted); opacity: 0.45; transition: opacity 0.3s, color 0.3s; }
+  .analyzing-steps { display: grid; gap: 0.45rem; text-align: left; max-width: 320px; margin: 0 auto; }
+  .analyzing-steps p { margin: 0; font-size: 0.85rem; color: var(--muted); opacity: 0.4; transition: opacity 0.3s, color 0.3s; }
   .analyzing-steps p.active { opacity: 1; color: var(--ink); font-weight: 700; }
-  .analyzing-steps p.active::before { content: '● '; color: var(--ink); }
+  .analyzing-steps p.active::before { content: '● '; color: var(--brand); }
   .analyzing-steps p:not(.active)::before { content: '○ '; }
 
-  /* ---- 진단 결과: 핀 (색이 아니라 형태로 구분 — 채움=얼굴, 테두리=텍스트) ---- */
-  .risk-photo-wrap { position: relative; margin: 0 0 1.6rem; max-width: 300px; }
-  .risk-photo-wrap img { width: 100%; border-radius: 2px; display: block; box-shadow: none; border: 1px solid var(--line); }
+  .risk-photo-wrap { position: relative; margin: 0 auto 1.4rem; max-width: 290px; }
+  .risk-photo-wrap img { width: 100%; border-radius: 10px; display: block; box-shadow: 0 10px 22px -10px rgba(20,40,35,0.35); }
   .pin {
-    position: absolute; width: 24px; height: 24px; border-radius: 50%;
-    background: var(--card); color: var(--ink); border: 2px solid var(--ink);
-    font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-    box-shadow: none; transform: translate(-50%, -50%);
+    position: absolute; width: 25px; height: 25px; border-radius: 50%; background: var(--gold); color: var(--card);
+    font-size: 0.76rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 3px 8px rgba(0,0,0,0.35); transform: translate(-50%, -50%);
   }
-  .pin.face { background: var(--ink); color: var(--paper); }
-  .pin-legend { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.55rem; }
-  .pin-legend li { display: flex; gap: 0.6rem; font-size: 0.88rem; line-height: 1.55; align-items: flex-start; }
+  .pin.face { background: var(--brand); }
+  .pin-legend { list-style: none; padding: 0; margin: 0 0 1.3rem; display: grid; gap: 0.35rem; }
+  .pin-legend li { display: flex; gap: 0.5rem; font-size: 0.84rem; align-items: flex-start; }
   .pin-legend .num {
-    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
-    background: var(--card); color: var(--ink); border: 2px solid var(--ink);
-    font-size: 0.64rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 0.12rem;
+    flex-shrink: 0; width: 19px; height: 19px; border-radius: 50%; background: var(--gold); color: var(--card);
+    font-size: 0.68rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 0.1rem;
   }
-  .pin-legend .num.face { background: var(--ink); color: var(--paper); }
-  .pin-note { text-align: left; font-size: 0.7rem; line-height: 1.6; color: var(--muted); margin: 0 0 2rem; max-width: 52ch; }
+  .pin-legend .num.face { background: var(--brand); }
+  .pin-note { text-align: center; font-size: 0.7rem; color: var(--muted); margin: 0 0 1.5rem; }
 
-  /* 위험도 판단 대기 중 스켈레톤 + 진행 표시 */
+  /* 위험도 판단 대기 중 스켈레톤 + 진행 표시 (#3 단계별 표시 / #4 로딩 UX) */
   .risk-pending {
-    display: none; align-items: center; justify-content: flex-start; gap: 0.55rem;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 1rem;
+    display: none; align-items: center; justify-content: center; gap: 0.5rem;
+    font-size: 0.8rem; color: var(--muted); margin-bottom: 0.7rem;
   }
   .risk-pending .spin {
     width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-    border: 2px solid var(--line); border-top-color: var(--ink);
+    border: 2px solid var(--line); border-top-color: var(--brand);
     animation: risk-spin 0.8s linear infinite;
   }
   @keyframes risk-spin { to { transform: rotate(360deg); } }
   .skel {
     background: var(--paper-deep) !important; color: transparent !important; border-color: transparent !important;
-    border-radius: 0; position: relative; overflow: hidden; display: inline-block; min-width: 2.5em;
+    border-radius: 4px; position: relative; overflow: hidden; display: inline-block; min-width: 2.5em;
   }
   .skel::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
     animation: skel-sweep 1.3s ease-in-out infinite;
   }
   @keyframes skel-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-  li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.4rem 0; border-radius: 0; }
+  li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.35rem 0; border-radius: 4px; }
   /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김 — 명시적으로 줄 형태를 줌 */
   p.evidence.skel { display: block; width: 90%; height: 1rem; margin: 0.3rem 0; }
 
-  /* ---- 종합 점수: 큰 숫자 왼쪽, 게이지는 옆에 작게 (비대칭) ---- */
-  .gauge-wrap {
-    text-align: left; margin: 0 0 2.4rem;
-    display: grid; grid-template-columns: auto auto 1fr; column-gap: 1.4rem; align-items: center;
-  }
-  .gauge-wrap svg { grid-column: 2; grid-row: 1 / span 2; width: 132px; height: 74px; align-self: center; }
-  .gauge-score-label {
-    grid-column: 1; grid-row: 1; align-self: end;
-    margin-top: 0; font-family: var(--font-display); font-size: 3.4rem; font-weight: 800;
-    letter-spacing: -0.05em; line-height: 0.85; color: var(--ink);
-  }
-  .gauge-score-sub {
-    grid-column: 1; grid-row: 2; align-self: start;
-    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.09em; color: var(--muted); margin-top: 0.55rem;
-  }
-  .risk-chip {
-    grid-column: 1 / -1; grid-row: 3; justify-self: start;
-    display: inline-block; margin-top: 1.1rem; padding: 0.3rem 0.85rem; border-radius: 2px;
-    font-weight: 800; font-size: 0.78rem; letter-spacing: 0.06em;
-    background: transparent; border: 1.5px solid currentColor;
-  }
-  .risk-chip.risk-상 { color: var(--risk-high); }
-  .risk-chip.risk-중 { color: var(--risk-mid); }
-  .risk-chip.risk-하 { color: var(--risk-low); }
-  @media (max-width: 460px) {
-    .gauge-wrap { grid-template-columns: auto 1fr; }
-    .gauge-wrap svg { grid-column: 2; width: 108px; height: 60px; }
-    .gauge-score-label { font-size: 2.8rem; }
-  }
+  .gauge-wrap { text-align: center; margin-bottom: 0.3rem; }
+  .gauge-wrap svg { width: 190px; height: 106px; }
+  .gauge-score-label { margin-top: -55px; font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1; }
+  .gauge-score-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .risk-chip { display: inline-block; margin-top: 0.55rem; padding: 0.28rem 0.8rem; border-radius: 999px; font-weight: 800; font-size: 0.8rem; }
+  .risk-chip.risk-상 { background: var(--risk-high-soft); color: var(--risk-high); }
+  .risk-chip.risk-중 { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .risk-chip.risk-하 { background: var(--risk-low-soft); color: var(--risk-low); }
 
-  /* ---- 결과 섹션: 시안의 크레딧 판형 — 좁은 라벨 열(우측정렬) + 넓은 내용 열 ---- */
-  section.result-section {
-    display: grid; grid-template-columns: 7.5rem 1fr; column-gap: 1.6rem;
-    margin: 0; padding: 1.7rem 0 0; border-top: 1px solid var(--line);
-  }
-  section.result-section + .result-section { margin-top: 1.7rem; }
-  section.result-section > * { grid-column: 2; }
-  section.result-section > h3 {
-    grid-column: 1; grid-row: 1; align-self: start; text-align: right;
-    font-family: var(--font-display); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.04em;
-    color: var(--ink); margin: 0.15rem 0 0; line-height: 1.4;
-  }
-  @media (max-width: 560px) {
-    section.result-section { grid-template-columns: 1fr; }
-    section.result-section > * { grid-column: 1; }
-    section.result-section > h3 { grid-column: 1; text-align: left; margin: 0 0 0.7rem; }
-  }
-  .sub-score-line { display: flex; justify-content: flex-start; margin-bottom: 0.5rem; }
-  .sub-score-line strong { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-  .bar-track { height: 6px; background: var(--paper-deep); border-radius: 0; overflow: hidden; margin-bottom: 0.9rem; }
-  .bar-fill { height: 100%; background: var(--ink); border-radius: 0; transition: width 0.6s ease; }
-  p.evidence { font-size: 0.95rem; line-height: 1.7; margin: 0.15rem 0 0; max-width: 60ch; }
+  section.result-section { margin: 1.5rem 0; }
+  section.result-section h3 { font-family: var(--font-display); font-size: 0.98rem; font-weight: 700; color: var(--brand-deep); margin: 0 0 0.5rem; }
+  .sub-score-line { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
+  .sub-score-line strong { font-size: 1.02rem; }
+  .bar-track { height: 7px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 0.5rem; }
+  .bar-fill { height: 100%; background: var(--gold); border-radius: 999px; transition: width 0.6s ease; }
+  p.evidence { font-size: 0.88rem; line-height: 1.62; margin: 0.15rem 0 0; max-width: 62ch; }
   .action-list { margin: 0; padding-left: 1.1rem; }
-  .action-list li { font-size: 0.95rem; line-height: 1.75; }
-  .caption-suggestions { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.8rem; }
-  .caption-suggestions li {
-    background: transparent; padding: 0.15rem 0 0.15rem 0.9rem; border-radius: 0;
-    font-size: 0.95rem; line-height: 1.7; border-left: 4px solid var(--ink);
-  }
+  .action-list li { font-size: 0.89rem; line-height: 1.75; }
+  .caption-suggestions { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+  .caption-suggestions li { background: var(--brand-soft); padding: 0.6rem 0.85rem; border-radius: 10px; font-size: 0.87rem; border-left: 3px solid var(--brand); }
   .schedule-flag {
-    display: inline-block; justify-self: start; /* grid 자식일 때 가로로 늘어나지 않도록 */
-    font-size: 0.68rem; padding: 0.25rem 0.7rem; border-radius: 2px;
-    background: transparent; border: 1px solid var(--line); color: var(--muted);
-    font-weight: 800; letter-spacing: 0.08em; margin-bottom: 0.7rem;
+    display: inline-block; font-size: 0.78rem; padding: 0.2rem 0.6rem; border-radius: 6px;
+    background: var(--paper-deep); color: var(--muted); font-weight: 800; margin-bottom: 0.4rem;
   }
-  .schedule-flag.on { background: transparent; border: 1.5px solid var(--risk-mid); color: var(--risk-mid); }
+  .schedule-flag.on { background: var(--risk-mid-soft); color: var(--risk-mid); }
 
-  /* ---- 보정 방식 선택 ---- */
-  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.8rem; }
+  /* method picker */
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.2rem; }
   .method-card {
-    text-align: left; border: 1px solid var(--line); border-radius: 2px; padding: 1rem;
-    background: transparent; color: var(--ink); cursor: pointer; position: relative;
-    transition: border-color 0.15s, background 0.15s;
+    text-align: left; border: 1.5px solid var(--line); border-radius: 12px; padding: 0.75rem 0.8rem;
+    background: var(--paper); cursor: pointer; position: relative;
   }
-  .method-card:hover { border-color: var(--ink); }
-  .method-card.selected { border: 2px solid var(--ink); background: var(--card); padding: calc(1rem - 1px); }
-  .method-card:disabled { opacity: 0.45; cursor: default; }
-  .method-card .m-title { font-weight: 800; font-size: 0.88rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.5rem; }
-  .method-card .m-ico { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ink); }
-  .method-card .m-reason { font-size: 0.76rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.55; }
+  .method-card.selected { border-color: var(--brand); background: var(--brand-soft); }
+  .method-card:disabled { opacity: 0.5; cursor: default; }
+  .method-card .m-title { font-weight: 800; font-size: 0.86rem; display: flex; align-items: center; gap: 0.35rem; }
+  .method-card .m-reason { font-size: 0.74rem; color: var(--muted); margin-top: 0.25rem; line-height: 1.45; }
   .method-card .m-badge {
-    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; color: var(--paper); background: var(--ink);
-    padding: 0.15rem 0.4rem; border-radius: 2px; margin-left: auto;
+    font-size: 0.65rem; font-weight: 800; color: var(--card); background: var(--gold);
+    padding: 0.1rem 0.4rem; border-radius: 5px; margin-left: auto;
   }
 
   .sticker-choice {
-    width: 44px; height: 44px; border-radius: 2px; border: 1px solid var(--line); background: transparent;
+    width: 42px; height: 42px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper);
     font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
-  .sticker-choice.selected { border: 2px solid var(--ink); background: var(--card); }
+  .sticker-choice.selected { border-color: var(--brand); background: var(--brand-soft); }
 
-  /* ---- 처리 결과 미리보기 ----
-     주의: .preview-frame 에 object-fit:cover 나 고정 aspect-ratio 를 절대 넣지 말 것.
-     처리된 사진은 항상 원본 비율 그대로 전부 보여야 함 (test/preview-layout.js 가 검사). */
   .preview-frame {
-    position: relative; border-radius: 2px; overflow: hidden; background: var(--card);
-    border: 1px solid var(--line); padding: 6px;
-    margin-bottom: 1rem; min-height: 120px;
+    position: relative; border-radius: 10px; overflow: hidden; background: var(--paper-deep);
+    margin-bottom: 0.9rem; min-height: 120px;
     display: flex; align-items: center; justify-content: center;
   }
   .preview-frame img { display: block; max-width: 100%; max-height: 60vh; width: auto; height: auto; }
   .preview-frame .crop-guard {
-    position: absolute; inset: 12% 22% 12% 12%; border: 2px dashed var(--ink); border-radius: 0;
+    position: absolute; inset: 12% 22% 12% 12%; border: 2px dashed var(--gold); border-radius: 6px;
   }
   .preview-frame .after-blur {
     filter: blur(9px) saturate(0.88) brightness(0.96);
@@ -414,51 +290,35 @@
   .preview-frame .after-crop-img { transform: scale(1.55) translate(-14%, 2%); }
   .preview-frame .sticker {
     position: absolute; left: 74%; top: 68%; transform: translate(-50%, -50%);
-    width: 64px; height: 64px; border-radius: 2px; background: var(--card);
+    width: 64px; height: 64px; border-radius: 16px; background: var(--card);
     display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
-    box-shadow: none; border: 2px solid var(--ink);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3); border: 2px solid var(--gold);
   }
-  .preview-caption { text-align: left; font-size: 0.76rem; line-height: 1.6; color: var(--muted); margin: 0 0 1.4rem; }
-  .preview-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.11em; color: var(--muted); margin: 0 0 0.5rem; text-align: left; }
+  .preview-caption { text-align: center; font-size: 0.78rem; color: var(--muted); margin: -0.4rem 0 1rem; }
   .edit-instruction {
-    background: transparent; border-left: 4px solid var(--line); border-radius: 0;
-    padding: 0.2rem 0 0.2rem 0.9rem; font-size: 0.82rem; line-height: 1.65;
-    color: var(--muted); margin-bottom: 1.4rem;
+    background: var(--paper-deep); border-radius: 10px; padding: 0.75rem 0.95rem; font-size: 0.8rem;
+    color: var(--muted); margin-bottom: 1rem;
   }
-  .edit-instruction strong {
-    color: var(--ink); display: block; margin-bottom: 0.35rem; font-size: 0.66rem;
-    font-weight: 800; letter-spacing: 0.08em;
-  }
-  /* 왼쪽 색 막대 — 연한 배경 채우기 대신 (가이드라인 2절) */
-  .note-bar { border-left: 4px solid var(--ink); padding: 0.2rem 0 0.2rem 0.9rem; border-radius: 0; }
-  .note-bar.warn { border-left-color: var(--risk-mid); color: var(--risk-mid); }
+  .edit-instruction strong { color: var(--ink); display: block; margin-bottom: 0.2rem; font-size: 0.76rem; }
 
-  /* ---- 검증 완료: 시안의 FIN 카드 — 마젠타 사각 테두리 안에 검정 글씨 ---- */
-  .verify-stamp-wrap { text-align: left; margin-bottom: 2rem; }
+  .verify-stamp-wrap { text-align: center; margin-bottom: 1.2rem; }
   .verify-stamp {
-    display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.65rem;
-    width: auto; height: auto; padding: 0.75rem 1.6rem;
-    border-radius: 2px; border: 2px solid #000; background: var(--accent); color: #000;
-    transform: none; font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em;
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 104px; height: 104px; border-radius: 50%; border: 3px solid var(--brand); color: var(--brand);
+    transform: rotate(-8deg); font-family: var(--font-display); font-weight: 700; letter-spacing: 0.04em;
   }
-  .verify-stamp.warn { background: transparent; border-color: var(--risk-mid); color: var(--risk-mid); }
-  .verify-stamp .s-icon { font-size: 1.1rem; line-height: 1; }
-  .verify-stamp .s-text { font-size: 1.05rem; margin-top: 0; }
-  .verify-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; margin-bottom: 1.4rem; }
-  .verify-tag {
-    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; padding: 0.25rem 0.7rem; border-radius: 2px;
-    background: transparent; border: 1px solid var(--line); color: var(--muted);
-  }
-  .verify-tag.good { background: transparent; border: 1.5px solid var(--risk-low); color: var(--risk-low); }
-  .verify-tag.bad { background: transparent; border: 1.5px solid var(--risk-high); color: var(--risk-high); }
-  .verify-detail {
-    background: transparent; border-left: 4px solid var(--ink); border-radius: 0;
-    padding: 0.2rem 0 0.2rem 1rem; font-size: 0.95rem; line-height: 1.7;
-  }
-  .verify-detail.warn { background: transparent; border-left-color: var(--risk-mid); }
+  .verify-stamp.warn { border-color: var(--risk-mid); color: var(--risk-mid); }
+  .verify-stamp .s-icon { font-size: 1.5rem; }
+  .verify-stamp .s-text { font-size: 0.79rem; margin-top: 0.15rem; }
+  .verify-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-bottom: 0.9rem; }
+  .verify-tag { font-size: 0.75rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; background: var(--paper-deep); color: var(--muted); }
+  .verify-tag.good { background: var(--risk-low-soft); color: var(--risk-low); }
+  .verify-tag.bad { background: var(--risk-high-soft); color: var(--risk-high); }
+  .verify-detail { background: var(--brand-soft); border-radius: 10px; padding: 0.85rem 1.05rem; font-size: 0.88rem; line-height: 1.6; }
+  .verify-detail.warn { background: var(--risk-mid-soft); }
 
-  .disclaimer { font-size: 0.7rem; color: var(--muted); text-align: left; margin-top: 2.4rem; line-height: 1.65; max-width: 56ch; }
-  .file-count { font-size: 0.72rem; color: var(--ink); font-weight: 700; letter-spacing: 0.06em; margin-top: 0.6rem; text-align: left; }
+  .disclaimer { font-size: 0.71rem; color: var(--muted); text-align: center; margin-top: 1.5rem; line-height: 1.5; }
+  .file-count { font-size: 0.76rem; color: var(--brand-deep); font-weight: 700; margin-top: 0.4rem; text-align: center; }
 
   @media (max-width: 420px) {
     .method-grid { grid-template-columns: 1fr; }
@@ -467,11 +327,11 @@
 </style>
 
 <main>
-  <div class="brand-mark"><span class="badge-icon" role="img" aria-label="안심앨범"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span></div>
+  <div class="brand-mark"><span class="badge-icon">🔎</span></div>
   <header class="page-header">
     <h1>안심앨범</h1>
     <p>아이 사진, 올리기 전에 한 번 더 살펴봐요</p>
-    <div class="subhead"><span class="lat">Campus AX-Ton</span><span class="ko">인터랙티브 목업</span></div>
+    <div class="subhead">Campus AX-Ton · 인터랙티브 목업</div>
   </header>
 
   <div class="stepper" id="stepper">
@@ -487,7 +347,7 @@
     <div class="field">
       <label>사진</label>
       <div class="drop-zone" id="fileDrop">
-        <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
+        <span class="icon">🖼️</span>
         <span id="fileDropLabel">클릭해서 사진을 선택하세요</span>
         <input type="file" id="photoInput" accept="image/*" />
       </div>
@@ -552,7 +412,7 @@
         <p id="stepOcr">사진 속 텍스트 위치·내용 감지 중</p>
         <p id="stepPast" style="display:none;">과거 게시물 스크린샷에서 시점·캡션 추출 중</p>
       </div>
-      <p style="font-size:0.74rem; line-height:1.6; color:var(--muted); margin:1.4rem 0 0; max-width:48ch;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
+      <p style="font-size:0.74rem; color:var(--muted); margin:0.7rem 0 0;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
     </div>
   </div>
 
@@ -562,7 +422,7 @@
       <img id="resultThumb" alt="분석한 사진" />
     </div>
     <ul class="pin-legend" id="pinLegend"></ul>
-    <p class="pin-note">* 검게 채운 핀은 face-api.js로 감지한 얼굴, 테두리만 있는 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
+    <p class="pin-note">* 초록 핀은 face-api.js로 감지한 얼굴, 금색 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
 
     <p class="risk-pending" id="riskPending"><span class="spin"></span><span id="riskPendingText">위험 요소 판단 중…</span></p>
 
@@ -612,33 +472,22 @@
 
   <!-- 화면 4: 처리 방식 추천 + 미리보기 -->
   <div class="card" id="screen-correct" style="display:none;">
-    <h3 style="font-size:1.35rem; font-weight:800; letter-spacing:-0.025em; line-height:1.25; margin:0 0 0.7rem; max-width:20ch; color:var(--ink);">
+    <h3 style="font-family:var(--font-display); font-size:1.05rem; margin-top:0; color:var(--brand-deep);">
       Claude가 위험요소별 보정 방식을 추천했어요
     </h3>
     <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
 
     <div class="method-grid">
       <button class="method-card selected" data-method="crop">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="8.5" cy="24" r="4.2"/><circle cx="23.5" cy="24" r="4.2"/><path d="M6.5 6 L20.8 21"/><path d="M25.5 6 L11.2 21"/></svg> 스마트 크롭 <span class="m-badge" id="badge-crop" style="display:none;">1순위</span></div>
+        <div class="m-title">✂️ 스마트 크롭 <span class="m-badge" id="badge-crop" style="display:none;">1순위</span></div>
         <div class="m-reason" id="reason-crop">가장자리 텍스트라 잘라내도 아이가 손실되지 않아요.</div>
       </button>
       <button class="method-card" data-method="blur">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><circle cx="16" cy="16" r="10" stroke-dasharray="3 4.5"/><circle cx="16" cy="16" r="14.5" stroke-dasharray="2 6"/></svg> 배경 흐림 <span class="m-badge" id="badge-blur" style="display:none;">1순위</span></div>
+        <div class="m-title">🌫️ 배경 흐림 <span class="m-badge" id="badge-blur" style="display:none;">1순위</span></div>
         <div class="m-reason" id="reason-blur">인물모드 스타일로, 아이는 선명하게 유지돼요.</div>
       </button>
-      <button class="method-card" data-method="inpaint">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 24 L20 8 L24 12 L8 28 Z"/><path d="M20 8 L24 4 L28 8 L24 12 Z"/><path d="M4 24 L3 29 L8 28"/></svg> AI로 지워 채우기
-          <span class="m-badge" id="badge-inpaint-status" style="background:var(--muted);">확인 중</span>
-        </div>
-        <div class="m-reason">
-          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.3rem 0.3rem 0; display:inline-block;">⚠ 원본 전송</span>
-          전화번호·주소처럼 작은 글씨를 지우고 그 자리를 배경으로 메워요. 사진을 자르지
-          않으니 구도와 비율이 그대로예요. 큰 간판은 AI가 가짜 글씨를 만들어내서,
-          간판만 스티커로 덮어요.
-        </div>
-      </button>
       <button class="method-card" data-method="ai">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19 13 L29.5 16 L19 19 L16 29.5 L13 19 L2.5 16 L13 13 Z"/></svg> AI 배경 교체
+        <div class="m-title">✨ AI 배경 교체
           <span class="m-badge" id="badge-ai-status" style="background:var(--muted);">확인 중</span>
         </div>
         <div class="m-reason">
@@ -647,12 +496,12 @@
         </div>
       </button>
       <button class="method-card" data-method="sticker">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.8 L20 11.8 L29.8 12.9 L22.5 19.5 L24.5 29.2 L16 24.2 L7.5 29.2 L9.5 19.5 L2.2 12.9 L12 11.8 Z"/></svg> 스티커 덮기 <span class="m-badge" id="badge-sticker" style="display:none;">1순위</span></div>
+        <div class="m-title">🌟 스티커 덮기 <span class="m-badge" id="badge-sticker" style="display:none;">1순위</span></div>
         <div class="m-reason" id="reason-sticker">텍스트 부분만 익숙한 스티커로 가려요.</div>
       </button>
     </div>
 
-    <p class="evidence note-bar" id="recommendFlow" style="display:none; margin-bottom:1.3rem;"></p>
+    <p class="evidence" id="recommendFlow" style="display:none; background:var(--brand-soft); padding:0.7rem 0.9rem; border-radius:10px; margin-bottom:0.9rem;"></p>
 
     <div id="stickerPicker" style="display:none; justify-content:center; gap:0.5rem; margin-bottom:0.9rem;">
       <button type="button" class="sticker-choice" data-sticker="🌟">🌟</button>
@@ -662,15 +511,15 @@
       <button type="button" class="sticker-choice" data-sticker="🔲">🔲</button>
     </div>
 
-    <p id="uncroppableWarning" class="evidence note-bar warn" style="display:none; margin-bottom:1.3rem;"></p>
+    <p id="uncroppableWarning" class="evidence" style="display:none; background:var(--risk-mid-soft); color:var(--risk-mid); padding:0.7rem 0.9rem; border-radius:10px;"></p>
 
     <div style="display:flex; gap:0.6rem; align-items:flex-start; margin-bottom:0.6rem;">
       <div style="flex:0 0 auto;">
-        <p class="preview-label">원본</p>
-        <img id="previewBeforeThumb" alt="원본" style="width:78px; height:78px; object-fit:cover; border-radius:2px; border:1px solid var(--line); display:block;" />
+        <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem; text-align:center;">원본</p>
+        <img id="previewBeforeThumb" alt="원본" style="width:78px; height:78px; object-fit:cover; border-radius:8px; border:1px solid var(--line); display:block;" />
       </div>
       <div style="flex:1; min-width:0;">
-        <p class="preview-label">처리 후</p>
+        <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem; text-align:center;">처리 후</p>
         <div class="preview-frame" id="previewFrame">
           <img id="previewAfter" alt="처리 결과" />
         </div>
@@ -705,13 +554,13 @@
   </div>
   <!-- OCR/얼굴분석 디버그 패널: ?debug=1 로 접속했을 때만 보임. 평상시 UI에는 영향 없음 -->
   <div class="card" id="debugPanel" style="display:none; margin-top:1.5rem;">
-    <h3 style="font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 0.8rem; color:var(--ink);">🔧 얼굴 분석 디버그 정보 (?debug=1)</h3>
+    <h3 style="font-family:var(--font-display); font-size:0.98rem; margin:0 0 0.6rem; color:var(--brand-deep);">🔧 얼굴 분석 디버그 정보 (?debug=1)</h3>
     <div style="overflow-x:auto; margin-bottom:1.4rem;">
       <table id="debugFaceTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px;"></table>
     </div>
     <p id="debugFaceTiming" style="font-size:0.76rem; color:var(--muted); margin:0 0 1.4rem; white-space:pre-line;"></p>
 
-    <h3 style="font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 0.8rem; color:var(--ink);">🔧 Claude Vision vs Tesseract 비교</h3>
+    <h3 style="font-family:var(--font-display); font-size:0.98rem; margin:0 0 0.6rem; color:var(--brand-deep);">🔧 Claude Vision vs Tesseract 비교</h3>
     <div style="margin-bottom:0.9rem;">
       <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">Claude Vision에 실제로 전송된 이미지 (얼굴 마스킹 적용됨)</p>
       <img id="debugMaskedImg" style="max-width:220px; border-radius:6px; border:1px solid var(--line); display:block;" />
@@ -721,7 +570,7 @@
     </div>
     <p id="debugCompareNote" style="font-size:0.76rem; color:var(--muted); margin:0 0 1.4rem; white-space:pre-line;"></p>
 
-    <h3 style="font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 0.8rem; color:var(--ink);">🔧 OCR(Tesseract) 상세 디버그 정보</h3>
+    <h3 style="font-family:var(--font-display); font-size:0.98rem; margin:0 0 0.6rem; color:var(--brand-deep);">🔧 OCR(Tesseract) 상세 디버그 정보</h3>
     <div style="display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:0.9rem;">
       <div>
         <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">원본 이미지</p>
@@ -742,9 +591,9 @@
 </main>
 
 <!-- AI 배경교체 전송 동의 모달: "AI 배경 교체" 선택 시에만 뜸, 다른 3가지 방식은 안 뜸 -->
-<div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.62); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-  <div class="card" style="max-width:380px; margin:0; border:2px solid var(--ink);">
-    <h3 style="margin:0 0 0.8rem; color:var(--risk-mid); font-size:1.2rem; font-weight:800; letter-spacing:-0.02em;">⚠ 원본 사진 전송 동의</h3>
+<div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(20,30,26,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div class="card" style="max-width:360px; margin:0;">
+    <h3 style="margin-top:0; color:var(--risk-mid); font-family:var(--font-display); font-size:1.05rem;">⚠️ 원본 사진 전송 동의</h3>
     <p class="evidence">AI 배경 교체는 다른 기능과 달리 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다.</p>
     <ul class="action-list" style="margin-bottom:1.1rem;">
       <li>크롭 · 배경흐림 · 스티커는 전송 없이 브라우저에서 처리돼요</li>
@@ -758,9 +607,9 @@
 
 <!-- 얼굴 검출 실패 시 안전 확인 모달: 얼굴이 0개 감지되면(메인 사진/스크린샷 공통) 자동으로
      원본을 외부로 보내지 않고 여기서 먼저 멈춰서 물어봄 -->
-<div id="noFaceConsentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.62); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-  <div class="card" style="max-width:380px; margin:0; border:2px solid var(--ink);">
-    <h3 style="margin:0 0 0.8rem; color:var(--risk-mid); font-size:1.2rem; font-weight:800; letter-spacing:-0.02em;">⚠ 얼굴을 자동으로 찾지 못했어요</h3>
+<div id="noFaceConsentModal" style="display:none; position:fixed; inset:0; background:rgba(20,30,26,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div class="card" style="max-width:360px; margin:0;">
+    <h3 style="margin-top:0; color:var(--risk-mid); font-family:var(--font-display); font-size:1.05rem;">⚠️ 얼굴을 자동으로 찾지 못했어요</h3>
     <p class="evidence">이 사진에서 얼굴이 감지되지 않았어요. 실제로 사람이 없는 사진일 수도 있지만, 반사·각도·가림 등으로 감지에 실패했을 가능성도 있습니다.</p>
     <p class="evidence" id="noFaceConsentDetail" style="font-weight:700;"></p>
     <button class="primary" id="noFaceConsentSafe">안전 우선 (전송 안 함)</button>
@@ -1567,7 +1416,6 @@
     // 프라이버시 예외: 여기서만 마스킹 없는 원본 이미지를 그대로 보낸다 — 기획서 0번 원칙에
     // 명시된 대로, 사용자가 "AI 배경 교체"를 명시적으로 선택하고 동의했을 때만 호출됨.
     var FLUX_BACKEND_URL = 'http://localhost:3001/api/replace-background';
-    var INPAINT_BACKEND_URL = 'http://localhost:3001/api/inpaint-regions';
     var FLUX_STATUS_URL = 'http://localhost:3001/api/flux-status';
 
     async function checkFluxStatus() {
@@ -1620,43 +1468,6 @@
       return data;
     }
 
-    // 마스크 인페인팅 실행. 크기 가드가 여기 들어있다 —
-    // fal은 가로·세로를 32의 배수로 내림하므로, 32의 배수로 올려 보내고 원본 크기로 되돌린다.
-    async function runInpaintRegions(img, inpaintWords, subjectRegions, riskResult) {
-      var ow = img.naturalWidth, oh = img.naturalHeight;
-      var sw = roundUpTo32(ow), sh = roundUpTo32(oh);
-
-      var ic = document.createElement('canvas');
-      ic.width = sw; ic.height = sh;
-      ic.getContext('2d').drawImage(img, 0, 0, sw, sh);
-
-      // 마스크는 이미지와 크기가 정확히 같아야 한다 (fal 요구사항).
-      // 텍스트 좌표는 % 기반이라 크기와 무관하지만, 인물 보존영역은 픽셀이라 같이 늘려준다.
-      var scaledSubjects = (subjectRegions || []).map(function (r) {
-        return { x0: r.x0 * sw / ow, y0: r.y0 * sh / oh, x1: r.x1 * sw / ow, y1: r.y1 * sh / oh };
-      });
-      var mask = buildInpaintMask(inpaintWords, sw, sh, scaledSubjects);
-
-      var data = await postJson(INPAINT_BACKEND_URL, {
-        imageBase64: ic.toDataURL('image/png').split(',')[1],
-        maskBase64: mask.toDataURL('image/png').split(',')[1],
-        mediaType: 'image/png',
-        texts: inpaintWords.map(function (w) {
-          return { content: w.text, type: w.type || '', position: pctToPositionLabel(w.xPct, w.yPct) };
-        }),
-        grade: riskResult && riskResult.grade,
-        locationEvidence: riskResult && riskResult.locationEvidence,
-      });
-
-      var outImg = await loadImage('data:image/png;base64,' + data.imageBase64);
-      var out = document.createElement('canvas');
-      out.width = ow; out.height = oh;
-      out.getContext('2d').drawImage(outImg, 0, 0, ow, oh);
-      console.log('[인페인팅] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
-        + ', ' + sw + 'x' + sh + ' -> ' + ow + 'x' + oh + '로 복원', data);
-      return { canvas: out, data: data };
-    }
-
     function computeFaceUnionBox(faces) {
       if (!faces || faces.length === 0) return null;
       var x0 = Math.min.apply(null, faces.map(function (f) { return f.box.x; }));
@@ -1670,36 +1481,6 @@
       var cx = w.xPct / 100 * imgW, cy = w.yPct / 100 * imgH;
       var pw = (w.wPct || 22) / 100 * imgW, ph = (w.hPct || 6) / 100 * imgH;
       return { x0: cx - pw / 2, y0: cy - ph / 2, x1: cx + pw / 2, y1: cy + ph / 2 };
-    }
-
-    // ===== 텍스트 영역 분기: 인페인팅 vs 간판 =====
-    // fal FLUX Fill로 실제 호출해서 확인한 사실(2026-08-21):
-    //   · 전화번호·주소코드처럼 주변이 벽/유리/바닥인 작은 텍스트 → 깨끗하게 지워짐
-    //   · 간판 → 지워지지 않고 "가짜 글씨"가 새로 생김 ("춧천쿠 전설룽", "POFATS & BILES")
-    // 프롬프트에 no text/no letters를 명시해도 막지 못했고, 마스크를 간판 전체로 넓히면
-    // 오히려 더 큰 가짜 글씨가 생겼다. 모델이 고장난 게 아니라 "조명 달린 간판 틀"이라는
-    // 맥락에서 가장 그럴듯한 것을 채워 넣기 때문이다. 그래서 간판형은 인페인팅으로
-    // 보내지 않고 스티커/흐림으로 돌린다.
-    //
-    // 판단 기준 (꽃집간판.jpg 960x540 실측값 기반):
-    //   · 글자 높이가 이미지 높이의 9% 이상  → 간판 (상호명 17%, 전화번호 6.7%)
-    //   · 또는 차지하는 면적이 이미지의 3% 이상 → 간판 (가로로 긴 띠형 간판 대응)
-    // 높이 기준이 주력이다 — 간판은 멀리서 읽히려고 글자를 크게 만들기 때문.
-    var SIGNBOARD_HEIGHT_PCT = 9;
-    var SIGNBOARD_AREA_PCT = 3;
-
-    function isSignboardText(w) {
-      var hPct = w.hPct || 6;
-      var wPct = w.wPct || 22;
-      return hPct >= SIGNBOARD_HEIGHT_PCT || (wPct * hPct / 100) >= SIGNBOARD_AREA_PCT;
-    }
-
-    function classifyTextRegions(words, imgW, imgH) {
-      var inpaint = [], signboard = [];
-      (words || []).forEach(function (w) {
-        (isSignboardText(w) ? signboard : inpaint).push(w);
-      });
-      return { inpaint: inpaint, signboard: signboard };
     }
 
     // 얼굴을 전부 포함하는 "보존 영역" 바깥의 위험 텍스트 쪽으로 가장자리를 당겨서 크롭.
@@ -1739,86 +1520,7 @@
       return {
         crop: { x0: cropLeft, y0: cropTop, x1: cropRight, y1: cropBottom },
         uncroppable: uncroppable,
-        safe: safe, // 비율 맞추기(fitCropBoxToRatio)에서 침범하면 안 되는 영역
       };
-    }
-
-    // ===== 인페인팅용 마스크 / 크기 가드 =====
-    // fal FLUX Fill은 가로·세로를 32의 배수로 내림한다. 960x540을 보내면 960x512가
-    // 돌아와서 비율이 깨진다(2026-08-21 실측). 그래서 32의 배수로 "올려서" 보내고
-    // 받은 뒤 원본 크기로 되돌린다. 960->960, 540->544이라 0.7% 리샘플링뿐이다.
-    function roundUpTo32(n) {
-      return Math.max(32, Math.ceil(n / 32) * 32);
-    }
-
-    // 마스크 규약: 흰색 = AI가 새로 그릴 영역, 검은색 = 원본 보존.
-    // (fal 문서에 없어서 실제 호출로 확인함)
-    //
-    // 아이 보호를 프롬프트가 아니라 마스크로 한다는 점이 핵심이다. 보존영역을 마지막에
-    // 검은색으로 덮어쓰므로, 모델은 아이 픽셀에 접근할 방법 자체가 없다. "얼굴을 바꾸지
-    // 마"라고 부탁하는 것보다 훨씬 강한 보장이다.
-    function buildInpaintMask(words, imgW, imgH, subjectRegions) {
-      var c = document.createElement('canvas');
-      c.width = imgW;
-      c.height = imgH;
-      var x = c.getContext('2d');
-      x.fillStyle = '#000000';
-      x.fillRect(0, 0, imgW, imgH);
-
-      x.fillStyle = '#ffffff';
-      (words || []).forEach(function (w) {
-        var b = textWordToPixelBbox(w, imgW, imgH);
-        // 글자 가장자리가 조금이라도 남으면 모델이 그걸 단서로 글자를 되살리므로 여유를 둔다
-        var pad = Math.max(2, (b.y1 - b.y0) * 0.15);
-        x.fillRect(b.x0 - pad, b.y0 - pad, (b.x1 - b.x0) + pad * 2, (b.y1 - b.y0) + pad * 2);
-      });
-
-      // 아이 보존영역을 마지막에 덮어써서 텍스트와 겹치더라도 아이 보호가 항상 이기게 함
-      x.fillStyle = '#000000';
-      (subjectRegions || []).forEach(function (r) {
-        x.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
-      });
-      return c;
-    }
-
-    // 크롭 박스를 원본 사진 비율에 맞게 **축소**한다.
-    // 확대하면 애써 잘라낸 위험 텍스트가 다시 들어오므로 축소만 한다. 아이 보존영역은
-    // 절대 잘라내지 않으며, 축소해서는 보존영역을 담을 수 없으면 비율 맞추기를 포기하고
-    // 원래 박스를 그대로 쓴다 (비율보다 아이가 우선). 그 경우 ok:false로 알린다.
-    function fitCropBoxToRatio(cropBox, imgW, imgH, safe) {
-      var target = imgW / imgH;
-      var w = cropBox.x1 - cropBox.x0, h = cropBox.y1 - cropBox.y0;
-      if (w <= 0 || h <= 0) return { crop: cropBox, ok: false };
-      if (Math.abs(w / h - target) < 1e-6) return { crop: cropBox, ok: true };
-
-      var nw = w, nh = h;
-      if (w / h > target) nw = h * target; // 너무 넓다 → 폭을 줄임
-      else nh = w / target;                // 너무 높다 → 높이를 줄임
-
-      // [lo, hi] 안에서 길이 size 구간을 잡되, 가능하면 [safeLo, safeHi]를 품도록 민다
-      function place(lo, hi, size, safeLo, safeHi) {
-        var center = (safeLo != null) ? (safeLo + safeHi) / 2 : (lo + hi) / 2;
-        var a = center - size / 2;
-        if (a < lo) a = lo;
-        if (a + size > hi) a = hi - size;
-        if (safeLo != null) {
-          if (a > safeLo) a = safeLo;
-          if (a + size < safeHi) a = safeHi - size;
-          if (a < lo) a = lo;
-          if (a + size > hi) a = hi - size;
-        }
-        return a;
-      }
-
-      var s = safe || null;
-      var nx0 = place(cropBox.x0, cropBox.x1, nw, s ? s.x0 : null, s ? s.x1 : null);
-      var ny0 = place(cropBox.y0, cropBox.y1, nh, s ? s.y0 : null, s ? s.y1 : null);
-      var out = { x0: nx0, y0: ny0, x1: nx0 + nw, y1: ny0 + nh };
-
-      if (s && (out.x0 > s.x0 + 0.5 || out.x1 < s.x1 - 0.5 || out.y0 > s.y0 + 0.5 || out.y1 < s.y1 - 0.5)) {
-        return { crop: cropBox, ok: false }; // 아이를 자르게 되므로 포기
-      }
-      return { crop: out, ok: true };
     }
 
     function applySmartCrop(img, cropBox) {
@@ -2479,14 +2181,14 @@
       var aiStatusBadge = document.getElementById('badge-ai-status');
       aiStatusBadge.textContent = '확인 중';
       aiStatusBadge.style.background = 'var(--muted)';
-      var inpaintStatusBadge = document.getElementById('badge-inpaint-status');
-      inpaintStatusBadge.textContent = '확인 중';
-      inpaintStatusBadge.style.background = 'var(--muted)';
       checkFluxStatus().then(function (ready) {
-        [aiStatusBadge, inpaintStatusBadge].forEach(function (b) {
-          b.textContent = ready ? '사용 가능' : '준비 중';
-          b.style.background = ready ? 'var(--risk-low)' : 'var(--muted)';
-        });
+        if (ready) {
+          aiStatusBadge.textContent = '사용 가능';
+          aiStatusBadge.style.background = 'var(--risk-low)';
+        } else {
+          aiStatusBadge.textContent = '준비 중';
+          aiStatusBadge.style.background = 'var(--muted)';
+        }
       });
 
       // 크롭/스티커는 픽셀 단위 정확한 위치가 필요한데, Claude Vision 위치는 9분할 근사치라
@@ -2562,73 +2264,6 @@
 
       var previewAfter = document.getElementById('previewAfter');
 
-      if (method === 'inpaint') {
-        if (!(await checkFluxStatus())) {
-          previewAfter.src = uploadedPhotoUrl;
-          previewCaption.textContent = 'AI로 지워 채우기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
-          currentCorrectionCanvas = null; lastCorrectionMeta = null;
-          return;
-        }
-        if (!(await askFluxConsent())) {
-          selectMethod(previousMethod && previousMethod !== 'inpaint' ? previousMethod : 'crop');
-          return;
-        }
-        if (!uploadedPhotoUrl || !lastFaceResult) {
-          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
-          return;
-        }
-
-        var inImg = await loadImage(uploadedPhotoUrl);
-        var iw = inImg.naturalWidth, ih = inImg.naturalHeight;
-        // 실측 결과 인페인팅은 작은 글씨엔 훌륭하지만 간판엔 가짜 글씨를 만들어낸다.
-        // 그래서 여기서 갈라서, 간판은 스티커로 덮는다.
-        var split = classifyTextRegions(correctionTextWords || [], iw, ih);
-        var subjects = ((lastFaceResult && lastFaceResult.faces) || []).map(function (f) {
-          return computeSubjectRegion(f.box, iw, ih);
-        });
-
-        if (split.inpaint.length === 0 && split.signboard.length === 0) {
-          previewAfter.src = uploadedPhotoUrl;
-          previewCaption.textContent = '지울 위치를 아는 텍스트를 찾지 못했어요 — 이 방식으로는 처리할 게 없습니다.';
-          currentCorrectionCanvas = null; lastCorrectionMeta = null;
-          return;
-        }
-
-        currentCorrectionCanvas = null;
-        try {
-          var outCv, costNote = '';
-          if (split.inpaint.length > 0) {
-            previewCaption.textContent = '⏳ AI가 작은 글씨 ' + split.inpaint.length + '곳을 지우고 배경으로 메우는 중이에요 (10~20초 정도 걸려요)...';
-            var ip = await runInpaintRegions(inImg, split.inpaint, subjects, lastRiskResult);
-            outCv = ip.canvas;
-            costNote = ' (약 $' + Number(ip.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(ip.data.timingMs / 1000) + '초)';
-          } else {
-            outCv = document.createElement('canvas');
-            outCv.width = iw; outCv.height = ih;
-            outCv.getContext('2d').drawImage(inImg, 0, 0);
-          }
-
-          if (split.signboard.length > 0) {
-            outCv = applyStickers(outCv, split.signboard, outCv.width, outCv.height, currentSticker);
-          }
-
-          currentCorrectionCanvas = outCv;
-          previewAfter.src = outCv.toDataURL('image/png');
-
-          var parts = [];
-          if (split.inpaint.length > 0) parts.push('작은 글씨 ' + split.inpaint.length + '곳은 AI가 배경으로 메웠어요');
-          if (split.signboard.length > 0) parts.push('큰 간판 ' + split.signboard.length + '곳은 AI에 맡기면 가짜 글씨가 생겨서 스티커로 덮었어요');
-          previewCaption.textContent = '✨ ' + parts.join('. ') + '. 사진을 자르지 않아 비율은 원본 그대로예요.' + costNote;
-          lastCorrectionMeta = { method: 'inpaint', detail: previewCaption.textContent };
-        } catch (err) {
-          console.error('[인페인팅] 실패:', err);
-          previewAfter.src = uploadedPhotoUrl;
-          previewCaption.textContent = '⚠ AI로 지워 채우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
-          currentCorrectionCanvas = null; lastCorrectionMeta = null;
-        }
-        return;
-      }
-
       if (method === 'ai') {
         var ready = await checkFluxStatus();
         if (!ready) {
@@ -2657,17 +2292,10 @@
         try {
           var fluxData = await runFluxBackgroundReplace(uploadedPhotoUrl, lastRiskResult, lastOcrResult);
           var outImg = await loadImage('data:image/png;base64,' + fluxData.imageBase64);
-          // 비율 가드: kontext는 출력 해상도를 모델이 정하므로 원본과 달라질 수 있다.
-          // "처리 후에도 사진 비율은 원본과 같아야 한다"를 지키려고 원본 크기로 되돌린다.
-          var srcImg = await loadImage(uploadedPhotoUrl);
           var outCanvas = document.createElement('canvas');
-          outCanvas.width = srcImg.naturalWidth;
-          outCanvas.height = srcImg.naturalHeight;
-          outCanvas.getContext('2d').drawImage(outImg, 0, 0, outCanvas.width, outCanvas.height);
-          if (outImg.naturalWidth !== srcImg.naturalWidth || outImg.naturalHeight !== srcImg.naturalHeight) {
-            console.log('[AI배경교체] 크기 보정 — ' + outImg.naturalWidth + 'x' + outImg.naturalHeight
-              + ' -> ' + outCanvas.width + 'x' + outCanvas.height);
-          }
+          outCanvas.width = outImg.naturalWidth;
+          outCanvas.height = outImg.naturalHeight;
+          outCanvas.getContext('2d').drawImage(outImg, 0, 0);
           currentCorrectionCanvas = outCanvas;
           previewAfter.src = outCanvas.toDataURL('image/png');
           previewCaption.textContent = '✨ AI가 위험 배경을 새로 그렸어요 — 인물은 그대로 유지하도록 지시했어요. (약 $' + fluxData.estimatedCostUsd.toFixed(2) + ', ' + Math.round(fluxData.timingMs / 1000) + '초)';
@@ -2697,10 +2325,7 @@
 
       if (method === 'crop') {
         var cropResult = computeSmartCrop(faces, texts, img.naturalWidth, img.naturalHeight);
-        // "처리 후에도 사진 비율은 원본과 같아야 한다" — 크롭 박스를 원본 비율에 맞게 축소.
-        // 아이 보존영역 때문에 축소가 불가능하면 ok:false로 오고, 그 땐 비율을 포기한다.
-        var fitted = fitCropBoxToRatio(cropResult.crop, img.naturalWidth, img.naturalHeight, cropResult.safe);
-        canvas = applySmartCrop(img, fitted.crop);
+        canvas = applySmartCrop(img, cropResult.crop);
         if (cropResult.uncroppable.length > 0) {
           var names = cropResult.uncroppable.map(function (t) { return '"' + t.text + '"'; }).join(', ');
           uncroppableWarning.textContent = '⚠ ' + names + '는 아이 얼굴과 겹쳐 있어서 크롭만으로는 없앨 수 없어요. 스티커 덮기나 배경 흐림을 함께 사용하시겠어요?';
@@ -2708,9 +2333,6 @@
           previewCaption.textContent = '가장자리 위험요소를 잘라냈어요 — 아이는 그대로 남아있어요. (일부는 아래 안내 참고)';
         } else {
           previewCaption.textContent = '위험 텍스트를 전부 잘라냈어요 — 아이는 그대로, 가장자리만 사라졌어요.';
-        }
-        if (!fitted.ok) {
-          previewCaption.textContent += ' (아이를 자르지 않으려다 보니 이번엔 원본 비율을 유지하지 못했어요.)';
         }
       } else if (method === 'blur') {
         canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight);
@@ -2908,15 +2530,5 @@
     });
 
     showScreen('form');
-
-    // 테스트 전용 접근점 — 앱 전체가 IIFE라 밖에서 순수 함수를 검증할 수 없어서 열어둠.
-    // 앱 코드는 이 객체를 쓰지 않는다 (test/text-routing.js에서만 사용).
-    window.__anshimTest = {
-      classifyTextRegions: classifyTextRegions,
-      isSignboardText: isSignboardText,
-      fitCropBoxToRatio: fitCropBoxToRatio,
-      roundUpTo32: roundUpTo32,
-      buildInpaintMask: buildInpaintMask,
-    };
   })();
 </script>
