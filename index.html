@@ -19,19 +19,22 @@
      다크 카드(--card-dark)는 한 화면에 하나 — 최상단 히어로(.app-hero)뿐이다.
      ========================================================================= */
   :root {
-    --page: #e6ddd3;         /* 가장 바깥 바닥 */
-    --surface: #f7f3ee;      /* 앱 본체 (크림) */
+    /* 흰 배경 테마. 배경과 카드가 모두 흰색이라 면끼리 구분이 안 되므로,
+       카드는 머리카락 굵기 테두리 + 옅은 그림자로, 보조 면(입력·리스트 행)은
+       차가운 연회색으로 나눈다. 대비비는 아래 주석의 실측값 기준. */
+    --page: #ffffff;         /* 가장 바깥 바닥 */
+    --surface: #ffffff;      /* 앱 본체 */
     --card: #ffffff;         /* 카드 */
     --card-dark: #1c1c1c;    /* 강조 카드 — 화면당 하나 */
-    --card-tan: #cdc3b2;     /* 보조 카드 */
-    --soft: #f4efe8;         /* 흰 카드 위 옅은 면 (입력·트랙·리스트 행) */
-    --soft-hover: #ece5db;
-    --ink: #1a1a1a;          /* 흰 카드 위 17.40:1 */
-    --muted: #6f6860;        /* 흰 카드 위 5.49:1 */
-    --on-dark: #f7f3ee;      /* 다크 카드 위 글씨 17.04:1 */
-    --on-chip: #f7f3ee;      /* 어두운 배지 위 글씨 (라이트) */
-    --line: #eae3da;
-    --line-strong: #d8cec1;
+    --card-tan: #f5f6f8;     /* 보조 카드 */
+    --soft: #f5f6f8;         /* 흰 면 위 옅은 면 (입력·트랙·리스트 행) */
+    --soft-hover: #edeff2;
+    --ink: #1a1a1a;          /* 흰 배경 위 17.40:1 */
+    --muted: #5f6b76;        /* 흰 배경 5.45:1 · 연회색 면 5.04:1 */
+    --on-dark: #f7f8fa;      /* 다크 카드 위 글씨 */
+    --on-chip: #f7f8fa;      /* 어두운 배지 위 글씨 */
+    --line: #e8eaee;
+    --line-strong: #d6dae0;
     --accent: #ffd84d;       /* 노랑 — 위에 얹는 글씨는 먹색 12.58:1 */
     --accent-hover: #f7cb2e;
     --accent-2: #ff7a6b;     /* 코랄 — 위에 얹는 글씨는 먹색 6.84:1 */
@@ -50,14 +53,15 @@
     --risk-low-soft:  #e6f4ed;  /* 위 글씨 --risk-low  4.68:1 */
 
     --focus: #1a1a1a;
-    --skel-sheen: rgba(255, 255, 255, 0.6);
+    --skel-sheen: rgba(255, 255, 255, 0.85);
     --font-body: 'Pretendard Variable', 'Pretendard', 'Malgun Gothic', '맑은 고딕',
       -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, sans-serif;
     --font-display: var(--font-body);
-    --shadow-card: 0 2px 12px rgba(40, 30, 20, 0.06);
-    --shadow-soft: 0 1px 6px rgba(40, 30, 20, 0.05);
-    --shadow-lift: 0 6px 20px rgba(40, 30, 20, 0.10);
+    /* 배경이 흰색이라 그림자만으로는 카드가 안 떠 보인다 — 약간 진하게 잡는다 */
+    --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.05);
+    --shadow-soft: 0 1px 4px rgba(16, 24, 40, 0.05);
+    --shadow-lift: 0 8px 24px rgba(16, 24, 40, 0.10);
   }
 
 
@@ -85,6 +89,7 @@
     width: 100%; max-width: 660px;
     margin: 0 auto; scroll-margin-top: 5rem;
     background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 30px;
     padding: 1.3rem 1.3rem 2rem;
     box-shadow: var(--shadow-card);
@@ -169,7 +174,7 @@
      카드 — 크림 위에 얹힌 둥근 흰 면. 테두리 없이 옅은 그림자로만 구분.
      ========================================================================= */
   .card {
-    background: var(--card); border: none; border-radius: 22px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 22px;
     padding: 1.85rem 1.6rem; box-shadow: var(--shadow-card);
   }
   @media (max-width: 460px) { .card { padding: 1.35rem 1.15rem; border-radius: 18px; } }
@@ -400,7 +405,7 @@
     background: transparent; box-shadow: none; padding: 0; border-radius: 0;
   }
   .rcard, section.result-section {
-    display: block; background: var(--card); border: none; border-radius: 22px;
+    display: block; background: var(--card); border: 1px solid var(--line); border-radius: 22px;
     padding: 1.6rem 1.5rem; box-shadow: var(--shadow-card); margin: 0 0 0.85rem;
   }
   .rcard-title, section.result-section > h3 {
@@ -832,8 +837,8 @@
 
   .hero-visual { display: grid; gap: 0.8rem; }
   .hv-card {
-    background: var(--card); border-radius: 20px; padding: 1.1rem 1.2rem;
-    box-shadow: var(--shadow-card); display: grid; gap: 0.55rem;
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 1.1rem 1.2rem; box-shadow: var(--shadow-card); display: grid; gap: 0.55rem;
   }
   .hv-1 { margin-right: 2.5rem; }
   .hv-2 { margin-left: 2.5rem; }
@@ -854,7 +859,8 @@
 
   /* 콘텐츠 섹션 */
   .site-section { padding: 4rem 0; scroll-margin-top: 4.5rem; }
-  .site-section.alt { background: var(--surface); }
+  /* surface가 흰색이 되면서 교차가 사라진다 — 연회색으로 구분을 유지 */
+  .site-section.alt { background: var(--soft); }
   .section-eyebrow {
     font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--muted); margin: 0 0 0.5rem;
@@ -865,9 +871,10 @@
   }
   .feature-grid, .why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .feature-card, .why-card {
-    background: var(--card); border-radius: 22px; padding: 1.6rem 1.5rem; box-shadow: var(--shadow-card);
+    background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+    padding: 1.6rem 1.5rem; box-shadow: var(--shadow-card);
   }
-  .site-section.alt .why-card { background: var(--page); box-shadow: none; }
+  .site-section.alt .why-card { background: var(--card); }
   .feature-card h3, .why-card h3 {
     margin: 0 0 0.5rem; font-size: 1.05rem; font-weight: 600; word-break: keep-all;
   }
@@ -879,7 +886,8 @@
   /* FAQ */
   .faq-list { display: grid; gap: 0.6rem; }
   .faq-list details {
-    background: var(--card); border-radius: 16px; padding: 0 1.2rem; box-shadow: var(--shadow-card);
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 0 1.2rem; box-shadow: var(--shadow-card);
   }
   .faq-list summary {
     cursor: pointer; list-style: none; padding: 1.05rem 0; font-size: 0.95rem; font-weight: 600;
@@ -905,7 +913,7 @@
   .cta-band p { margin: 0 0 1.6rem; color: #bdb6ac; font-size: 0.98rem; }
 
   /* 푸터 */
-  .site-footer { background: var(--surface); padding: 3rem 0 1.6rem; border-top: 1px solid var(--line); }
+  .site-footer { background: var(--soft); padding: 3rem 0 1.6rem; border-top: 1px solid var(--line); }
   .footer-inner { display: grid; grid-template-columns: 1fr 2fr; gap: 2.5rem; }
   .foot-brand { display: flex; gap: 0.7rem; align-items: flex-start; }
   .foot-brand strong { font-size: 1rem; }
