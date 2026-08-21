@@ -116,13 +116,16 @@
   /* =========================================================================
      히어로 — 화면에 단 하나뿐인 다크 카드. 브랜드 · 제목 · 3단계 진행을 담는다.
      ========================================================================= */
+  /* 도구 영역 머리말. 예전에는 검은 카드였는데 히어로 바로 아래에서 시선을 뺏었고,
+     아이콘과 오른쪽 정렬 제목 사이가 크게 비어 보였다. 크림 위 밝은 줄로 바꾸고
+     제목은 왼쪽, 단계 표시는 오른쪽에 붙여 가운데 빈 공간을 없앴다. */
   .app-hero {
-    background: var(--card-dark); color: var(--on-dark);
-    border-radius: 24px; padding: 1.5rem 1.5rem 1.35rem;
-    margin-bottom: 1.1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem; flex-wrap: wrap;
+    padding: 0 0.4rem 1.1rem; margin-bottom: 1.4rem;
+    border-bottom: 1px solid var(--line);
   }
-  .app-hero *:focus-visible { outline-color: var(--accent); }
-  @media (max-width: 460px) { .app-hero { padding: 1.2rem 1.1rem 1.1rem; border-radius: 20px; } }
+  @media (max-width: 620px) { .app-hero { gap: 1rem; padding-bottom: 0.9rem; margin-bottom: 1.1rem; } }
 
   /* 원형 아이콘 (가이드라인 3절) — 코랄 원 안에 먹색 선 아이콘 6.84:1 */
   .brand-mark { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 1.15rem; }
@@ -132,55 +135,33 @@
     display: flex; align-items: center; justify-content: center; padding: 9px;
   }
 
-  header.page-header {
-    text-align: left; margin: 0 0 1.5rem; border: none; padding: 0;
-    display: grid; grid-template-columns: 1fr auto; column-gap: 1.2rem; align-items: start;
+  header.page-header { display: flex; align-items: center; gap: 0.75rem; margin: 0; }
+  header.page-header .ph-text { min-width: 0; }
+  header.page-header .badge-icon {
+    width: 38px; height: 38px; border-radius: 999px; flex: 0 0 auto;
+    background: var(--accent-2); color: #1a1a1a;
+    display: flex; align-items: center; justify-content: center; padding: 9px;
   }
-  header.page-header h1, header.page-header h2 {
-    grid-column: 1; grid-row: 1;
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 6.5vw, 1.7rem);
-    font-weight: 700; letter-spacing: -0.012em; line-height: 1.2;
-    margin: 0; color: var(--on-dark); text-wrap: balance;
-  }
-  header.page-header p {
-    grid-column: 1; grid-row: 2;
-    margin: 0.5rem 0 0; color: var(--on-dark); opacity: 0.72;
-    font-size: 0.92rem; line-height: 1.6; max-width: 30ch;
-  }
-  header.page-header .subhead {
-    grid-column: 2; grid-row: 1; justify-self: end;
-    margin: 0.15rem 0 0; text-align: right; white-space: nowrap;
-    display: block; background: none; padding: 0; border-radius: 0; max-width: none;
-  }
-  header.page-header .subhead .lat {
-    display: block; font-size: 0.62rem; font-weight: 600; color: var(--accent);
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  header.page-header .subhead .ko {
-    display: block; margin-top: 0.28rem; font-size: 0.66rem; font-weight: 500;
-    letter-spacing: 0; color: var(--on-dark); opacity: 0.55;
-  }
-  @media (max-width: 460px) {
-    header.page-header { grid-template-columns: 1fr; }
-    header.page-header .subhead { grid-column: 1; grid-row: 3; justify-self: start; text-align: left; margin-top: 0.9rem; }
-  }
+  header.page-header .badge-icon .mono-icon { width: 100%; height: 100%; stroke: currentColor; }
+  header.page-header h2 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em; }
+  header.page-header p { margin: 0.1rem 0 0; font-size: 0.84rem; color: var(--muted); }
 
-  /* ---- 진행 단계: 다크 카드 위 진행바. 현재 단계만 노랑 원 + 먹색 숫자 ---- */
   .stepper { display: flex; align-items: center; justify-content: flex-start; margin: 0; user-select: none; flex-wrap: wrap; row-gap: 0.5rem; }
   .stepper .step { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0; }
-  .stepper .step span.label { color: var(--on-dark); opacity: 0.55; transition: opacity 0.25s; }
+  /* 검은 카드에 얹혀 있을 때 흰색 계열로 잡아둔 색들 — 밝은 배경으로 바꾸면서
+     그대로 두면 글씨가 안 보인다(실제로 안 보였다). 크림 위 기준으로 다시 잡는다. */
+  .stepper .step span.label { color: var(--muted); transition: color 0.25s; }
   .stepper .dot {
     width: 28px; height: 28px; border-radius: 999px; border: none;
-    background: rgba(255, 255, 255, 0.11); color: var(--on-dark);
+    background: var(--soft); color: var(--muted);
     display: flex; align-items: center; justify-content: center; font-size: 0.76rem; font-weight: 600;
     transition: background 0.25s, color 0.25s;
   }
-  .stepper .step.done .dot { background: rgba(255, 255, 255, 0.22); color: var(--on-dark); }
+  .stepper .step.done .dot { background: var(--ink); color: var(--card); }
   .stepper .step.active .dot { background: var(--accent); color: #1a1a1a; font-weight: 700; }
-  .stepper .step.active span.label, .stepper .step.done span.label { opacity: 1; }
-  .stepper .step.active span.label { font-weight: 600; }
-  .stepper .connector { width: 34px; height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); margin: 0 0.6rem; transition: background 0.3s; }
+  .stepper .step.active span.label, .stepper .step.done span.label { color: var(--ink); }
+  .stepper .step.active span.label { font-weight: 700; }
+  .stepper .connector { width: 34px; height: 4px; border-radius: 999px; background: var(--soft); margin: 0 0.6rem; transition: background 0.3s; }
   .stepper .connector.filled { background: var(--accent); }
   @media (max-width: 400px) { .stepper .connector { width: 20px; margin: 0 0.4rem; } }
 
@@ -651,7 +632,7 @@
       display: grid; grid-template-columns: 1fr auto;
       align-items: center; column-gap: 2.5rem;
     }
-    .app-hero .stepper { margin: 0; justify-content: flex-end; }
+    .app-hero .stepper { margin: 0; }
 
     /* 입력 화면 — 사진 왼쪽 고정, 입력란 오른쪽 */
     #screen-form:not([style*="none"]) {
@@ -659,7 +640,17 @@
       grid-template-columns: minmax(240px, 300px) 1fr;
       column-gap: 2.4rem; align-items: start;
     }
-    #screen-form > :nth-child(1) { grid-column: 1; grid-row: 1 / span 5; }
+    /* 사진 칸은 오른쪽 입력들과 같은 높이를 차지하므로, 안쪽 업로드 영역도 같이 늘려
+       빈 공간을 없앤다 (늘리지 않았더니 아래가 통째로 비었다) */
+    #screen-form > :nth-child(1) {
+      grid-column: 1; grid-row: 1 / span 5;
+      display: flex; flex-direction: column;
+      /* 그리드에 align-items: start가 걸려 있어 그냥 두면 안 늘어난다.
+         이 칸만 stretch로 되돌려 오른쪽 입력들과 같은 높이를 채운다. */
+      align-self: stretch;
+    }
+    #screen-form > :nth-child(1) .drop-zone { flex: 1; min-height: 240px; justify-content: center; }
+    #screen-form > :nth-child(1) .polaroid { margin-top: auto; margin-bottom: auto; }
     #screen-form > :nth-child(n+2) { grid-column: 2; }
     #screen-form .polaroid { max-width: 100%; }
 
@@ -698,8 +689,8 @@
     }
     #screen-verify > button { grid-column: 1 / -1; }
 
-    /* 본문이 너무 길게 늘어지지 않도록 */
-    .m-reason, .preview-caption, .pin-note, .disclaimer { max-width: 46ch; }
+    /* 카드를 넓혀놓고 본문만 46ch로 묶어두면 글자가 좁게 흐르고 오른쪽이 빈다.
+       카드·컬럼 자체가 이미 폭을 잡아주므로 별도 제한을 두지 않는다. */
   }
 
 
@@ -911,11 +902,12 @@
 <main id="tool">
   <!-- 히어로: 화면에 단 하나뿐인 다크 카드 (가이드라인 5절 "다크 카드는 최대 하나") -->
   <div class="app-hero">
-  <div class="brand-mark"><span class="badge-icon" role="img" aria-label="안심앨범"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span></div>
   <header class="page-header">
-    <h2>사진 진단</h2>
-    <p>사진을 올리고 세 단계를 따라가면 돼요</p>
-    <div class="subhead"><span class="lat">Campus AX-Ton</span><span class="ko">멋쟁이사자처럼</span></div>
+    <span class="badge-icon" role="img" aria-label="안심앨범"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
+    <div class="ph-text">
+      <h2>사진 진단</h2>
+      <p>사진을 올리고 세 단계를 따라가면 돼요</p>
+    </div>
   </header>
 
   <div class="stepper" id="stepper">
@@ -2539,6 +2531,40 @@
     //
     // 프롬프트도 고쳤지만 부탁은 언제든 실패한다. 결과에서 인물 영역만 원본으로 되돌려
     // 구조적으로 차단한다 — 인페인팅에서 쓴 것과 같은 원칙이다.
+    // 사람 실루엣에 가까운 보호 도형을 그린다.
+    //
+    // 예전에는 computeSubjectRegion(얼굴 폭 3.2배 x 높이 7배)을 통째로 타원으로 덮었는데,
+    // 전신 사진에서 사진의 57%가 원본으로 되돌아갔다. AI가 배경을 바꿔도 절반 이상이
+    // 원래대로 덮여서 "AI를 쓴 게 맞냐"는 말이 나왔다(실사용 제보).
+    // 서 있는 아이는 어깨가 가장 넓고 다리로 갈수록 좁아지므로, 머리 타원 + 아래로
+    // 좁아지는 몸통 사다리꼴로 그린다. 같은 사진에서 보호 면적이 크게 줄어든다.
+    function drawPersonSilhouette(mctx, faceBox, imgW, imgH) {
+      var fw = faceBox.width, fh = faceBox.height;
+      var cx = faceBox.x + fw / 2;
+      var headTop = Math.max(0, faceBox.y - fh * 0.45);
+      var chin = faceBox.y + fh;
+
+      // 머리 (얼굴 상자보다 조금 넉넉하게 — 머리카락까지)
+      mctx.beginPath();
+      mctx.ellipse(cx, (headTop + chin) / 2, fw * 0.78, (chin - headTop) / 2 + fh * 0.1, 0, 0, Math.PI * 2);
+      mctx.fill();
+
+      // 몸통 — 어깨에서 발끝으로 갈수록 좁아지는 사다리꼴
+      var shoulderY = chin - fh * 0.1;
+      var footY = Math.min(imgH, faceBox.y + fh * 6.2);
+      // 아이 어깨는 얼굴 폭의 1.9배 안팎이다. 2.4배로 잡았더니 보호 면적이 사진의
+      // 40%나 돼서 배경 교체 효과가 거의 안 보였다.
+      var shoulderHalf = fw * 0.95;
+      var footHalf = fw * 0.5;
+      mctx.beginPath();
+      mctx.moveTo(cx - shoulderHalf, shoulderY);
+      mctx.lineTo(cx + shoulderHalf, shoulderY);
+      mctx.lineTo(cx + footHalf, footY);
+      mctx.lineTo(cx - footHalf, footY);
+      mctx.closePath();
+      mctx.fill();
+    }
+
     function restorePersonFromOriginal(resultCanvas, originalImg, faces, imgW, imgH) {
       if (!faces || faces.length === 0) return resultCanvas;
 
@@ -2549,18 +2575,10 @@
       var mask = document.createElement('canvas');
       mask.width = imgW; mask.height = imgH;
       var mctx = mask.getContext('2d');
-      var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.03));
+      var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.025));
       mctx.filter = 'blur(' + feather + 'px)';
       mctx.fillStyle = '#ffffff';
-      faces.forEach(function (f) {
-        var r = computeSubjectRegion(f.box, imgW, imgH);
-        var cx = (r.x0 + r.x1) / 2, cy = (r.y0 + r.y1) / 2;
-        var rx = Math.max(1, (r.x1 - r.x0) / 2) + feather * 0.5;
-        var ry = Math.max(1, (r.y1 - r.y0) / 2) + feather * 0.5;
-        mctx.beginPath();
-        mctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        mctx.fill();
-      });
+      faces.forEach(function (f) { drawPersonSilhouette(mctx, f.box, imgW, imgH); });
       mctx.filter = 'none';
 
       var pctx = personLayer.getContext('2d');
@@ -2771,9 +2789,20 @@
     var conn2 = document.getElementById('conn2');
     var STEP_MAP = { form: 'form', analyzing: 'form', result: 'form', correct: 'correct', verify: 'verify' };
 
+    // 새 진단을 시작하면 직전 결과 이미지가 남아 있으면 안 된다
+    function clearPreviewAfter() {
+      var pv = document.getElementById('previewAfter');
+      if (pv) pv.removeAttribute('src');
+      currentCorrectionCanvas = null;
+    }
+
     function showScreen(name) {
       Object.keys(screens).forEach(function (k) { screens[k].style.display = 'none'; });
       screens[name].style.display = 'block';
+      // 랜딩 페이지 구조로 바뀐 뒤로 페이지가 길어져서, 화면을 전환하면 이전 스크롤
+      // 위치가 그대로 남아 엉뚱한 곳(주로 맨 아래)에 머물렀다. 도구 영역 위쪽으로 올려준다.
+      var toolEl = document.getElementById('tool');
+      if (toolEl && toolEl.scrollIntoView) toolEl.scrollIntoView({ block: 'start' });
       var order = ['form', 'correct', 'verify'];
       var activeIndex = order.indexOf(STEP_MAP[name]);
       var stepEls = stepperEl.querySelectorAll('.step');
@@ -3390,6 +3419,11 @@
 
     document.getElementById('goCorrectBtn').addEventListener('click', async function () {
       document.getElementById('previewBeforeThumb').src = uploadedPhotoUrl;
+      // 이전 사진의 처리 결과가 잠깐 보였다가 바뀌는 게 거슬린다는 지적.
+      // 새 결과를 만들기 전에 비워둔다.
+      var pv = document.getElementById('previewAfter');
+      pv.removeAttribute('src');
+      currentCorrectionCanvas = null;
       showScreen('correct');
       renderTargetPicker();
 
@@ -3930,6 +3964,7 @@
       computeClothingRegion: computeClothingRegion,
       buildClothingMask: buildClothingMask,
       restorePersonFromOriginal: restorePersonFromOriginal,
+      computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
