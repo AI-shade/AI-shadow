@@ -734,6 +734,9 @@
        태그와 설명이 좌우로 흩어져 눈이 왔다 갔다 했다. 한 줄기로 읽히게 둔다. */
     #screen-verify:not([style*="none"]) { display: block !important; }
     #screen-verify > * { max-width: 46rem; margin-left: auto; margin-right: auto; }
+    /* 버튼이 inline-block이면 auto 마진으로 가운데 정렬되지 않는다 — 실제로 왼쪽으로
+       치우쳐 있었다. 블록으로 바꿔야 위 규칙이 먹는다. */
+    #screen-verify > button { display: block; }
 
     /* 카드를 넓혀놓고 본문만 46ch로 묶어두면 글자가 좁게 흐르고 오른쪽이 빈다.
        카드·컬럼 자체가 이미 폭을 잡아주므로 별도 제한을 두지 않는다. */
