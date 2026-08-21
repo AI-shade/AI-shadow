@@ -356,6 +356,10 @@
   /* 종합 위험도 — 숫자를 원형 게이지 안에 넣고 설명을 바로 옆에 붙인다.
      예전에는 숫자가 카드 맨 왼쪽, 반원 호가 맨 오른쪽이라 가운데가 통째로 비었고,
      호 하나만 있으니 그게 무엇을 뜻하는지도 읽히지 않았다. */
+  /* 카드 높이가 같아지면 내용이 위로 쏠려 보이므로 세로 가운데로 모아준다 */
+  .rcard-score, .rcard-location { display: flex; flex-direction: column; }
+  .rcard-score .gauge-wrap { flex: 1; align-items: center; }
+
   .gauge-wrap {
     display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap;
     margin: 0; padding: 0; background: transparent; text-align: left;
@@ -439,6 +443,16 @@
   /* 감지 결과에 오탐이 섞이면 자동으로 전부 처리했을 때 엉뚱한 곳이 보정된다.
      무엇을 고칠지는 사용자가 고른다. */
   .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
+
+  .blur-strength { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .bs-label { font-size: 0.82rem; font-weight: 600; }
+  .bs-options { display: flex; gap: 0.35rem; background: var(--soft); border-radius: 999px; padding: 0.25rem; }
+  .bs-btn {
+    border: none; background: transparent; color: var(--muted); cursor: pointer;
+    font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px;
+  }
+  .bs-btn:hover { color: var(--ink); }
+  .bs-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
 
   .checkline {
     display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem;
@@ -633,7 +647,10 @@
     #screen-result:not([style*="none"]) {
       display: grid !important;
       grid-template-columns: 1fr 1fr;
-      gap: 0.9rem 1.1rem; align-items: start;
+      gap: 0.9rem 1.1rem;
+      /* stretch(기본)여야 같은 줄 카드의 높이가 맞는다. start로 두면 내용 길이에 따라
+         아랫변이 제각각이 되고, 점수를 불러오는 동안에는 더 크게 어긋난다. */
+      align-items: stretch;
       grid-auto-flow: row dense;
     }
     /* 종합 위험도와 위치노출 위험도를 나란히 둔다. 점수 카드를 가로 전체로 두면
@@ -1042,6 +1059,15 @@
       Claude가 위험요소별 보정 방식을 추천했어요
     </h3>
     <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
+
+    <div class="blur-strength" id="blurStrength" style="display:none;">
+      <span class="bs-label">흐림 정도</span>
+      <div class="bs-options" role="group" aria-label="흐림 정도">
+        <button type="button" class="bs-btn" data-blur="8">약하게</button>
+        <button type="button" class="bs-btn selected" data-blur="18">보통</button>
+        <button type="button" class="bs-btn" data-blur="32">강하게</button>
+      </div>
+    </div>
 
     <div class="target-picker" id="targetPicker" style="display:none;">
       <p class="target-picker-head">보정할 항목을 골라주세요 <span class="hint">체크한 것만 처리해요</span></p>
@@ -2571,15 +2597,64 @@
       return { x0: left, y0: top, x1: right, y1: bottom };
     }
 
-    function applyBackgroundBlur(img, faces, imgW, imgH) {
+    // AI 배경 교체 결과 위에 원본 인물을 다시 덮는다.
+    //
+    // kontext는 마스크가 없어서 이미지 전체를 새로 그린다. 인물 보호를 프롬프트 부탁에만
+    // 맡겼더니 실제로 아이 성별이 바뀌어 돌아온 적이 있다(2026-08-21, 여자아이 -> 남자아이).
+    // 위치노출 근거에 "원복·명찰"이 들어가면서 Claude가 "Replace the uniform with plain
+    // clothing"이라는 지시를 만들었고, 막을 마스크가 없으니 모델이 사람을 새로 그렸다.
+    //
+    // 프롬프트도 고쳤지만 부탁은 언제든 실패한다. 결과에서 인물 영역만 원본으로 되돌려
+    // 구조적으로 차단한다 — 인페인팅에서 쓴 것과 같은 원칙이다.
+    function restorePersonFromOriginal(resultCanvas, originalImg, faces, imgW, imgH) {
+      if (!faces || faces.length === 0) return resultCanvas;
+
+      var personLayer = document.createElement('canvas');
+      personLayer.width = imgW; personLayer.height = imgH;
+      personLayer.getContext('2d').drawImage(originalImg, 0, 0, imgW, imgH);
+
+      var mask = document.createElement('canvas');
+      mask.width = imgW; mask.height = imgH;
+      var mctx = mask.getContext('2d');
+      var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.03));
+      mctx.filter = 'blur(' + feather + 'px)';
+      mctx.fillStyle = '#ffffff';
+      faces.forEach(function (f) {
+        var r = computeSubjectRegion(f.box, imgW, imgH);
+        var cx = (r.x0 + r.x1) / 2, cy = (r.y0 + r.y1) / 2;
+        var rx = Math.max(1, (r.x1 - r.x0) / 2) + feather * 0.5;
+        var ry = Math.max(1, (r.y1 - r.y0) / 2) + feather * 0.5;
+        mctx.beginPath();
+        mctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        mctx.fill();
+      });
+      mctx.filter = 'none';
+
+      var pctx = personLayer.getContext('2d');
+      pctx.globalCompositeOperation = 'destination-in';
+      pctx.drawImage(mask, 0, 0);
+
+      resultCanvas.getContext('2d').drawImage(personLayer, 0, 0);
+      return resultCanvas;
+    }
+
+    // 배경 흐림. blurPx로 강도를 받는다 (사용자가 화면에서 고른다).
+    //
+    // 선명하게 남길 영역을 예전에는 방사형 그라데이션으로 그렸는데, 중심을 "피사체
+    // 영역의 한가운데"로 잡은 게 문제였다. computeSubjectRegion은 얼굴 높이의 7배짜리
+    // 세로로 긴 영역이라 중심이 허리쯤에 오고, 정작 얼굴은 위쪽 가장자리라 흐림 구간에
+    // 걸려 같이 뭉개졌다. 지금은 영역 전체를 꽉 채운 뒤 마스크 자체를 흐려서 가장자리만
+    // 부드럽게 만든다 — 얼굴이든 발끝이든 영역 안이면 100% 선명하게 남는다.
+    function applyBackgroundBlur(img, faces, imgW, imgH, blurPx) {
+      var strength = Math.max(2, Math.min(60, blurPx || 18));
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
       var ctx = canvas.getContext('2d');
-      ctx.filter = 'blur(18px)';
+      ctx.filter = 'blur(' + strength + 'px)';
       ctx.drawImage(img, 0, 0, imgW, imgH);
       ctx.filter = 'none';
 
-      if (!faces || faces.length === 0) return canvas; // 얼굴이 없으면 전체 블러만
+      if (!faces || faces.length === 0) return canvas; // 얼굴이 없으면 전체 흐림만
 
       var sharp = document.createElement('canvas');
       sharp.width = imgW; sharp.height = imgH;
@@ -2588,22 +2663,20 @@
       var maskCanvas = document.createElement('canvas');
       maskCanvas.width = imgW; maskCanvas.height = imgH;
       var mctx = maskCanvas.getContext('2d');
+      var feather = Math.max(10, Math.round(Math.min(imgW, imgH) * 0.05));
+      mctx.filter = 'blur(' + feather + 'px)';
+      mctx.fillStyle = '#ffffff';
       faces.forEach(function (f) {
-        var region = computeSubjectRegion(f.box, imgW, imgH);
-        var cx = (region.x0 + region.x1) / 2, cy = (region.y0 + region.y1) / 2;
-        var rx = Math.max(1, (region.x1 - region.x0) / 2), ry = Math.max(1, (region.y1 - region.y0) / 2);
-        mctx.save();
-        mctx.translate(cx, cy);
-        mctx.scale(1, ry / rx); // 타원 feather를 원형 그라데이션으로 그리기 위한 스케일 트릭
-        var grad = mctx.createRadialGradient(0, 0, rx * 0.55, 0, 0, rx);
-        grad.addColorStop(0, 'rgba(255,255,255,1)');
-        grad.addColorStop(1, 'rgba(255,255,255,0)');
-        mctx.fillStyle = grad;
+        var r = computeSubjectRegion(f.box, imgW, imgH);
+        var cx = (r.x0 + r.x1) / 2, cy = (r.y0 + r.y1) / 2;
+        // 흐린 가장자리가 영역 밖으로 번지도록 살짝 키운다 — 안쪽은 완전히 불투명해진다
+        var rx = Math.max(1, (r.x1 - r.x0) / 2) + feather * 0.6;
+        var ry = Math.max(1, (r.y1 - r.y0) / 2) + feather * 0.6;
         mctx.beginPath();
-        mctx.arc(0, 0, rx, 0, Math.PI * 2);
+        mctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
         mctx.fill();
-        mctx.restore();
       });
+      mctx.filter = 'none';
 
       var sctx = sharp.getContext('2d');
       sctx.globalCompositeOperation = 'destination-in';
@@ -3324,6 +3397,7 @@
     // 보정 대상 선택 — 감지에 오탐이 섞일 수 있으므로 사용자가 직접 고른다.
     // null이면 "아직 목록을 만들지 않았다"는 뜻이고 그 땐 전체가 대상이다.
     var selectedTargetIdx = null;
+    var currentBlurPx = 18; // 흐림 강도 — 화면에서 고른다
 
     function getSelectedTexts() {
       var all = correctionTextWords || [];
@@ -3494,6 +3568,7 @@
       currentMethod = method;
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
       editInstruction.style.display = method === 'ai' ? 'block' : 'none';
+      document.getElementById('blurStrength').style.display = method === 'blur' ? 'flex' : 'none';
       uncroppableWarning.style.display = 'none';
 
       clearPreviewBusy();
@@ -3652,6 +3727,9 @@
           outCanvas.width = srcImg.naturalWidth;
           outCanvas.height = srcImg.naturalHeight;
           outCanvas.getContext('2d').drawImage(outImg, 0, 0, outCanvas.width, outCanvas.height);
+          // 프롬프트로 부탁하는 것과 별개로, 인물 영역은 원본으로 되돌려 확실히 막는다
+          restorePersonFromOriginal(outCanvas, srcImg, (lastFaceResult && lastFaceResult.faces) || [],
+            outCanvas.width, outCanvas.height);
           if (outImg.naturalWidth !== srcImg.naturalWidth || outImg.naturalHeight !== srcImg.naturalHeight) {
             console.log('[AI배경교체] 크기 보정 — ' + outImg.naturalWidth + 'x' + outImg.naturalHeight
               + ' -> ' + outCanvas.width + 'x' + outCanvas.height);
@@ -3659,7 +3737,7 @@
           clearPreviewBusy();
           currentCorrectionCanvas = outCanvas;
           previewAfter.src = outCanvas.toDataURL('image/png');
-          previewCaption.textContent = '✨ AI가 위험 배경을 새로 그렸어요 — 인물은 그대로 유지하도록 지시했어요. (약 $' + fluxData.estimatedCostUsd.toFixed(2) + ', ' + Math.round(fluxData.timingMs / 1000) + '초)';
+          previewCaption.textContent = '✨ AI가 위험 배경을 새로 그렸어요 — 아이 영역은 원본을 그대로 덮어써서 지켰어요. (약 $' + fluxData.estimatedCostUsd.toFixed(2) + ', ' + Math.round(fluxData.timingMs / 1000) + '초)';
           editInstruction.textContent = '사용된 편집 지시(영문): ' + fluxData.editPrompt;
           lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 편집 지시: ' + fluxData.editPrompt };
         } catch (err) {
@@ -3703,7 +3781,7 @@
           previewCaption.textContent += ' (아이를 자르지 않으려다 보니 이번엔 원본 비율을 유지하지 못했어요.)';
         }
       } else if (method === 'blur') {
-        canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight);
+        canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight, currentBlurPx);
         previewCaption.textContent = '인물모드처럼 배경만 흐려지고, 아이(몸통 포함)는 선명하게 유지돼요.';
       } else if (method === 'sticker') {
         canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight);
@@ -3716,6 +3794,15 @@
     }
     methodCards.forEach(function (card) {
       card.addEventListener('click', function () { selectMethod(card.dataset.method); });
+    });
+
+    document.querySelectorAll('.bs-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.bs-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        currentBlurPx = Number(btn.dataset.blur);
+        selectMethod('blur');
+      });
     });
 
     document.getElementById('downloadResultBtn').addEventListener('click', function () {
@@ -3899,6 +3986,8 @@
       buildInpaintMask: buildInpaintMask,
       computeClothingRegion: computeClothingRegion,
       buildClothingMask: buildClothingMask,
+      restorePersonFromOriginal: restorePersonFromOriginal,
+      applyBackgroundBlur: applyBackgroundBlur,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
