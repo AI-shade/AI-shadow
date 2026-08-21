@@ -449,7 +449,21 @@
      무엇을 고칠지는 사용자가 고른다. */
   .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
 
-  .cover-hint { font-size: 0.82rem; color: var(--muted); margin: 0 0 0.9rem; }
+  .cover-tools { margin-bottom: 0.9rem; }
+  .cover-tool-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .ct-only-brush { display: none; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .cover-tools.is-brush .ct-only-brush { display: flex; }
+  /* 도형 모드에서 크기를 조절하는 모서리 손잡이 */
+  .cover-grip {
+    position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--accent-2); right: -7px; bottom: -7px;
+    cursor: nwse-resize; touch-action: none;
+  }
+  /* 브러시로 칠하는 층 */
+  .brush-layer { position: absolute; inset: 0; z-index: 3; cursor: crosshair; touch-action: none; }
+  .brush-layer canvas { width: 100%; height: 100%; display: block; }
+
+  .cover-hint { font-size: 0.82rem; color: var(--muted); margin: 0; line-height: 1.7; }
   /* 자동으로 잡은 위치가 빗나갈 수 있어 사용자가 직접 끌어 맞춘다 */
   .cover-handle {
     position: absolute; border: 2px solid var(--accent-2); border-radius: 6px;
@@ -1132,7 +1146,21 @@
       <input type="range" id="fillPixel" class="bs-range" min="6" max="48" step="2" value="16" />
       <output class="bs-value" id="fillPixelValue" for="fillPixel">16</output>
     </div>
-    <p class="cover-hint" id="coverHint" style="display:none;"><strong>자동으로 찾은 위치예요.</strong> 글자에서 어긋났으면 상자를 끌어서 맞춰주세요 — 맞춰야 그 자리가 제대로 처리돼요.</p>
+    <div class="cover-tools" id="coverTools" style="display:none;">
+      <p class="cover-hint"><strong>자동으로 찾은 위치예요.</strong> 어긋났으면 직접 맞춰주세요 — 맞춰야 그 자리가 제대로 처리돼요.</p>
+      <div class="cover-tool-row">
+        <div class="bs-options" role="group" aria-label="편집 방식">
+          <button type="button" class="ct-btn selected" data-edit="shape">도형</button>
+          <button type="button" class="ct-btn" data-edit="brush">브러시</button>
+        </div>
+        <span class="ct-only-brush">
+          <label class="bs-label" for="brushSize">붓 굵기</label>
+          <input type="range" id="brushSize" class="bs-range" min="8" max="80" step="2" value="28" />
+          <output class="bs-value" id="brushSizeValue">28</output>
+          <button type="button" class="ghost-link" id="brushClear">칠한 곳 지우기</button>
+        </span>
+      </div>
+    </div>
 
     <div class="blur-strength" id="blurStrength" style="display:none;">
       <label class="bs-label" for="blurRange">흐림 정도</label>
@@ -2566,6 +2594,11 @@
         x.fillRect(b.x0 - pad, b.y0 - pad, (b.x1 - b.x0) + pad * 2, (b.y1 - b.y0) + pad * 2);
       });
 
+      // 사용자가 브러시로 칠한 곳도 새로 그릴 영역이다
+      if (brushMaskCanvas && brushMaskHasPaint()) {
+        x.drawImage(brushMaskCanvas, 0, 0, imgW, imgH);
+      }
+
       // 아이 보존영역을 마지막에 덮어써서 텍스트와 겹치더라도 아이 보호가 항상 이기게 함
       x.fillStyle = '#000000';
       (subjectRegions || []).forEach(function (r) {
@@ -2788,7 +2821,7 @@
       return { color: color, uniform: stdev < 18, stdev: stdev };
     }
 
-    function applyPatchFill(img, texts, imgW, imgH, mode, cellPx) {
+    function applyPatchFill(img, texts, imgW, imgH, mode, cellPx, brushMask) {
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
       var ctx = canvas.getContext('2d');
@@ -2819,6 +2852,24 @@
           drawMosaic(ctx, clean, box, cellPx);
         }
       });
+
+      // 브러시로 칠한 영역 — 상자가 아니라 자유 형태라 "효과를 입힌 이미지"를 만들고
+      // 칠한 곳만 남겨서 덮는 방식으로 처리한다.
+      if (brushMask) {
+        var effect = document.createElement('canvas');
+        effect.width = imgW; effect.height = imgH;
+        var ectx = effect.getContext('2d');
+        if (mode === 'color') {
+          var st = sampleBoxSurround(clean, { x0: 0, y0: 0, x1: imgW, y1: imgH });
+          ectx.fillStyle = 'rgb(' + st.color[0] + ',' + st.color[1] + ',' + st.color[2] + ')';
+          ectx.fillRect(0, 0, imgW, imgH);
+        } else {
+          drawMosaic(ectx, clean, { x0: 0, y0: 0, x1: imgW, y1: imgH }, cellPx);
+        }
+        ectx.globalCompositeOperation = 'destination-in';
+        ectx.drawImage(brushMask, 0, 0);
+        ctx.drawImage(effect, 0, 0);
+      }
       return canvas;
     }
 
@@ -3470,6 +3521,24 @@
     var currentBlurPx = 18;   // 흐림 강도 — 화면에서 고른다
     var currentFill = 'auto'; // 덮는 방식 — 자동 / 주변색 / 모자이크
     var currentFillPx = 16;   // 모자이크 픽셀 크기
+    var coverEditMode = 'shape'; // 'shape'(도형) | 'brush'(직접 칠하기)
+    var brushSizePx = 28;
+    var brushMaskCanvas = null;  // 원본 해상도의 흑백 마스크 — 흰색이 칠한 곳
+
+    function ensureBrushMask(w, h) {
+      if (!brushMaskCanvas || brushMaskCanvas.width !== w || brushMaskCanvas.height !== h) {
+        brushMaskCanvas = document.createElement('canvas');
+        brushMaskCanvas.width = w; brushMaskCanvas.height = h;
+      }
+      return brushMaskCanvas;
+    }
+
+    function brushMaskHasPaint() {
+      if (!brushMaskCanvas) return false;
+      var d = brushMaskCanvas.getContext('2d').getImageData(0, 0, brushMaskCanvas.width, brushMaskCanvas.height).data;
+      for (var i = 3; i < d.length; i += 40) { if (d[i] > 10) return true; }
+      return false;
+    }
 
     function getSelectedTexts() {
       var all = correctionTextWords || [];
@@ -3654,11 +3723,67 @@
       // 예전에는 '자연스럽게 덮기'에서만 보였는데, 위치가 맞는지 확인하는 일은 방식을
       // 고르기 전에 해야 한다. 텍스트를 쓰는 방식에서는 항상 보여준다.
       var usesText = currentMethod === 'sticker' || currentMethod === 'inpaint';
-      document.getElementById('coverHint').style.display = usesText ? 'block' : 'none';
+      var tools = document.getElementById('coverTools');
+      tools.style.display = usesText ? 'block' : 'none';
+      tools.classList.toggle('is-brush', coverEditMode === 'brush');
+      frame.querySelectorAll('.brush-layer').forEach(function (b) { b.remove(); });
       if (!usesText) return;
 
       var img = document.getElementById('previewAfter');
       if (!img.naturalWidth) return;
+      var rect0 = img.getBoundingClientRect();
+      var fRect0 = frame.getBoundingClientRect();
+
+      if (coverEditMode === 'brush') {
+        var layer = document.createElement('div');
+        layer.className = 'brush-layer';
+        layer.style.left = (rect0.left - fRect0.left) + 'px';
+        layer.style.top = (rect0.top - fRect0.top) + 'px';
+        layer.style.width = rect0.width + 'px';
+        layer.style.height = rect0.height + 'px';
+        layer.style.right = 'auto'; layer.style.bottom = 'auto';
+
+        var view = document.createElement('canvas');
+        view.width = Math.round(rect0.width); view.height = Math.round(rect0.height);
+        layer.appendChild(view);
+        frame.appendChild(layer);
+
+        var mask = ensureBrushMask(img.naturalWidth, img.naturalHeight);
+        var mctx = mask.getContext('2d');
+        var vctx = view.getContext('2d');
+        var scale = img.naturalWidth / rect0.width;
+
+        var repaint = function () {
+          vctx.clearRect(0, 0, view.width, view.height);
+          vctx.globalAlpha = 0.45;
+          vctx.drawImage(mask, 0, 0, view.width, view.height);
+          vctx.globalAlpha = 1;
+        };
+        repaint();
+
+        var painting = false;
+        var paintAt = function (ev) {
+          var b = view.getBoundingClientRect();
+          var x = (ev.clientX - b.left) * scale, y = (ev.clientY - b.top) * scale;
+          mctx.fillStyle = '#ffffff';
+          mctx.beginPath();
+          mctx.arc(x, y, brushSizePx * scale / 2, 0, Math.PI * 2);
+          mctx.fill();
+          repaint();
+        };
+        layer.addEventListener('pointerdown', function (ev) {
+          ev.preventDefault(); painting = true;
+          layer.setPointerCapture(ev.pointerId); paintAt(ev);
+        });
+        layer.addEventListener('pointermove', function (ev) { if (painting) paintAt(ev); });
+        layer.addEventListener('pointerup', function (ev) {
+          painting = false;
+          if (layer.releasePointerCapture) layer.releasePointerCapture(ev.pointerId);
+          selectMethod(currentMethod); // 칠한 대로 다시 그린다
+        });
+        return;
+      }
+
       var texts = getSelectedTexts();
       if (texts.length === 0) return;
 
@@ -3697,6 +3822,28 @@
           if (el.releasePointerCapture) el.releasePointerCapture(ev.pointerId);
           selectMethod(currentMethod); // 옮긴 위치로 다시 그린다
         });
+        // 크기 조절 손잡이 — 상자만 옮길 수 있으면 글자를 다 못 덮는 경우가 있다
+        var grip = document.createElement('div');
+        grip.className = 'cover-grip';
+        var gx = 0, gy = 0, gw = 0, gh = 0;
+        grip.addEventListener('pointerdown', function (ev) {
+          ev.preventDefault(); ev.stopPropagation();
+          grip.setPointerCapture(ev.pointerId);
+          gx = ev.clientX; gy = ev.clientY; gw = w.wPct; gh = w.hPct;
+        });
+        grip.addEventListener('pointermove', function (ev) {
+          if (!grip.hasPointerCapture || !grip.hasPointerCapture(ev.pointerId)) return;
+          w.wPct = Math.max(1, Math.min(100, gw + (ev.clientX - gx) / rect.width * 200));
+          w.hPct = Math.max(1, Math.min(100, gh + (ev.clientY - gy) / rect.height * 200));
+          w.approximate = false;
+          setPos();
+        });
+        grip.addEventListener('pointerup', function (ev) {
+          if (grip.releasePointerCapture) grip.releasePointerCapture(ev.pointerId);
+          selectMethod(currentMethod);
+        });
+        el.appendChild(grip);
+
         frame.appendChild(el);
       });
     }
@@ -3918,7 +4065,8 @@
           ? '인물모드처럼 배경만 흐려지고, 아이(몸통 포함)는 선명하게 유지돼요.'
           : '얼굴을 찾지 못해서 사진 전체가 흐려졌어요. 인물만 선명하게 남기려면 얼굴이 정면으로 보이는 사진이어야 해요 — 지금은 글자를 가리는 용도로만 쓸 수 있어요.';
       } else if (method === 'sticker') {
-        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx);
+        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx,
+          brushMaskHasPaint() ? brushMaskCanvas : null);
         // 지울 게 없으면 원본이 그대로 나와서 "아무 일도 안 일어난 것"처럼 보인다.
         // 실제로 "적용이 안 된다"는 오해를 부른 지점이라 이유를 분명히 말해준다.
         previewCaption.textContent = texts.length === 0
@@ -3934,6 +4082,29 @@
     }
     methodCards.forEach(function (card) {
       card.addEventListener('click', function () { selectMethod(card.dataset.method); });
+    });
+
+    document.querySelectorAll('.ct-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.ct-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        coverEditMode = btn.dataset.edit;
+        renderCoverHandles();
+      });
+    });
+
+    var brushSizeEl = document.getElementById('brushSize');
+    var brushSizeValueEl = document.getElementById('brushSizeValue');
+    brushSizeEl.addEventListener('input', function () {
+      brushSizePx = Number(brushSizeEl.value);
+      brushSizeValueEl.textContent = brushSizePx;
+    });
+
+    document.getElementById('brushClear').addEventListener('click', function () {
+      if (brushMaskCanvas) {
+        brushMaskCanvas.getContext('2d').clearRect(0, 0, brushMaskCanvas.width, brushMaskCanvas.height);
+      }
+      selectMethod(currentMethod);
     });
 
     var fillPixelEl = document.getElementById('fillPixel');
@@ -4139,6 +4310,7 @@
       polaroidPreview.style.display = 'none';
       fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
       fluxConsentGiven = false; // 새 사진이면 동의를 다시 받는다
+      brushMaskCanvas = null;   // 칠한 것도 사진마다 초기화
       document.getElementById('captionInput').value = '';
       document.getElementById('companions').value = '';
       document.getElementById('backgroundNotes').value = '';
