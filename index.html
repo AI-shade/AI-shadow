@@ -68,20 +68,22 @@
 
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
+  /* 랜딩 페이지 구조(네비 - 히어로 - 도구 - 섹션 - 푸터)를 담으려면 일반 흐름이어야 한다.
+     예전에는 body가 flex라 앱 카드 하나만 가운데 놓는 구조였다. */
   body {
     margin: 0;
     font-family: var(--font-body);
     background: var(--page);
     color: var(--ink);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2.4rem 1.1rem 4.5rem;
+    padding: 0;
     -webkit-font-smoothing: antialiased;
   }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   /* 앱 본체 — 바닥(--page) 위에 얹힌 크림 판. 그 위에 흰 카드가 다시 얹힌다. */
   main {
     width: 100%; max-width: 660px;
+    margin: 0 auto; scroll-margin-top: 5rem;
     background: var(--surface);
     border-radius: 30px;
     padding: 1.3rem 1.3rem 2rem;
@@ -134,7 +136,7 @@
     text-align: left; margin: 0 0 1.5rem; border: none; padding: 0;
     display: grid; grid-template-columns: 1fr auto; column-gap: 1.2rem; align-items: start;
   }
-  header.page-header h1 {
+  header.page-header h1, header.page-header h2 {
     grid-column: 1; grid-row: 1;
     font-family: var(--font-display);
     font-size: clamp(1.5rem, 6.5vw, 1.7rem);
@@ -641,15 +643,219 @@
     .m-reason, .preview-caption, .pin-note, .disclaimer { max-width: 46ch; }
   }
 
+
+  /* ===================== 웹사이트 구조 ===================== */
+  .section-inner { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 1.4rem; }
+  .section-inner.narrow { max-width: 760px; }
+
+  /* 네비게이션 */
+  .site-nav {
+    position: sticky; top: 0; z-index: 500;
+    background: var(--page);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    width: 100%; max-width: 1120px; margin: 0 auto; padding: 0.75rem 1.4rem;
+    display: flex; align-items: center; gap: 1.4rem;
+  }
+  .nav-brand {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-weight: 700; font-size: 1rem; color: var(--ink); text-decoration: none;
+    letter-spacing: -0.01em; flex: 0 0 auto;
+  }
+  .nav-mark {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent-2);
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .nav-mark .mono-icon { width: 17px; height: 17px; stroke: var(--ink); }
+  .nav-links { list-style: none; display: flex; gap: 1.4rem; margin: 0 auto 0 1rem; padding: 0; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+    padding: 0.35rem 0; border-bottom: 2px solid transparent;
+  }
+  .nav-links a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+  .nav-cta {
+    flex: 0 0 auto; background: var(--ink); color: var(--surface); text-decoration: none;
+    font-size: 0.84rem; font-weight: 600; padding: 0.55rem 1.1rem; border-radius: 999px;
+  }
+  .nav-cta:hover { background: var(--card-dark); }
+  @media (max-width: 860px) { .nav-links { display: none; } .nav-inner { justify-content: space-between; } }
+
+  /* 히어로 */
+  .hero { padding: 4rem 0 3.2rem; }
+  .hero-inner {
+    width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 1.4rem;
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
+  }
+  .hero-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
+    background: var(--accent); color: var(--ink); padding: 0.32rem 0.8rem; border-radius: 999px;
+    margin-bottom: 1.1rem;
+  }
+  .hero-title {
+    font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 700; letter-spacing: -0.025em;
+    line-height: 1.25; margin: 0 0 1rem; word-break: keep-all;
+  }
+  .hero-sub {
+    font-size: 1.02rem; color: var(--muted); line-height: 1.75;
+    margin: 0 0 1.8rem; max-width: 34rem; word-break: keep-all;
+  }
+  .hero-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+  .btn-primary, .btn-ghost {
+    display: inline-block; text-decoration: none; font-weight: 600; font-size: 0.95rem;
+    padding: 0.8rem 1.6rem; border-radius: 999px;
+  }
+  .btn-primary { background: var(--accent); color: var(--ink); }
+  .btn-ghost { background: transparent; color: var(--ink); box-shadow: 0 0 0 1.5px var(--line) inset; }
+  .btn-ghost:hover { background: var(--soft); }
+  .hero-note { font-size: 0.8rem; color: var(--muted); margin: 0; }
+
+  .hero-visual { display: grid; gap: 0.8rem; }
+  .hv-card {
+    background: var(--card); border-radius: 20px; padding: 1.1rem 1.2rem;
+    box-shadow: var(--shadow-card); display: grid; gap: 0.55rem;
+  }
+  .hv-1 { margin-right: 2.5rem; }
+  .hv-2 { margin-left: 2.5rem; }
+  .hv-3 { margin-right: 4.5rem; }
+  .hv-tag {
+    font-size: 0.74rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px;
+    background: var(--soft); color: var(--muted); justify-self: start;
+  }
+  .hv-tag.risk { background: var(--risk-high-soft); color: var(--risk-high); }
+  .hv-tag.ok { background: var(--accent); color: var(--ink); }
+  .hv-line { height: 8px; border-radius: 999px; background: var(--soft); }
+  .hv-line.short { width: 55%; }
+  @media (max-width: 900px) {
+    .hero { padding: 2.6rem 0 2rem; }
+    .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .hero-visual { display: none; }
+  }
+
+  /* 콘텐츠 섹션 */
+  .site-section { padding: 4rem 0; scroll-margin-top: 4.5rem; }
+  .site-section.alt { background: var(--surface); }
+  .section-eyebrow {
+    font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .section-title {
+    font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: -0.02em;
+    margin: 0 0 2.2rem; word-break: keep-all;
+  }
+  .feature-grid, .why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .feature-card, .why-card {
+    background: var(--card); border-radius: 22px; padding: 1.6rem 1.5rem; box-shadow: var(--shadow-card);
+  }
+  .site-section.alt .why-card { background: var(--page); box-shadow: none; }
+  .feature-card h3, .why-card h3 {
+    margin: 0 0 0.5rem; font-size: 1.05rem; font-weight: 600; word-break: keep-all;
+  }
+  .feature-card p, .why-card p {
+    margin: 0; font-size: 0.9rem; line-height: 1.75; color: var(--muted); word-break: keep-all;
+  }
+  @media (max-width: 760px) { .feature-grid, .why-grid { grid-template-columns: 1fr; } }
+
+  /* FAQ */
+  .faq-list { display: grid; gap: 0.6rem; }
+  .faq-list details {
+    background: var(--card); border-radius: 16px; padding: 0 1.2rem; box-shadow: var(--shadow-card);
+  }
+  .faq-list summary {
+    cursor: pointer; list-style: none; padding: 1.05rem 0; font-size: 0.95rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; word-break: keep-all;
+  }
+  .faq-list summary::-webkit-details-marker { display: none; }
+  .faq-list summary::after {
+    content: "+"; font-size: 1.2rem; font-weight: 400; color: var(--muted); flex: 0 0 auto;
+  }
+  .faq-list details[open] summary::after { content: "\2212"; }
+  .faq-list p {
+    margin: 0; padding: 0 0 1.15rem; font-size: 0.9rem; line-height: 1.8;
+    color: var(--muted); word-break: keep-all;
+  }
+
+  /* CTA 띠 */
+  .cta-band { background: var(--card-dark); color: var(--on-dark); padding: 3.4rem 0; text-align: center; }
+  .cta-band h2 {
+    font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; margin: 0 0 0.6rem;
+    letter-spacing: -0.02em; word-break: keep-all;
+  }
+  /* --muted(#6f6860)를 다크 띠에 쓰면 3.10:1로 거의 안 보인다. 밝은 쪽으로 따로 잡는다(8.48:1). */
+  .cta-band p { margin: 0 0 1.6rem; color: #bdb6ac; font-size: 0.98rem; }
+
+  /* 푸터 */
+  .site-footer { background: var(--surface); padding: 3rem 0 1.6rem; border-top: 1px solid var(--line); }
+  .footer-inner { display: grid; grid-template-columns: 1fr 2fr; gap: 2.5rem; }
+  .foot-brand { display: flex; gap: 0.7rem; align-items: flex-start; }
+  .foot-brand strong { font-size: 1rem; }
+  .foot-brand p { margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--muted); }
+  .foot-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
+  .foot-cols h4 {
+    margin: 0 0 0.7rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .foot-cols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.42rem; }
+  .foot-cols li, .foot-cols a { font-size: 0.86rem; color: var(--muted); text-decoration: none; }
+  .foot-cols a:hover { color: var(--ink); }
+  .foot-note {
+    max-width: 1120px; margin: 2.2rem auto 0; padding: 1.2rem 1.4rem 0;
+    border-top: 1px solid var(--line); font-size: 0.78rem; color: var(--muted); text-align: center;
+  }
+  @media (max-width: 760px) {
+    .footer-inner { grid-template-columns: 1fr; gap: 1.8rem; }
+    .foot-cols { grid-template-columns: 1fr 1fr; }
+    .site-section { padding: 2.8rem 0; }
+  }
+
 </style>
 
-<main>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top">
+      <span class="nav-mark"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
+      안심앨범
+    </a>
+    <ul class="nav-links">
+      <li><a href="#tool">진단하기</a></li>
+      <li><a href="#features">기능</a></li>
+      <li><a href="#why">왜 안전한가</a></li>
+      <li><a href="#faq">자주 묻는 질문</a></li>
+    </ul>
+    <a class="nav-cta" href="#tool">사진 진단하기</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <span class="hero-badge">Campus AX-Ton · 멋쟁이사자처럼</span>
+      <h1 class="hero-title">아이 사진, 올리기 전에<br>한 번 더 살펴봐요</h1>
+      <p class="hero-sub">
+        간판·전화번호·지번 같은 위치 단서와 교복·명찰처럼 소속을 드러내는 것까지 찾아내고,
+        아이는 그대로 둔 채 위험한 부분만 지워드려요.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#tool">지금 진단하기</a>
+        <a class="btn-ghost" href="#features">기능 살펴보기</a>
+      </div>
+      <p class="hero-note">계정 연동도, 비밀번호도 필요 없어요. 얼굴은 분석 전에 가려서 보냅니다.</p>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hv-card hv-1"><span class="hv-tag risk">위치노출 82점</span><span class="hv-line"></span><span class="hv-line short"></span></div>
+      <div class="hv-card hv-2"><span class="hv-tag ok">교복 감지</span><span class="hv-line"></span></div>
+      <div class="hv-card hv-3"><span class="hv-tag">3단계 재검증</span><span class="hv-line short"></span></div>
+    </div>
+  </div>
+</header>
+
+<main id="tool">
   <!-- 히어로: 화면에 단 하나뿐인 다크 카드 (가이드라인 5절 "다크 카드는 최대 하나") -->
   <div class="app-hero">
   <div class="brand-mark"><span class="badge-icon" role="img" aria-label="안심앨범"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span></div>
   <header class="page-header">
-    <h1>안심앨범</h1>
-    <p>아이 사진, 올리기 전에 한 번 더 살펴봐요</p>
+    <h2>사진 진단</h2>
+    <p>사진을 올리고 세 단계를 따라가면 돼요</p>
     <div class="subhead"><span class="lat">Campus AX-Ton</span><span class="ko">멋쟁이사자처럼</span></div>
   </header>
 
@@ -936,6 +1142,96 @@
     <p id="debugTiming" style="font-size:0.76rem; color:var(--muted); margin:0.8rem 0 0; white-space:pre-line;"></p>
   </div>
 </main>
+
+<section class="site-section" id="features">
+  <div class="section-inner">
+    <p class="section-eyebrow">기능</p>
+    <h2 class="section-title">사람이 놓치는 것을 대신 찾아드려요</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>배경 글자 판독</h3>
+        <p>간판·전화번호·지번처럼 위치를 특정할 수 있는 글자를 찾아냅니다. 브라우저 안 OCR과 Claude Vision을 함께 써서, 읽은 내용과 정확한 좌표를 모두 확보해요.</p>
+      </article>
+      <article class="feature-card">
+        <h3>글자가 아닌 단서</h3>
+        <p>교복·원복·명찰·기관 로고처럼 아이가 어디에 다니는지 알려주는 것들을 잡아냅니다. 주소 다음으로 강한 위치 단서예요.</p>
+      </article>
+      <article class="feature-card">
+        <h3>반복 패턴 분석</h3>
+        <p>과거 게시물 스크린샷을 함께 넣으면 "매주 같은 요일·시간대" 같은 생활 패턴이 드러나는지 짚어드려요.</p>
+      </article>
+      <article class="feature-card">
+        <h3>여섯 가지 보정</h3>
+        <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI로 지워 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="site-section alt" id="why">
+  <div class="section-inner">
+    <p class="section-eyebrow">왜 안전한가</p>
+    <h2 class="section-title">아이를 건드리지 않는다는 원칙</h2>
+    <div class="why-grid">
+      <article class="why-card">
+        <h3>얼굴은 가려서 보냅니다</h3>
+        <p>분석을 위해 외부로 보낼 때 얼굴을 먼저 검게 덮습니다. AI 보정처럼 원본이 필요한 방식은 따로 동의를 받아요.</p>
+      </article>
+      <article class="why-card">
+        <h3>부탁이 아니라 차단</h3>
+        <p>AI에게 "아이를 바꾸지 마"라고 부탁하는 대신, 아이 영역을 마스크에서 아예 빼버립니다. 모델이 접근할 방법 자체가 없어요.</p>
+      </article>
+      <article class="why-card">
+        <h3>비율은 원본 그대로</h3>
+        <p>어떤 보정을 거쳐도 사진 비율이 바뀌지 않습니다. 잘라야 할 때도 아이를 자르느니 비율을 포기하고 알려드려요.</p>
+      </article>
+      <article class="why-card">
+        <h3>고친 다음 다시 검사</h3>
+        <p>보정된 사진을 처음과 같은 검사에 한 번 더 통과시켜, 정말 위험이 사라졌는지 확인하고 결과를 보여드립니다.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="site-section" id="faq">
+  <div class="section-inner narrow">
+    <p class="section-eyebrow">자주 묻는 질문</p>
+    <h2 class="section-title">궁금하실 것들</h2>
+    <div class="faq-list">
+      <details><summary>사진이 서버에 저장되나요?</summary><p>진단에 필요한 순간에만 전송하고 따로 보관하지 않습니다. 대부분의 처리(크롭·흐림·주변색 채우기)는 아예 브라우저 밖으로 나가지 않아요.</p></details>
+      <details><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없습니다. 과거 게시물 패턴을 보고 싶으실 때만 직접 캡처한 화면을 올려주시면 됩니다.</p></details>
+      <details><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않습니다. 얼굴·머리카락·목은 마스크에서 제외해 AI가 접근할 수 없게 만들어 두었고, 보정 후 다시 검사해 얼굴이 그대로인지 확인합니다.</p></details>
+      <details><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔드립니다. 얼굴과 자세는 그대로예요.</p></details>
+      <details><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않습니다. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고르실 수 있게 해두었습니다. 최종 판단은 부모님 몫이에요.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="section-inner narrow">
+    <h2>올리기 전에 30초만 써보세요</h2>
+    <p>사진 한 장이면 됩니다. 위험한 부분만 찾아서 알려드릴게요.</p>
+    <a class="btn-primary" href="#tool">사진 진단하기</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="section-inner footer-inner">
+    <div class="foot-brand">
+      <span class="nav-mark"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
+      <div>
+        <strong>안심앨범</strong>
+        <p>아이 사진 SNS 위험진단 서비스</p>
+      </div>
+    </div>
+    <div class="foot-cols">
+      <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
+      <div><h4>만든 곳</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
+      <div><h4>사용 기술</h4><ul><li>Claude Vision</li><li>face-api.js</li><li>Tesseract.js</li><li>fal.ai FLUX</li></ul></div>
+    </div>
+  </div>
+  <p class="foot-note">진단 결과는 참고용이며, 최종 판단은 보호자에게 있습니다.</p>
+</footer>
 
 <!-- AI 배경교체 전송 동의 모달: "AI 배경 교체" 선택 시에만 뜸, 다른 3가지 방식은 안 뜸 -->
 <div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
