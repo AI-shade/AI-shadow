@@ -431,6 +431,19 @@
      무엇을 고칠지는 사용자가 고른다. */
   .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
 
+  .cover-hint { font-size: 0.82rem; color: var(--muted); margin: 0 0 0.9rem; }
+  /* 자동으로 잡은 위치가 빗나갈 수 있어 사용자가 직접 끌어 맞춘다 */
+  .cover-handle {
+    position: absolute; border: 2px solid var(--accent-2); border-radius: 6px;
+    background: rgba(255, 122, 107, 0.16); cursor: grab; touch-action: none;
+  }
+  .cover-handle:active { cursor: grabbing; }
+  .cover-handle::after {
+    content: attr(data-label); position: absolute; left: 0; top: -1.35rem;
+    font-size: 0.66rem; font-weight: 700; color: var(--ink);
+    background: var(--accent); border-radius: 999px; padding: 0.05rem 0.4rem; white-space: nowrap;
+  }
+
   .blur-strength { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .bs-label { font-size: 0.82rem; font-weight: 600; }
   .bs-options { display: flex; gap: 0.35rem; background: var(--soft); border-radius: 999px; padding: 0.25rem; }
@@ -1096,7 +1109,11 @@
         <button type="button" class="fs-btn" data-fill="color">주변색</button>
         <button type="button" class="fs-btn" data-fill="mosaic">모자이크</button>
       </div>
+      <label class="bs-label" for="fillPixel">픽셀 크기</label>
+      <input type="range" id="fillPixel" class="bs-range" min="6" max="48" step="2" value="16" />
+      <output class="bs-value" id="fillPixelValue" for="fillPixel">16</output>
     </div>
+    <p class="cover-hint" id="coverHint" style="display:none;">덮개를 끌어서 위치를 맞출 수 있어요.</p>
 
     <div class="blur-strength" id="blurStrength" style="display:none;">
       <label class="bs-label" for="blurRange">흐림 정도</label>
@@ -2745,7 +2762,7 @@
       return { color: color, uniform: stdev < 18, stdev: stdev };
     }
 
-    function applyPatchFill(img, texts, imgW, imgH, mode) {
+    function applyPatchFill(img, texts, imgW, imgH, mode, cellPx) {
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
       var ctx = canvas.getContext('2d');
@@ -2773,18 +2790,19 @@
           ctx.fillStyle = 'rgb(' + stats.color[0] + ',' + stats.color[1] + ',' + stats.color[2] + ')';
           ctx.fillRect(box.x0, box.y0, w, h);
         } else {
-          drawMosaic(ctx, clean, box);
+          drawMosaic(ctx, clean, box, cellPx);
         }
       });
       return canvas;
     }
 
     // 배경이 균일하지 않을 때 — 셀 단위 평균색으로 뭉갠다
-    function drawMosaic(ctx, sourceCanvas, box) {
+    function drawMosaic(ctx, sourceCanvas, box, cellPx) {
       var w = box.x1 - box.x0, h = box.y1 - box.y0;
       // 셀이 글자보다 작으면 글자 모양이 그대로 남는다 (실측: h/3이면 15%가 읽힘).
       // 한 셀이 글자 하나보다 크도록 잡아야 평균에 배경이 충분히 섞여 뭉개진다.
-      var cell = Math.max(10, Math.round(h / 1.6));
+      // 사용자가 고른 픽셀 크기를 우선 쓰되, 글자보다 작으면 글자 모양이 남으므로 최소값을 지킨다
+      var cell = cellPx ? Math.max(6, cellPx) : Math.max(10, Math.round(h / 1.6));
       var sctx = sourceCanvas.getContext('2d');
       for (var y = box.y0; y < box.y1; y += cell) {
         for (var x = box.x0; x < box.x1; x += cell) {
@@ -3425,6 +3443,7 @@
     var selectedTargetIdx = null;
     var currentBlurPx = 18;   // 흐림 강도 — 화면에서 고른다
     var currentFill = 'auto'; // 덮는 방식 — 자동 / 주변색 / 모자이크
+    var currentFillPx = 16;   // 모자이크 픽셀 크기
 
     function getSelectedTexts() {
       var all = correctionTextWords || [];
@@ -3601,6 +3620,58 @@
       document.getElementById('previewFrame').classList.remove('is-busy');
     }
 
+    // 미리보기 위에 덮개 핸들을 얹어 사용자가 위치를 끌어 맞추게 한다.
+    // 자동으로 잡은 위치(특히 Claude 근사 위치)가 빗나가는 경우가 있어서 필요하다.
+    function renderCoverHandles() {
+      var frame = document.getElementById('previewFrame');
+      frame.querySelectorAll('.cover-handle').forEach(function (h) { h.remove(); });
+      document.getElementById('coverHint').style.display = currentMethod === 'sticker' ? 'block' : 'none';
+      if (currentMethod !== 'sticker') return;
+
+      var img = document.getElementById('previewAfter');
+      if (!img.naturalWidth) return;
+      var texts = getSelectedTexts();
+      if (texts.length === 0) return;
+
+      var rect = img.getBoundingClientRect();
+      var fRect = frame.getBoundingClientRect();
+      var offX = rect.left - fRect.left, offY = rect.top - fRect.top;
+
+      texts.forEach(function (w) {
+        var el = document.createElement('div');
+        el.className = 'cover-handle';
+        el.dataset.label = (w.text || '').slice(0, 10);
+        var setPos = function () {
+          el.style.left = (offX + (w.xPct - w.wPct / 2) / 100 * rect.width) + 'px';
+          el.style.top = (offY + (w.yPct - w.hPct / 2) / 100 * rect.height) + 'px';
+          el.style.width = (w.wPct / 100 * rect.width) + 'px';
+          el.style.height = (w.hPct / 100 * rect.height) + 'px';
+        };
+        setPos();
+
+        var startX = 0, startY = 0, baseX = 0, baseY = 0;
+        el.addEventListener('pointerdown', function (ev) {
+          ev.preventDefault();
+          el.setPointerCapture(ev.pointerId);
+          startX = ev.clientX; startY = ev.clientY;
+          baseX = w.xPct; baseY = w.yPct;
+        });
+        el.addEventListener('pointermove', function (ev) {
+          if (!el.hasPointerCapture || !el.hasPointerCapture(ev.pointerId)) return;
+          w.xPct = Math.max(0, Math.min(100, baseX + (ev.clientX - startX) / rect.width * 100));
+          w.yPct = Math.max(0, Math.min(100, baseY + (ev.clientY - startY) / rect.height * 100));
+          // 위치를 손으로 맞췄으므로 더 이상 "근사"가 아니다
+          w.approximate = false;
+          setPos();
+        });
+        el.addEventListener('pointerup', function (ev) {
+          if (el.releasePointerCapture) el.releasePointerCapture(ev.pointerId);
+          selectMethod('sticker'); // 옮긴 위치로 다시 그린다
+        });
+        frame.appendChild(el);
+      });
+    }
+
     async function selectMethod(method) {
       var previousMethod = currentMethod;
       currentMethod = method;
@@ -3685,7 +3756,12 @@
         var iw = inImg.naturalWidth, ih = inImg.naturalHeight;
         // 실측 결과 인페인팅은 작은 글씨엔 훌륭하지만 간판엔 가짜 글씨를 만들어낸다.
         // 그래서 여기서 갈라서, 간판은 스티커로 덮는다.
-        var split = classifyTextRegions(getSelectedTexts(), iw, ih);
+        // 근사 위치(approximate)는 실제 글자를 빗나가는 일이 잦다. 그 자리에 마스크를
+        // 씌우면 멀쩡한 곳이 새로 그려지고(가짜 간판 글씨가 생김) 정작 위험 글자는
+        // 그대로 남는다 — 실사용에서 확인했다. 인페인팅은 정밀 위치만 다룬다.
+        var locatable = getSelectedTexts().filter(function (w) { return !w.approximate; });
+        var approxCount = getSelectedTexts().length - locatable.length;
+        var split = classifyTextRegions(locatable, iw, ih);
         var subjects = ((lastFaceResult && lastFaceResult.faces) || []).map(function (f) {
           return computeSubjectRegion(f.box, iw, ih);
         });
@@ -3722,6 +3798,7 @@
 
           var parts = [];
           if (split.inpaint.length > 0) parts.push('작은 글씨 ' + split.inpaint.length + '곳은 AI가 배경으로 메웠어요');
+          if (approxCount > 0) parts.push(approxCount + '곳은 정확한 위치를 못 찾아 건너뛰었어요 — "자연스럽게 덮기"에서 덮개를 끌어 맞춰주세요');
           if (split.signboard.length > 0) parts.push('큰 간판 ' + split.signboard.length + '곳은 AI에 맡기면 가짜 글씨가 생겨서 스티커로 덮었어요');
           previewCaption.textContent = '✨ ' + parts.join('. ') + '. 사진을 자르지 않아 비율은 원본 그대로예요.' + costNote;
           lastCorrectionMeta = { method: 'inpaint', detail: previewCaption.textContent };
@@ -3807,7 +3884,7 @@
         canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight, currentBlurPx);
         previewCaption.textContent = '인물모드처럼 배경만 흐려지고, 아이(몸통 포함)는 선명하게 유지돼요.';
       } else if (method === 'sticker') {
-        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill);
+        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx);
         // 지울 게 없으면 원본이 그대로 나와서 "아무 일도 안 일어난 것"처럼 보인다.
         // 실제로 "적용이 안 된다"는 오해를 부른 지점이라 이유를 분명히 말해준다.
         previewCaption.textContent = texts.length === 0
@@ -3818,10 +3895,21 @@
 
       currentCorrectionCanvas = canvas;
       previewAfter.src = canvas.toDataURL('image/png');
+        previewAfter.onload = renderCoverHandles;
       lastCorrectionMeta = { method: method, detail: previewCaption.textContent };
     }
     methodCards.forEach(function (card) {
       card.addEventListener('click', function () { selectMethod(card.dataset.method); });
+    });
+
+    var fillPixelEl = document.getElementById('fillPixel');
+    var fillPixelValueEl = document.getElementById('fillPixelValue');
+    var fillPixelTimer = null;
+    fillPixelEl.addEventListener('input', function () {
+      currentFillPx = Number(fillPixelEl.value);
+      fillPixelValueEl.textContent = currentFillPx;
+      clearTimeout(fillPixelTimer);
+      fillPixelTimer = setTimeout(function () { selectMethod('sticker'); }, 140);
     });
 
     document.querySelectorAll('.fs-btn').forEach(function (btn) {
