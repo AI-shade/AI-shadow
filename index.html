@@ -60,68 +60,11 @@
     --shadow-lift: 0 6px 20px rgba(40, 30, 20, 0.10);
   }
 
-  /* 다크 모드 — 지우지 말 것 (가이드라인 7절 3항).
-     노랑·코랄은 채도만 낮추고, 그 위 글씨는 라이트와 똑같이 먹색을 유지한다. */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) {
-      --page: #171512;
-      --surface: #201d19;
-      --card: #2a2621;
-      --card-dark: #12100e;
-      --card-tan: #3f3830;
-      --soft: #35302a;
-      --soft-hover: #3f3931;
-      --ink: #f2ede7;
-      --muted: #a49b90;      /* --card 위 5.49:1 */
-      --on-dark: #f2ede7;
-      --on-chip: #1a1a1a;    /* 다크에선 배지 배경이 밝아지므로 글씨는 먹색 */
-      --line: #3a342d;
-      --line-strong: #4a4239;
-      --accent: #e8c74a;     /* 위 글씨 먹색 10.53:1 */
-      --accent-hover: #d9b83c;
-      --accent-2: #e8756a;   /* 위 글씨 먹색 5.95:1 */
-      --risk-high: #f2938a;  /* --card 위 6.67:1 */
-      --risk-mid:  #e8b23f;
-      --risk-low:  #6fd3a4;
-      --risk-high-soft: #3d2723;
-      --risk-mid-soft:  #3a2f18;
-      --risk-low-soft:  #17332a;
-      --focus: #f2ede7;
-      --skel-sheen: rgba(255, 255, 255, 0.09);
-      --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.34);
-      --shadow-soft: 0 1px 6px rgba(0, 0, 0, 0.28);
-      --shadow-lift: 0 6px 22px rgba(0, 0, 0, 0.42);
-    }
-  }
-  :root[data-theme='dark'] {
-    --page: #171512;
-    --surface: #201d19;
-    --card: #2a2621;
-    --card-dark: #12100e;
-    --card-tan: #3f3830;
-    --soft: #35302a;
-    --soft-hover: #3f3931;
-    --ink: #f2ede7;
-    --muted: #a49b90;
-    --on-dark: #f2ede7;
-    --on-chip: #1a1a1a;
-    --line: #3a342d;
-    --line-strong: #4a4239;
-    --accent: #e8c74a;
-    --accent-hover: #d9b83c;
-    --accent-2: #e8756a;
-    --risk-high: #f2938a;
-    --risk-mid:  #e8b23f;
-    --risk-low:  #6fd3a4;
-    --risk-high-soft: #3d2723;
-    --risk-mid-soft:  #3a2f18;
-    --risk-low-soft:  #17332a;
-    --focus: #f2ede7;
-    --skel-sheen: rgba(255, 255, 255, 0.09);
-    --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.34);
-    --shadow-soft: 0 1px 6px rgba(0, 0, 0, 0.28);
-    --shadow-lift: 0 6px 22px rgba(0, 0, 0, 0.42);
-  }
+
+  /* 다크 모드는 쓰지 않는다 — 시안이 라이트 전용(따뜻한 크림)이고,
+     다크로 뒤집으면 배경이 거의 검정이 되어 완전히 다른 디자인이 된다.
+     color-scheme을 고정해야 입력창·스크롤바 같은 브라우저 기본 UI도 OS 다크를 안 따라간다. */
+  :root { color-scheme: light; }
 
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -605,7 +548,7 @@
   <header class="page-header">
     <h1>안심앨범</h1>
     <p>아이 사진, 올리기 전에 한 번 더 살펴봐요</p>
-    <div class="subhead"><span class="lat">Campus AX-Ton</span><span class="ko">인터랙티브 목업</span></div>
+    <div class="subhead"><span class="lat">Campus AX-Ton</span><span class="ko">멋쟁이사자처럼</span></div>
   </header>
 
   <div class="stepper" id="stepper">
