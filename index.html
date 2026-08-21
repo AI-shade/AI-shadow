@@ -353,38 +353,32 @@
 
   /* ---- 종합 점수 게이지 카드 (시안 "Steps for Today") ----
      큰 수치·등급은 왼쪽, 반원 게이지는 오른쪽에 비대칭으로. 카드 자체는 .rcard-score가 그린다. */
+  /* 종합 위험도 — 숫자를 원형 게이지 안에 넣고 설명을 바로 옆에 붙인다.
+     예전에는 숫자가 카드 맨 왼쪽, 반원 호가 맨 오른쪽이라 가운데가 통째로 비었고,
+     호 하나만 있으니 그게 무엇을 뜻하는지도 읽히지 않았다. */
   .gauge-wrap {
-    text-align: left; margin: 0; background: transparent; border-radius: 0; padding: 0;
-    display: grid; grid-template-columns: 1fr auto; column-gap: 1.2rem; align-items: center;
+    display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap;
+    margin: 0; padding: 0; background: transparent; text-align: left;
   }
-  .gauge-wrap svg { grid-column: 2; grid-row: 1 / span 3; width: 150px; height: 84px; justify-self: end; align-self: center; }
+  .gauge-ring { position: relative; width: 150px; height: 150px; flex: 0 0 auto; }
+  .gauge-ring svg { width: 100%; height: 100%; display: block; }
+  #gaugeArc { transition: stroke-dashoffset 0.7s ease, stroke 0.3s ease; }
+  @media (prefers-reduced-motion: reduce) { #gaugeArc { transition: none; } }
+  .gauge-center {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 0.1rem; pointer-events: none;
+  }
   .gauge-score-label {
-    grid-column: 1; grid-row: 1; align-self: end;
-    margin-top: 0; font-family: var(--font-display); font-size: 2.6rem; font-weight: 700;
-    letter-spacing: -0.025em; line-height: 1; color: var(--ink);
+    font-size: 2.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--ink);
   }
-  .gauge-score-sub {
-    grid-column: 1; grid-row: 2; align-self: start;
-    font-size: 0.75rem; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-top: 0.45rem;
-  }
-  /* 등급 칩 — 알약형. 색 + 도형 + 라벨 세 겹으로 구분(색맹 대응) */
-  .risk-chip {
-    grid-column: 1; grid-row: 3; justify-self: start;
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    margin-top: 1rem; padding: 0.35rem 0.9rem; border-radius: 999px;
-    font-weight: 700; font-size: 0.8rem; letter-spacing: 0;
-    background: var(--soft-hover); color: var(--ink); border: none;
-  }
-  .risk-chip::before { font-size: 0.7rem; line-height: 1; }
-  .risk-chip.risk-상 { color: var(--risk-high); background: var(--risk-high-soft); }
-  .risk-chip.risk-상::before { content: '▲'; }
-  .risk-chip.risk-중 { color: var(--risk-mid); background: var(--risk-mid-soft); }
-  .risk-chip.risk-중::before { content: '■'; }
-  .risk-chip.risk-하 { color: var(--risk-low); background: var(--risk-low-soft); }
-  .risk-chip.risk-하::before { content: '●'; }
+  .gauge-unit { font-size: 0.76rem; font-weight: 500; color: var(--muted); }
+  .gauge-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 0.55rem; min-width: 0; }
+  .gauge-score-sub { font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+  .gauge-hint { margin: 0; font-size: 0.82rem; line-height: 1.6; color: var(--muted); word-break: keep-all; }
   @media (max-width: 460px) {
-    .gauge-wrap { grid-template-columns: 1fr; }
-    .gauge-wrap svg { grid-column: 1; grid-row: 4; justify-self: start; width: 128px; height: 72px; margin-top: 0.5rem; }
+    .gauge-wrap { gap: 1.1rem; }
+    .gauge-ring { width: 118px; height: 118px; }
+    .gauge-score-label { font-size: 2rem; }
   }
 
   /* =========================================================================
@@ -476,7 +470,9 @@
     box-shadow: 0 0 0 1.5px transparent inset;
     transition: background 0.15s, box-shadow 0.15s;
   }
-  .method-card:last-child { grid-column: 1 / -1; }
+  /* 개수가 홀수일 때만 마지막 카드를 가로로 늘린다. 카드가 5개이던 시절 무조건
+     늘리게 해뒀더니, 6개가 된 뒤 마지막 하나만 아래에 홀로 떨어졌다. */
+  .method-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .method-card:hover { background: var(--soft-hover); }
   .method-card.selected {
     background: var(--card); box-shadow: 0 0 0 2px var(--accent-2) inset, var(--shadow-soft);
@@ -514,6 +510,23 @@
   .correct-left, .correct-right { display: flex; flex-direction: column; }
   .correct-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.2rem; }
 
+  /* 처리 중 표시. 예전에는 사진 아래 작은 캡션 한 줄뿐이라 돌고 있는 건지
+     끝난 건지 알 수 없었다. 사진 위에 덮어서 확실히 보이게 한다. */
+  .preview-busy {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem;
+    background: rgba(247, 243, 238, 0.9); border-radius: inherit; padding: 1.2rem; text-align: center;
+  }
+  .preview-busy[hidden] { display: none; }
+  .busy-spin {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid var(--line); border-top-color: var(--accent-2);
+    animation: risk-spin 0.8s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .busy-spin { animation-duration: 2.4s; } }
+  .busy-text { font-size: 0.9rem; font-weight: 600; color: var(--ink); line-height: 1.6; max-width: 22ch; }
+  .preview-frame.is-busy img { filter: grayscale(0.4) opacity(0.55); }
+
   .compare-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;
     align-items: start; margin-bottom: 0.6rem;
@@ -535,6 +548,7 @@
     display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
     box-shadow: var(--shadow-lift); border: none;
   }
+  /* 결과 설명은 사용자가 반드시 읽어야 하는 문장이라 본문 크기로 키웠다 */
   .preview-caption { text-align: left; font-size: 0.78rem; line-height: 1.65; color: var(--muted); margin: 0 0 1.2rem; }
   .preview-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); margin: 0 0 0.4rem; text-align: left; }
   .edit-instruction {
@@ -622,10 +636,14 @@
       gap: 0.9rem 1.1rem; align-items: start;
       grid-auto-flow: row dense;
     }
-    #screen-result > .rcard-score,
-    #screen-result > .rcard-detect,
+    /* 종합 위험도와 위치노출 위험도를 나란히 둔다. 점수 카드를 가로 전체로 두면
+       내용이 왼쪽에만 몰려 오른쪽 600px가 통째로 비었다(사용자 지적). */
+    #screen-result > .rcard-score { order: 1; }
+    #screen-result > .rcard-location { order: 2; }
+    #screen-result > .rcard-detect { order: 3; grid-column: 1 / -1; }
+    #screen-result > .result-section:not(.rcard-location) { order: 4; }
     #screen-result > button,
-    #screen-result > .disclaimer { grid-column: 1 / -1; }
+    #screen-result > .disclaimer { order: 5; grid-column: 1 / -1; }
 
     /* 보정 화면 — 비교 사진을 위에 크게, 보정 방식은 그 아래 2열.
        좌우로 나누면 비교 사진이 절반 폭으로 작아져서 무엇이 달라졌는지 보기 어렵다. */
@@ -955,13 +973,22 @@
       <p class="risk-pending" id="riskPending"><span class="spin"></span><span id="riskPendingText">위험 요소 판단 중…</span></p>
 
       <div class="gauge-wrap">
-        <svg viewBox="0 0 200 112">
-          <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
-          <path id="gaugeArc" d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
-        </svg>
-        <div class="gauge-score-label" id="riskScore">–</div>
-        <div class="gauge-score-sub">종합 위험도 점수 / 100</div>
-        <span class="risk-chip" id="riskBadge">중</span>
+        <div class="gauge-ring">
+          <svg viewBox="0 0 160 160" aria-hidden="true">
+            <circle cx="80" cy="80" r="66" fill="none" stroke="var(--line)" stroke-width="13"/>
+            <circle id="gaugeArc" cx="80" cy="80" r="66" fill="none" stroke="var(--gold)"
+                    stroke-width="13" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-score-label" id="riskScore">–</div>
+            <div class="gauge-unit">/ 100</div>
+          </div>
+        </div>
+        <div class="gauge-meta">
+          <div class="gauge-score-sub">종합 위험도 점수</div>
+          <span class="risk-chip" id="riskBadge">중</span>
+          <p class="gauge-hint">100에 가까울수록 사진만으로 아이를 특정하기 쉬워요.</p>
+        </div>
       </div>
     </div>
 
@@ -974,7 +1001,7 @@
       <p class="pin-note">* 검게 채운 핀은 face-api.js로 감지한 얼굴, 테두리만 있는 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
     </div>
 
-    <section class="result-section">
+    <section class="result-section rcard-location">
       <h3>위치노출 위험도</h3>
       <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
       <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
@@ -1084,6 +1111,10 @@
         <p class="preview-label">처리 후</p>
         <div class="preview-frame" id="previewFrame">
           <img id="previewAfter" alt="처리 결과" />
+          <div class="preview-busy" id="previewBusy" hidden>
+            <span class="busy-spin"></span>
+            <span class="busy-text" id="previewBusyText">처리 중…</span>
+          </div>
         </div>
       </div>
     </div>
@@ -2844,10 +2875,12 @@
     }
 
     function setGauge(score) {
-      var full = 251.3;
-      var offset = full * (1 - score / 100);
       var arc = document.getElementById('gaugeArc');
-      arc.style.strokeDashoffset = offset;
+      // 길이를 상수로 박아두면 게이지 모양을 바꿀 때 같이 안 바뀌어 어긋난다.
+      // (반원 251.3에서 원형으로 바꾸면서 실제로 겪은 문제)
+      var full = arc.getTotalLength();
+      arc.style.strokeDasharray = full;
+      arc.style.strokeDashoffset = full * (1 - Math.max(0, Math.min(100, score)) / 100);
       arc.setAttribute('stroke', score >= 70 ? 'var(--risk-high)' : score >= 45 ? 'var(--risk-mid)' : 'var(--risk-low)');
     }
 
@@ -3443,6 +3476,19 @@
       renderVerify();
     });
 
+    // 처리 중/완료 표시를 한 곳에서 관리한다. 캡션 문구만 바꾸면 사용자가 못 알아챈다.
+    function setPreviewBusy(text) {
+      var frame = document.getElementById('previewFrame');
+      var busy = document.getElementById('previewBusy');
+      document.getElementById('previewBusyText').textContent = text;
+      busy.hidden = false;
+      frame.classList.add('is-busy');
+    }
+    function clearPreviewBusy() {
+      document.getElementById('previewBusy').hidden = true;
+      document.getElementById('previewFrame').classList.remove('is-busy');
+    }
+
     async function selectMethod(method) {
       var previousMethod = currentMethod;
       currentMethod = method;
@@ -3450,6 +3496,7 @@
       editInstruction.style.display = method === 'ai' ? 'block' : 'none';
       uncroppableWarning.style.display = 'none';
 
+      clearPreviewBusy();
       var previewAfter = document.getElementById('previewAfter');
 
       if (method === 'outfit') {
@@ -3478,9 +3525,11 @@
 
         currentCorrectionCanvas = null;
         try {
-          previewCaption.textContent = '⏳ AI가 옷을 평범한 옷으로 바꾸는 중이에요 (10~20초 정도 걸려요)...';
+          previewCaption.textContent = 'AI가 옷을 바꾸는 중이에요.';
+          setPreviewBusy('AI가 옷을 평범한 옷으로 바꾸는 중이에요\n10~20초 정도 걸려요'); 
           var ofImg = await loadImage(uploadedPhotoUrl);
           var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult);
+          clearPreviewBusy();
           currentCorrectionCanvas = of.canvas;
           previewAfter.src = of.canvas.toDataURL('image/png');
           previewCaption.textContent = '✨ 교복을 평범한 옷으로 바꿨어요 — 얼굴과 자세는 그대로예요. '
@@ -3488,6 +3537,7 @@
             + Number(of.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(of.data.timingMs / 1000) + '초)';
           lastCorrectionMeta = { method: 'outfit', detail: '옷 교체 — 교복·원복을 일반 복장으로 대체' };
         } catch (err) {
+          clearPreviewBusy();
           console.error('[옷교체] 실패:', err);
           previewAfter.src = uploadedPhotoUrl;
           previewCaption.textContent = '⚠ AI 옷 바꾸기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
@@ -3532,7 +3582,8 @@
         try {
           var outCv, costNote = '';
           if (split.inpaint.length > 0) {
-            previewCaption.textContent = '⏳ AI가 작은 글씨 ' + split.inpaint.length + '곳을 지우고 배경으로 메우는 중이에요 (10~20초 정도 걸려요)...';
+            previewCaption.textContent = 'AI가 글씨를 지우는 중이에요.';
+            setPreviewBusy('AI가 작은 글씨 ' + split.inpaint.length + '곳을 지우고\n배경으로 메우는 중이에요 (10~20초)'); 
             var ip = await runInpaintRegions(inImg, split.inpaint, subjects, lastRiskResult);
             outCv = ip.canvas;
             costNote = ' (약 $' + Number(ip.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(ip.data.timingMs / 1000) + '초)';
@@ -3546,6 +3597,7 @@
             outCv = applyPatchFill(outCv, split.signboard, outCv.width, outCv.height);
           }
 
+          clearPreviewBusy();
           currentCorrectionCanvas = outCv;
           previewAfter.src = outCv.toDataURL('image/png');
 
@@ -3555,6 +3607,7 @@
           previewCaption.textContent = '✨ ' + parts.join('. ') + '. 사진을 자르지 않아 비율은 원본 그대로예요.' + costNote;
           lastCorrectionMeta = { method: 'inpaint', detail: previewCaption.textContent };
         } catch (err) {
+          clearPreviewBusy();
           console.error('[인페인팅] 실패:', err);
           previewAfter.src = uploadedPhotoUrl;
           previewCaption.textContent = '⚠ AI로 지워 채우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
@@ -3585,7 +3638,8 @@
           return;
         }
 
-        previewCaption.textContent = '⏳ AI가 배경을 새로 그리는 중이에요 (10~20초 정도 걸릴 수 있어요)...';
+        previewCaption.textContent = 'AI가 배경을 새로 그리는 중이에요.';
+        setPreviewBusy('AI가 배경을 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요'); 
         editInstruction.textContent = '';
         currentCorrectionCanvas = null;
         try {
@@ -3602,12 +3656,14 @@
             console.log('[AI배경교체] 크기 보정 — ' + outImg.naturalWidth + 'x' + outImg.naturalHeight
               + ' -> ' + outCanvas.width + 'x' + outCanvas.height);
           }
+          clearPreviewBusy();
           currentCorrectionCanvas = outCanvas;
           previewAfter.src = outCanvas.toDataURL('image/png');
           previewCaption.textContent = '✨ AI가 위험 배경을 새로 그렸어요 — 인물은 그대로 유지하도록 지시했어요. (약 $' + fluxData.estimatedCostUsd.toFixed(2) + ', ' + Math.round(fluxData.timingMs / 1000) + '초)';
           editInstruction.textContent = '사용된 편집 지시(영문): ' + fluxData.editPrompt;
           lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 편집 지시: ' + fluxData.editPrompt };
         } catch (err) {
+          clearPreviewBusy();
           console.error('[AI배경교체] 실패:', err);
           previewAfter.src = uploadedPhotoUrl;
           previewCaption.textContent = '⚠ AI 배경교체에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
