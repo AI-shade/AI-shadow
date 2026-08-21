@@ -457,7 +457,8 @@
   .ct-only-brush { display: none; align-items: center; gap: 0.6rem; flex-wrap: nowrap; }
   .ct-only-brush .bs-range { flex: 0 1 180px; min-width: 120px; }
   .ct-only-brush .bs-value { min-width: 2.2rem; }
-  .ct-only-brush #brushClear { margin: 0; }
+  .ct-erase { margin: 0; white-space: nowrap; }
+  .brush-layer.is-erasing { cursor: cell; }
   .cover-tools.is-brush .ct-only-brush { display: flex; }
   /* 도형 모드에서 크기를 조절하는 모서리 손잡이 */
   .cover-grip {
@@ -1163,7 +1164,7 @@
           <label class="bs-label" for="brushSize">붓 굵기</label>
           <input type="range" id="brushSize" class="bs-range" min="8" max="80" step="2" value="28" />
           <output class="bs-value" id="brushSizeValue">28</output>
-          <button type="button" class="ghost-link" id="brushClear">칠한 곳 지우기</button>
+          <label class="checkline ct-erase"><input type="checkbox" id="brushErase"> 지우개</label>
         </span>
       </div>
     </div>
@@ -2827,6 +2828,25 @@
       return { color: color, uniform: stdev < 18, stdev: stdev };
     }
 
+    // 칠한 자국을 감싸는 상자. 주변색을 어디서 뽑을지 정하는 데 쓴다.
+    function brushMaskBounds(mask) {
+      if (!mask) return null;
+      var w = mask.width, h = mask.height;
+      var d = mask.getContext('2d').getImageData(0, 0, w, h).data;
+      var x0 = w, y0 = h, x1 = -1, y1 = -1;
+      var step = 2; // 2픽셀 간격이면 경계를 잡기에 충분하고 훨씬 빠르다
+      for (var y = 0; y < h; y += step) {
+        for (var x = 0; x < w; x += step) {
+          if (d[(y * w + x) * 4 + 3] > 10) {
+            if (x < x0) x0 = x; if (x > x1) x1 = x;
+            if (y < y0) y0 = y; if (y > y1) y1 = y;
+          }
+        }
+      }
+      if (x1 < 0) return null;
+      return { x0: x0, y0: y0, x1: x1 + step, y1: y1 + step };
+    }
+
     function applyPatchFill(img, texts, imgW, imgH, mode, cellPx, brushMask) {
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
@@ -2866,7 +2886,11 @@
         effect.width = imgW; effect.height = imgH;
         var ectx = effect.getContext('2d');
         if (mode === 'color') {
-          var st = sampleBoxSurround(clean, { x0: 0, y0: 0, x1: imgW, y1: imgH });
+          // 칠한 영역의 "주변" 색을 뽑아야 한다. 예전에는 이미지 전체를 박스로 넘겼는데,
+          // sampleBoxSurround는 박스 안쪽을 표본에서 빼므로 표본이 0개가 되어 기본값인
+          // 검정이 나왔다 — 칠한 자리가 새까맣게 칠해지던 원인이다.
+          var bb = brushMaskBounds(brushMask);
+          var st = bb ? sampleBoxSurround(clean, bb) : { color: [128, 128, 128] };
           ectx.fillStyle = 'rgb(' + st.color[0] + ',' + st.color[1] + ',' + st.color[2] + ')';
           ectx.fillRect(0, 0, imgW, imgH);
         } else {
@@ -3529,6 +3553,7 @@
     var currentFillPx = 16;   // 모자이크 픽셀 크기
     var coverEditMode = 'shape'; // 'shape'(도형) | 'brush'(직접 칠하기)
     var brushSizePx = 28;
+    var brushErasing = false; // 지우개 모드 — 칠한 곳을 다시 걷어낸다
     var brushMaskCanvas = null;  // 원본 해상도의 흑백 마스크 — 흰색이 칠한 곳
 
     function ensureBrushMask(w, h) {
@@ -3742,7 +3767,7 @@
 
       if (coverEditMode === 'brush') {
         var layer = document.createElement('div');
-        layer.className = 'brush-layer';
+        layer.className = 'brush-layer' + (brushErasing ? ' is-erasing' : '');
         layer.style.left = (rect0.left - fRect0.left) + 'px';
         layer.style.top = (rect0.top - fRect0.top) + 'px';
         layer.style.width = rect0.width + 'px';
@@ -3778,10 +3803,13 @@
         var paintAt = function (ev) {
           var b = view.getBoundingClientRect();
           var x = (ev.clientX - b.left) * scale, y = (ev.clientY - b.top) * scale;
+          // 지우개면 칠한 흔적을 걷어낸다(destination-out)
+          mctx.globalCompositeOperation = brushErasing ? 'destination-out' : 'source-over';
           mctx.fillStyle = '#ffffff';
           mctx.beginPath();
           mctx.arc(x, y, brushSizePx * scale / 2, 0, Math.PI * 2);
           mctx.fill();
+          mctx.globalCompositeOperation = 'source-over';
           repaint(true);
         };
         layer.addEventListener('pointerdown', function (ev) {
@@ -4114,11 +4142,9 @@
       brushSizeValueEl.textContent = brushSizePx;
     });
 
-    document.getElementById('brushClear').addEventListener('click', function () {
-      if (brushMaskCanvas) {
-        brushMaskCanvas.getContext('2d').clearRect(0, 0, brushMaskCanvas.width, brushMaskCanvas.height);
-      }
-      selectMethod(currentMethod);
+    document.getElementById('brushErase').addEventListener('change', function () {
+      brushErasing = this.checked;
+      renderCoverHandles(); // 커서 모양을 바꾸기 위해 다시 그린다
     });
 
     var fillPixelEl = document.getElementById('fillPixel');
@@ -4325,6 +4351,8 @@
       fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
       fluxConsentGiven = false; // 새 사진이면 동의를 다시 받는다
       brushMaskCanvas = null;   // 칠한 것도 사진마다 초기화
+      brushErasing = false;
+      var be = document.getElementById('brushErase'); if (be) be.checked = false;
       document.getElementById('captionInput').value = '';
       document.getElementById('companions').value = '';
       document.getElementById('backgroundNotes').value = '';
