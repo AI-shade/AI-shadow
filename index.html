@@ -309,7 +309,9 @@
   }
   .pin-legend li:has(.num.face)::after { content: '얼굴'; color: var(--ink); }
   .pin-legend li:has(.num.text)::after { content: '텍스트'; color: var(--ink); }
-  .pin-legend li:has(.num:not(.face):not(.text))::after { content: '없음'; }
+  /* .clue를 명시적으로 제외한다. 아래 .num.clue 규칙보다 이 선택자의 특정도가 높아서
+     (:not 3개 = 0,4,1 vs .num.clue = 0,3,1) 순서로는 못 이긴다. */
+  .pin-legend li:has(.num:not(.face):not(.text):not(.clue))::after { content: '없음'; }
   /* 시각 단서(교복·명찰·로고)는 위치를 특정할 수 없어 핀이 없다 — 배지로만 구분한다.
      위 :not() 규칙과 특정도가 같으므로 반드시 뒤에 와야 이긴다. */
   .pin-legend li:has(.num.clue)::after { content: '옷·소지품'; color: var(--ink); }
@@ -543,6 +545,76 @@
     .method-grid { grid-template-columns: 1fr; }
     .row2 { grid-template-columns: 1fr; }
   }
+
+  /* ===== 넓은 화면 — 가로형 웹 레이아웃 =====
+     좁은 화면에서는 지금까지처럼 세로 한 줄로 쌓이고, 넓어지면 가로로 펼친다.
+
+     주의: JS(showScreen)가 화면 전환을 인라인 style.display로 한다. 인라인이 CSS를
+     이기므로 grid로 바꾸려면 !important가 필요한데, 그냥 쓰면 숨겨진 화면까지 보이게
+     된다. 그래서 :not([style*="none"])로 "지금 보이는 화면"에만 건다.
+     "display: none"이 아니라 "none"으로 보는 이유: 마크업 초기값은 style="display:none"
+     (공백 없음)인데 JS는 style.display = 'none'(공백 있음)으로 써서 표기가 두 가지다. */
+  @media (min-width: 1000px) {
+    body { padding: 3rem 2rem 5rem; }
+    main { max-width: 1120px; padding: 1.9rem 1.9rem 2.4rem; border-radius: 34px; }
+
+    /* 헤더 — 제목 왼쪽, 단계 표시 오른쪽 */
+    .app-hero {
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: center; column-gap: 2.5rem;
+    }
+    .app-hero .stepper { margin: 0; justify-content: flex-end; }
+
+    /* 입력 화면 — 사진 왼쪽 고정, 입력란 오른쪽 */
+    #screen-form:not([style*="none"]) {
+      display: grid !important;
+      grid-template-columns: minmax(240px, 300px) 1fr;
+      column-gap: 2.4rem; align-items: start;
+    }
+    #screen-form > :nth-child(1) { grid-column: 1; grid-row: 1 / span 5; }
+    #screen-form > :nth-child(n+2) { grid-column: 2; }
+    #screen-form .polaroid { max-width: 100%; }
+
+    /* 진단 결과 — 점수와 감지 카드는 가로 전체, 나머지는 2열 */
+    #screen-result:not([style*="none"]) {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem 1.1rem; align-items: start;
+      grid-auto-flow: row dense;
+    }
+    #screen-result > .rcard-score,
+    #screen-result > .rcard-detect,
+    #screen-result > button,
+    #screen-result > .disclaimer { grid-column: 1 / -1; }
+
+    /* 보정 화면 — 방식 선택 왼쪽, 미리보기 오른쪽 */
+    #screen-correct:not([style*="none"]) {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 2.4rem; align-items: start;
+      grid-auto-flow: row dense;
+    }
+    #screen-correct > :nth-child(-n+5) { grid-column: 1; }
+    #screen-correct > :nth-child(n+6) { grid-column: 2; }
+    /* 마지막 두 버튼(검증하기 / 돌아가기)은 가로 전체 푸터로 — 오른쪽 열 아래가
+       휑하게 비는 것을 막고 다음 단계로 넘어가는 동선을 분명히 한다 */
+    #screen-correct > :nth-child(n+10) { grid-column: 1 / -1; }
+    /* 왼쪽 열이 좁아지므로 방식 카드는 한 줄에 하나씩 */
+    #screen-correct .method-grid { grid-template-columns: 1fr; }
+
+    /* 검증 화면 — 스탬프/요약 왼쪽, 상세 오른쪽 */
+    #screen-verify:not([style*="none"]) {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 2.4rem; align-items: start;
+      grid-auto-flow: row dense;
+    }
+    #screen-verify > button { grid-column: 1 / -1; }
+
+    /* 본문이 너무 길게 늘어지지 않도록 */
+    .m-reason, .preview-caption, .pin-note, .disclaimer { max-width: 46ch; }
+  }
+
 </style>
 
 <main>

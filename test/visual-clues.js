@@ -100,6 +100,14 @@ async function main() {
   check('결과 화면에 "원복"이 보임', shown.includes('원복'));
   check('결과 화면에 근거가 보임', shown.includes('조끼') || shown.includes('배지'));
 
+  // 배지 문구는 CSS ::after로 나온다. 폴백 규칙(:not 3개)의 특정도가 더 높아
+  // 한때 '없음'으로 덮여버린 적이 있어 회귀 방지로 고정한다.
+  const badge = await page.evaluate(() => {
+    const li = Array.from(document.querySelectorAll('#pinLegend li')).find((e) => e.querySelector('.num.clue'));
+    return li ? getComputedStyle(li, '::after').content : '(clue 행 없음)';
+  });
+  check('시각 단서 행 배지가 "옷·소지품"', badge.includes('옷·소지품'), badge);
+
   console.log('\n시각 단서가 없을 때도 정상 동작하는가');
   await page.route('**/api/analyze-image', (route) => json(route, { ...FAKE_VISION, 시각단서: [] }));
   riskPayload = null;
