@@ -4,85 +4,123 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   /* =========================================================================
-     안심앨범 — 시각 언어 (디자인시안.jpg / 가이드라인.md 기준)
-     크림색 종이 위 굵은 검정 산세리프, 여백 크게, 강조는 마젠타 한 곳.
-     흰색(--card)은 '사진이 얹히는 면'에만 쓴다 — 크림이 화면의 80%를 유지하도록.
+     안심앨범 — 시각 언어 v2 (가이드라인.md · 소프트 대시보드)
+
+     3층 구조: 따뜻한 회베이지 바닥(--page) → 크림 앱면(--surface) → 둥근 흰 카드(--card).
+     모서리를 크게 굴리고(카드 22px / 작은 요소 14px / 버튼 알약형), 그림자는 아주 옅게.
+     테두리 대신 배경색 차이로 면을 나눈다.
+
+     색 규칙 (가이드라인 2절 대비비 표):
+       · 노랑(--accent)·코랄(--accent-2) 위 글씨는 언제나 먹색 #1a1a1a.
+         흰 글씨는 1.38:1 / 2.55:1 이라 사실상 보이지 않는다.
+       · 위험 등급(--risk-*)에는 노랑·코랄을 쓰지 않는다. 의미가 섞인다.
+       · 등급은 색만으로 구분하지 않고 ::before 도형(▲ ■ ●)과 라벨을 함께 쓴다.
+
+     다크 카드(--card-dark)는 한 화면에 하나 — 최상단 히어로(.app-hero)뿐이다.
      ========================================================================= */
   :root {
-    --paper: #f0f0e0;        /* 크림 종이 — 화면 비중 80% */
-    --paper-deep: #e4e4d2;   /* 크림 한 단계 아래 (트랙·스켈레톤) */
-    --card: #ffffff;         /* 사진 마운트 전용 */
-    --ink: #000000;          /* 순검정 (회색 아님) */
-    --muted: #4a4a42;        /* 캡션 — 크림 위 7.65:1 */
-    --line: #e0e0d0;
-    --accent: #e31790;       /* 마젠타 — 화면당 한 곳. 위에 얹는 글씨는 검정(4.79:1) */
+    --page: #e6ddd3;         /* 가장 바깥 바닥 */
+    --surface: #f7f3ee;      /* 앱 본체 (크림) */
+    --card: #ffffff;         /* 카드 */
+    --card-dark: #1c1c1c;    /* 강조 카드 — 화면당 하나 */
+    --card-tan: #cdc3b2;     /* 보조 카드 */
+    --soft: #f4efe8;         /* 흰 카드 위 옅은 면 (입력·트랙·리스트 행) */
+    --soft-hover: #ece5db;
+    --ink: #1a1a1a;          /* 흰 카드 위 17.40:1 */
+    --muted: #6f6860;        /* 흰 카드 위 5.49:1 */
+    --on-dark: #f7f3ee;      /* 다크 카드 위 글씨 17.04:1 */
+    --on-chip: #f7f3ee;      /* 어두운 배지 위 글씨 (라이트) */
+    --line: #eae3da;
+    --line-strong: #d8cec1;
+    --accent: #ffd84d;       /* 노랑 — 위에 얹는 글씨는 먹색 12.58:1 */
+    --accent-hover: #f7cb2e;
+    --accent-2: #ff7a6b;     /* 코랄 — 위에 얹는 글씨는 먹색 6.84:1 */
 
-    /* 구 토큰 유지: 마크업 인라인 스타일과 JS가 var(--...)로 참조하므로 이름을 지우지 않고 값만 교체 */
-    --brand: #000000;
-    --brand-deep: #000000;
-    --brand-soft: #e4e4d2;
-    --gold: #000000;
-    --gold-soft: #e4e4d2;
+    /* 구 토큰: 마크업 인라인 스타일이 var(--gold) 등으로 참조 — 이름 유지, 값만 v2 */
+    --paper: var(--surface);
+    --paper-deep: var(--soft);
+    --gold: var(--accent);
 
-    /* 위험 등급 — 의미 있는 색 유지 (가이드라인 2절 지정값, 크림 배경 기준 대비비) */
-    --risk-high: #8a1a12;    /* 8.16:1 */
-    --risk-mid:  #7a5200;    /* 6.01:1 */
-    --risk-low:  #1b5e3f;    /* 6.71:1 */
-    --risk-high-soft: #e4e4d2;
-    --risk-mid-soft: #e4e4d2;
-    --risk-low-soft: #e4e4d2;
+    /* 위험 등급 — 흰 카드 위에서 검증된 값 (가이드라인 2절) */
+    --risk-high: #b23b2e;    /* 5.90:1 */
+    --risk-mid:  #8a5a00;    /* 5.93:1 */
+    --risk-low:  #1f7a52;    /* 5.30:1 */
+    --risk-high-soft: #fbeae7;  /* 위 글씨 --risk-high 4.95:1 */
+    --risk-mid-soft:  #fbf0dd;  /* 위 글씨 --risk-mid  5.26:1 */
+    --risk-low-soft:  #e6f4ed;  /* 위 글씨 --risk-low  4.68:1 */
 
-    --focus: #000000;
+    --focus: #1a1a1a;
+    --skel-sheen: rgba(255, 255, 255, 0.6);
     --font-body: 'Pretendard Variable', 'Pretendard', 'Malgun Gothic', '맑은 고딕',
       -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, sans-serif;
-    --font-display: var(--font-body); /* 명조(바탕) 계열 제거 — 산세리프로 통일 */
-    --shadow-card: none;              /* 시안은 평평함. 그림자 대신 1px 실선 */
+    --font-display: var(--font-body);
+    --shadow-card: 0 2px 12px rgba(40, 30, 20, 0.06);
+    --shadow-soft: 0 1px 6px rgba(40, 30, 20, 0.05);
+    --shadow-lift: 0 6px 20px rgba(40, 30, 20, 0.10);
   }
 
+  /* 다크 모드 — 지우지 말 것 (가이드라인 7절 3항).
+     노랑·코랄은 채도만 낮추고, 그 위 글씨는 라이트와 똑같이 먹색을 유지한다. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      --paper: #12120c;
-      --paper-deep: #1e1e15;
-      --card: #24241a;
-      --ink: #f0f0e0;
-      --muted: #a8a89a;
-      --line: #35352a;
-      --brand: #f0f0e0;
-      --brand-deep: #f0f0e0;
-      --brand-soft: #1e1e15;
-      --gold: #f0f0e0;
-      --gold-soft: #1e1e15;
-      --risk-high: #f09a8e;
-      --risk-mid:  #e3b24f;
-      --risk-low:  #74cfa2;
-      --risk-high-soft: #1e1e15;
-      --risk-mid-soft: #1e1e15;
-      --risk-low-soft: #1e1e15;
-      --focus: #f0f0e0;
-      --shadow-card: none;
+      --page: #171512;
+      --surface: #201d19;
+      --card: #2a2621;
+      --card-dark: #12100e;
+      --card-tan: #3f3830;
+      --soft: #35302a;
+      --soft-hover: #3f3931;
+      --ink: #f2ede7;
+      --muted: #a49b90;      /* --card 위 5.49:1 */
+      --on-dark: #f2ede7;
+      --on-chip: #1a1a1a;    /* 다크에선 배지 배경이 밝아지므로 글씨는 먹색 */
+      --line: #3a342d;
+      --line-strong: #4a4239;
+      --accent: #e8c74a;     /* 위 글씨 먹색 10.53:1 */
+      --accent-hover: #d9b83c;
+      --accent-2: #e8756a;   /* 위 글씨 먹색 5.95:1 */
+      --risk-high: #f2938a;  /* --card 위 6.67:1 */
+      --risk-mid:  #e8b23f;
+      --risk-low:  #6fd3a4;
+      --risk-high-soft: #3d2723;
+      --risk-mid-soft:  #3a2f18;
+      --risk-low-soft:  #17332a;
+      --focus: #f2ede7;
+      --skel-sheen: rgba(255, 255, 255, 0.09);
+      --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.34);
+      --shadow-soft: 0 1px 6px rgba(0, 0, 0, 0.28);
+      --shadow-lift: 0 6px 22px rgba(0, 0, 0, 0.42);
     }
   }
   :root[data-theme='dark'] {
-    --paper: #12120c;
-    --paper-deep: #1e1e15;
-    --card: #24241a;
-    --ink: #f0f0e0;
-    --muted: #a8a89a;
-    --line: #35352a;
-    --brand: #f0f0e0;
-    --brand-deep: #f0f0e0;
-    --brand-soft: #1e1e15;
-    --gold: #f0f0e0;
-    --gold-soft: #1e1e15;
-    --risk-high: #f09a8e;
-    --risk-mid:  #e3b24f;
-    --risk-low:  #74cfa2;
-    --risk-high-soft: #1e1e15;
-    --risk-mid-soft: #1e1e15;
-    --risk-low-soft: #1e1e15;
-    --focus: #f0f0e0;
-    --shadow-card: none;
+    --page: #171512;
+    --surface: #201d19;
+    --card: #2a2621;
+    --card-dark: #12100e;
+    --card-tan: #3f3830;
+    --soft: #35302a;
+    --soft-hover: #3f3931;
+    --ink: #f2ede7;
+    --muted: #a49b90;
+    --on-dark: #f2ede7;
+    --on-chip: #1a1a1a;
+    --line: #3a342d;
+    --line-strong: #4a4239;
+    --accent: #e8c74a;
+    --accent-hover: #d9b83c;
+    --accent-2: #e8756a;
+    --risk-high: #f2938a;
+    --risk-mid:  #e8b23f;
+    --risk-low:  #6fd3a4;
+    --risk-high-soft: #3d2723;
+    --risk-mid-soft:  #3a2f18;
+    --risk-low-soft:  #17332a;
+    --focus: #f2ede7;
+    --skel-sheen: rgba(255, 255, 255, 0.09);
+    --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.34);
+    --shadow-soft: 0 1px 6px rgba(0, 0, 0, 0.28);
+    --shadow-lift: 0 6px 22px rgba(0, 0, 0, 0.42);
   }
 
   * { box-sizing: border-box; }
@@ -90,17 +128,32 @@
   body {
     margin: 0;
     font-family: var(--font-body);
-    background: var(--paper);
+    background: var(--page);
     color: var(--ink);
     display: flex;
     justify-content: center;
-    padding: 3.5rem 1.4rem 6rem;
+    align-items: flex-start;
+    padding: 2.4rem 1.1rem 4.5rem;
     -webkit-font-smoothing: antialiased;
   }
-  main { width: 100%; max-width: 620px; }
+  /* 앱 본체 — 바닥(--page) 위에 얹힌 크림 판. 그 위에 흰 카드가 다시 얹힌다. */
+  main {
+    width: 100%; max-width: 660px;
+    background: var(--surface);
+    border-radius: 30px;
+    padding: 1.3rem 1.3rem 2rem;
+    box-shadow: var(--shadow-card);
+  }
+  @media (max-width: 460px) {
+    body { padding: 1.1rem 0.7rem 3rem; }
+    main { padding: 0.9rem 0.9rem 1.5rem; border-radius: 24px; }
+  }
+
+  /* 한글 제목이 단어 중간에서 끊기지 않도록 */
+  h1, h2, h3 { word-break: keep-all; }
 
   a { color: inherit; }
-  ::selection { background: var(--accent); color: #000; }
+  ::selection { background: var(--accent); color: #1a1a1a; }
   button, input, select, textarea { font-family: inherit; }
   *:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
@@ -108,132 +161,153 @@
     *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
   }
 
-  /* ---- 모노라인 아이콘: 굵기 일정한 검정 선, 채우기 없음 (가이드라인 5절) ---- */
+  /* ---- 모노라인 아이콘: 굵기 일정한 선, 채우기 없음 ---- */
   .mono-icon {
     display: block; width: 100%; height: 100%;
-    fill: none; stroke: currentColor; stroke-width: 2.6;
+    fill: none; stroke: currentColor; stroke-width: 2.4;
     stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* ---- 마스트헤드: 왼쪽으로 몰고 오른쪽을 비움 (비대칭) ---- */
-  .brand-mark { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 1.1rem; }
-  .brand-mark .badge-icon {
-    width: 34px; height: 34px; border-radius: 0; background: none; color: var(--ink);
-    display: block; padding: 0;
+  /* =========================================================================
+     히어로 — 화면에 단 하나뿐인 다크 카드. 브랜드 · 제목 · 3단계 진행을 담는다.
+     ========================================================================= */
+  .app-hero {
+    background: var(--card-dark); color: var(--on-dark);
+    border-radius: 24px; padding: 1.5rem 1.5rem 1.35rem;
+    margin-bottom: 1.1rem;
   }
+  .app-hero *:focus-visible { outline-color: var(--accent); }
+  @media (max-width: 460px) { .app-hero { padding: 1.2rem 1.1rem 1.1rem; border-radius: 20px; } }
+
+  /* 원형 아이콘 (가이드라인 3절) — 코랄 원 안에 먹색 선 아이콘 6.84:1 */
+  .brand-mark { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 1.15rem; }
+  .brand-mark .badge-icon {
+    width: 40px; height: 40px; border-radius: 999px;
+    background: var(--accent-2); color: #1a1a1a;
+    display: flex; align-items: center; justify-content: center; padding: 9px;
+  }
+
   header.page-header {
-    text-align: left; margin-bottom: 2.6rem;
-    display: grid; grid-template-columns: 1fr auto; column-gap: 1.5rem; align-items: start;
-    border-bottom: 1px solid var(--ink); padding-bottom: 1.4rem;
+    text-align: left; margin: 0 0 1.5rem; border: none; padding: 0;
+    display: grid; grid-template-columns: 1fr auto; column-gap: 1.2rem; align-items: start;
   }
   header.page-header h1 {
     grid-column: 1; grid-row: 1;
     font-family: var(--font-display);
-    font-size: clamp(2.15rem, 9vw, 2.7rem);
-    font-weight: 800; letter-spacing: -0.035em; line-height: 0.95;
-    margin: 0; color: var(--ink); text-wrap: balance;
+    font-size: clamp(1.5rem, 6.5vw, 1.7rem);
+    font-weight: 700; letter-spacing: -0.012em; line-height: 1.2;
+    margin: 0; color: var(--on-dark); text-wrap: balance;
   }
   header.page-header p {
     grid-column: 1; grid-row: 2;
-    margin: 0.85rem 0 0; color: var(--ink); font-size: 0.95rem; line-height: 1.6; max-width: 28ch;
+    margin: 0.5rem 0 0; color: var(--on-dark); opacity: 0.72;
+    font-size: 0.92rem; line-height: 1.6; max-width: 30ch;
   }
-  /* 시안의 크레딧 블록: 영문은 대문자 + 넓은 자간, 한글은 그 아래 잔글씨 */
   header.page-header .subhead {
     grid-column: 2; grid-row: 1; justify-self: end;
-    margin: 0.5rem 0 0; text-align: right; white-space: nowrap;
+    margin: 0.15rem 0 0; text-align: right; white-space: nowrap;
     display: block; background: none; padding: 0; border-radius: 0; max-width: none;
   }
   header.page-header .subhead .lat {
-    display: block; font-size: 0.63rem; font-weight: 800; color: var(--ink);
-    text-transform: uppercase; letter-spacing: 0.14em;
+    display: block; font-size: 0.62rem; font-weight: 600; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.1em;
   }
   header.page-header .subhead .ko {
-    display: block; margin-top: 0.3rem; font-size: 0.66rem; font-weight: 600;
-    letter-spacing: 0.02em; color: var(--muted);
+    display: block; margin-top: 0.28rem; font-size: 0.66rem; font-weight: 500;
+    letter-spacing: 0; color: var(--on-dark); opacity: 0.55;
   }
   @media (max-width: 460px) {
     header.page-header { grid-template-columns: 1fr; }
-    header.page-header .subhead { grid-column: 1; grid-row: 3; justify-self: start; text-align: left; margin-top: 1.1rem; }
+    header.page-header .subhead { grid-column: 1; grid-row: 3; justify-self: start; text-align: left; margin-top: 0.9rem; }
   }
 
-  /* ---- 진행 단계: 크레딧 한 줄처럼 왼쪽 정렬, 각진 번호 ---- */
-  .stepper { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 2.8rem; user-select: none; flex-wrap: wrap; row-gap: 0.5rem; }
-  .stepper .step { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; }
+  /* ---- 진행 단계: 다크 카드 위 진행바. 현재 단계만 노랑 원 + 먹색 숫자 ---- */
+  .stepper { display: flex; align-items: center; justify-content: flex-start; margin: 0; user-select: none; flex-wrap: wrap; row-gap: 0.5rem; }
+  .stepper .step { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0; }
+  .stepper .step span.label { color: var(--on-dark); opacity: 0.55; transition: opacity 0.25s; }
   .stepper .dot {
-    width: 22px; height: 22px; border-radius: 0; background: transparent; border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 800; color: var(--muted);
-    transition: background 0.25s, border-color 0.25s, color 0.25s;
+    width: 28px; height: 28px; border-radius: 999px; border: none;
+    background: rgba(255, 255, 255, 0.11); color: var(--on-dark);
+    display: flex; align-items: center; justify-content: center; font-size: 0.76rem; font-weight: 600;
+    transition: background 0.25s, color 0.25s;
   }
-  .stepper .step.done .dot { background: transparent; border-color: var(--ink); color: var(--ink); }
-  .stepper .step.active .dot { background: var(--ink); border-color: var(--ink); color: var(--paper); box-shadow: none; }
-  .stepper .step.active span.label, .stepper .step.done span.label { color: var(--ink); }
-  .stepper .connector { width: 30px; height: 1px; background: var(--line); margin: 0 0.55rem; }
-  .stepper .connector.filled { background: var(--ink); }
+  .stepper .step.done .dot { background: rgba(255, 255, 255, 0.22); color: var(--on-dark); }
+  .stepper .step.active .dot { background: var(--accent); color: #1a1a1a; font-weight: 700; }
+  .stepper .step.active span.label, .stepper .step.done span.label { opacity: 1; }
+  .stepper .step.active span.label { font-weight: 600; }
+  .stepper .connector { width: 34px; height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); margin: 0 0.6rem; transition: background 0.3s; }
+  .stepper .connector.filled { background: var(--accent); }
+  @media (max-width: 400px) { .stepper .connector { width: 20px; margin: 0 0.4rem; } }
 
-  /* ---- 카드: 그림자 없음, 각진 모서리, 여백 크게. 배경은 크림 유지(흰색은 사진용) ---- */
+  /* =========================================================================
+     카드 — 크림 위에 얹힌 둥근 흰 면. 테두리 없이 옅은 그림자로만 구분.
+     ========================================================================= */
   .card {
-    background: var(--paper); border: 1px solid var(--ink); border-radius: 2px;
-    padding: 2.4rem 2.1rem; box-shadow: var(--shadow-card);
+    background: var(--card); border: none; border-radius: 22px;
+    padding: 1.85rem 1.6rem; box-shadow: var(--shadow-card);
   }
-  @media (max-width: 460px) { .card { padding: 1.6rem 1.25rem; } }
+  @media (max-width: 460px) { .card { padding: 1.35rem 1.15rem; border-radius: 18px; } }
 
-  .field { margin-bottom: 1.6rem; }
+  .field { margin-bottom: 1.35rem; }
   .field label {
-    display: block; font-size: 0.72rem; font-weight: 700; margin-bottom: 0.5rem;
-    letter-spacing: 0.08em; color: var(--ink);
+    display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.45rem;
+    letter-spacing: 0; color: var(--ink);
   }
-  .field .hint { font-weight: 400; color: var(--muted); font-size: 0.7rem; margin-left: 0.4rem; letter-spacing: 0; }
+  .field .hint { font-weight: 400; color: var(--muted); font-size: 0.72rem; margin-left: 0.35rem; letter-spacing: 0; }
   input[type='text'], textarea, select {
-    width: 100%; padding: 0.7rem 0.8rem; border: 1px solid var(--line); border-radius: 2px;
-    font-size: 0.95rem; font-family: inherit; background: var(--card); color: var(--ink);
+    width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid transparent; border-radius: 14px;
+    font-size: 0.92rem; font-family: inherit; background: var(--soft); color: var(--ink);
+    transition: background 0.15s, border-color 0.15s;
   }
-  input[type='text']:focus, textarea:focus, select:focus { border-color: var(--ink); }
-  ::placeholder { color: var(--muted); opacity: 0.75; }
-  textarea { resize: vertical; min-height: 3.4rem; line-height: 1.6; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  input[type='text']:focus, textarea:focus, select:focus { border-color: var(--accent-2); background: var(--card); }
+  ::placeholder { color: var(--muted); opacity: 0.8; }
+  textarea { resize: vertical; min-height: 3.6rem; line-height: 1.6; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
 
   .drop-zone {
-    background: transparent; border: 1.5px dashed var(--ink); border-radius: 2px; padding: 1.5rem 1.2rem;
+    background: var(--soft); border: 1.5px dashed var(--line-strong); border-radius: 18px; padding: 1.4rem 1.2rem;
     text-align: left; cursor: pointer; position: relative; color: var(--muted); font-size: 0.85rem;
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s;
   }
-  .drop-zone:hover { border-color: var(--ink); background: var(--paper-deep); }
+  .drop-zone:hover { border-color: var(--accent-2); background: var(--soft-hover); }
   .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .drop-zone .icon { display: block; width: 30px; height: 30px; margin: 0 0 0.7rem; color: var(--ink); font-size: 0; }
   .drop-zone.small { padding: 1rem 1.2rem; }
 
-  /* 사진 마운트: 흰 종이. 회전·그림자 없이 평평하게. */
+  /* 사진 마운트 */
   .polaroid {
-    background: var(--card); padding: 0.6rem 0.6rem 0.9rem; border-radius: 2px;
-    box-shadow: none; transform: none; margin: 1.1rem 0 0; max-width: 240px;
+    background: var(--card); padding: 0.55rem 0.55rem 0.75rem; border-radius: 18px;
+    box-shadow: var(--shadow-soft); transform: none; margin: 1rem 0 0; max-width: 240px;
     border: 1px solid var(--line);
   }
-  .polaroid img { width: 100%; display: block; border-radius: 0; }
+  .polaroid img { width: 100%; display: block; border-radius: 12px; }
   .polaroid .cap {
-    font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
-    color: var(--muted); text-align: left; margin-top: 0.55rem;
+    font-family: var(--font-display); font-size: 0.72rem; font-weight: 500; letter-spacing: 0;
+    color: var(--muted); text-align: left; margin-top: 0.5rem; padding-left: 0.15rem;
   }
 
-  /* ---- 버튼 ---- */
+  /* ---- 버튼: 완전한 알약형 ---- */
   button.primary {
-    width: 100%; padding: 0.95rem; background: var(--accent); color: #000;
-    border: 2px solid var(--ink); border-radius: 2px;
-    font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em; cursor: pointer; margin-top: 1.6rem;
-    transition: background 0.18s, color 0.18s;
+    width: 100%; padding: 0.95rem 1.2rem; background: var(--accent); color: #1a1a1a;
+    border: none; border-radius: 999px;
+    font-size: 0.98rem; font-weight: 700; letter-spacing: -0.005em; cursor: pointer; margin-top: 1.5rem;
+    box-shadow: var(--shadow-soft);
+    transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
   }
-  /* 버튼이 연이어 쌓일 때는 간격을 일정하게 (기본 1.6rem은 본문 다음에 올 때만) */
-  button.secondary + button.primary, button.ghost-link + button.primary { margin-top: 0.7rem; }
-  button.primary:hover { background: var(--ink); color: var(--paper); }
-  button.primary:disabled { background: transparent; color: var(--muted); border-color: var(--line); cursor: default; }
+  button.secondary + button.primary, button.ghost-link + button.primary { margin-top: 0.6rem; }
+  button.primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-lift); }
+  button.primary:active { transform: translateY(1px); }
+  button.primary:disabled { background: var(--soft); color: var(--muted); box-shadow: none; cursor: default; }
   button.secondary {
-    width: 100%; padding: 0.85rem; background: transparent; color: var(--ink); border: 1px solid var(--ink);
-    border-radius: 2px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 0.7rem;
-    transition: background 0.18s, color 0.18s;
+    width: 100%; padding: 0.85rem 1.2rem; background: transparent; color: var(--ink);
+    border: 1.5px solid var(--line-strong); border-radius: 999px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 0.6rem;
+    transition: background 0.18s, border-color 0.18s;
   }
-  button.secondary:hover { background: var(--ink); color: var(--paper); }
+  button.secondary:hover { background: var(--soft); border-color: var(--muted); }
   button.ghost-link {
-    display: block; margin: 1rem 0 0; background: none; border: none; color: var(--muted);
-    font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em; text-decoration: underline;
+    display: block; margin: 0.9rem 0 0; background: none; border: none; color: var(--muted);
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0; text-decoration: underline;
     text-underline-offset: 3px; cursor: pointer; padding: 0.3rem 0;
   }
   button.ghost-link:hover { color: var(--ink); }
@@ -241,170 +315,231 @@
   /* ---- 분석 중 ---- */
   .analyzing { text-align: left; padding: 0; }
   .scan-frame {
-    position: relative; max-width: 240px; margin: 0 0 2rem; border-radius: 2px; overflow: hidden;
-    box-shadow: none; border: 1px solid var(--line); background: var(--card);
+    position: relative; max-width: 240px; margin: 0 0 1.6rem; border-radius: 18px; overflow: hidden;
+    box-shadow: var(--shadow-soft); border: none; background: var(--soft);
   }
   .scan-frame img { width: 100%; display: block; }
   .scan-line {
-    position: absolute; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--ink), transparent);
+    position: absolute; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent-2), transparent);
     animation: sweep 1.5s ease-in-out infinite;
   }
   @keyframes sweep { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
-  .analyzing-steps { display: grid; gap: 0.6rem; text-align: left; max-width: 100%; margin: 0; }
-  .analyzing-steps p { margin: 0; font-size: 0.88rem; color: var(--muted); opacity: 0.45; transition: opacity 0.3s, color 0.3s; }
-  .analyzing-steps p.active { opacity: 1; color: var(--ink); font-weight: 700; }
-  .analyzing-steps p.active::before { content: '● '; color: var(--ink); }
+  .analyzing-steps { display: grid; gap: 0.5rem; text-align: left; max-width: 100%; margin: 0; }
+  .analyzing-steps p {
+    margin: 0; font-size: 0.88rem; color: var(--muted); background: transparent;
+    border-radius: 12px; padding: 0.5rem 0.7rem;
+    transition: color 0.3s, background 0.3s;
+  }
+  .analyzing-steps p.active { color: var(--ink); font-weight: 600; background: var(--soft); }
+  .analyzing-steps p.active::before { content: '● '; color: var(--accent-2); }
   .analyzing-steps p:not(.active)::before { content: '○ '; }
 
   /* ---- 진단 결과: 핀 (색이 아니라 형태로 구분 — 채움=얼굴, 테두리=텍스트) ---- */
-  .risk-photo-wrap { position: relative; margin: 0 0 1.6rem; max-width: 300px; }
-  .risk-photo-wrap img { width: 100%; border-radius: 2px; display: block; box-shadow: none; border: 1px solid var(--line); }
+  /* 사진은 카드 안에서 과하게 커지지 않게 높이도 제한한다.
+     핀은 wrap 기준 %좌표라, wrap이 이미지 크기에 딱 맞게 줄어들어야 위치가 어긋나지 않는다. */
+  .risk-photo-wrap { position: relative; margin: 0 0 1.1rem; width: fit-content; max-width: 100%; }
+  .risk-photo-wrap img {
+    display: block; width: auto; height: auto; max-width: 100%; max-height: 300px;
+    border-radius: 18px; box-shadow: var(--shadow-soft); border: none;
+  }
   .pin {
-    position: absolute; width: 24px; height: 24px; border-radius: 50%;
+    position: absolute; width: 26px; height: 26px; border-radius: 50%;
     background: var(--card); color: var(--ink); border: 2px solid var(--ink);
-    font-size: 0.72rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-    box-shadow: none; transform: translate(-50%, -50%);
+    font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25); transform: translate(-50%, -50%);
   }
-  .pin.face { background: var(--ink); color: var(--paper); }
-  .pin-legend { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.55rem; }
-  .pin-legend li { display: flex; gap: 0.6rem; font-size: 0.88rem; line-height: 1.55; align-items: flex-start; }
+  .pin.face { background: var(--ink); color: var(--card); }
+  .pin-legend { list-style: none; padding: 0; margin: 0 0 0.9rem; display: grid; gap: 0.4rem; }
+  /* 시안 "My Habits" 리스트 — 옅은 배경의 둥근 행 + 오른쪽 종류 표시.
+     종류는 JS가 붙이는 .num 클래스(face/text)에서 CSS만으로 읽는다. */
+  .pin-legend li {
+    position: relative;
+    display: flex; gap: 0.65rem; font-size: 0.88rem; line-height: 1.55; align-items: flex-start;
+    background: var(--soft); border-radius: 14px; padding: 0.7rem 4.6rem 0.7rem 0.8rem;
+  }
+  .pin-legend li::after {
+    position: absolute; right: 0.7rem; top: 0.62rem;
+    font-size: 0.66rem; font-weight: 600; line-height: 1.4; white-space: nowrap;
+    padding: 0.18rem 0.55rem; border-radius: 999px;
+    background: var(--card); color: var(--muted); box-shadow: var(--shadow-soft);
+  }
+  .pin-legend li:has(.num.face)::after { content: '얼굴'; color: var(--ink); }
+  .pin-legend li:has(.num.text)::after { content: '텍스트'; color: var(--ink); }
+  .pin-legend li:has(.num:not(.face):not(.text))::after { content: '없음'; }
   .pin-legend .num {
-    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
     background: var(--card); color: var(--ink); border: 2px solid var(--ink);
-    font-size: 0.64rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 0.12rem;
+    font-size: 0.64rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 0.05rem;
   }
-  .pin-legend .num.face { background: var(--ink); color: var(--paper); }
-  .pin-note { text-align: left; font-size: 0.7rem; line-height: 1.6; color: var(--muted); margin: 0 0 2rem; max-width: 52ch; }
+  .pin-legend .num.face { background: var(--ink); color: var(--card); }
+  .pin-note { text-align: left; font-size: 0.75rem; line-height: 1.65; color: var(--muted); margin: 0 0 1.5rem; max-width: 52ch; }
 
   /* 위험도 판단 대기 중 스켈레톤 + 진행 표시 */
   .risk-pending {
     display: none; align-items: center; justify-content: flex-start; gap: 0.55rem;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 1rem;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0; color: var(--muted); margin-bottom: 0.9rem;
   }
   .risk-pending .spin {
-    width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
-    border: 2px solid var(--line); border-top-color: var(--ink);
+    width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--line); border-top-color: var(--accent-2);
     animation: risk-spin 0.8s linear infinite;
   }
   @keyframes risk-spin { to { transform: rotate(360deg); } }
   .skel {
-    background: var(--paper-deep) !important; color: transparent !important; border-color: transparent !important;
-    border-radius: 0; position: relative; overflow: hidden; display: inline-block; min-width: 2.5em;
+    background: var(--soft) !important; color: transparent !important; border-color: transparent !important;
+    border-radius: 8px; position: relative; overflow: hidden; display: inline-block; min-width: 2.5em;
   }
   .skel::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    background: linear-gradient(90deg, transparent, var(--skel-sheen), transparent);
     animation: skel-sweep 1.3s ease-in-out infinite;
   }
   @keyframes skel-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-  li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.4rem 0; border-radius: 0; }
-  /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김 — 명시적으로 줄 형태를 줌 */
+  li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.4rem 0; border-radius: 8px; }
+  /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김 */
   p.evidence.skel { display: block; width: 90%; height: 1rem; margin: 0.3rem 0; }
 
-  /* ---- 종합 점수: 큰 숫자 왼쪽, 게이지는 옆에 작게 (비대칭) ---- */
+  /* ---- 종합 점수 게이지 카드 (시안 "Steps for Today") ----
+     큰 수치·등급은 왼쪽, 반원 게이지는 오른쪽에 비대칭으로. 카드 자체는 .rcard-score가 그린다. */
   .gauge-wrap {
-    text-align: left; margin: 0 0 2.4rem;
-    display: grid; grid-template-columns: auto auto 1fr; column-gap: 1.4rem; align-items: center;
+    text-align: left; margin: 0; background: transparent; border-radius: 0; padding: 0;
+    display: grid; grid-template-columns: 1fr auto; column-gap: 1.2rem; align-items: center;
   }
-  .gauge-wrap svg { grid-column: 2; grid-row: 1 / span 2; width: 132px; height: 74px; align-self: center; }
+  .gauge-wrap svg { grid-column: 2; grid-row: 1 / span 3; width: 150px; height: 84px; justify-self: end; align-self: center; }
   .gauge-score-label {
     grid-column: 1; grid-row: 1; align-self: end;
-    margin-top: 0; font-family: var(--font-display); font-size: 3.4rem; font-weight: 800;
-    letter-spacing: -0.05em; line-height: 0.85; color: var(--ink);
+    margin-top: 0; font-family: var(--font-display); font-size: 2.6rem; font-weight: 700;
+    letter-spacing: -0.025em; line-height: 1; color: var(--ink);
   }
   .gauge-score-sub {
     grid-column: 1; grid-row: 2; align-self: start;
-    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.09em; color: var(--muted); margin-top: 0.55rem;
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-top: 0.45rem;
   }
+  /* 등급 칩 — 알약형. 색 + 도형 + 라벨 세 겹으로 구분(색맹 대응) */
   .risk-chip {
-    grid-column: 1 / -1; grid-row: 3; justify-self: start;
-    display: inline-block; margin-top: 1.1rem; padding: 0.3rem 0.85rem; border-radius: 2px;
-    font-weight: 800; font-size: 0.78rem; letter-spacing: 0.06em;
-    background: transparent; border: 1.5px solid currentColor;
+    grid-column: 1; grid-row: 3; justify-self: start;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    margin-top: 1rem; padding: 0.35rem 0.9rem; border-radius: 999px;
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 0;
+    background: var(--soft-hover); color: var(--ink); border: none;
   }
-  .risk-chip.risk-상 { color: var(--risk-high); }
-  .risk-chip.risk-중 { color: var(--risk-mid); }
-  .risk-chip.risk-하 { color: var(--risk-low); }
+  .risk-chip::before { font-size: 0.7rem; line-height: 1; }
+  .risk-chip.risk-상 { color: var(--risk-high); background: var(--risk-high-soft); }
+  .risk-chip.risk-상::before { content: '▲'; }
+  .risk-chip.risk-중 { color: var(--risk-mid); background: var(--risk-mid-soft); }
+  .risk-chip.risk-중::before { content: '■'; }
+  .risk-chip.risk-하 { color: var(--risk-low); background: var(--risk-low-soft); }
+  .risk-chip.risk-하::before { content: '●'; }
   @media (max-width: 460px) {
-    .gauge-wrap { grid-template-columns: auto 1fr; }
-    .gauge-wrap svg { grid-column: 2; width: 108px; height: 60px; }
-    .gauge-score-label { font-size: 2.8rem; }
+    .gauge-wrap { grid-template-columns: 1fr; }
+    .gauge-wrap svg { grid-column: 1; grid-row: 4; justify-self: start; width: 128px; height: 72px; margin-top: 0.5rem; }
   }
 
-  /* ---- 결과 섹션: 시안의 크레딧 판형 — 좁은 라벨 열(우측정렬) + 넓은 내용 열 ---- */
-  section.result-section {
-    display: grid; grid-template-columns: 7.5rem 1fr; column-gap: 1.6rem;
-    margin: 0; padding: 1.7rem 0 0; border-top: 1px solid var(--line);
+  /* =========================================================================
+     진단 결과 화면 — 정보 블록마다 독립된 흰 카드가 크림 위에 떠 있는 구조.
+     (가이드라인 5절 "카드 그리드", 6절 게이지·리스트 카드)
+     #screen-result 자신은 카드 껍데기를 벗고 카드들을 담는 그릇이 된다.
+     JS가 style.display='block'을 직접 넣으므로 grid gap 대신 margin으로 간격을 준다.
+     ========================================================================= */
+  #screen-result {
+    background: transparent; box-shadow: none; padding: 0; border-radius: 0;
   }
-  section.result-section + .result-section { margin-top: 1.7rem; }
-  section.result-section > * { grid-column: 2; }
-  section.result-section > h3 {
-    grid-column: 1; grid-row: 1; align-self: start; text-align: right;
-    font-family: var(--font-display); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.04em;
-    color: var(--ink); margin: 0.15rem 0 0; line-height: 1.4;
+  .rcard, section.result-section {
+    display: block; background: var(--card); border: none; border-radius: 22px;
+    padding: 1.6rem 1.5rem; box-shadow: var(--shadow-card); margin: 0 0 0.85rem;
   }
-  @media (max-width: 560px) {
-    section.result-section { grid-template-columns: 1fr; }
-    section.result-section > * { grid-column: 1; }
-    section.result-section > h3 { grid-column: 1; text-align: left; margin: 0 0 0.7rem; }
+  .rcard-title, section.result-section > h3 {
+    font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink); margin: 0 0 0.85rem; line-height: 1.4;
+  }
+  /* 카드 안 마지막 요소의 아래 여백은 카드 패딩이 대신한다 */
+  .rcard > :last-child, section.result-section > :last-child { margin-bottom: 0; }
+  #screen-result > button.primary { margin-top: 0.7rem; }
+  @media (max-width: 460px) {
+    .rcard, section.result-section { padding: 1.25rem 1.15rem; border-radius: 18px; }
+  }
+  /* 감지 카드는 넓을 때 사진 왼쪽 · 목록 오른쪽으로 (시안의 큰 결과 카드 구성) */
+  @media (min-width: 560px) {
+    .rcard-detect {
+      display: grid; grid-template-columns: auto 1fr; column-gap: 1.3rem; align-items: start;
+    }
+    .rcard-detect > .rcard-title { grid-column: 1 / -1; }
+    .rcard-detect > .risk-photo-wrap { grid-column: 1; grid-row: 2 / span 2; margin-bottom: 0; }
+    .rcard-detect > .pin-legend { grid-column: 2; grid-row: 2; }
+    .rcard-detect > .pin-note { grid-column: 2; grid-row: 3; margin-bottom: 0; }
   }
   .sub-score-line { display: flex; justify-content: flex-start; margin-bottom: 0.5rem; }
-  .sub-score-line strong { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-  .bar-track { height: 6px; background: var(--paper-deep); border-radius: 0; overflow: hidden; margin-bottom: 0.9rem; }
-  .bar-fill { height: 100%; background: var(--ink); border-radius: 0; transition: width 0.6s ease; }
-  p.evidence { font-size: 0.95rem; line-height: 1.7; margin: 0.15rem 0 0; max-width: 60ch; }
+  .sub-score-line strong { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  .bar-track { height: 8px; background: var(--soft); border-radius: 999px; overflow: hidden; margin-bottom: 0.9rem; }
+  .bar-fill { height: 100%; background: var(--ink); border-radius: 999px; transition: width 0.6s ease; }
+  p.evidence { font-size: 0.92rem; line-height: 1.75; margin: 0.15rem 0 0; max-width: 62ch; }
   .action-list { margin: 0; padding-left: 1.1rem; }
-  .action-list li { font-size: 0.95rem; line-height: 1.75; }
-  .caption-suggestions { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.8rem; }
+  .action-list li { font-size: 0.92rem; line-height: 1.8; }
+  .caption-suggestions { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }
   .caption-suggestions li {
-    background: transparent; padding: 0.15rem 0 0.15rem 0.9rem; border-radius: 0;
-    font-size: 0.95rem; line-height: 1.7; border-left: 4px solid var(--ink);
+    background: var(--soft); padding: 0.75rem 0.95rem; border-radius: 14px;
+    font-size: 0.92rem; line-height: 1.7; border: none;
   }
   .schedule-flag {
-    display: inline-block; justify-self: start; /* grid 자식일 때 가로로 늘어나지 않도록 */
-    font-size: 0.68rem; padding: 0.25rem 0.7rem; border-radius: 2px;
-    background: transparent; border: 1px solid var(--line); color: var(--muted);
-    font-weight: 800; letter-spacing: 0.08em; margin-bottom: 0.7rem;
+    display: inline-flex; align-items: center; gap: 0.3rem; justify-self: start;
+    font-size: 0.72rem; padding: 0.3rem 0.8rem; border-radius: 999px;
+    background: var(--soft); border: none; color: var(--muted);
+    font-weight: 600; letter-spacing: 0; margin-bottom: 0.6rem;
   }
-  .schedule-flag.on { background: transparent; border: 1.5px solid var(--risk-mid); color: var(--risk-mid); }
+  .schedule-flag.on { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .schedule-flag.on::before { content: '⚠'; font-size: 0.72rem; }
 
   /* ---- 보정 방식 선택 ---- */
-  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.8rem; }
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.5rem; }
   .method-card {
-    text-align: left; border: 1px solid var(--line); border-radius: 2px; padding: 1rem;
-    background: transparent; color: var(--ink); cursor: pointer; position: relative;
-    transition: border-color 0.15s, background 0.15s;
+    text-align: left; border: none; border-radius: 18px; padding: 1.05rem 1.1rem;
+    background: var(--soft); color: var(--ink); cursor: pointer; position: relative;
+    box-shadow: 0 0 0 1.5px transparent inset;
+    transition: background 0.15s, box-shadow 0.15s;
   }
-  .method-card:hover { border-color: var(--ink); }
-  .method-card.selected { border: 2px solid var(--ink); background: var(--card); padding: calc(1rem - 1px); }
+  .method-card:last-child { grid-column: 1 / -1; }
+  .method-card:hover { background: var(--soft-hover); }
+  .method-card.selected {
+    background: var(--card); box-shadow: 0 0 0 2px var(--accent-2) inset, var(--shadow-soft);
+  }
   .method-card:disabled { opacity: 0.45; cursor: default; }
-  .method-card .m-title { font-weight: 800; font-size: 0.88rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.5rem; }
+  .method-card .m-title {
+    font-weight: 600; font-size: 0.92rem; letter-spacing: -0.005em;
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  }
   .method-card .m-ico { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ink); }
-  .method-card .m-reason { font-size: 0.76rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.55; }
-  .method-card .m-badge {
-    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; color: var(--paper); background: var(--ink);
-    padding: 0.15rem 0.4rem; border-radius: 2px; margin-left: auto;
+  .method-card .m-reason { font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.6; }
+  /* 배지: 어두운 면 + 밝은 글씨. JS가 background만 바꾸므로(--muted/--risk-low) 글씨색은 --on-chip로 뒤집는다 */
+  .m-badge {
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0; color: var(--on-chip); background: var(--ink);
+    padding: 0.2rem 0.55rem; border-radius: 999px; margin-left: auto;
+  }
+  /* "1순위" 배지만 노랑 — 위 글씨는 반드시 먹색 (12.58:1) */
+  #badge-crop, #badge-blur, #badge-sticker {
+    background: var(--accent); color: #1a1a1a; font-weight: 700;
   }
 
   .sticker-choice {
-    width: 44px; height: 44px; border-radius: 2px; border: 1px solid var(--line); background: transparent;
+    width: 46px; height: 46px; border-radius: 14px; border: none; background: var(--soft);
     font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px transparent inset; transition: background 0.15s, box-shadow 0.15s;
   }
-  .sticker-choice.selected { border: 2px solid var(--ink); background: var(--card); }
+  .sticker-choice:hover { background: var(--soft-hover); }
+  .sticker-choice.selected { background: var(--card); box-shadow: 0 0 0 2px var(--accent-2) inset, var(--shadow-soft); }
 
   /* ---- 처리 결과 미리보기 ----
      주의: .preview-frame 에 object-fit:cover 나 고정 aspect-ratio 를 절대 넣지 말 것.
      처리된 사진은 항상 원본 비율 그대로 전부 보여야 함 (test/preview-layout.js 가 검사). */
   .preview-frame {
-    position: relative; border-radius: 2px; overflow: hidden; background: var(--card);
-    border: 1px solid var(--line); padding: 6px;
-    margin-bottom: 1rem; min-height: 120px;
+    position: relative; border-radius: 18px; overflow: hidden; background: var(--soft);
+    border: none; padding: 8px;
+    margin-bottom: 0.9rem; min-height: 120px;
     display: flex; align-items: center; justify-content: center;
   }
-  .preview-frame img { display: block; max-width: 100%; max-height: 60vh; width: auto; height: auto; }
+  .preview-frame img { display: block; max-width: 100%; max-height: 60vh; width: auto; height: auto; border-radius: 12px; }
   .preview-frame .crop-guard {
-    position: absolute; inset: 12% 22% 12% 12%; border: 2px dashed var(--ink); border-radius: 0;
+    position: absolute; inset: 12% 22% 12% 12%; border: 2px dashed var(--ink); border-radius: 12px;
   }
   .preview-frame .after-blur {
     filter: blur(9px) saturate(0.88) brightness(0.96);
@@ -414,51 +549,55 @@
   .preview-frame .after-crop-img { transform: scale(1.55) translate(-14%, 2%); }
   .preview-frame .sticker {
     position: absolute; left: 74%; top: 68%; transform: translate(-50%, -50%);
-    width: 64px; height: 64px; border-radius: 2px; background: var(--card);
+    width: 64px; height: 64px; border-radius: 18px; background: var(--card);
     display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
-    box-shadow: none; border: 2px solid var(--ink);
+    box-shadow: var(--shadow-lift); border: none;
   }
-  .preview-caption { text-align: left; font-size: 0.76rem; line-height: 1.6; color: var(--muted); margin: 0 0 1.4rem; }
-  .preview-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.11em; color: var(--muted); margin: 0 0 0.5rem; text-align: left; }
+  .preview-caption { text-align: left; font-size: 0.78rem; line-height: 1.65; color: var(--muted); margin: 0 0 1.2rem; }
+  .preview-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); margin: 0 0 0.4rem; text-align: left; }
   .edit-instruction {
-    background: transparent; border-left: 4px solid var(--line); border-radius: 0;
-    padding: 0.2rem 0 0.2rem 0.9rem; font-size: 0.82rem; line-height: 1.65;
-    color: var(--muted); margin-bottom: 1.4rem;
+    background: var(--soft); border: none; border-radius: 14px;
+    padding: 0.85rem 1rem; font-size: 0.82rem; line-height: 1.7;
+    color: var(--muted); margin-bottom: 1.2rem;
   }
   .edit-instruction strong {
-    color: var(--ink); display: block; margin-bottom: 0.35rem; font-size: 0.66rem;
-    font-weight: 800; letter-spacing: 0.08em;
+    color: var(--ink); display: block; margin-bottom: 0.3rem; font-size: 0.72rem;
+    font-weight: 600; letter-spacing: 0;
   }
-  /* 왼쪽 색 막대 — 연한 배경 채우기 대신 (가이드라인 2절) */
-  .note-bar { border-left: 4px solid var(--ink); padding: 0.2rem 0 0.2rem 0.9rem; border-radius: 0; }
-  .note-bar.warn { border-left-color: var(--risk-mid); color: var(--risk-mid); }
+  /* 옅은 면으로 채운 안내 블록 (v1의 왼쪽 색 막대를 대체) */
+  .note-bar { background: var(--soft); border-radius: 14px; padding: 0.85rem 1rem; }
+  .note-bar.warn { background: var(--risk-mid-soft); color: var(--risk-mid); }
 
-  /* ---- 검증 완료: 시안의 FIN 카드 — 마젠타 사각 테두리 안에 검정 글씨 ---- */
-  .verify-stamp-wrap { text-align: left; margin-bottom: 2rem; }
+  /* ---- 검증 완료: 통과면 노랑 알약, 재검토 필요면 위험 등급 색 (가이드라인 6절) ---- */
+  .verify-stamp-wrap { text-align: left; margin-bottom: 1.5rem; }
   .verify-stamp {
-    display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.65rem;
-    width: auto; height: auto; padding: 0.75rem 1.6rem;
-    border-radius: 2px; border: 2px solid #000; background: var(--accent); color: #000;
-    transform: none; font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em;
+    display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.55rem;
+    width: auto; height: auto; padding: 0.8rem 1.5rem;
+    border-radius: 999px; border: none; background: var(--accent); color: #1a1a1a;
+    transform: none; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.005em;
+    box-shadow: var(--shadow-soft);
   }
-  .verify-stamp.warn { background: transparent; border-color: var(--risk-mid); color: var(--risk-mid); }
-  .verify-stamp .s-icon { font-size: 1.1rem; line-height: 1; }
+  .verify-stamp.warn { background: var(--risk-mid-soft); color: var(--risk-mid); box-shadow: none; }
+  .verify-stamp .s-icon { font-size: 1.05rem; line-height: 1; }
   .verify-stamp .s-text { font-size: 1.05rem; margin-top: 0; }
-  .verify-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; margin-bottom: 1.4rem; }
+  .verify-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: flex-start; margin-bottom: 1.2rem; }
   .verify-tag {
-    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; padding: 0.25rem 0.7rem; border-radius: 2px;
-    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.74rem; font-weight: 600; letter-spacing: 0; padding: 0.3rem 0.8rem; border-radius: 999px;
+    background: var(--soft); border: none; color: var(--muted);
   }
-  .verify-tag.good { background: transparent; border: 1.5px solid var(--risk-low); color: var(--risk-low); }
-  .verify-tag.bad { background: transparent; border: 1.5px solid var(--risk-high); color: var(--risk-high); }
+  .verify-tag.good { background: var(--risk-low-soft); color: var(--risk-low); }
+  .verify-tag.good::before { content: '✓'; }
+  .verify-tag.bad { background: var(--risk-high-soft); color: var(--risk-high); }
+  .verify-tag.bad::before { content: '✕'; }
   .verify-detail {
-    background: transparent; border-left: 4px solid var(--ink); border-radius: 0;
-    padding: 0.2rem 0 0.2rem 1rem; font-size: 0.95rem; line-height: 1.7;
+    background: var(--soft); border: none; border-radius: 14px;
+    padding: 0.95rem 1.1rem; font-size: 0.92rem; line-height: 1.75;
   }
-  .verify-detail.warn { background: transparent; border-left-color: var(--risk-mid); }
+  .verify-detail.warn { background: var(--risk-mid-soft); }
 
-  .disclaimer { font-size: 0.7rem; color: var(--muted); text-align: left; margin-top: 2.4rem; line-height: 1.65; max-width: 56ch; }
-  .file-count { font-size: 0.72rem; color: var(--ink); font-weight: 700; letter-spacing: 0.06em; margin-top: 0.6rem; text-align: left; }
+  .disclaimer { font-size: 0.72rem; color: var(--muted); text-align: left; margin-top: 1.8rem; line-height: 1.7; max-width: 56ch; }
+  .file-count { font-size: 0.75rem; color: var(--muted); font-weight: 500; letter-spacing: 0; margin-top: 0.55rem; text-align: left; }
 
   @media (max-width: 420px) {
     .method-grid { grid-template-columns: 1fr; }
@@ -467,6 +606,8 @@
 </style>
 
 <main>
+  <!-- 히어로: 화면에 단 하나뿐인 다크 카드 (가이드라인 5절 "다크 카드는 최대 하나") -->
+  <div class="app-hero">
   <div class="brand-mark"><span class="badge-icon" role="img" aria-label="안심앨범"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span></div>
   <header class="page-header">
     <h1>안심앨범</h1>
@@ -481,6 +622,7 @@
     <div class="connector" id="conn2"></div>
     <div class="step" data-step="verify"><span class="dot">3</span><span class="label">검증</span></div>
   </div>
+  </div><!-- /.app-hero -->
 
   <!-- 화면 1: 업로드 -->
   <div class="card" id="screen-form">
@@ -556,24 +698,31 @@
     </div>
   </div>
 
-  <!-- 화면 3: 진단 결과 -->
+  <!-- 화면 3: 진단 결과 — 정보 블록마다 독립된 흰 카드 (가이드라인 5절 "카드 그리드").
+       래퍼(.rcard)만 추가했고 안쪽의 id·클래스는 그대로다. -->
   <div class="card" id="screen-result" style="display:none;">
-    <div class="risk-photo-wrap" id="riskPhotoWrap">
-      <img id="resultThumb" alt="분석한 사진" />
+    <div class="rcard rcard-score">
+      <h3 class="rcard-title">종합 위험도</h3>
+      <p class="risk-pending" id="riskPending"><span class="spin"></span><span id="riskPendingText">위험 요소 판단 중…</span></p>
+
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 200 112">
+          <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+        </svg>
+        <div class="gauge-score-label" id="riskScore">–</div>
+        <div class="gauge-score-sub">종합 위험도 점수 / 100</div>
+        <span class="risk-chip" id="riskBadge">중</span>
+      </div>
     </div>
-    <ul class="pin-legend" id="pinLegend"></ul>
-    <p class="pin-note">* 검게 채운 핀은 face-api.js로 감지한 얼굴, 테두리만 있는 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
 
-    <p class="risk-pending" id="riskPending"><span class="spin"></span><span id="riskPendingText">위험 요소 판단 중…</span></p>
-
-    <div class="gauge-wrap">
-      <svg viewBox="0 0 200 112">
-        <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
-        <path id="gaugeArc" d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
-      </svg>
-      <div class="gauge-score-label" id="riskScore">–</div>
-      <div class="gauge-score-sub">종합 위험도 점수 / 100</div>
-      <span class="risk-chip" id="riskBadge">중</span>
+    <div class="rcard rcard-detect">
+      <h3 class="rcard-title">사진에서 감지한 항목</h3>
+      <div class="risk-photo-wrap" id="riskPhotoWrap">
+        <img id="resultThumb" alt="분석한 사진" />
+      </div>
+      <ul class="pin-legend" id="pinLegend"></ul>
+      <p class="pin-note">* 검게 채운 핀은 face-api.js로 감지한 얼굴, 테두리만 있는 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
     </div>
 
     <section class="result-section">
@@ -612,7 +761,7 @@
 
   <!-- 화면 4: 처리 방식 추천 + 미리보기 -->
   <div class="card" id="screen-correct" style="display:none;">
-    <h3 style="font-size:1.35rem; font-weight:800; letter-spacing:-0.025em; line-height:1.25; margin:0 0 0.7rem; max-width:20ch; color:var(--ink);">
+    <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.6rem; max-width:22ch; color:var(--ink);">
       Claude가 위험요소별 보정 방식을 추천했어요
     </h3>
     <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
@@ -631,7 +780,7 @@
           <span class="m-badge" id="badge-inpaint-status" style="background:var(--muted);">확인 중</span>
         </div>
         <div class="m-reason">
-          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.3rem 0.3rem 0; display:inline-block;">⚠ 원본 전송</span>
+          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.35rem 0.35rem 0; display:inline-block;">⚠ 원본 전송</span>
           전화번호·주소처럼 작은 글씨를 지우고 그 자리를 배경으로 메워요. 사진을 자르지
           않으니 구도와 비율이 그대로예요. 큰 간판은 AI가 가짜 글씨를 만들어내서,
           간판만 스티커로 덮어요.
@@ -642,7 +791,7 @@
           <span class="m-badge" id="badge-ai-status" style="background:var(--muted);">확인 중</span>
         </div>
         <div class="m-reason">
-          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.3rem 0.3rem 0; display:inline-block;">⚠ 원본 전송</span>
+          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.35rem 0.35rem 0; display:inline-block;">⚠ 원본 전송</span>
           다른 방식과 달리 원본 사진이 외부(fal.ai)로 전송돼요.
         </div>
       </button>
@@ -667,7 +816,7 @@
     <div style="display:flex; gap:0.6rem; align-items:flex-start; margin-bottom:0.6rem;">
       <div style="flex:0 0 auto;">
         <p class="preview-label">원본</p>
-        <img id="previewBeforeThumb" alt="원본" style="width:78px; height:78px; object-fit:cover; border-radius:2px; border:1px solid var(--line); display:block;" />
+        <img id="previewBeforeThumb" alt="원본" style="width:78px; height:78px; object-fit:cover; border-radius:14px; border:none; background:var(--soft); display:block;" />
       </div>
       <div style="flex:1; min-width:0;">
         <p class="preview-label">처리 후</p>
@@ -705,31 +854,31 @@
   </div>
   <!-- OCR/얼굴분석 디버그 패널: ?debug=1 로 접속했을 때만 보임. 평상시 UI에는 영향 없음 -->
   <div class="card" id="debugPanel" style="display:none; margin-top:1.5rem;">
-    <h3 style="font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 0.8rem; color:var(--ink);">🔧 얼굴 분석 디버그 정보 (?debug=1)</h3>
+    <h3 style="font-size:1.05rem; font-weight:600; letter-spacing:-0.01em; margin:0 0 0.8rem; color:var(--ink);">🔧 얼굴 분석 디버그 정보 (?debug=1)</h3>
     <div style="overflow-x:auto; margin-bottom:1.4rem;">
       <table id="debugFaceTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px;"></table>
     </div>
     <p id="debugFaceTiming" style="font-size:0.76rem; color:var(--muted); margin:0 0 1.4rem; white-space:pre-line;"></p>
 
-    <h3 style="font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 0.8rem; color:var(--ink);">🔧 Claude Vision vs Tesseract 비교</h3>
+    <h3 style="font-size:1.05rem; font-weight:600; letter-spacing:-0.01em; margin:0 0 0.8rem; color:var(--ink);">🔧 Claude Vision vs Tesseract 비교</h3>
     <div style="margin-bottom:0.9rem;">
       <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">Claude Vision에 실제로 전송된 이미지 (얼굴 마스킹 적용됨)</p>
-      <img id="debugMaskedImg" style="max-width:220px; border-radius:6px; border:1px solid var(--line); display:block;" />
+      <img id="debugMaskedImg" style="max-width:220px; border-radius:12px; border:1px solid var(--line); display:block;" />
     </div>
     <div style="overflow-x:auto;">
       <table id="debugCompareTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px; margin-bottom:0.9rem;"></table>
     </div>
     <p id="debugCompareNote" style="font-size:0.76rem; color:var(--muted); margin:0 0 1.4rem; white-space:pre-line;"></p>
 
-    <h3 style="font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin:0 0 0.8rem; color:var(--ink);">🔧 OCR(Tesseract) 상세 디버그 정보</h3>
+    <h3 style="font-size:1.05rem; font-weight:600; letter-spacing:-0.01em; margin:0 0 0.8rem; color:var(--ink);">🔧 OCR(Tesseract) 상세 디버그 정보</h3>
     <div style="display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:0.9rem;">
       <div>
         <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">원본 이미지</p>
-        <img id="debugRawImg" style="max-width:170px; border-radius:6px; border:1px solid var(--line); display:block;" />
+        <img id="debugRawImg" style="max-width:170px; border-radius:12px; border:1px solid var(--line); display:block;" />
       </div>
       <div>
         <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">전처리 후 (흑백+대비강화)</p>
-        <img id="debugPreImg" style="max-width:170px; border-radius:6px; border:1px solid var(--line); display:block;" />
+        <img id="debugPreImg" style="max-width:170px; border-radius:12px; border:1px solid var(--line); display:block;" />
       </div>
     </div>
     <p style="font-size:0.78rem; margin:0 0 0.5rem;"><strong>전처리 전 OCR 텍스트:</strong> <span id="debugRawText" style="color:var(--muted);"></span></p>
@@ -742,9 +891,9 @@
 </main>
 
 <!-- AI 배경교체 전송 동의 모달: "AI 배경 교체" 선택 시에만 뜸, 다른 3가지 방식은 안 뜸 -->
-<div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.62); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-  <div class="card" style="max-width:380px; margin:0; border:2px solid var(--ink);">
-    <h3 style="margin:0 0 0.8rem; color:var(--risk-mid); font-size:1.2rem; font-weight:800; letter-spacing:-0.02em;">⚠ 원본 사진 전송 동의</h3>
+<div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div class="card" style="max-width:380px; margin:0; box-shadow:var(--shadow-lift);">
+    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의</h3>
     <p class="evidence">AI 배경 교체는 다른 기능과 달리 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다.</p>
     <ul class="action-list" style="margin-bottom:1.1rem;">
       <li>크롭 · 배경흐림 · 스티커는 전송 없이 브라우저에서 처리돼요</li>
@@ -758,9 +907,9 @@
 
 <!-- 얼굴 검출 실패 시 안전 확인 모달: 얼굴이 0개 감지되면(메인 사진/스크린샷 공통) 자동으로
      원본을 외부로 보내지 않고 여기서 먼저 멈춰서 물어봄 -->
-<div id="noFaceConsentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.62); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-  <div class="card" style="max-width:380px; margin:0; border:2px solid var(--ink);">
-    <h3 style="margin:0 0 0.8rem; color:var(--risk-mid); font-size:1.2rem; font-weight:800; letter-spacing:-0.02em;">⚠ 얼굴을 자동으로 찾지 못했어요</h3>
+<div id="noFaceConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div class="card" style="max-width:380px; margin:0; box-shadow:var(--shadow-lift);">
+    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 얼굴을 자동으로 찾지 못했어요</h3>
     <p class="evidence">이 사진에서 얼굴이 감지되지 않았어요. 실제로 사람이 없는 사진일 수도 있지만, 반사·각도·가림 등으로 감지에 실패했을 가능성도 있습니다.</p>
     <p class="evidence" id="noFaceConsentDetail" style="font-weight:700;"></p>
     <button class="primary" id="noFaceConsentSafe">안전 우선 (전송 안 함)</button>
