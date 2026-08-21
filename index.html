@@ -649,7 +649,15 @@
          이 칸만 stretch로 되돌려 오른쪽 입력들과 같은 높이를 채운다. */
       align-self: stretch;
     }
-    #screen-form > :nth-child(1) .drop-zone { flex: 1; min-height: 240px; justify-content: center; }
+    /* 칸이 세로로 길어졌으므로 안내 아이콘·문구를 가운데로. .drop-zone이 블록이라
+       justify-content만 줬을 땐 아무 효과가 없었다. */
+    #screen-form > :nth-child(1) .drop-zone {
+      flex: 1; min-height: 240px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.15rem;
+      text-align: center;
+    }
+    #screen-form > :nth-child(1) .drop-zone .icon { margin: 0 0 0.55rem; }
     #screen-form > :nth-child(1) .polaroid { margin-top: auto; margin-bottom: auto; }
     #screen-form > :nth-child(n+2) { grid-column: 2; }
     #screen-form .polaroid { max-width: 100%; }
