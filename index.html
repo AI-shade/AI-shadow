@@ -259,8 +259,12 @@
 
   /* ---- 분석 중 ---- */
   .analyzing { text-align: left; padding: 0; }
+  /* 분석 중 화면은 읽을 게 적어 가운데로 모은다. 넓은 화면에서 사진이 왼쪽 구석에
+     작게 붙어 있으면 진행 중이라는 느낌이 안 산다. */
+  .analyzing { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .analyzing-steps { justify-items: start; }
   .scan-frame {
-    position: relative; max-width: 240px; margin: 0 0 1.6rem; border-radius: 18px; overflow: hidden;
+    position: relative; max-width: 300px; margin: 0 auto 1.6rem; border-radius: 18px; overflow: hidden;
     box-shadow: var(--shadow-soft); border: none; background: var(--soft);
   }
   .scan-frame img { width: 100%; display: block; }
@@ -270,7 +274,7 @@
     animation: sweep 1.5s ease-in-out infinite;
   }
   @keyframes sweep { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
-  .analyzing-steps { display: grid; gap: 0.5rem; text-align: left; max-width: 100%; margin: 0; }
+  .analyzing-steps { display: grid; gap: 0.5rem; text-align: left; margin: 0 auto; }
   .analyzing-steps p {
     margin: 0; font-size: 0.88rem; color: var(--muted); background: transparent;
     border-radius: 12px; padding: 0.5rem 0.7rem;
@@ -447,12 +451,12 @@
   .blur-strength { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .bs-label { font-size: 0.82rem; font-weight: 600; }
   .bs-options { display: flex; gap: 0.35rem; background: var(--soft); border-radius: 999px; padding: 0.25rem; }
-  .bs-btn {
+  .bs-btn, .fs-btn {
     border: none; background: transparent; color: var(--muted); cursor: pointer;
     font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px;
   }
-  .bs-btn:hover { color: var(--ink); }
-  .bs-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
+  .bs-btn:hover, .fs-btn:hover { color: var(--ink); }
+  .bs-btn.selected, .fs-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
 
   .checkline {
     display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem;
@@ -477,6 +481,10 @@
     margin-left: auto; flex: 0 0 auto; white-space: nowrap;
   }
   .target-picker .t-none { color: var(--muted); font-size: 0.84rem; margin: 0; }
+  /* 추천 흐름 안내는 카드 폭에 꽉 차게 — 본문 62ch 제한을 받으면 왼쪽에만 붙어
+     오른쪽이 휑하게 남는다 */
+  #recommendFlow { max-width: none; }
+
   .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.5rem; }
   .method-card {
     text-align: left; border: none; border-radius: 18px; padding: 1.05rem 1.1rem;
@@ -504,7 +512,7 @@
     padding: 0.2rem 0.55rem; border-radius: 999px; margin-left: auto;
   }
   /* "1순위" 배지만 노랑 — 위 글씨는 반드시 먹색 (12.58:1) */
-  #badge-crop, #badge-blur, #badge-sticker {
+  #badge-blur, #badge-sticker {
     background: var(--accent); color: #1a1a1a; font-weight: 700;
   }
 
@@ -547,15 +555,6 @@
   }
   @media (max-width: 420px) { .compare-grid { grid-template-columns: 1fr; } }
   .preview-frame img { display: block; max-width: 100%; max-height: 60vh; width: auto; height: auto; border-radius: 12px; }
-  .preview-frame .crop-guard {
-    position: absolute; inset: 12% 22% 12% 12%; border: 2px dashed var(--ink); border-radius: 12px;
-  }
-  .preview-frame .after-blur {
-    filter: blur(9px) saturate(0.88) brightness(0.96);
-    -webkit-mask-image: radial-gradient(circle at 46% 42%, transparent 0%, transparent 24%, black 54%);
-    mask-image: radial-gradient(circle at 46% 42%, transparent 0%, transparent 24%, black 54%);
-  }
-  .preview-frame .after-crop-img { transform: scale(1.55) translate(-14%, 2%); }
   .preview-frame .sticker {
     position: absolute; left: 74%; top: 68%; transform: translate(-50%, -50%);
     width: 64px; height: 64px; border-radius: 18px; background: var(--card);
@@ -978,7 +977,7 @@
         <p id="stepOcr">사진 속 텍스트 위치·내용 감지 중</p>
         <p id="stepPast" style="display:none;">과거 게시물 스크린샷에서 시점·캡션 추출 중</p>
       </div>
-      <p style="font-size:0.74rem; line-height:1.6; color:var(--muted); margin:1.4rem 0 0; max-width:48ch;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
+      <p style="font-size:0.74rem; line-height:1.6; color:var(--muted); margin:1.4rem auto 0; max-width:48ch;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
     </div>
   </div>
 
@@ -1060,6 +1059,15 @@
     </h3>
     <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
 
+    <div class="blur-strength" id="fillStyle" style="display:none;">
+      <span class="bs-label">덮는 방식</span>
+      <div class="bs-options" role="group" aria-label="덮는 방식">
+        <button type="button" class="fs-btn selected" data-fill="auto">자동</button>
+        <button type="button" class="fs-btn" data-fill="color">주변색</button>
+        <button type="button" class="fs-btn" data-fill="mosaic">모자이크</button>
+      </div>
+    </div>
+
     <div class="blur-strength" id="blurStrength" style="display:none;">
       <span class="bs-label">흐림 정도</span>
       <div class="bs-options" role="group" aria-label="흐림 정도">
@@ -1075,16 +1083,12 @@
     </div>
 
     <div class="method-grid">
-      <button class="method-card selected" data-method="crop">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="8.5" cy="24" r="4.2"/><circle cx="23.5" cy="24" r="4.2"/><path d="M6.5 6 L20.8 21"/><path d="M25.5 6 L11.2 21"/></svg> 스마트 크롭 <span class="m-badge" id="badge-crop" style="display:none;">1순위</span></div>
-        <div class="m-reason" id="reason-crop">가장자리 텍스트라 잘라내도 아이가 손실되지 않아요.</div>
-      </button>
-      <button class="method-card" data-method="blur">
+      <button class="method-card selected" data-method="blur">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><circle cx="16" cy="16" r="10" stroke-dasharray="3 4.5"/><circle cx="16" cy="16" r="14.5" stroke-dasharray="2 6"/></svg> 배경 흐림 <span class="m-badge" id="badge-blur" style="display:none;">1순위</span></div>
         <div class="m-reason" id="reason-blur">인물모드 스타일로, 아이는 선명하게 유지돼요.</div>
       </button>
       <button class="method-card" data-method="inpaint">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 24 L20 8 L24 12 L8 28 Z"/><path d="M20 8 L24 4 L28 8 L24 12 Z"/><path d="M4 24 L3 29 L8 28"/></svg> AI로 지워 채우기
+        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 24 L20 8 L24 12 L8 28 Z"/><path d="M20 8 L24 4 L28 8 L24 12 Z"/><path d="M4 24 L3 29 L8 28"/></svg> AI로 지우고 메우기
           <span class="m-badge" id="badge-inpaint-status" style="background:var(--muted);">확인 중</span>
         </div>
         <div class="m-reason">
@@ -1121,7 +1125,6 @@
     <p class="evidence note-bar" id="recommendFlow" style="display:none; margin-bottom:1.3rem;"></p>
 
 
-    <p id="uncroppableWarning" class="evidence note-bar warn" style="display:none; margin-bottom:1.3rem;"></p>
 
     </div><!-- /.correct-left -->
 
@@ -1232,7 +1235,7 @@
       </article>
       <article class="feature-card">
         <h3>여섯 가지 보정</h3>
-        <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI로 지워 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
+        <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI로 지우고 메우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
       </article>
     </div>
   </div>
@@ -2458,47 +2461,6 @@
       return { inpaint: inpaint, signboard: signboard };
     }
 
-    // 얼굴을 전부 포함하는 "보존 영역" 바깥의 위험 텍스트 쪽으로 가장자리를 당겨서 크롭.
-    // 텍스트가 보존 영역과 겹치면(얼굴을 안 자르고는 뺄 수 없으면) uncroppable 목록에 담아 알려줌.
-    function computeSmartCrop(faces, texts, imgW, imgH) {
-      var faceUnion = computeFaceUnionBox(faces);
-      // 얼굴이 없으면(간판만 있는 사진 등) 보존할 인물이 없으므로 앵커를 이미지 중심의
-      // 작은 점으로 둠 — 처음엔 30~70% 넓은 영역을 앵커로 뒀다가, 실측해보니 이 경우
-      // 텍스트 대부분이 그 안에 걸려서 "크롭 불가"로만 나오는 문제가 있어 이렇게 바꿈.
-      var anchor = faceUnion || { x0: imgW * 0.48, y0: imgH * 0.48, x1: imgW * 0.52, y1: imgH * 0.52 };
-      var padX = Math.max(anchor.x1 - anchor.x0, imgW * 0.1) * 0.4;
-      var padY = Math.max(anchor.y1 - anchor.y0, imgH * 0.1) * 0.4;
-      var safe = {
-        x0: Math.max(0, anchor.x0 - padX), y0: Math.max(0, anchor.y0 - padY),
-        x1: Math.min(imgW, anchor.x1 + padX), y1: Math.min(imgH, anchor.y1 + padY),
-      };
-
-      var cropLeft = 0, cropTop = 0, cropRight = imgW, cropBottom = imgH;
-      var uncroppable = [];
-
-      (texts || []).forEach(function (t) {
-        var b = textWordToPixelBbox(t, imgW, imgH);
-        var overlapsSafe = !(b.x1 < safe.x0 || b.x0 > safe.x1 || b.y1 < safe.y0 || b.y0 > safe.y1);
-        if (overlapsSafe) { uncroppable.push(t); return; }
-        if (b.x1 <= safe.x0) cropLeft = Math.max(cropLeft, b.x1);
-        else if (b.x0 >= safe.x1) cropRight = Math.min(cropRight, b.x0);
-        else if (b.y1 <= safe.y0) cropTop = Math.max(cropTop, b.y1);
-        else if (b.y0 >= safe.y1) cropBottom = Math.min(cropBottom, b.y0);
-      });
-
-      // 어떤 경우에도 보존 영역은 절대 침범하지 않도록 마지막에 clamp
-      cropLeft = Math.min(cropLeft, safe.x0);
-      cropTop = Math.min(cropTop, safe.y0);
-      cropRight = Math.max(cropRight, safe.x1);
-      cropBottom = Math.max(cropBottom, safe.y1);
-
-      return {
-        crop: { x0: cropLeft, y0: cropTop, x1: cropRight, y1: cropBottom },
-        uncroppable: uncroppable,
-        safe: safe, // 비율 맞추기(fitCropBoxToRatio)에서 침범하면 안 되는 영역
-      };
-    }
-
     // ===== 인페인팅용 마스크 / 크기 가드 =====
     // fal FLUX Fill은 가로·세로를 32의 배수로 내림한다. 960x540을 보내면 960x512가
     // 돌아와서 비율이 깨진다(2026-08-21 실측). 그래서 32의 배수로 "올려서" 보내고
@@ -2535,54 +2497,6 @@
         x.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
       });
       return c;
-    }
-
-    // 크롭 박스를 원본 사진 비율에 맞게 **축소**한다.
-    // 확대하면 애써 잘라낸 위험 텍스트가 다시 들어오므로 축소만 한다. 아이 보존영역은
-    // 절대 잘라내지 않으며, 축소해서는 보존영역을 담을 수 없으면 비율 맞추기를 포기하고
-    // 원래 박스를 그대로 쓴다 (비율보다 아이가 우선). 그 경우 ok:false로 알린다.
-    function fitCropBoxToRatio(cropBox, imgW, imgH, safe) {
-      var target = imgW / imgH;
-      var w = cropBox.x1 - cropBox.x0, h = cropBox.y1 - cropBox.y0;
-      if (w <= 0 || h <= 0) return { crop: cropBox, ok: false };
-      if (Math.abs(w / h - target) < 1e-6) return { crop: cropBox, ok: true };
-
-      var nw = w, nh = h;
-      if (w / h > target) nw = h * target; // 너무 넓다 → 폭을 줄임
-      else nh = w / target;                // 너무 높다 → 높이를 줄임
-
-      // [lo, hi] 안에서 길이 size 구간을 잡되, 가능하면 [safeLo, safeHi]를 품도록 민다
-      function place(lo, hi, size, safeLo, safeHi) {
-        var center = (safeLo != null) ? (safeLo + safeHi) / 2 : (lo + hi) / 2;
-        var a = center - size / 2;
-        if (a < lo) a = lo;
-        if (a + size > hi) a = hi - size;
-        if (safeLo != null) {
-          if (a > safeLo) a = safeLo;
-          if (a + size < safeHi) a = safeHi - size;
-          if (a < lo) a = lo;
-          if (a + size > hi) a = hi - size;
-        }
-        return a;
-      }
-
-      var s = safe || null;
-      var nx0 = place(cropBox.x0, cropBox.x1, nw, s ? s.x0 : null, s ? s.x1 : null);
-      var ny0 = place(cropBox.y0, cropBox.y1, nh, s ? s.y0 : null, s ? s.y1 : null);
-      var out = { x0: nx0, y0: ny0, x1: nx0 + nw, y1: ny0 + nh };
-
-      if (s && (out.x0 > s.x0 + 0.5 || out.x1 < s.x1 - 0.5 || out.y0 > s.y0 + 0.5 || out.y1 < s.y1 - 0.5)) {
-        return { crop: cropBox, ok: false }; // 아이를 자르게 되므로 포기
-      }
-      return { crop: out, ok: true };
-    }
-
-    function applySmartCrop(img, cropBox) {
-      var w = Math.max(1, cropBox.x1 - cropBox.x0), h = Math.max(1, cropBox.y1 - cropBox.y0);
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, cropBox.x0, cropBox.y0, w, h, 0, 0, w, h);
-      return canvas;
     }
 
     // 얼굴 기준으로 몸통까지 포함하는 "피사체 영역"을 추정 (전신 사진에서 몸통까지 흐려지는 것 방지)
@@ -2773,7 +2687,7 @@
       return { color: color, uniform: stdev < 18, stdev: stdev };
     }
 
-    function applyPatchFill(img, texts, imgW, imgH) {
+    function applyPatchFill(img, texts, imgW, imgH, mode) {
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
       var ctx = canvas.getContext('2d');
@@ -2795,7 +2709,9 @@
         if (w <= 0 || h <= 0) return;
 
         var stats = sampleBoxSurround(clean, box);
-        if (stats.uniform) {
+        // 'auto'는 배경 균일도로 판단하고, 나머지는 사용자가 고른 대로 강제한다
+        var useColor = mode === 'color' || (mode !== 'mosaic' && stats.uniform);
+        if (useColor) {
           ctx.fillStyle = 'rgb(' + stats.color[0] + ',' + stats.color[1] + ',' + stats.color[2] + ')';
           ctx.fillRect(box.x0, box.y0, w, h);
         } else {
@@ -3392,12 +3308,12 @@
     var methodCards = document.querySelectorAll('.method-card');
     var previewCaption = document.getElementById('previewCaption');
     var editInstruction = document.getElementById('editInstruction');
-    var uncroppableWarning = document.getElementById('uncroppableWarning');
     var recommendFlowEl = document.getElementById('recommendFlow');
     // 보정 대상 선택 — 감지에 오탐이 섞일 수 있으므로 사용자가 직접 고른다.
     // null이면 "아직 목록을 만들지 않았다"는 뜻이고 그 땐 전체가 대상이다.
     var selectedTargetIdx = null;
-    var currentBlurPx = 18; // 흐림 강도 — 화면에서 고른다
+    var currentBlurPx = 18;   // 흐림 강도 — 화면에서 고른다
+    var currentFill = 'auto'; // 덮는 방식 — 자동 / 주변색 / 모자이크
 
     function getSelectedTexts() {
       var all = correctionTextWords || [];
@@ -3448,7 +3364,7 @@
       });
     }
 
-    var currentMethod = 'crop';
+    var currentMethod = 'blur';
     // 3단계 검증(재검증)용 상태 — 보정을 실제로 적용했는지, 어떤 방식/설명이었는지 기록
     var correctionApplied = false;
     var lastCorrectionMeta = null; // { method, detail }
@@ -3509,14 +3425,14 @@
       } finally {
         methodCards.forEach(function (c) { c.disabled = false; });
       }
-      selectMethod('crop');
+      selectMethod('blur');
 
       // Claude에게 실제 위험요소 위치를 주고 처리 방식을 추천받음 (실패해도 크롭이 기본값이라 진행에 지장 없음)
       if (lastRiskResult && lastOcrResult) {
         runRecommendCorrectionPipeline(lastRiskResult, lastOcrResult).then(function (rec) {
-          ['crop', 'blur', 'sticker'].forEach(function (m) { document.getElementById('badge-' + m).style.display = 'none'; });
+          ['blur', 'sticker'].forEach(function (m) { document.getElementById('badge-' + m).style.display = 'none'; });
           (rec.추천처리 || []).forEach(function (item) {
-            var methodKey = { '스마트 크롭': 'crop', '배경 흐림': 'blur', '스티커 덮기': 'sticker' }[item['1순위']];
+            var methodKey = { '배경 흐림': 'blur', '스티커 덮기': 'sticker', '자연스럽게 덮기': 'sticker' }[item['1순위']];
             if (methodKey) {
               var badge = document.getElementById('badge-' + methodKey);
               if (badge) badge.style.display = 'inline-block';
@@ -3569,7 +3485,7 @@
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
       editInstruction.style.display = method === 'ai' ? 'block' : 'none';
       document.getElementById('blurStrength').style.display = method === 'blur' ? 'flex' : 'none';
-      uncroppableWarning.style.display = 'none';
+      document.getElementById('fillStyle').style.display = method === 'sticker' ? 'flex' : 'none';
 
       clearPreviewBusy();
       var previewAfter = document.getElementById('previewAfter');
@@ -3582,7 +3498,7 @@
           return;
         }
         if (!(await askFluxConsent())) {
-          selectMethod(previousMethod && previousMethod !== 'outfit' ? previousMethod : 'crop');
+          selectMethod(previousMethod && previousMethod !== 'outfit' ? previousMethod : 'blur');
           return;
         }
         if (!uploadedPhotoUrl || !lastFaceResult) {
@@ -3624,12 +3540,12 @@
       if (method === 'inpaint') {
         if (!(await checkFluxStatus())) {
           previewAfter.src = uploadedPhotoUrl;
-          previewCaption.textContent = 'AI로 지워 채우기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
+          previewCaption.textContent = 'AI로 지우고 메우기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
         }
         if (!(await askFluxConsent())) {
-          selectMethod(previousMethod && previousMethod !== 'inpaint' ? previousMethod : 'crop');
+          selectMethod(previousMethod && previousMethod !== 'inpaint' ? previousMethod : 'blur');
           return;
         }
         if (!uploadedPhotoUrl || !lastFaceResult) {
@@ -3685,7 +3601,7 @@
           clearPreviewBusy();
           console.error('[인페인팅] 실패:', err);
           previewAfter.src = uploadedPhotoUrl;
-          previewCaption.textContent = '⚠ AI로 지워 채우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
+          previewCaption.textContent = '⚠ AI로 지우고 메우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
         }
         return;
@@ -3708,7 +3624,7 @@
           if (previousMethod && previousMethod !== 'ai') {
             selectMethod(previousMethod);
           } else {
-            selectMethod('crop');
+            selectMethod('blur');
           }
           return;
         }
@@ -3763,29 +3679,17 @@
       var faces = lastFaceResult.faces || [];
       var canvas;
 
-      if (method === 'crop') {
-        var cropResult = computeSmartCrop(faces, texts, img.naturalWidth, img.naturalHeight);
-        // "처리 후에도 사진 비율은 원본과 같아야 한다" — 크롭 박스를 원본 비율에 맞게 축소.
-        // 아이 보존영역 때문에 축소가 불가능하면 ok:false로 오고, 그 땐 비율을 포기한다.
-        var fitted = fitCropBoxToRatio(cropResult.crop, img.naturalWidth, img.naturalHeight, cropResult.safe);
-        canvas = applySmartCrop(img, fitted.crop);
-        if (cropResult.uncroppable.length > 0) {
-          var names = cropResult.uncroppable.map(function (t) { return '"' + t.text + '"'; }).join(', ');
-          uncroppableWarning.textContent = '⚠ ' + names + '는 아이 얼굴과 겹쳐 있어서 크롭만으로는 없앨 수 없어요. 스티커 덮기나 배경 흐림을 함께 사용하시겠어요?';
-          uncroppableWarning.style.display = 'block';
-          previewCaption.textContent = '가장자리 위험요소를 잘라냈어요 — 아이는 그대로 남아있어요. (일부는 아래 안내 참고)';
-        } else {
-          previewCaption.textContent = '위험 텍스트를 전부 잘라냈어요 — 아이는 그대로, 가장자리만 사라졌어요.';
-        }
-        if (!fitted.ok) {
-          previewCaption.textContent += ' (아이를 자르지 않으려다 보니 이번엔 원본 비율을 유지하지 못했어요.)';
-        }
-      } else if (method === 'blur') {
+      if (method === 'blur') {
         canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight, currentBlurPx);
         previewCaption.textContent = '인물모드처럼 배경만 흐려지고, 아이(몸통 포함)는 선명하게 유지돼요.';
       } else if (method === 'sticker') {
-        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight);
-        previewCaption.textContent = '텍스트가 있던 자리를 스티커로 넉넉하게 덮었어요.';
+        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill);
+        // 지울 게 없으면 원본이 그대로 나와서 "아무 일도 안 일어난 것"처럼 보인다.
+        // 실제로 "적용이 안 된다"는 오해를 부른 지점이라 이유를 분명히 말해준다.
+        previewCaption.textContent = texts.length === 0
+          ? '이 사진에서는 덮을 글자를 찾지 못했어요 — 그래서 원본 그대로예요. 교복이나 배경이 걱정되시면 배경 흐림이나 AI 방식을 써보세요.'
+          : '글자 ' + texts.length + '곳을 ' + (currentFill === 'mosaic' ? '모자이크로 덮었어요.'
+              : currentFill === 'color' ? '주변 배경색으로 칠했어요.' : '주변 배경에 맞춰 자연스럽게 덮었어요.');
       }
 
       currentCorrectionCanvas = canvas;
@@ -3794,6 +3698,15 @@
     }
     methodCards.forEach(function (card) {
       card.addEventListener('click', function () { selectMethod(card.dataset.method); });
+    });
+
+    document.querySelectorAll('.fs-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.fs-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        currentFill = btn.dataset.fill;
+        selectMethod('sticker');
+      });
     });
 
     document.querySelectorAll('.bs-btn').forEach(function (btn) {
@@ -3824,7 +3737,7 @@
 
     // ===== 3단계: 결과 재검증 (프롬프트 문서 5번) =====
     var VERIFY_BACKEND_URL = 'http://localhost:3001/api/verify-correction';
-    var METHOD_LABEL = { crop: '스마트 크롭', blur: '배경 흐림', sticker: '스티커 덮기', ai: 'AI 배경교체' };
+    var METHOD_LABEL = { blur: '배경 흐림', sticker: '자연스럽게 덮기', inpaint: 'AI로 지우고 메우기', outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체' };
 
     // 여러 얼굴 중 가장 큰(주요) 얼굴 기준으로 개수/크기/각도 요약 — 원본·처리후 비교용
     function pickPrimaryFaceStats(faces) {
@@ -3910,7 +3823,7 @@
           처리전얼굴: beforeStats,
           처리후얼굴: afterStats,
           재추출텍스트: newTexts,
-          크기비율_적용여부: meta.method !== 'crop', // 크롭은 프레임을 잘라내는 게 목적이라 크기비율 변화가 정상
+          크기비율_적용여부: true, // 크롭 방식을 없앤 뒤로는 모든 방식이 원본 크기·비율을 유지한다
         });
       } catch (apiErr) {
         console.warn('[재검증] Claude 호출 실패 — 규칙 기반 폴백으로 전환:', apiErr.message);
@@ -3981,7 +3894,6 @@
     window.__anshimTest = {
       classifyTextRegions: classifyTextRegions,
       isSignboardText: isSignboardText,
-      fitCropBoxToRatio: fitCropBoxToRatio,
       roundUpTo32: roundUpTo32,
       buildInpaintMask: buildInpaintMask,
       computeClothingRegion: computeClothingRegion,
