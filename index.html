@@ -450,8 +450,14 @@
   .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
 
   .cover-tools { margin-bottom: 0.9rem; }
-  .cover-tool-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }
-  .ct-only-brush { display: none; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  /* 편집 방식 버튼과 붓 조절을 한 줄에 나란히. 안쪽에서 줄바꿈이 일어나면
+     버튼과 라벨의 높이가 어긋나 보인다(실제로 붓 굵기가 버튼보다 위에 떠 있었다). */
+  .cover-tool-row { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; margin-top: 0.6rem; }
+  .cover-tool-row > * { flex: 0 0 auto; }
+  .ct-only-brush { display: none; align-items: center; gap: 0.6rem; flex-wrap: nowrap; }
+  .ct-only-brush .bs-range { flex: 0 1 180px; min-width: 120px; }
+  .ct-only-brush .bs-value { min-width: 2.2rem; }
+  .ct-only-brush #brushClear { margin: 0; }
   .cover-tools.is-brush .ct-only-brush { display: flex; }
   /* 도형 모드에서 크기를 조절하는 모서리 손잡이 */
   .cover-grip {
@@ -3753,13 +3759,20 @@
         var vctx = view.getContext('2d');
         var scale = img.naturalWidth / rect0.width;
 
-        var repaint = function () {
+        // 칠한 자국을 계속 덮어두면 정작 모자이크가 어떻게 되고 있는지 안 보인다.
+        // 칠하는 동안에만 옅은 코랄로 표시하고, 손을 떼면 지워서 실제 결과를 보여준다.
+        var repaint = function (show) {
           vctx.clearRect(0, 0, view.width, view.height);
-          vctx.globalAlpha = 0.45;
+          if (!show) return;
+          vctx.globalAlpha = 0.85;
           vctx.drawImage(mask, 0, 0, view.width, view.height);
+          vctx.globalCompositeOperation = 'source-in';
+          vctx.fillStyle = 'rgba(255, 122, 107, 0.5)';
+          vctx.fillRect(0, 0, view.width, view.height);
+          vctx.globalCompositeOperation = 'source-over';
           vctx.globalAlpha = 1;
         };
-        repaint();
+        repaint(false);
 
         var painting = false;
         var paintAt = function (ev) {
@@ -3769,7 +3782,7 @@
           mctx.beginPath();
           mctx.arc(x, y, brushSizePx * scale / 2, 0, Math.PI * 2);
           mctx.fill();
-          repaint();
+          repaint(true);
         };
         layer.addEventListener('pointerdown', function (ev) {
           ev.preventDefault(); painting = true;
@@ -3779,7 +3792,8 @@
         layer.addEventListener('pointerup', function (ev) {
           painting = false;
           if (layer.releasePointerCapture) layer.releasePointerCapture(ev.pointerId);
-          selectMethod(currentMethod); // 칠한 대로 다시 그린다
+          repaint(false);                // 표시를 걷어 실제 결과가 보이게 한다
+          selectMethod(currentMethod);   // 칠한 대로 다시 그린다
         });
         return;
       }
