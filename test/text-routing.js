@@ -90,6 +90,16 @@ async function main() {
   check('나머지 3개가 인페인팅 대상', r.inpaint.length, 3);
   check('전화번호가 인페인팅 쪽에 있음', r.inpaint.includes('010-4956-6091'), true);
 
+  console.log('\n근사 위치로 채운 항목 (크기가 실측이 아님)');
+  // Claude 힌트로만 위치를 잡은 항목은 크기를 넉넉히(hPct 12) 잡아두므로, 크기로 간판
+  // 판정을 하면 전화번호·지번이 "큰 간판"으로 분류돼 인페인팅에서 빠진다.
+  r = await run([{ text: '010-4956-6091', type: '전화번호', approximate: true, xPct: 73, yPct: 49, wPct: 26, hPct: 12 }]);
+  check('근사 전화번호는 작은 글씨로 분류', r.inpaint.length, 1);
+  r = await run([{ text: '1118-1', type: '주소', approximate: true, xPct: 22, yPct: 58, wPct: 26, hPct: 12 }]);
+  check('근사 주소도 작은 글씨로 분류', r.inpaint.length, 1);
+  r = await run([{ text: '꽃집 누아블룸', type: '상호명', approximate: true, xPct: 50, yPct: 37, wPct: 26, hPct: 12 }]);
+  check('근사 상호명은 간판으로 분류', r.signboard.length, 1);
+
   console.log('\n경계 조건');
   r = await run([]);
   check('빈 목록이면 둘 다 비어있음', r.inpaint.length + r.signboard.length, 0);

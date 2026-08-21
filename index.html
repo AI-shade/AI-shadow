@@ -357,6 +357,8 @@
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 0.1rem; pointer-events: none;
   }
+  /* 굴러가는 동안 자릿수가 바뀌어도 숫자 폭이 흔들리지 않도록 */
+  .gauge-score-label, .sub-score-line strong { font-variant-numeric: tabular-nums; }
   .gauge-score-label {
     font-size: 2.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--ink);
   }
@@ -2474,6 +2476,10 @@
     var SIGNBOARD_AREA_PCT = 3;
 
     function isSignboardText(w) {
+      // 근사 위치로 채운 항목(approximate)은 크기가 실측이 아니라 "넉넉히 덮으려고" 잡아둔
+      // 기본값이다. 그 값으로 크기 판정을 하면 전화번호·지번까지 "큰 간판"으로 분류돼
+      // 인페인팅에서 빠져버린다(실사용 중 발견). 이 경우엔 Claude가 준 유형으로 판단한다.
+      if (w.approximate) return w.type === '상호명' || w.type === '간판';
       var hPct = w.hPct || 6;
       var wPct = w.wPct || 22;
       return hPct >= SIGNBOARD_HEIGHT_PCT || (wPct * hPct / 100) >= SIGNBOARD_AREA_PCT;
@@ -3208,12 +3214,53 @@
       '권장 조치 작성 중…',
     ];
     var riskTipTimer = null;
-    var SKELETON_TEXT_IDS = ['riskScore', 'riskBadge', 'locationScore', 'locationEvidence', 'summaryText', 'scheduleFlag', 'scheduleEvidence'];
+    // 점수(riskScore/locationScore)와 등급 배지는 스켈레톤으로 가리지 않는다.
+    // 회색 블록으로 덮어두면 "모자이크로 가려진" 느낌이라, 대신 실제로 굴려서
+    // 계산 중이라는 게 보이게 한다(startScoreTicker).
+    var SKELETON_TEXT_IDS = ['locationEvidence', 'summaryText', 'scheduleFlag', 'scheduleEvidence'];
+
+    // ── 점수 굴리기 ──
+    var scoreTicker = null;
+    function startScoreTicker() {
+      var riskEl = document.getElementById('riskScore');
+      var locEl = document.getElementById('locationScore');
+      var badgeEl = document.getElementById('riskBadge');
+      var barEl = document.getElementById('locationBar');
+      var arc = document.getElementById('gaugeArc');
+      var full = arc ? arc.getTotalLength() : 0;
+      if (arc) arc.style.transition = 'none'; // 굴리는 동안엔 부드러운 전환이 오히려 방해된다
+
+      var t = 0;
+      stopScoreTicker();
+      scoreTicker = setInterval(function () {
+        t += 1;
+        // 완전 난수만 쓰면 정신없어서, 큰 흐름은 사인파로 오르내리고 잔떨림만 난수로 준다
+        var wave = (Math.sin(t / 6) + 1) / 2;               // 0~1
+        var risk = Math.round(wave * 70 + 15 + Math.random() * 12);
+        var loc = Math.round((1 - wave) * 70 + 15 + Math.random() * 12);
+        riskEl.textContent = risk;
+        locEl.textContent = loc;
+        badgeEl.textContent = risk >= 70 ? '상' : risk >= 45 ? '중' : '하';
+        badgeEl.className = 'risk-chip risk-' + (risk >= 70 ? '상' : risk >= 45 ? '중' : '하');
+        barEl.style.width = loc + '%';
+        if (arc) {
+          arc.style.strokeDasharray = full;
+          arc.style.strokeDashoffset = full * (1 - risk / 100);
+          arc.setAttribute('stroke', risk >= 70 ? 'var(--risk-high)' : risk >= 45 ? 'var(--risk-mid)' : 'var(--risk-low)');
+        }
+      }, 90);
+    }
+
+    function stopScoreTicker() {
+      if (scoreTicker) { clearInterval(scoreTicker); scoreTicker = null; }
+      var arc = document.getElementById('gaugeArc');
+      if (arc) arc.style.transition = ''; // 실제 점수가 들어올 땐 다시 부드럽게
+    }
 
     function startRiskPending() {
       document.getElementById('riskPending').style.display = 'flex';
       SKELETON_TEXT_IDS.forEach(function (id) { document.getElementById(id).classList.add('skel'); });
-      document.getElementById('locationBar').style.width = '0%';
+      startScoreTicker();
       document.getElementById('schedulePatternList').style.display = 'none';
       document.getElementById('schedulePredicted').style.display = 'none';
 
@@ -3245,6 +3292,7 @@
 
     function stopRiskPending() {
       if (riskTipTimer) { clearInterval(riskTipTimer); riskTipTimer = null; }
+      stopScoreTicker();
       document.getElementById('riskPending').style.display = 'none';
       SKELETON_TEXT_IDS.forEach(function (id) { document.getElementById(id).classList.remove('skel'); });
     }
@@ -3427,6 +3475,10 @@
       });
     }
 
+    // 원본 전송 동의가 필요한 방식들 — 취소했을 때 여기로 되돌리면 안 된다
+    var CONSENT_METHODS = ['ai', 'inpaint', 'outfit'];
+    var NO_CONSENT_FALLBACK = 'blur';
+
     var currentMethod = 'blur';
     // 3단계 검증(재검증)용 상태 — 보정을 실제로 적용했는지, 어떤 방식/설명이었는지 기록
     var correctionApplied = false;
@@ -3440,7 +3492,6 @@
       pv.removeAttribute('src');
       currentCorrectionCanvas = null;
       showScreen('correct');
-      renderTargetPicker();
 
       // AI 배경교체 카드 상태 배지 — fal.ai 키 연동 여부를 물어서 표시 (결과 대기 없이 비동기로)
       var aiStatusBadge = document.getElementById('badge-ai-status');
@@ -3492,6 +3543,9 @@
         correctionTextWords = [];
       } finally {
         methodCards.forEach(function (c) { c.disabled = false; });
+        // 목록은 반드시 위치 계산이 끝난 뒤에 그린다. 화면 진입 직후에 그렸더니
+        // correctionTextWords가 아직 비어 있어 늘 "텍스트를 찾지 못했다"가 떴다.
+        renderTargetPicker();
       }
       selectMethod('blur');
 
@@ -3566,7 +3620,10 @@
           return;
         }
         if (!(await askFluxConsent())) {
-          selectMethod(previousMethod && previousMethod !== 'outfit' ? previousMethod : 'blur');
+          // 직전 방식으로 되돌리면 그게 또 AI 방식일 때 동의창이 다시 뜬다.
+          // 취소를 반복하면 창이 끝없이 떠서 멈춘 것처럼 보였다(실사용 제보).
+          // 동의가 필요 없는 방식으로 되돌린다.
+          selectMethod(NO_CONSENT_FALLBACK);
           return;
         }
         if (!uploadedPhotoUrl || !lastFaceResult) {
@@ -3613,7 +3670,10 @@
           return;
         }
         if (!(await askFluxConsent())) {
-          selectMethod(previousMethod && previousMethod !== 'inpaint' ? previousMethod : 'blur');
+          // 직전 방식으로 되돌리면 그게 또 AI 방식일 때 동의창이 다시 뜬다.
+          // 취소를 반복하면 창이 끝없이 떠서 멈춘 것처럼 보였다(실사용 제보).
+          // 동의가 필요 없는 방식으로 되돌린다.
+          selectMethod(NO_CONSENT_FALLBACK);
           return;
         }
         if (!uploadedPhotoUrl || !lastFaceResult) {
@@ -3689,11 +3749,7 @@
         var agreed = await askFluxConsent();
         if (!agreed) {
           // 동의하지 않으면 이전에 선택했던 방식으로 되돌림 (AI 카드가 선택된 채로 아무 처리도 안 된 상태로 남지 않게)
-          if (previousMethod && previousMethod !== 'ai') {
-            selectMethod(previousMethod);
-          } else {
-            selectMethod('blur');
-          }
+          selectMethod(NO_CONSENT_FALLBACK);
           return;
         }
 
