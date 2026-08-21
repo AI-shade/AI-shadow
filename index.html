@@ -310,6 +310,10 @@
   .pin-legend li:has(.num.face)::after { content: '얼굴'; color: var(--ink); }
   .pin-legend li:has(.num.text)::after { content: '텍스트'; color: var(--ink); }
   .pin-legend li:has(.num:not(.face):not(.text))::after { content: '없음'; }
+  /* 시각 단서(교복·명찰·로고)는 위치를 특정할 수 없어 핀이 없다 — 배지로만 구분한다.
+     위 :not() 규칙과 특정도가 같으므로 반드시 뒤에 와야 이긴다. */
+  .pin-legend li:has(.num.clue)::after { content: '옷·소지품'; color: var(--ink); }
+  .pin-legend .num.clue { background: var(--accent-2); border-color: var(--accent-2); color: var(--ink); }
   .pin-legend .num {
     flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
     background: var(--card); color: var(--ink); border: 2px solid var(--ink);
@@ -1544,6 +1548,9 @@
 
       var result = {
         words: words, timing: timing, source: 'claude',
+        // 글자가 아닌 신원 단서(교복·원복·명찰·기관 로고). 위치가 특정되지 않아 보정 대상은
+        // 아니지만, 소속 기관을 드러내므로 위험도 진단에는 반드시 전달해야 한다.
+        visualClues: data.시각단서 || [],
         maskedDataUrl: OCR_DEBUG ? maskedDataUrl : null,
         usage: data.usage, model: data.model, backendTimingMs: data.timingMs,
       };
@@ -1662,6 +1669,8 @@
           companions: inputs.companions, backgroundNotes: inputs.backgroundNotes,
         },
         caption: inputs.caption,
+        // Tesseract 폴백 경로에는 시각 단서가 없다(로컬 OCR은 글자만 본다) — 빈 배열로 나감
+        visualClues: (ocrResult && ocrResult.visualClues) || [],
       };
       var data = await postJson(RISK_BACKEND_URL, payload);
       var timingMs = performance.now() - t0;
@@ -2335,10 +2344,10 @@
       legend.appendChild(li);
     }
 
-    function addNoPinNote(legend, num, label) {
+    function addNoPinNote(legend, num, label, kind) {
       var li = document.createElement('li');
       var numSpan = document.createElement('span');
-      numSpan.className = 'num';
+      numSpan.className = kind ? 'num ' + kind : 'num';
       numSpan.textContent = String(num);
       var textSpan = document.createElement('span');
       textSpan.textContent = label;
@@ -2375,6 +2384,15 @@
       } else {
         addNoPinNote(legend, num++, '이 사진에서는 텍스트가 감지되지 않았어요.');
       }
+
+      // 교복·명찰·기관 로고 — 핀은 못 찍지만(위치 근사) 목록에는 반드시 보여야 한다.
+      // 부모가 "왜 위험도가 높지?"를 이해하려면 이게 보여야 하기 때문.
+      var clues = (ocrResult && ocrResult.visualClues) || [];
+      clues.forEach(function (c) {
+        var label = (c.종류 || '단서') + ' 감지: ' + (c.근거 || '') +
+          (c.확신 ? ' · 확신 ' + c.확신 : '');
+        addNoPinNote(legend, num++, label, 'clue');
+      });
     }
 
     function renderDebugPanel(faceResult, textResult) {
