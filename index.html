@@ -726,6 +726,15 @@
           간판만 스티커로 덮어요.
         </div>
       </button>
+      <button class="method-card" data-method="outfit">
+        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 4 L16 7 L20 4 L27 8 L24 13 L26 28 L6 28 L8 13 L5 8 Z"/></svg> AI 옷 바꾸기
+          <span class="m-badge" id="badge-outfit-status" style="background:var(--muted);">확인 중</span>
+        </div>
+        <div class="m-reason">
+          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.3rem 0.3rem 0; display:inline-block;">⚠ 원본 전송</span>
+          교복·원복을 평범한 옷으로 바꿔요. 어느 기관도 알아볼 수 없게 되지만 아이 얼굴과 자세는 그대로예요. 손이 옷 위에 겹쳐 있으면 어색해질 수 있어요.
+        </div>
+      </button>
       <button class="method-card" data-method="ai">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19 13 L29.5 16 L19 19 L16 29.5 L13 19 L2.5 16 L13 13 Z"/></svg> AI 배경 교체
           <span class="m-badge" id="badge-ai-status" style="background:var(--muted);">확인 중</span>
@@ -1848,6 +1857,47 @@
 
     // 마스크 인페인팅 실행. 크기 가드가 여기 들어있다 —
     // fal은 가로·세로를 32의 배수로 내림하므로, 32의 배수로 올려 보내고 원본 크기로 되돌린다.
+    // 옷 교체 — 교복·원복을 일반적인 옷으로 바꿔 기관 특정 고리를 끊는다.
+    // 크기 가드(32의 배수)는 runInpaintRegions와 동일한 이유로 필요하다.
+    async function runOutfitSwap(img, faces, riskResult) {
+      var ow = img.naturalWidth, oh = img.naturalHeight;
+      var sw = roundUpTo32(ow), sh = roundUpTo32(oh);
+
+      var ic = document.createElement('canvas');
+      ic.width = sw; ic.height = sh;
+      ic.getContext('2d').drawImage(img, 0, 0, sw, sh);
+
+      // 얼굴 상자는 픽셀 좌표라 전송 크기에 맞춰 같이 늘려준다
+      var scaledFaces = (faces || []).map(function (f) {
+        return {
+          x: f.box.x * sw / ow, y: f.box.y * sh / oh,
+          width: f.box.width * sw / ow, height: f.box.height * sh / oh,
+        };
+      });
+      var mask = buildClothingMask(scaledFaces, sw, sh);
+
+      var data = await postJson(INPAINT_BACKEND_URL, {
+        imageBase64: ic.toDataURL('image/png').split(',')[1],
+        maskBase64: mask.toDataURL('image/png').split(',')[1],
+        mediaType: 'image/png',
+        // 프롬프트를 직접 지정한다 — 서버는 마스크가 '글자'인지 '옷'인지 모른다.
+        // 로고·엠블럼·무늬가 다시 생기지 않도록 명시하는 것이 핵심.
+        promptOverride: 'a plain simple childrens outfit in solid neutral colors, plain top and plain skirt or trousers, '
+          + 'no logos, no emblems, no badges, no crest, no patterns, no checks, no stripes, no text, '
+          + 'no school uniform markings, natural fabric folds matching the pose',
+        grade: riskResult && riskResult.grade,
+        locationEvidence: riskResult && riskResult.locationEvidence,
+      });
+
+      var outImg = await loadImage('data:image/png;base64,' + data.imageBase64);
+      var out = document.createElement('canvas');
+      out.width = ow; out.height = oh;
+      out.getContext('2d').drawImage(outImg, 0, 0, ow, oh);
+      console.log('[옷교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
+        + ', ' + sw + 'x' + sh + ' -> ' + ow + 'x' + oh + '로 복원', data);
+      return { canvas: out, data: data };
+    }
+
     async function runInpaintRegions(img, inpaintWords, subjectRegions, riskResult) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
       var sw = roundUpTo32(ow), sh = roundUpTo32(oh);
@@ -2110,6 +2160,53 @@
     }
 
     // 텍스트 크기가 근사치일 수 있어(특히 Claude Vision 소스) 여유있게 크게 덮음
+    // ===== 옷 교체용 영역·마스크 =====
+    // 교복·원복은 아이가 다니는 기관을 특정한다. 텍스트가 아니라 지울 수도, 잘라낼 수도
+    // 없다(자르면 아이가 잘린다). 그래서 옷만 일반적인 옷으로 바꿔 사진과 기관을 잇는
+    // 고리를 끊는다.
+    //
+    // 간판에서 가짜 글씨가 문제였던 이유는 실재하는 다른 가게 이름이 우연히 생길 수
+    // 있어서였다. 옷은 다르다 — 교복처럼 생긴 일반 옷은 어느 기관도 지목하지 않는다.
+    //
+    // 비율은 얼굴 상자에서 유도한다. 손·팔은 검출할 방법이 없으므로 마스크를 좁게(얼굴
+    // 폭의 1.9배) 잡아 팔이 대개 바깥에 남도록 했다 — 실측 사진에서 손이 허리에 있었는데
+    // 이 폭이면 벗어난다. 그래도 겹칠 수 있어 화면에서 사용자에게 알린다.
+    var CLOTHING = { widthRatio: 1.9, topRatio: 1.15, bottomRatio: 4.2 };
+
+    function computeClothingRegion(faceBox, imgW, imgH) {
+      var cx = faceBox.x + faceBox.width / 2;
+      var halfW = faceBox.width * CLOTHING.widthRatio / 2;
+      return {
+        x0: Math.max(0, cx - halfW),
+        y0: Math.max(0, Math.min(imgH, faceBox.y + faceBox.height * CLOTHING.topRatio)),
+        x1: Math.min(imgW, cx + halfW),
+        y1: Math.min(imgH, faceBox.y + faceBox.height * CLOTHING.bottomRatio),
+      };
+    }
+
+    function buildClothingMask(faceBoxes, imgW, imgH) {
+      var c = document.createElement('canvas');
+      c.width = imgW; c.height = imgH;
+      var x = c.getContext('2d');
+      x.fillStyle = '#000000';
+      x.fillRect(0, 0, imgW, imgH);
+
+      x.fillStyle = '#ffffff';
+      (faceBoxes || []).forEach(function (f) {
+        var r = computeClothingRegion(f, imgW, imgH);
+        if (r.x1 > r.x0 && r.y1 > r.y0) x.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+      });
+
+      // 얼굴·머리카락·목을 마지막에 검게 덮는다. 얼굴이 흰색이면 AI가 아이 얼굴을
+      // 다시 그린다 — 이 앱에서 가장 위험한 실패라 순서를 바꾸면 안 된다.
+      x.fillStyle = '#000000';
+      (faceBoxes || []).forEach(function (f) {
+        var padX = f.width * 0.35, padTop = f.height * 0.55, padBottom = f.height * 0.28;
+        x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop + padBottom);
+      });
+      return c;
+    }
+
     // ===== 텍스트 자리를 주변색으로 채우기 =====
     // 이모지 스티커를 대체한다. 이모지는 ctx.fillText로 그려서 결과가 폰트에 의존하는데,
     // 자동 검증 환경에는 이모지 폰트가 없어 "정말 가려졌는가"를 확인할 방법이 없었다.
@@ -2766,8 +2863,11 @@
       var inpaintStatusBadge = document.getElementById('badge-inpaint-status');
       inpaintStatusBadge.textContent = '확인 중';
       inpaintStatusBadge.style.background = 'var(--muted)';
+      var outfitStatusBadge = document.getElementById('badge-outfit-status');
+      outfitStatusBadge.textContent = '확인 중';
+      outfitStatusBadge.style.background = 'var(--muted)';
       checkFluxStatus().then(function (ready) {
-        [aiStatusBadge, inpaintStatusBadge].forEach(function (b) {
+        [aiStatusBadge, inpaintStatusBadge, outfitStatusBadge].forEach(function (b) {
           b.textContent = ready ? '사용 가능' : '준비 중';
           b.style.background = ready ? 'var(--risk-low)' : 'var(--muted)';
         });
@@ -2856,6 +2956,50 @@
       uncroppableWarning.style.display = 'none';
 
       var previewAfter = document.getElementById('previewAfter');
+
+      if (method === 'outfit') {
+        if (!(await checkFluxStatus())) {
+          previewAfter.src = uploadedPhotoUrl;
+          previewCaption.textContent = 'AI 옷 바꾸기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+          return;
+        }
+        if (!(await askFluxConsent())) {
+          selectMethod(previousMethod && previousMethod !== 'outfit' ? previousMethod : 'crop');
+          return;
+        }
+        if (!uploadedPhotoUrl || !lastFaceResult) {
+          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
+          return;
+        }
+
+        var ofFaces = (lastFaceResult && lastFaceResult.faces) || [];
+        if (ofFaces.length === 0) {
+          previewAfter.src = uploadedPhotoUrl;
+          previewCaption.textContent = '얼굴을 찾지 못해서 옷 위치를 알 수 없어요 — 이 방식은 쓸 수 없습니다. 다른 방식을 이용해주세요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+          return;
+        }
+
+        currentCorrectionCanvas = null;
+        try {
+          previewCaption.textContent = '⏳ AI가 옷을 평범한 옷으로 바꾸는 중이에요 (10~20초 정도 걸려요)...';
+          var ofImg = await loadImage(uploadedPhotoUrl);
+          var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult);
+          currentCorrectionCanvas = of.canvas;
+          previewAfter.src = of.canvas.toDataURL('image/png');
+          previewCaption.textContent = '✨ 교복을 평범한 옷으로 바꿨어요 — 얼굴과 자세는 그대로예요. '
+            + '어느 기관 옷인지 알아볼 수 없게 됐는지 꼭 눈으로 확인해주세요. (약 $'
+            + Number(of.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(of.data.timingMs / 1000) + '초)';
+          lastCorrectionMeta = { method: 'outfit', detail: '옷 교체 — 교복·원복을 일반 복장으로 대체' };
+        } catch (err) {
+          console.error('[옷교체] 실패:', err);
+          previewAfter.src = uploadedPhotoUrl;
+          previewCaption.textContent = '⚠ AI 옷 바꾸기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+        }
+        return;
+      }
 
       if (method === 'inpaint') {
         if (!(await checkFluxStatus())) {
@@ -3202,9 +3346,12 @@
       fitCropBoxToRatio: fitCropBoxToRatio,
       roundUpTo32: roundUpTo32,
       buildInpaintMask: buildInpaintMask,
+      computeClothingRegion: computeClothingRegion,
+      buildClothingMask: buildClothingMask,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
+      runOutfitSwap: runOutfitSwap, // 옷 교체 실호출 검증용 (비용 발생)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,
