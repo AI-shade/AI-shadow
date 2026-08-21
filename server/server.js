@@ -228,15 +228,37 @@ app.post('/api/diagnose-risk', async (req, res) => {
 });
 
 // ===== 6. 캡션 텍스트 수정 제안 프롬프트 =====
-function buildCaptionUserPrompt(caption) {
+// 캡션만 주면 사진과 무관한 일반적인 제안밖에 못 나온다. 사진에서 실제로 감지한
+// 것들을 함께 넘겨 이 사진에 맞는 제안을 받는다.
+function buildCaptionUserPrompt(body) {
+  const caption = body.caption || '';
+  const texts = (body.texts || []).filter(Boolean);
+  const clues = (body.visualClues || []).filter(Boolean);
+
+  const photoCtx = [
+    texts.length ? `- 사진 속 글자: ${texts.join(', ')}` : null,
+    clues.length ? `- 글자가 아닌 단서: ${clues.join(', ')}` : null,
+    body.grade ? `- 종합 위험도: ${body.grade}` : null,
+    body.locationEvidence ? `- 위치노출 근거: ${body.locationEvidence}` : null,
+  ].filter(Boolean).join('\n') || '- (사진에서 특별히 감지된 단서 없음)';
+
   return `다음은 SNS 게시물의 캡션입니다:
 "${caption}"
 
-이 캡션에서 위치(동네명, 기관명 등)나 날짜/시간 정보가 지나치게
-구체적으로 노출되어 있다면, 같은 느낌을 유지하면서 더 안전한
-표현으로 바꾼 대체 캡션을 2~3개 제안해주세요.
+같은 사진을 분석한 결과입니다:
+${photoCtx}
 
-예시 톤: 너무 딱딱하지 않게, 부모가 실제로 쓸 법한 자연스러운 말투 유지
+이 캡션에서 위치(동네명, 기관명 등)나 날짜/시간 정보가 지나치게 구체적으로
+노출되어 있다면, 같은 느낌을 유지하면서 더 안전한 표현으로 바꾼 대체 캡션을
+2~3개 제안해주세요.
+
+반드시 지킬 것:
+- **사용자가 쓴 캡션을 고쳐 쓰세요.** 새로 지어내지 마세요.
+- 위 분석 결과를 반영하세요. 예를 들어 사진에 교복이 보이는데 캡션에도 학교를
+  암시하는 표현이 있으면 그 조합이 왜 위험한지 짚고 함께 고치세요.
+- **캡션에 고칠 것이 없으면 "대체캡션"을 빈 배열로 두세요.** 억지로 채우지 마세요.
+  "오늘도 즐거웠어요" 같은 아무 사진에나 붙는 문구는 도움이 되지 않습니다.
+- 톤은 부모가 실제로 쓸 법한 자연스러운 말투를 유지하세요.
 
 JSON으로만 응답하세요 (다른 설명 없이):
 {
@@ -244,8 +266,7 @@ JSON으로만 응답하세요 (다른 설명 없이):
     {"원문": "OO동 놀이터", "이유": "구체적 지역명 노출"}
   ],
   "대체캡션": [
-    {"문구": "수정된 캡션 1", "설명": "무엇을 바꿨는지"},
-    {"문구": "수정된 캡션 2", "설명": "무엇을 바꿨는지"}
+    {"문구": "수정된 캡션 1", "설명": "무엇을 바꿨는지"}
   ]
 }`;
 }
@@ -256,7 +277,7 @@ app.post('/api/suggest-captions', async (req, res) => {
     return res.json({ 위험표현: [], 대체캡션: [], timingMs: 0 });
   }
   try {
-    const result = await callClaudeText('당신은 SNS 캡션의 프라이버시 위험 표현을 다듬어주는 편집자입니다.', buildCaptionUserPrompt(caption));
+    const result = await callClaudeText('당신은 SNS 캡션의 프라이버시 위험 표현을 다듬어주는 편집자입니다.', buildCaptionUserPrompt(req.body || {}));
     res.json({
       위험표현: result.parsed.위험표현 || [],
       대체캡션: result.parsed.대체캡션 || [],

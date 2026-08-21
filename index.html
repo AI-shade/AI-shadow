@@ -444,6 +444,14 @@
   /* ---- 보정 방식 선택 ---- */
   /* 감지 결과에 오탐이 섞이면 자동으로 전부 처리했을 때 엉뚱한 곳이 보정된다.
      무엇을 고칠지는 사용자가 고른다. */
+  .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
+
+  .checkline {
+    display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem;
+    font-size: 0.82rem; font-weight: 400; color: var(--muted); cursor: pointer;
+  }
+  .checkline input { accent-color: var(--ink); margin: 0; }
+
   .target-picker { margin-bottom: 1.1rem; }
   .target-picker-head { font-size: 0.82rem; font-weight: 600; margin: 0 0 0.55rem; }
   .target-picker ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
@@ -619,15 +627,12 @@
     #screen-result > button,
     #screen-result > .disclaimer { grid-column: 1 / -1; }
 
-    /* 보정 화면 — 방식 선택 왼쪽, 미리보기 오른쪽 */
-    #screen-correct:not([style*="none"]) {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 2.4rem; align-items: start;
-    }
-    #screen-correct > .correct-actions { grid-column: 1 / -1; }
-    /* 왼쪽 열이 좁아지므로 방식 카드는 한 줄에 하나씩 */
-    #screen-correct .method-grid { grid-template-columns: 1fr; }
+    /* 보정 화면 — 비교 사진을 위에 크게, 보정 방식은 그 아래 2열.
+       좌우로 나누면 비교 사진이 절반 폭으로 작아져서 무엇이 달라졌는지 보기 어렵다. */
+    #screen-correct:not([style*="none"]) { display: flex !important; flex-direction: column; }
+    #screen-correct > .correct-right { order: 1; }
+    #screen-correct > .correct-left { order: 2; margin-top: 2rem; }
+    #screen-correct > .correct-actions { order: 3; }
 
     /* 검증 화면 — 스탬프/요약 왼쪽, 상세 오른쪽 */
     #screen-verify:not([style*="none"]) {
@@ -884,7 +889,8 @@
 
     <div class="field">
       <label>캡션 <span class="hint">이 사진과 함께 올릴 글</span></label>
-      <textarea id="captionInput" placeholder="예: 오늘부터 OO어린이집 다니기 시작했어요! 하원길에 놀이터에서 한 컷 📸"></textarea>
+      <textarea id="captionInput" placeholder="예: 오늘부터 OO어린이집 다니기 시작했어요! 하원길에 놀이터에서 한 컷"></textarea>
+      <label class="checkline"><input type="checkbox" id="noCaption"> 캡션 없이 사진만 올릴 거예요</label>
     </div>
 
     <div class="row2">
@@ -2108,9 +2114,18 @@
       };
     }
 
-    async function runCaptionSuggestionPipeline(caption) {
+    async function runCaptionSuggestionPipeline(caption, context) {
       var t0 = performance.now();
-      var data = await postJson(CAPTION_BACKEND_URL, { caption: caption });
+      // 캡션만 보내면 사진과 무관한 일반적인 제안밖에 못 만든다.
+      // 감지된 텍스트·시각 단서·위험 근거를 함께 보내 이 사진에 맞는 제안을 받는다.
+      var ctx = context || {};
+      var data = await postJson(CAPTION_BACKEND_URL, {
+        caption: caption,
+        texts: (ctx.texts || []).map(function (w) { return w.text; }),
+        visualClues: (ctx.visualClues || []).map(function (c) { return c.종류; }),
+        grade: ctx.grade,
+        locationEvidence: ctx.locationEvidence,
+      });
       console.log('[캡션제안] 처리 완료 — ' + Math.round(performance.now() - t0) + 'ms', data);
       return (data.대체캡션 || []).map(function (c) { return c.문구; });
     }
@@ -2732,6 +2747,14 @@
       conn2.classList.toggle('filled', activeIndex >= 2);
     }
 
+    var noCaptionEl = document.getElementById('noCaption');
+    var captionInputEl = document.getElementById('captionInput');
+    noCaptionEl.addEventListener('change', function () {
+      captionInputEl.disabled = noCaptionEl.checked;
+      captionInputEl.style.opacity = noCaptionEl.checked ? '0.5' : '';
+      if (noCaptionEl.checked) captionInputEl.value = '';
+    });
+
     var photoInput = document.getElementById('photoInput');
     var fileDropLabel = document.getElementById('fileDropLabel');
     var polaroidPreview = document.getElementById('polaroidPreview');
@@ -2813,12 +2836,10 @@
         summary: '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
           (inputs.companions ? '함께 계신 "' + inputs.companions + '"과의 사진이라 신원 특정 위험은 크지 않지만, ' : '') +
           '공개 범위와 업로드 시점 설정에 따라 위치·생활 패턴 노출 위험이 달라질 수 있으니 위 권장 조치를 참고해보세요.',
-        captionSuggestions: inputs.caption.trim().length > 0
-          ? [
-              (inputs.caption.replace(/OO\S*/g, '유치원').slice(0, 60) + (inputs.caption.length > 60 ? '…' : '')) || '오늘 하루도 신나게 보냈어요 😊',
-              '오늘도 즐거운 하루였어요, 다음에 또 놀러가요!',
-            ]
-          : ['오늘 하루도 즐겁게 보냈어요 😊', '좋은 시간 보내고 왔어요!'],
+        // 캡션 제안은 지어내지 않는다. 백엔드(Claude)가 실제 캡션을 보고 다듬은 것만 쓴다.
+        // 예전에는 여기서 '오늘 하루도 즐겁게 보냈어요' 같은 고정 문구를 돌려줘서,
+        // 사진이 무엇이든 늘 같은 제안이 나오는 것처럼 보였다.
+        captionSuggestions: [],
       };
     }
 
@@ -3073,6 +3094,15 @@
 
       var captionList = document.getElementById('captionSuggestions');
       captionList.innerHTML = '';
+      if (!r.captionSuggestions || r.captionSuggestions.length === 0) {
+        var empty = document.createElement('li');
+        empty.className = 'caption-empty';
+        empty.textContent = document.getElementById('noCaption').checked || !document.getElementById('captionInput').value.trim()
+          ? '캡션을 입력하시면 이 사진에 맞게 더 안전한 표현으로 다듬어드려요.'
+          : '이 캡션에서는 위치나 시간을 특정할 만한 표현을 찾지 못했어요. 그대로 쓰셔도 괜찮아요.';
+        captionList.appendChild(empty);
+        return;
+      }
       r.captionSuggestions.forEach(function (c) {
         var li = document.createElement('li');
         li.textContent = c;
@@ -3147,7 +3177,7 @@
       noFaceConsentChoice = null; // 새 진단을 시작하니 이전 사진에서의 선택을 이어받지 않도록 초기화
       noFaceConsentPromise = null;
       var inputs = {
-        caption: document.getElementById('captionInput').value,
+        caption: document.getElementById('noCaption').checked ? '' : document.getElementById('captionInput').value,
         privacySetting: document.getElementById('privacySetting').value,
         uploadTiming: document.getElementById('uploadTiming').value,
         companions: document.getElementById('companions').value,
@@ -3204,7 +3234,10 @@
           });
           try {
             var riskPromise = runRiskDiagnosisPipeline(faceResult, ocrResult, inputs);
-            var captionPromise = runCaptionSuggestionPipeline(inputs.caption).catch(function (capErr) {
+            var captionPromise = runCaptionSuggestionPipeline(inputs.caption, {
+              texts: (ocrResult && ocrResult.words) || [],
+              visualClues: (ocrResult && ocrResult.visualClues) || [],
+            }).catch(function (capErr) {
               console.warn('[캡션제안] 실패 — 기본 문구로 대체:', capErr.message);
               return [];
             });
