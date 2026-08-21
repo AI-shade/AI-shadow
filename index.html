@@ -451,6 +451,27 @@
   .blur-strength { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .bs-label { font-size: 0.82rem; font-weight: 600; }
   .bs-options { display: flex; gap: 0.35rem; background: var(--soft); border-radius: 999px; padding: 0.25rem; }
+  /* 흐림 정도는 3단 버튼보다 슬라이더가 낫다 — 사진마다 적당한 세기가 다르다 */
+  .bs-range {
+    flex: 1 1 200px; min-width: 160px; max-width: 320px; height: 4px; margin: 0;
+    -webkit-appearance: none; appearance: none; background: var(--soft);
+    border-radius: 999px; cursor: pointer;
+  }
+  .bs-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--ink); border: 3px solid var(--card); box-shadow: var(--shadow-soft);
+    cursor: grab;
+  }
+  .bs-range::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--card);
+    background: var(--ink); box-shadow: var(--shadow-soft); cursor: grab;
+  }
+  .bs-range:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 4px; }
+  .bs-value {
+    font-size: 0.82rem; font-weight: 600; color: var(--ink);
+    min-width: 4.5rem; font-variant-numeric: tabular-nums;
+  }
   .bs-btn, .fs-btn {
     border: none; background: transparent; color: var(--muted); cursor: pointer;
     font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px;
@@ -1069,12 +1090,10 @@
     </div>
 
     <div class="blur-strength" id="blurStrength" style="display:none;">
-      <span class="bs-label">흐림 정도</span>
-      <div class="bs-options" role="group" aria-label="흐림 정도">
-        <button type="button" class="bs-btn" data-blur="8">약하게</button>
-        <button type="button" class="bs-btn selected" data-blur="18">보통</button>
-        <button type="button" class="bs-btn" data-blur="32">강하게</button>
-      </div>
+      <label class="bs-label" for="blurRange">흐림 정도</label>
+      <input type="range" id="blurRange" class="bs-range" min="2" max="40" step="1" value="18"
+             aria-describedby="blurRangeValue" />
+      <output class="bs-value" id="blurRangeValue" for="blurRange">보통</output>
     </div>
 
     <div class="target-picker" id="targetPicker" style="display:none;">
@@ -3709,14 +3728,26 @@
       });
     });
 
-    document.querySelectorAll('.bs-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.bs-btn').forEach(function (b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
-        currentBlurPx = Number(btn.dataset.blur);
-        selectMethod('blur');
-      });
+    var blurRangeEl = document.getElementById('blurRange');
+    var blurValueEl = document.getElementById('blurRangeValue');
+    var blurRenderTimer = null;
+
+    function blurLabelFor(px) {
+      if (px <= 8) return '약하게 ' + px;
+      if (px <= 14) return '조금 ' + px;
+      if (px <= 24) return '보통 ' + px;
+      if (px <= 33) return '강하게 ' + px;
+      return '아주 강하게 ' + px;
+    }
+
+    blurRangeEl.addEventListener('input', function () {
+      currentBlurPx = Number(blurRangeEl.value);
+      blurValueEl.textContent = blurLabelFor(currentBlurPx); // 라벨은 즉시 반응
+      // 미리보기는 손을 멈춘 뒤에 그린다 — 매 픽셀마다 다시 그리면 큰 사진에서 버벅인다
+      clearTimeout(blurRenderTimer);
+      blurRenderTimer = setTimeout(function () { selectMethod('blur'); }, 140);
     });
+    blurValueEl.textContent = blurLabelFor(Number(blurRangeEl.value));
 
     document.getElementById('downloadResultBtn').addEventListener('click', function () {
       if (!currentCorrectionCanvas) {
