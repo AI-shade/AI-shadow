@@ -1,11 +1,7 @@
 <meta charset="UTF-8">
 <title>안심앨범</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<!-- 큰 제목에만 쓰는 표시용 고딕. display=swap이라 늦게 와도 글이 안 보이는 구간이 없다. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800;900&display=swap">
 <style>
   /* =========================================================================
      안심앨범 — 시각 언어 v2 (가이드라인.md · 소프트 대시보드)
@@ -61,10 +57,7 @@
     --font-body: 'Pretendard Variable', 'Pretendard', 'Malgun Gothic', '맑은 고딕',
       -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, sans-serif;
-    /* 큰 제목용 서체. Pretendard보다 글자 폭이 넓고 획이 굵어 제목이 단단해 보인다.
-       본문·UI는 Pretendard 그대로 둔다 — 작은 글씨까지 굵은 서체로 바꾸면 답답하다.
-       명조(Noto Serif KR)도 한 번 써봤지만 도구 성격과 겉돌아 고딕으로 되돌렸다. */
-    --font-display: 'Gothic A1', 'Pretendard Variable', 'Pretendard', sans-serif;
+    --font-display: var(--font-body);
     /* 배경이 흰색이라 그림자만으로는 카드가 안 떠 보인다 — 약간 진하게 잡는다 */
     --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.05);
     --shadow-soft: 0 1px 4px rgba(16, 24, 40, 0.05);
@@ -374,7 +367,7 @@
   }
   .polaroid img { width: 100%; display: block; border-radius: 12px; }
   .polaroid .cap {
-    font-family: var(--font-body); font-size: 0.72rem; font-weight: 500; letter-spacing: 0;
+    font-family: var(--font-display); font-size: 0.72rem; font-weight: 500; letter-spacing: 0;
     color: var(--muted); text-align: left; margin-top: 0.5rem; padding-left: 0.15rem;
   }
 
@@ -570,7 +563,7 @@
     padding: 1.6rem 1.5rem; box-shadow: var(--shadow-card); margin: 0 0 0.85rem;
   }
   .rcard-title, section.result-section > h3 {
-    font-family: var(--font-body); font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em;
+    font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em;
     color: var(--ink); margin: 0 0 0.85rem; line-height: 1.4;
   }
   /* 카드 안 마지막 요소의 아래 여백은 카드 패딩이 대신한다 */
@@ -882,7 +875,7 @@
     display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.55rem;
     width: auto; height: auto; padding: 0.8rem 1.5rem;
     border-radius: 999px; border: none; background: var(--accent); color: #1a1a1a;
-    transform: none; font-family: var(--font-body); font-weight: 700; letter-spacing: -0.005em;
+    transform: none; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.005em;
     box-shadow: var(--shadow-soft);
   }
   .verify-stamp.warn { background: var(--risk-mid-soft); color: var(--risk-mid); box-shadow: none; }
@@ -1051,9 +1044,7 @@
   .hero-inner { position: relative; z-index: 1; }
   .hero-inner {
     width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 1.4rem;
-    /* 명조는 고딕보다 가로로 넓다. 1.05fr로는 제목 첫 줄("아이 사진, 올리기 전에")이
-       안 들어가서 "전에"만 아래로 떨어졌다. 글 쪽에 폭을 더 준다. */
-    display: grid; grid-template-columns: 1.35fr 0.65fr; gap: 2.6rem; align-items: center;
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
   }
   .hero-badge {
     display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
@@ -1061,9 +1052,8 @@
     margin-bottom: 1.1rem;
   }
   .hero-title {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 900; letter-spacing: -0.022em;
-    line-height: 1.3; margin: 0 0 1rem; word-break: keep-all;
+    font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 700; letter-spacing: -0.025em;
+    line-height: 1.25; margin: 0 0 1rem; word-break: keep-all;
   }
   .hero-sub {
     font-size: 1.02rem; color: var(--muted); line-height: 1.75;
@@ -1130,9 +1120,8 @@
     background: var(--accent); margin-top: 0.75rem; border-radius: 999px;
   }
   .section-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 900; letter-spacing: -0.02em;
-    line-height: 1.35; margin: 0 0 2.2rem; word-break: keep-all;
+    font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: -0.02em;
+    margin: 0 0 2.2rem; word-break: keep-all;
   }
   /* ---- 세 단계 소개 (핀 고정) ----
      트랙은 세 화면 높이(단계당 한 화면)고, 안쪽 무대가 sticky로 화면에 붙는다.
@@ -1301,9 +1290,8 @@
   }
   .cta-band .section-inner { position: relative; z-index: 1; }
   .cta-band h2 {
-    font-family: var(--font-display);
-    font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; margin: 0 0 0.6rem;
-    letter-spacing: -0.02em; line-height: 1.35; word-break: keep-all;
+    font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; margin: 0 0 0.6rem;
+    letter-spacing: -0.02em; word-break: keep-all;
   }
   /* --muted(#6f6860)를 다크 띠에 쓰면 3.10:1로 거의 안 보인다. 밝은 쪽으로 따로 잡는다(8.48:1). */
   .cta-band p { margin: 0 0 1.6rem; color: #bdb6ac; font-size: 0.98rem; }
