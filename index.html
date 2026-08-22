@@ -227,8 +227,12 @@
 
   /* 히어로 아래에 더 있다는 표시 */
   .scroll-cue {
+    /* 시안처럼 첫 화면 맨 아래 가운데. 흐름에 두면 히어로 높이에 따라 자리가
+       들쭉날쭉해서, 화면 아래에 고정으로 앉힌다. */
+    position: absolute; left: 50%; bottom: 1.6rem; transform: translateX(-50%);
+    z-index: 2;
     display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-    margin: 2.6rem auto 0; width: fit-content;
+    margin: 0; width: fit-content;
     /* 섹션 라벨과 달리 여기는 문장이라, 자간을 벌리고 대문자로 만들면 한글이 흩어져 보인다 */
     color: var(--muted); font-size: 0.76rem; font-weight: 600;
     letter-spacing: 0.02em; text-decoration: none;
@@ -249,8 +253,9 @@
     box-shadow: var(--shadow-card);
   }
   @media (max-width: 460px) {
-    body { padding: 1.1rem 0.7rem 3rem; }
-    main { padding: 0.9rem 0.9rem 1.5rem; border-radius: 24px; }
+    /* 폰에서도 네비와 띠가 화면 끝까지 닿아야 한다. 도구 카드는 스스로 좌우를 띄운다 */
+    body { padding: 0; }
+    main { width: calc(100% - 1.4rem); padding: 0.9rem 0.9rem 1.5rem; border-radius: 24px; }
   }
 
   /* 한글 제목이 단어 중간에서 끊기지 않도록 */
@@ -915,8 +920,12 @@
      "display: none"이 아니라 "none"으로 보는 이유: 마크업 초기값은 style="display:none"
      (공백 없음)인데 JS는 style.display = 'none'(공백 있음)으로 써서 표기가 두 가지다. */
   @media (min-width: 1000px) {
-    body { padding: 3rem 2rem 5rem; }
-    main { max-width: 1280px; padding: 1.9rem 1.9rem 2.4rem; border-radius: 34px; }
+    /* 랜딩 구조로 바뀐 뒤로 이 여백은 방해만 된다 — 위 3rem이 히어로가 화면을
+       채우는 걸 막고, 좌우 2rem이 네비와 회색·검정 띠를 화면 끝에서 떼어놓는다.
+       섹션은 저마다 .section-inner로 안쪽 여백을 갖고 있어 없어도 된다. */
+    body { padding: 0; }
+    /* body 여백이 사라졌으니 도구 카드는 스스로 좌우를 띄운다 */
+    main { max-width: 1280px; width: calc(100% - 2.8rem); padding: 1.9rem 1.9rem 2.4rem; border-radius: 34px; }
 
     /* 헤더 — 제목 왼쪽, 단계 표시 오른쪽 */
     .app-hero {
@@ -1039,9 +1048,19 @@
   .nav-cta:hover { background: var(--card-dark); }
   @media (max-width: 860px) { .nav-links { display: none; } .nav-inner { justify-content: space-between; } }
 
-  /* 히어로 */
-  .hero { padding: 4rem 0 3.2rem; position: relative; overflow: hidden; }
-  .hero-inner { position: relative; z-index: 1; }
+  /* 히어로 — 첫 화면을 꽉 채운다.
+     예전에는 내용 높이만큼만 차지해서, 큰 화면에서는 아래가 휑하고 작은 화면에서는
+     도구가 어중간하게 걸쳤다. 화면 높이에서 네비만큼만 빼고 가운데 정렬한다.
+     --nav-h는 스크립트가 실제 네비 높이를 재서 넣는다(글자 크기에 따라 달라진다).
+     100svh는 모바일 주소창이 접혔다 펴져도 높이가 튀지 않게 해준다. */
+  .hero {
+    min-height: calc(100vh - var(--nav-h, 4.6rem));
+    min-height: calc(100svh - var(--nav-h, 4.6rem));
+    padding: 2rem 0 5.5rem;   /* 아래는 스크롤 유도가 앉을 자리 */
+    display: flex; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-inner { position: relative; z-index: 1; width: 100%; }
   .hero-inner {
     width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 1.4rem;
     display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
@@ -1086,7 +1105,7 @@
   .hv-line { height: 8px; border-radius: 999px; background: var(--soft); }
   .hv-line.short { width: 55%; }
   @media (max-width: 900px) {
-    .hero { padding: 2.6rem 0 2rem; }
+    .hero { padding: 1.5rem 0 4.5rem; }
     .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
     .hero-visual { display: none; }
   }
@@ -2036,6 +2055,21 @@
     measure();
     current = target;
     track.style.setProperty('--pulse', current.toFixed(3));
+  })();
+
+  /* 히어로가 첫 화면을 정확히 채우려면 네비 높이를 알아야 한다.
+     글자 크기가 폭에 따라 달라져서 CSS 상수로는 못 맞춘다 — 실제로 재서 넣는다.
+     스크립트가 죽어도 CSS 기본값(4.6rem)으로 대략 맞는다. */
+  (function () {
+    var nav = document.querySelector('.site-nav');
+    if (!nav) return;
+    function sync() {
+      document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+    }
+    sync();
+    window.addEventListener('resize', sync);
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(nav);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
   })();
 
   /* 핀 고정 섹션 공통 드라이버.

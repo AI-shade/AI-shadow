@@ -118,6 +118,13 @@ async function setup(p, method, mode) {
 
   // ── 획 되돌리기
   await setup(p, 'sticker', 'brush');
+  // 히어로가 첫 화면을 꽉 채우게 되면서 도구가 한 화면 아래로 내려갔다.
+  // 마우스로 실제로 칠하려면 칠할 층이 화면 안에 들어와 있어야 한다.
+  await p.evaluate(() => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    document.querySelector('#previewFrame').scrollIntoView({ block: 'center' });
+  });
+  await p.waitForTimeout(400);
   const box = await p.evaluate(() => {
     const l = document.querySelector('#previewFrame .brush-layer');
     const r = l.getBoundingClientRect();
@@ -125,10 +132,15 @@ async function setup(p, method, mode) {
   });
   check('칠할 층이 화면에 자리를 차지한다', box.w > 10 && box.h > 10, JSON.stringify(box));
 
+  // 층의 화면 좌표는 스크롤에 따라 달라진다 — 칠할 때마다 다시 잰다
   const stroke = async (dx, dy) => {
-    await p.mouse.move(box.x + dx, box.y + dy);
+    const b = await p.evaluate(() => {
+      const r = document.querySelector('#previewFrame .brush-layer').getBoundingClientRect();
+      return { x: r.left, y: r.top };
+    });
+    await p.mouse.move(b.x + dx, b.y + dy);
     await p.mouse.down();
-    await p.mouse.move(box.x + dx + 18, box.y + dy + 12, { steps: 4 });
+    await p.mouse.move(b.x + dx + 18, b.y + dy + 12, { steps: 4 });
     await p.mouse.up();
     await p.waitForTimeout(350);
   };
@@ -168,6 +180,8 @@ async function setup(p, method, mode) {
 
   // Ctrl+Z
   await setup(p, 'sticker', 'brush');
+  await p.evaluate(() => document.querySelector('#previewFrame').scrollIntoView({ block: 'center' }));
+  await p.waitForTimeout(400);
   await stroke(box.w * 0.4, box.h * 0.4);
   n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
   const before = n;
