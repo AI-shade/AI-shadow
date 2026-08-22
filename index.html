@@ -1127,8 +1127,28 @@
      트랙은 세 화면 높이(단계당 한 화면)고, 안쪽 무대가 sticky로 화면에 붙는다.
      스크롤이 트랙을 지나는 동안 화면은 넘어가지 않고 단계만 바뀐다.
      진단 도구에는 이 방식을 쓰지 않는다 — 사진을 올리려는 사람이 스크롤에 갇힌다. */
+  /* 핀 고정 공통 장치.
+     트랙 높이가 항목 수를 정하고(한 항목당 --pin-step), 안쪽 무대가 sticky로
+     화면에 붙는다. 스크롤이 트랙을 지나는 동안 화면은 넘어가지 않고 항목만 바뀐다.
+     기능·왜 안전한가·자주 묻는 질문·세 단계 소개가 모두 이 규칙을 쓴다. */
+  .pin-track { position: relative; height: calc(var(--pin-count, 3) * var(--pin-step, 100vh)); }
+  .pin-stage {
+    position: sticky; top: 0; min-height: 100vh;
+    display: flex; align-items: center; overflow: hidden;
+  }
+  .pinned-section { padding: 0; }
+  /* 지금 항목만 앞으로 나오고 나머지는 물러난다 */
+  .pin-item {
+    opacity: 0.3;
+    transition: opacity 0.42s ease, transform 0.42s ease, box-shadow 0.42s ease;
+  }
+  .pin-item.on, .pin-item.seen { opacity: 1; }
+  /* 쌓기 방식(자주 묻는 질문): 지나간 항목도 켜둔 채로 남겨 눌러볼 수 있게 한다.
+     하나만 켜두면 4번 질문을 보려고 세 화면을 다시 내려야 한다. */
+  .pin-item.on { transform: none; }
+
   .steps-section { padding: 0; }
-  .steps-track { height: 300vh; position: relative; }
+  .steps-track { height: calc(3 * 100vh); }
   .steps-stage {
     position: sticky; top: 0; height: 100vh;
     display: flex; align-items: center; overflow: hidden;
@@ -1210,8 +1230,12 @@
   .sp-ok-text strong { font-size: 0.95rem; }
   .sp-ok-text span { font-size: 0.8rem; color: var(--muted); }
 
-  .steps-progress {
+  .steps-progress, .pin-progress {
     margin-top: 2.4rem; height: 3px; border-radius: 999px; background: var(--line); overflow: hidden;
+  }
+  .pin-progress span {
+    display: block; height: 100%; width: 100%; border-radius: 999px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left center;
   }
   .steps-progress span {
     display: block; height: 100%; width: 100%; border-radius: 999px; background: var(--accent);
@@ -1222,6 +1246,12 @@
      잠긴 느낌은 특히 답답하다. 세 단계를 그냥 세로로 쌓아 전부 보여준다.
      모션 축소 설정에서도 같은 모습이 되도록 아래에서 한 번 더 푼다. */
   @media (max-width: 1000px) {
+    .pinned-section { padding: 4rem 0; }
+    .pin-track { height: auto; }
+    .pin-stage { position: static; min-height: 0; display: block; overflow: visible; }
+    .pin-item, .pin-item.on, .pin-item.seen { opacity: 1; transform: none; box-shadow: var(--shadow-card); }
+    .faq-list .pin-item { box-shadow: var(--shadow-card); }
+    .pin-progress { display: none; }
     .steps-section { padding: 4rem 0; }
     .steps-track { height: auto; }
     .steps-stage { position: static; height: auto; display: block; overflow: visible; }
@@ -1233,6 +1263,13 @@
     .steps-progress { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
+    .pinned-section { padding: 4rem 0; }
+    .pin-track { height: auto; }
+    .pin-stage { position: static; min-height: 0; display: block; overflow: visible; }
+    .pin-item, .pin-item.on, .pin-item.seen {
+      opacity: 1; transform: none; transition: none; box-shadow: var(--shadow-card);
+    }
+    .pin-progress { display: none; }
     .steps-section { padding: 4rem 0; }
     .steps-track { height: auto; }
     .steps-stage { position: static; height: auto; display: block; overflow: visible; }
@@ -1242,6 +1279,15 @@
     .steps-pane { position: static; opacity: 1; transform: none; transition: none; }
     .steps-progress { display: none; }
   }
+
+  /* 카드 섹션은 격자를 그대로 두고 밝기만 바꾼다. 한 장씩 따로 띄우면
+     화면 대부분이 비고, 넷을 견줘 읽는 맛도 사라진다. */
+  .pinned-section .pin-stage .section-inner { width: 100%; }
+  .feature-card.pin-item.on, .why-card.pin-item.on {
+    transform: translateY(-4px); box-shadow: var(--shadow-lift);
+  }
+  .faq-list .pin-item { transform: translateY(10px); }
+  .faq-list .pin-item.on, .faq-list .pin-item.seen { transform: none; }
 
   .feature-grid, .why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .feature-card, .why-card {
@@ -1323,6 +1369,15 @@
   }
 
 </style>
+
+<script>
+  /* 새로고침하면 브라우저가 이전 스크롤 위치를 되살린다. 페이지가 길어서
+     그 자리가 대개 한복판이라, 히어로를 못 보고 중간부터 시작하게 된다.
+     주소에 #앵커가 있을 때는 그 자리로 가야 하므로 건드리지 않는다. */
+  if ('scrollRestoration' in history && !location.hash) {
+    history.scrollRestoration = 'manual';
+  }
+</script>
 
 <div class="page-glow" aria-hidden="true">
   <div class="glow-track">
@@ -1736,15 +1791,15 @@
      화면에 붙어(sticky) 있는 동안 스크롤 진행도에 따라 단계가 하나씩 넘어간다.
      좁은 화면과 모션 축소 설정에서는 붙이지 않고 그냥 세로로 쌓는다. -->
 <section class="site-section steps-section" id="steps">
-  <div class="steps-track" id="stepsTrack">
-    <div class="steps-stage">
+  <div class="pin-track steps-track" id="stepsTrack" data-pin="3">
+    <div class="pin-stage steps-stage">
       <div class="section-inner steps-inner">
         <p class="section-eyebrow">어떻게 쓰나요</p>
         <h2 class="section-title">세 단계면 끝나요</h2>
 
         <div class="steps-viz">
           <ol class="steps-list" id="stepsList">
-            <li data-step="0">
+            <li class="pin-item" data-step="0">
               <span class="sl-num">1</span>
               <span class="sl-body">
                 <strong>진단</strong>
@@ -1752,7 +1807,7 @@
                 교복·명찰처럼 소속을 드러내는 것까지 찾아내요. 위험도와 근거를 같이 보여드려요.</span>
               </span>
             </li>
-            <li data-step="1">
+            <li class="pin-item" data-step="1">
               <span class="sl-num">2</span>
               <span class="sl-body">
                 <strong>보정</strong>
@@ -1760,7 +1815,7 @@
                 위치가 어긋났으면 끌어 맞추면 돼요. 사진 비율은 원본 그대로예요.</span>
               </span>
             </li>
-            <li data-step="2">
+            <li class="pin-item" data-step="2">
               <span class="sl-num">3</span>
               <span class="sl-body">
                 <strong>검증</strong>
@@ -1771,7 +1826,7 @@
           </ol>
 
           <div class="steps-panes" id="stepsPanes" aria-hidden="true">
-            <div class="steps-pane" data-step="0">
+            <div class="steps-pane pin-item" data-step="0">
               <div class="sp-card">
                 <span class="sp-chip risk">위치노출 82점</span>
                 <span class="sp-line"></span><span class="sp-line short"></span>
@@ -1783,7 +1838,7 @@
                 <span class="sp-chip">교복 감지</span><span class="sp-line short"></span>
               </div>
             </div>
-            <div class="steps-pane" data-step="1">
+            <div class="steps-pane pin-item" data-step="1">
               <div class="sp-compare">
                 <div class="sp-shot"><span class="sp-tag">원본</span><span class="sp-box"></span></div>
                 <div class="sp-shot"><span class="sp-tag on">보정 후</span><span class="sp-box covered"></span></div>
@@ -1792,7 +1847,7 @@
                 <span class="sp-chip">1) 배경 흐림</span><span class="sp-chip">2) 간판 덮기</span>
               </div>
             </div>
-            <div class="steps-pane" data-step="2">
+            <div class="steps-pane pin-item" data-step="2">
               <div class="sp-card ok">
                 <span class="sp-check" aria-hidden="true">
                   <svg viewBox="0 0 32 32"><path d="M8 16.5 L13.5 22 L24 10"/></svg>
@@ -1810,67 +1865,79 @@
   </div>
 </section>
 
-<section class="site-section" id="features">
+<section class="site-section pinned-section" id="features">
+  <div class="pin-track" data-pin="4">
+  <div class="pin-stage">
   <div class="section-inner">
     <p class="section-eyebrow">기능</p>
     <h2 class="section-title">사람이 놓치는 것을 대신 찾아드려요</h2>
     <div class="feature-grid">
-      <article class="feature-card">
+      <article class="feature-card pin-item">
         <h3>배경 글자 판독</h3>
         <p>간판·전화번호·지번처럼 위치를 특정할 수 있는 글자를 찾아냅니다. 브라우저 안 OCR과 Claude Vision을 함께 써서, 읽은 내용과 정확한 좌표를 모두 확보해요.</p>
       </article>
-      <article class="feature-card">
+      <article class="feature-card pin-item">
         <h3>글자가 아닌 단서</h3>
         <p>교복·원복·명찰·기관 로고처럼 아이가 어디에 다니는지 알려주는 것들을 잡아냅니다. 주소 다음으로 강한 위치 단서예요.</p>
       </article>
-      <article class="feature-card">
+      <article class="feature-card pin-item">
         <h3>반복 패턴 분석</h3>
         <p>과거 게시물 스크린샷을 함께 넣으면 "매주 같은 요일·시간대" 같은 생활 패턴이 드러나는지 짚어드려요.</p>
       </article>
-      <article class="feature-card">
+      <article class="feature-card pin-item">
         <h3>여섯 가지 보정</h3>
         <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI로 지우고 메우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
       </article>
     </div>
   </div>
+  </div>
+  </div>
 </section>
 
-<section class="site-section alt" id="why">
+<section class="site-section alt pinned-section" id="why">
+  <div class="pin-track" data-pin="4">
+  <div class="pin-stage">
   <div class="section-inner">
     <p class="section-eyebrow">왜 안전한가</p>
     <h2 class="section-title">아이를 건드리지 않는다는 원칙</h2>
     <div class="why-grid">
-      <article class="why-card">
+      <article class="why-card pin-item">
         <h3>얼굴은 가려서 보냅니다</h3>
         <p>분석을 위해 외부로 보낼 때 얼굴을 먼저 검게 덮습니다. AI 보정처럼 원본이 필요한 방식은 따로 동의를 받아요.</p>
       </article>
-      <article class="why-card">
+      <article class="why-card pin-item">
         <h3>부탁이 아니라 차단</h3>
         <p>AI에게 "아이를 바꾸지 마"라고 부탁하는 대신, 아이 영역을 마스크에서 아예 빼버립니다. 모델이 접근할 방법 자체가 없어요.</p>
       </article>
-      <article class="why-card">
+      <article class="why-card pin-item">
         <h3>비율은 원본 그대로</h3>
         <p>어떤 보정을 거쳐도 사진 비율이 바뀌지 않습니다. 잘라야 할 때도 아이를 자르느니 비율을 포기하고 알려드려요.</p>
       </article>
-      <article class="why-card">
+      <article class="why-card pin-item">
         <h3>고친 다음 다시 검사</h3>
         <p>보정된 사진을 처음과 같은 검사에 한 번 더 통과시켜, 정말 위험이 사라졌는지 확인하고 결과를 보여드립니다.</p>
       </article>
     </div>
   </div>
+  </div>
+  </div>
 </section>
 
-<section class="site-section" id="faq">
+<section class="site-section pinned-section" id="faq">
+  <div class="pin-track" data-pin="5" data-pin-accumulate="1">
+  <div class="pin-stage">
   <div class="section-inner narrow">
     <p class="section-eyebrow">자주 묻는 질문</p>
     <h2 class="section-title">궁금하실 것들</h2>
     <div class="faq-list">
-      <details><summary>사진이 서버에 저장되나요?</summary><p>진단에 필요한 순간에만 전송하고 따로 보관하지 않습니다. 대부분의 처리(크롭·흐림·주변색 채우기)는 아예 브라우저 밖으로 나가지 않아요.</p></details>
-      <details><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없습니다. 과거 게시물 패턴을 보고 싶으실 때만 직접 캡처한 화면을 올려주시면 됩니다.</p></details>
-      <details><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않습니다. 얼굴·머리카락·목은 마스크에서 제외해 AI가 접근할 수 없게 만들어 두었고, 보정 후 다시 검사해 얼굴이 그대로인지 확인합니다.</p></details>
-      <details><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔드립니다. 얼굴과 자세는 그대로예요.</p></details>
-      <details><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않습니다. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고르실 수 있게 해두었습니다. 최종 판단은 부모님 몫이에요.</p></details>
+      <details class="pin-item"><summary>사진이 서버에 저장되나요?</summary><p>진단에 필요한 순간에만 전송하고 따로 보관하지 않습니다. 대부분의 처리(크롭·흐림·주변색 채우기)는 아예 브라우저 밖으로 나가지 않아요.</p></details>
+      <details class="pin-item"><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없습니다. 과거 게시물 패턴을 보고 싶으실 때만 직접 캡처한 화면을 올려주시면 됩니다.</p></details>
+      <details class="pin-item"><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않습니다. 얼굴·머리카락·목은 마스크에서 제외해 AI가 접근할 수 없게 만들어 두었고, 보정 후 다시 검사해 얼굴이 그대로인지 확인합니다.</p></details>
+      <details class="pin-item"><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔드립니다. 얼굴과 자세는 그대로예요.</p></details>
+      <details class="pin-item"><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않습니다. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고르실 수 있게 해두었습니다. 최종 판단은 부모님 몫이에요.</p></details>
     </div>
+  </div>
+  </div>
   </div>
 </section>
 
@@ -1971,57 +2038,93 @@
     track.style.setProperty('--pulse', current.toFixed(3));
   })();
 
-  /* 세 단계 소개 — 무대가 화면에 붙어 있는 동안 스크롤 진행도로 단계를 넘긴다.
-     붙이는 건 CSS(sticky)가 하고, 여기서는 "지금 몇 번째 단계인가"만 정한다.
-     그래야 스크립트가 죽어도 무대는 그대로 붙어 있고 첫 단계가 보인다.
+  /* 핀 고정 섹션 공통 드라이버.
+     무대를 화면에 붙이는 일은 CSS(position: sticky)가 하고, 여기서는
+     "지금 몇 번째 항목인가"만 정한다. 그래야 스크립트가 죽어도 무대는 붙어 있고
+     첫 항목이 보인다.
 
-     좁은 화면·모션 축소에서는 CSS가 핀 고정을 풀고 세 단계를 전부 펼쳐 놓으므로,
-     여기서도 손대지 않는다. 어중간하게 클래스를 붙이면 펼친 상태에서 두 번째·세 번째가
-     흐려진 채로 남는다. */
+     data-pin="N"           항목 수
+     data-pin-accumulate    지나간 항목도 켜둔 채로 남긴다(자주 묻는 질문)
+
+     좁은 화면·모션 축소에서는 CSS가 핀을 풀고 전부 펼쳐놓으므로 여기서도 손을 뗀다.
+     어중간하게 클래스를 붙이면 펼친 상태에서 뒤 항목이 흐려진 채로 남는다. */
   (function () {
-    var track = document.getElementById('stepsTrack');
-    var list = document.getElementById('stepsList');
-    var panes = document.getElementById('stepsPanes');
-    var bar = document.getElementById('stepsBar');
-    if (!track || !list || !panes || !bar) return;
+    var tracks = [].slice.call(document.querySelectorAll('[data-pin]'));
+    if (tracks.length === 0) return;
 
-    var items = list.querySelectorAll('li');
-    var pages = panes.querySelectorAll('.steps-pane');
-    var STEPS = items.length;
-    var pinned = window.matchMedia('(min-width: 1001px)');
+    var wide = window.matchMedia('(min-width: 1001px)');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var last = -1, ticking = false;
+    function active() { return wide.matches && !reduce.matches; }
 
-    function active() { return pinned.matches && !reduce.matches; }
+    var groups = tracks.map(function (track) {
+      var count = Math.max(1, parseInt(track.dataset.pin, 10) || 1);
+      track.style.setProperty('--pin-count', count);
+      // 항목이 많을수록 한 항목당 스크롤을 짧게 잡는다. 넷·다섯 개를 화면 한 장씩
+      // 잡으면 읽는 사람이 스크롤만 하다 지친다.
+      track.style.setProperty('--pin-step', (count >= 5 ? 58 : count >= 4 ? 72 : 100) + 'vh');
 
-    function setStep(i) {
-      if (i === last) return;
-      last = i;
-      for (var k = 0; k < STEPS; k++) {
-        items[k].classList.toggle('on', k === i);
-        pages[k].classList.toggle('on', k === i);
+      var stage = track.querySelector('.pin-stage');
+      var items = [].slice.call(track.querySelectorAll('.pin-item'));
+      // 세 단계 소개는 목록과 화면 목업이 같은 번호를 나눠 쓴다(data-step).
+      // 그 외에는 나온 순서가 곧 번호다.
+      var byIndex = [];
+      items.forEach(function (el, i) {
+        var k = el.dataset.step !== undefined ? Number(el.dataset.step) : i;
+        (byIndex[k] = byIndex[k] || []).push(el);
+      });
+
+      var bar = track.querySelector('#stepsBar');
+      if (!bar) {
+        var wrap = document.createElement('div');
+        wrap.className = 'pin-progress';
+        wrap.setAttribute('aria-hidden', 'true');
+        bar = document.createElement('span');
+        wrap.appendChild(bar);
+        var inner = stage.querySelector('.section-inner');
+        if (inner) inner.appendChild(wrap);
+      }
+
+      return {
+        track: track, count: count, byIndex: byIndex, bar: bar,
+        accumulate: track.dataset.pinAccumulate === '1',
+        last: -1,
+      };
+    });
+
+    function paint(g, idx) {
+      if (idx === g.last) return;
+      g.last = idx;
+      for (var k = 0; k < g.byIndex.length; k++) {
+        var on = k === idx;
+        var seen = g.accumulate && k < idx;
+        (g.byIndex[k] || []).forEach(function (el) {
+          el.classList.toggle('on', on);
+          el.classList.toggle('seen', seen);
+        });
       }
     }
 
-    function clear() {
-      last = -1;
-      for (var k = 0; k < STEPS; k++) {
-        items[k].classList.remove('on');
-        pages[k].classList.remove('on');
-      }
+    function clear(g) {
+      g.last = -1;
+      (g.byIndex || []).forEach(function (list) {
+        (list || []).forEach(function (el) { el.classList.remove('on', 'seen'); });
+      });
+      if (g.bar) g.bar.style.transform = '';
     }
 
+    var ticking = false;
     function frame() {
       ticking = false;
       if (!active()) return;
       var vh = window.innerHeight || 1;
-      var r = track.getBoundingClientRect();
-      // 트랙이 화면을 지나가는 총 거리 — 트랙 높이에서 화면 한 장을 뺀 만큼
-      var total = Math.max(1, track.offsetHeight - vh);
-      var p = Math.min(1, Math.max(0, -r.top / total));
-      bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
-      // 진행도를 단계 수로 나눠 떨어뜨린다. 끝(p=1)에서 범위를 넘지 않게 자른다.
-      setStep(Math.min(STEPS - 1, Math.floor(p * STEPS)));
+      groups.forEach(function (g) {
+        var r = g.track.getBoundingClientRect();
+        // 트랙이 화면을 지나가는 총 거리 — 트랙 높이에서 화면 한 장을 뺀 만큼
+        var total = Math.max(1, g.track.offsetHeight - vh);
+        var pr = Math.min(1, Math.max(0, -r.top / total));
+        if (g.bar) g.bar.style.transform = 'scaleX(' + pr.toFixed(4) + ')';
+        paint(g, Math.min(g.count - 1, Math.floor(pr * g.count)));
+      });
     }
 
     function onScroll() {
@@ -2031,14 +2134,14 @@
     }
 
     function onMode() {
-      if (active()) { onScroll(); }
-      else { clear(); bar.style.transform = ''; }
+      if (active()) onScroll();
+      else groups.forEach(clear);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', function () { onMode(); onScroll(); });
-    if (pinned.addEventListener) {
-      pinned.addEventListener('change', onMode);
+    if (wide.addEventListener) {
+      wide.addEventListener('change', onMode);
       reduce.addEventListener('change', onMode);
     }
     onMode();
@@ -2057,11 +2160,8 @@
     // 히어로와 스크롤 유도는 여기 없다 — 첫 화면이라 CSS 애니메이션이 맡는다.
     // 관찰자는 스크롤해서 내려가야 보이는 것들만 담당한다.
     var GROUPS = [
-      ['.site-section:not(.steps-section) .section-eyebrow', 0],
-      ['.site-section:not(.steps-section) .section-title', 0],
-      ['.feature-card', 90],
-      ['.why-card', 90],
-      ['.faq-list details', 60],
+      ['.site-section:not(.steps-section):not(.pinned-section) .section-eyebrow', 0],
+      ['.site-section:not(.steps-section):not(.pinned-section) .section-title', 0],
       ['.cta-band .section-inner > *', 90],
     ];
 
@@ -3616,13 +3716,21 @@
       renderAppliedSteps();
     }
 
+    // 첫 호출(페이지를 막 열었을 때)에는 스크롤을 옮기지 않는다.
+    // 옮기면 새로고침할 때마다 히어로를 건너뛰고 도구부터 보이게 된다.
+    var screenShownOnce = false;
+
     function showScreen(name) {
       Object.keys(screens).forEach(function (k) { screens[k].style.display = 'none'; });
       screens[name].style.display = 'block';
       // 랜딩 페이지 구조로 바뀐 뒤로 페이지가 길어져서, 화면을 전환하면 이전 스크롤
       // 위치가 그대로 남아 엉뚱한 곳(주로 맨 아래)에 머물렀다. 도구 영역 위쪽으로 올려준다.
-      var toolEl = document.getElementById('tool');
-      if (toolEl && toolEl.scrollIntoView) toolEl.scrollIntoView({ block: 'start' });
+      // 단, 처음 그릴 때는 예외 — 그때는 맨 위(히어로)에서 시작해야 한다.
+      if (screenShownOnce) {
+        var toolEl = document.getElementById('tool');
+        if (toolEl && toolEl.scrollIntoView) toolEl.scrollIntoView({ block: 'start' });
+      }
+      screenShownOnce = true;
       var order = ['form', 'correct', 'verify'];
       var activeIndex = order.indexOf(STEP_MAP[name]);
       var stepEls = stepperEl.querySelectorAll('.step');
@@ -5358,6 +5466,26 @@
           onCount: on.length,
           paneOn: document.querySelectorAll('#stepsPanes .steps-pane.on').length,
           bar: document.getElementById('stepsBar').style.transform,
+        };
+      },
+      // 핀 고정 섹션 전체 상태
+      pinState: function (sel) {
+        var track = document.querySelector(sel);
+        if (!track) return null;
+        var items = [].slice.call(track.querySelectorAll('.pin-item'));
+        var stage = track.querySelector('.pin-stage');
+        var bar = track.querySelector('.pin-progress span, #stepsBar');
+        return {
+          count: Number(track.dataset.pin),
+          accumulate: track.dataset.pinAccumulate === '1',
+          on: items.filter(function (e) { return e.classList.contains('on'); }).length,
+          seen: items.filter(function (e) { return e.classList.contains('seen'); }).length,
+          lit: items.filter(function (e) { return Number(getComputedStyle(e).opacity) > 0.9; }).length,
+          total: items.length,
+          position: getComputedStyle(stage).position,
+          stageTop: Math.round(stage.getBoundingClientRect().top),
+          trackH: track.offsetHeight,
+          bar: bar ? bar.style.transform : null,
         };
       },
       renderCoverHandles: renderCoverHandles,
