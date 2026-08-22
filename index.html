@@ -689,9 +689,36 @@
   .target-picker .t-kind {
     font-size: 0.68rem; font-weight: 600; color: var(--muted);
     border: 1px solid var(--line); border-radius: 999px; padding: 0.05rem 0.45rem;
-    margin-left: auto; flex: 0 0 auto; white-space: nowrap;
+    flex: 0 0 auto; white-space: nowrap;
   }
+  .target-picker .t-kind.rough { color: var(--risk-mid); border-color: var(--risk-mid); }
   .target-picker .t-none { color: var(--muted); font-size: 0.84rem; margin: 0; }
+
+  /* 클로드가 읽은 내용을 그대로 고칠 수 있어야 한다. 읽기 전용 글씨처럼 보이되
+     누르면 입력칸인 게 드러나게 한다 — 처음부터 테두리를 두르면 목록이 시끄럽다. */
+  .target-picker .t-edit {
+    flex: 1 1 auto; min-width: 0; font: inherit; color: var(--ink);
+    background: transparent; border: 1px solid transparent; border-radius: 8px;
+    padding: 0.1rem 0.35rem; margin: 0;
+  }
+  .target-picker .t-edit:hover { border-color: var(--line-strong); }
+  .target-picker .t-edit:focus { outline: none; border-color: var(--ink); background: var(--card); }
+  .target-picker .t-del {
+    flex: 0 0 auto; border: none; background: transparent; cursor: pointer;
+    color: var(--muted); font-size: 0.74rem; font-weight: 600; padding: 0.15rem 0.4rem;
+    border-radius: 8px;
+  }
+  .target-picker .t-del:hover { background: var(--card); color: var(--risk-high); }
+  .target-picker li.hi label { background: var(--soft-hover); box-shadow: 0 0 0 1.5px var(--accent-2) inset; }
+  /* 목록에서 짚은 항목이 사진 어디인지 보여준다 */
+  .cover-handle.hi { box-shadow: 0 0 0 3px var(--accent-2), 0 0 0 9px rgba(255, 122, 107, 0.28); }
+  /* 덮개 핸들이 없는 방식(흐림·AI 등)에서도 위치를 확인할 수 있어야 한다 —
+     짚는 동안에만 잠깐 표시되는 테두리 */
+  .cover-peek {
+    position: absolute; pointer-events: none; border-radius: 6px;
+    border: 2px solid var(--accent-2);
+    box-shadow: 0 0 0 6px rgba(255, 122, 107, 0.22);
+  }
   /* 추천 흐름 안내는 카드 폭에 꽉 차게 — 본문 62ch 제한을 받으면 왼쪽에만 붙어
      오른쪽이 휑하게 남는다 */
   #recommendFlow { max-width: none; }
@@ -1391,7 +1418,8 @@
     </div>
 
     <div class="target-picker" id="targetPicker" style="display:none;">
-      <p class="target-picker-head">보정할 항목을 골라주세요 <span class="hint">체크한 것만 처리해요</span></p>
+      <p class="target-picker-head">찾은 것이 맞는지 확인해주세요
+        <span class="hint">체크한 것만 처리해요 · 내용이 다르면 눌러서 고치고, 아예 틀린 건 빼주세요</span></p>
       <ul id="targetList"></ul>
     </div>
 
@@ -3860,7 +3888,7 @@
     var recommendFlowEl = document.getElementById('recommendFlow');
     // 보정 대상 선택 — 감지에 오탐이 섞일 수 있으므로 사용자가 직접 고른다.
     // null이면 "아직 목록을 만들지 않았다"는 뜻이고 그 땐 전체가 대상이다.
-    var selectedTargetIdx = null;
+    var selectedTargetIds = null; // 선택된 항목의 고유 번호 목록 (인덱스가 아니다 — 지우면 밀린다)
     var currentBlurPx = 18;   // 흐림 강도 — 화면에서 고른다
     var currentFill = 'auto'; // 덮는 방식 — 자동 / 주변색 / 모자이크
     var currentFillPx = 16;   // 모자이크 픽셀 크기
@@ -3884,21 +3912,53 @@
       return false;
     }
 
-    function getSelectedTexts() {
-      var all = correctionTextWords || [];
-      if (!selectedTargetIdx) return all;
-      return all.filter(function (w, i) { return selectedTargetIdx.indexOf(i) !== -1; });
+    // 항목마다 고유 번호를 붙인다. 목록에서 지우면 배열 인덱스가 밀려서,
+    // 인덱스로 선택 상태를 들고 있으면 엉뚱한 항목이 선택된 것으로 바뀐다.
+    var nextTargetId = 1;
+    function assignTargetIds(words) {
+      (words || []).forEach(function (w) { if (!w._tid) w._tid = 't' + (nextTargetId++); });
+      return words;
     }
 
-    function renderTargetPicker() {
+    function getSelectedTexts() {
+      var all = correctionTextWords || [];
+      if (!selectedTargetIds) return all;
+      return all.filter(function (w) { return selectedTargetIds.indexOf(w._tid) !== -1; });
+    }
+
+    function highlightTarget(tid, on) {
+      var li = document.querySelector('#targetList li[data-tid="' + tid + '"]');
+      if (li) li.classList.toggle('hi', on);
+
+      var frame = document.getElementById('previewFrame');
+      var handle = frame.querySelector('.cover-handle[data-tid="' + tid + '"]');
+      if (handle) { handle.classList.toggle('hi', on); return; }
+
+      // 덮개 핸들이 없는 방식에서는 임시 테두리를 그려서 위치를 짚어준다
+      frame.querySelectorAll('.cover-peek').forEach(function (e) { e.remove(); });
+      if (!on) return;
+      var w = (correctionTextWords || []).filter(function (x) { return x._tid === tid; })[0];
+      var img = document.getElementById('previewAfter');
+      if (!w || !img || !img.naturalWidth) return;
+      var r = img.getBoundingClientRect(), f = frame.getBoundingClientRect();
+      var peek = document.createElement('div');
+      peek.className = 'cover-peek';
+      peek.style.left = (r.left - f.left + (w.xPct - w.wPct / 2) / 100 * r.width) + 'px';
+      peek.style.top = (r.top - f.top + (w.yPct - w.hPct / 2) / 100 * r.height) + 'px';
+      peek.style.width = (w.wPct / 100 * r.width) + 'px';
+      peek.style.height = (w.hPct / 100 * r.height) + 'px';
+      frame.appendChild(peek);
+    }
+
+    function renderTargetPicker(keepSelection) {
       var box = document.getElementById('targetPicker');
       var list = document.getElementById('targetList');
-      var all = correctionTextWords || [];
+      var all = assignTargetIds(correctionTextWords || []);
       list.innerHTML = '';
       box.style.display = 'block';
 
       if (all.length === 0) {
-        selectedTargetIdx = [];
+        selectedTargetIds = [];
         var none = document.createElement('p');
         none.className = 't-none';
         none.textContent = '위치를 아는 텍스트를 찾지 못했어요 — 텍스트를 지우는 방식은 쓸 수 없어요.';
@@ -3906,29 +3966,69 @@
         return;
       }
 
-      selectedTargetIdx = all.map(function (_, i) { return i; }); // 기본은 전체 선택
+      if (!keepSelection || !selectedTargetIds) {
+        selectedTargetIds = all.map(function (w) { return w._tid; }); // 기본은 전체 선택
+      }
 
-      all.forEach(function (w, i) {
+      all.forEach(function (w) {
         var li = document.createElement('li');
+        li.dataset.tid = w._tid;
         var label = document.createElement('label');
+
         var cb = document.createElement('input');
         cb.type = 'checkbox';
-        cb.checked = true;
+        cb.checked = selectedTargetIds.indexOf(w._tid) !== -1;
         cb.addEventListener('change', function () {
-          var pos = selectedTargetIdx.indexOf(i);
-          if (cb.checked && pos === -1) selectedTargetIdx.push(i);
-          if (!cb.checked && pos !== -1) selectedTargetIdx.splice(pos, 1);
+          var pos = selectedTargetIds.indexOf(w._tid);
+          if (cb.checked && pos === -1) selectedTargetIds.push(w._tid);
+          if (!cb.checked && pos !== -1) selectedTargetIds.splice(pos, 1);
           selectMethod(currentMethod); // 고른 것만으로 미리보기를 다시 만든다
         });
-        var text = document.createElement('span');
-        text.textContent = '"' + w.text + '"';
+
+        // 클로드가 읽은 내용이 틀릴 수 있다 — 그대로 고칠 수 있게 입력칸으로 둔다.
+        // 덮는 위치는 좌표로 정해지므로 내용을 고쳐도 미리보기는 그대로다.
+        // 고친 내용은 캡션과 3단계 검증 보고에 쓰인다.
+        var edit = document.createElement('input');
+        edit.type = 'text';
+        edit.className = 't-edit';
+        edit.value = w.text;
+        edit.setAttribute('aria-label', '찾은 내용 고치기');
+        edit.addEventListener('click', function (ev) { ev.preventDefault(); });
+        edit.addEventListener('change', function () {
+          w.text = edit.value.trim() || w.text;
+          edit.value = w.text;
+        });
+
         var kind = document.createElement('span');
-        kind.className = 't-kind';
-        kind.textContent = isSignboardText(w) ? '큰 간판' : '작은 글씨';
+        kind.className = 't-kind' + (w.approximate ? ' rough' : '');
+        kind.textContent = w.approximate ? '위치 대략' : (isSignboardText(w) ? '큰 간판' : '작은 글씨');
+
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 't-del';
+        del.textContent = '빼기';
+        del.title = '이건 잘못 찾은 것 — 목록에서 지웁니다';
+        del.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          correctionTextWords = correctionTextWords.filter(function (x) { return x._tid !== w._tid; });
+          var pos = selectedTargetIds.indexOf(w._tid);
+          if (pos !== -1) selectedTargetIds.splice(pos, 1);
+          renderTargetPicker(true);
+          selectMethod(currentMethod);
+        });
+
         label.appendChild(cb);
-        label.appendChild(text);
+        label.appendChild(edit);
         label.appendChild(kind);
+        label.appendChild(del);
         li.appendChild(label);
+
+        // 어느 것이 사진의 어디인지 짚어준다
+        li.addEventListener('mouseenter', function () { highlightTarget(w._tid, true); });
+        li.addEventListener('mouseleave', function () { highlightTarget(w._tid, false); });
+        li.addEventListener('focusin', function () { highlightTarget(w._tid, true); });
+        li.addEventListener('focusout', function () { highlightTarget(w._tid, false); });
+
         list.appendChild(li);
       });
     }
@@ -4149,6 +4249,7 @@
       texts.forEach(function (w) {
         var el = document.createElement('div');
         el.className = 'cover-handle';
+        el.dataset.tid = w._tid || '';
         el.dataset.label = (w.text || '').slice(0, 10);
         var setPos = function () {
           el.style.left = (offX + (w.xPct - w.wPct / 2) / 100 * rect.width) + 'px';
@@ -4700,6 +4801,12 @@
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,
+      // 검수 목록(빼기·내용 고치기) 검증용
+      setTargets: function (words) { correctionTextWords = words; selectedTargetIds = null; },
+      getTargets: function () { return correctionTextWords; },
+      renderTargetPicker: renderTargetPicker,
+      getSelectedTexts: getSelectedTexts,
+      getSelectedTargetIds: function () { return selectedTargetIds; },
     };
   })();
 </script>
