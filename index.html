@@ -4,8 +4,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<!-- 큰 제목에만 쓰는 명조. display=swap이라 늦게 와도 글이 안 보이는 구간이 없다. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&display=swap">
+<!-- 큰 제목에만 쓰는 표시용 고딕. display=swap이라 늦게 와도 글이 안 보이는 구간이 없다. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800;900&display=swap">
 <style>
   /* =========================================================================
      안심앨범 — 시각 언어 v2 (가이드라인.md · 소프트 대시보드)
@@ -61,10 +61,10 @@
     --font-body: 'Pretendard Variable', 'Pretendard', 'Malgun Gothic', '맑은 고딕',
       -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, sans-serif;
-    /* 큰 제목용 명조. 본문까지 명조로 바꾸면 긴 글이 읽기 힘들어지므로
-       제목에만 쓰고 본문·UI는 Pretendard 그대로 둔다.
-       매거진 레퍼런스에서 가져온 점선 구분·깃발 라벨과도 결이 맞는다. */
-    --font-display: 'Noto Serif KR', 'Nanum Myeongjo', 'Batang', '바탕', serif;
+    /* 큰 제목용 서체. Pretendard보다 글자 폭이 넓고 획이 굵어 제목이 단단해 보인다.
+       본문·UI는 Pretendard 그대로 둔다 — 작은 글씨까지 굵은 서체로 바꾸면 답답하다.
+       명조(Noto Serif KR)도 한 번 써봤지만 도구 성격과 겉돌아 고딕으로 되돌렸다. */
+    --font-display: 'Gothic A1', 'Pretendard Variable', 'Pretendard', sans-serif;
     /* 배경이 흰색이라 그림자만으로는 카드가 안 떠 보인다 — 약간 진하게 잡는다 */
     --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.06), 0 6px 18px rgba(16, 24, 40, 0.05);
     --shadow-soft: 0 1px 4px rgba(16, 24, 40, 0.05);
@@ -1062,8 +1062,8 @@
   }
   .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 700; letter-spacing: -0.005em;
-    line-height: 1.35; margin: 0 0 1rem; word-break: keep-all;
+    font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 900; letter-spacing: -0.022em;
+    line-height: 1.3; margin: 0 0 1rem; word-break: keep-all;
   }
   .hero-sub {
     font-size: 1.02rem; color: var(--muted); line-height: 1.75;
@@ -1131,8 +1131,8 @@
   }
   .section-title {
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: 0;
-    line-height: 1.4; margin: 0 0 2.2rem; word-break: keep-all;
+    font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 900; letter-spacing: -0.02em;
+    line-height: 1.35; margin: 0 0 2.2rem; word-break: keep-all;
   }
   /* ---- 세 단계 소개 (핀 고정) ----
      트랙은 세 화면 높이(단계당 한 화면)고, 안쪽 무대가 sticky로 화면에 붙는다.
@@ -1302,8 +1302,8 @@
   .cta-band .section-inner { position: relative; z-index: 1; }
   .cta-band h2 {
     font-family: var(--font-display);
-    font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; margin: 0 0 0.6rem;
-    letter-spacing: 0; line-height: 1.4; word-break: keep-all;
+    font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; margin: 0 0 0.6rem;
+    letter-spacing: -0.02em; line-height: 1.35; word-break: keep-all;
   }
   /* --muted(#6f6860)를 다크 띠에 쓰면 3.10:1로 거의 안 보인다. 밝은 쪽으로 따로 잡는다(8.48:1). */
   .cta-band p { margin: 0 0 1.6rem; color: #bdb6ac; font-size: 0.98rem; }
