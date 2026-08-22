@@ -71,7 +71,11 @@
   :root { color-scheme: light; }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  /* 전체가 작아 보인다는 지적. 거의 모든 치수가 rem이라 뿌리 글자 크기 한 줄로
+     글자·여백·버튼·카드가 같은 비율로 커진다. 개별 값을 손대면 비율이 어긋난다.
+     좁은 화면에서는 16px 그대로 둔다 — 올리면 줄이 접히거나 가로로 넘친다. */
+  html { -webkit-text-size-adjust: 100%; font-size: 16px; }
+  @media (min-width: 1100px) { html { font-size: 17.5px; } }
   /* 랜딩 페이지 구조(네비 - 히어로 - 도구 - 섹션 - 푸터)를 담으려면 일반 흐름이어야 한다.
      예전에는 body가 flex라 앱 카드 하나만 가운데 놓는 구조였다. */
   body {
@@ -613,7 +617,9 @@
   .ct-only-brush .bs-range { flex: 0 1 180px; min-width: 120px; }
   .ct-only-brush .bs-value { min-width: 2.2rem; }
   .ct-erase { margin: 0; white-space: nowrap; }
-  .brush-layer.is-erasing { cursor: cell; }
+  /* cursor: cell(굵은 십자+네모)은 붓과 아무 상관 없는 모양이라 뺐다.
+     붓 자리에는 지금 굵기 그대로의 원을 커서로 띄운다 — 어디가 칠해질지 바로 보인다.
+     실제 원은 JS가 붓 굵기에 맞춰 만들어 넣는다(브러시 층 style). */
   .cover-tools.is-brush .ct-only-brush { display: flex; }
   /* 도형 모드에서 크기를 조절하는 모서리 손잡이 */
   .cover-grip {
@@ -627,11 +633,12 @@
 
   .cover-hint { font-size: 0.82rem; color: var(--muted); margin: 0; line-height: 1.7; }
   /* 자동으로 잡은 위치가 빗나갈 수 있어 사용자가 직접 끌어 맞춘다 */
+  /* grab/grabbing은 윈도우에서 두꺼운 장갑 손으로 그려져 촌스럽다.
+     상자를 옮기는 것이므로 move(사방 화살표)가 뜻도 맞고 모양도 깔끔하다. */
   .cover-handle {
     position: absolute; border: 2px solid var(--accent-2); border-radius: 6px;
-    background: rgba(255, 122, 107, 0.16); cursor: grab; touch-action: none;
+    background: rgba(255, 122, 107, 0.16); cursor: move; touch-action: none;
   }
-  .cover-handle:active { cursor: grabbing; }
   .cover-handle::after {
     content: attr(data-label); position: absolute; left: 0; top: -1.35rem;
     font-size: 0.66rem; font-weight: 700; color: var(--ink);
@@ -651,11 +658,11 @@
     -webkit-appearance: none; appearance: none;
     width: 20px; height: 20px; border-radius: 50%;
     background: var(--ink); border: 3px solid var(--card); box-shadow: var(--shadow-soft);
-    cursor: grab;
+    cursor: pointer;
   }
   .bs-range::-moz-range-thumb {
     width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--card);
-    background: var(--ink); box-shadow: var(--shadow-soft); cursor: grab;
+    background: var(--ink); box-shadow: var(--shadow-soft); cursor: pointer;
   }
   .bs-range:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 4px; }
   .bs-value {
@@ -674,6 +681,18 @@
     font-size: 0.82rem; font-weight: 400; color: var(--muted); cursor: pointer;
   }
   .checkline input { accent-color: var(--ink); margin: 0; }
+
+  .cover-tools .ct-undo {
+    border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+    border-radius: 999px; padding: 0.28rem 0.7rem; font-size: 0.76rem; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+  }
+  .cover-tools .ct-undo:hover:not([disabled]) { background: var(--soft-hover); }
+  .cover-tools .ct-undo[disabled] { opacity: 0.45; cursor: default; }
+  /* 브러시는 덮기 계열에서만 결과에 반영된다 — 다른 방식에서는 도구를 감춘다.
+     위치 조정(도형)은 모든 방식에서 쓸 수 있어야 하므로 그것만 남긴다. */
+  .cover-tools.no-brush [data-edit="brush"],
+  .cover-tools.no-brush .ct-only-brush { display: none; }
 
   .target-picker { margin-bottom: 1.1rem; }
   .target-picker-head { font-size: 0.82rem; font-weight: 600; margin: 0 0 0.55rem; }
@@ -897,7 +916,7 @@
      (공백 없음)인데 JS는 style.display = 'none'(공백 있음)으로 써서 표기가 두 가지다. */
   @media (min-width: 1000px) {
     body { padding: 3rem 2rem 5rem; }
-    main { max-width: 1120px; padding: 1.9rem 1.9rem 2.4rem; border-radius: 34px; }
+    main { max-width: 1280px; padding: 1.9rem 1.9rem 2.4rem; border-radius: 34px; }
 
     /* 헤더 — 제목 왼쪽, 단계 표시 오른쪽 */
     .app-hero {
@@ -974,8 +993,8 @@
 
 
   /* ===================== 웹사이트 구조 ===================== */
-  .section-inner { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 1.4rem; }
-  .section-inner.narrow { max-width: 760px; }
+  .section-inner { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 1.4rem; }
+  .section-inner.narrow { max-width: 860px; }
 
   /* 네비게이션 */
   /* 불투명한 흰 띠로 두면 배경 빛 위를 가로질러 하얀 줄로 잘라놓는다.
@@ -994,7 +1013,7 @@
     }
   }
   .nav-inner {
-    width: 100%; max-width: 1120px; margin: 0 auto; padding: 0.75rem 1.4rem;
+    width: 100%; max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.4rem;
     display: flex; align-items: center; gap: 1.4rem;
   }
   .nav-brand {
@@ -1024,7 +1043,7 @@
   .hero { padding: 4rem 0 3.2rem; position: relative; overflow: hidden; }
   .hero-inner { position: relative; z-index: 1; }
   .hero-inner {
-    width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 1.4rem;
+    width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 1.4rem;
     display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
   }
   .hero-badge {
@@ -1174,7 +1193,7 @@
   .foot-cols li, .foot-cols a { font-size: 0.86rem; color: var(--muted); text-decoration: none; }
   .foot-cols a:hover { color: var(--ink); }
   .foot-note {
-    max-width: 1120px; margin: 2.2rem auto 0; padding: 1.2rem 1.4rem 0;
+    max-width: 1280px; margin: 2.2rem auto 0; padding: 1.2rem 1.4rem 0;
     border-top: 1px solid var(--line); font-size: 0.78rem; color: var(--muted); text-align: center;
   }
   @media (max-width: 760px) {
@@ -1433,6 +1452,7 @@
           <input type="range" id="brushSize" class="bs-range" min="8" max="80" step="2" value="28" />
           <output class="bs-value" id="brushSizeValue">28</output>
           <label class="checkline ct-erase"><input type="checkbox" id="brushErase"> 지우개</label>
+          <button type="button" class="ct-undo" id="brushUndo" disabled>↶ 직전 획 취소</button>
         </span>
       </div>
     </div>
@@ -3942,6 +3962,61 @@
     var brushErasing = false; // 지우개 모드 — 칠한 곳을 다시 걷어낸다
     var brushMaskCanvas = null;  // 원본 해상도의 흑백 마스크 — 흰색이 칠한 곳
 
+    // 획 단위로 되돌리려면 지나간 상태를 알아야 한다. 그런데 마스크는 원본 해상도라
+    // (3000x4000이면 한 장에 48MB) 스냅샷을 쌓으면 금방 메모리가 터진다.
+    // 그래서 픽셀이 아니라 "지나간 점들"만 기록하고, 되돌릴 때 다시 그린다.
+    // 점 하나는 좌표 두 개라 획 수십 개를 쌓아도 부담이 없고, 결과도 정확히 같다.
+    var brushStrokes = [];  // [{ erasing, r(원본 픽셀 반지름), pts: [[x,y], ...] }]
+
+    function replayBrushStrokes(mask) {
+      var ctx = mask.getContext('2d');
+      ctx.clearRect(0, 0, mask.width, mask.height);
+      ctx.fillStyle = '#ffffff';
+      brushStrokes.forEach(function (st) {
+        // 지우개 획도 순서대로 다시 적용해야 결과가 같아진다
+        ctx.globalCompositeOperation = st.erasing ? 'destination-out' : 'source-over';
+        st.pts.forEach(function (pt) {
+          ctx.beginPath();
+          ctx.arc(pt[0], pt[1], st.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function syncBrushUndoBtn() {
+      var btn = document.getElementById('brushUndo');
+      if (btn) btn.disabled = brushStrokes.length === 0;
+    }
+
+    function undoBrushStroke() {
+      if (brushStrokes.length === 0 || !brushMaskCanvas) return;
+      brushStrokes.pop();
+      replayBrushStrokes(brushMaskCanvas);
+      syncBrushUndoBtn();
+      selectMethod(currentMethod); // 되돌린 대로 미리보기를 다시 만든다
+    }
+
+    function resetBrush() {
+      brushMaskCanvas = null;
+      brushStrokes = [];
+      syncBrushUndoBtn();
+    }
+
+    // 붓 자리에 지금 굵기 그대로의 원을 띄운다. 어디가 칠해질지 커서만 보고 알 수 있다.
+    // 흰 테두리를 한 겹 깔아야 어두운 사진 위에서도 원이 보인다.
+    function brushCursorCss() {
+      var d = Math.max(10, Math.min(96, brushSizePx));
+      var half = d / 2, r = half - 2;
+      var ring = brushErasing ? '%231a1a1a' : '%23ff7a6b';
+      var dash = brushErasing ? "%20stroke-dasharray='4%203'" : '';
+      var svg = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='" + d + "'%20height='" + d + "'%3E"
+        + "%3Ccircle%20cx='" + half + "'%20cy='" + half + "'%20r='" + r + "'%20fill='none'%20stroke='white'%20stroke-width='3'/%3E"
+        + "%3Ccircle%20cx='" + half + "'%20cy='" + half + "'%20r='" + r + "'%20fill='none'%20stroke='" + ring + "'%20stroke-width='1.5'" + dash + "/%3E"
+        + "%3C/svg%3E";
+      return 'url("' + svg + '") ' + half + ' ' + half + ', crosshair';
+    }
+
     function ensureBrushMask(w, h) {
       if (!brushMaskCanvas || brushMaskCanvas.width !== w || brushMaskCanvas.height !== h) {
         brushMaskCanvas = document.createElement('canvas');
@@ -4221,12 +4296,24 @@
       frame.querySelectorAll('.cover-handle').forEach(function (h) { h.remove(); });
       // 예전에는 '자연스럽게 덮기'에서만 보였는데, 위치가 맞는지 확인하는 일은 방식을
       // 고르기 전에 해야 한다. 텍스트를 쓰는 방식에서는 항상 보여준다.
-      var usesText = currentMethod === 'sticker' || currentMethod === 'inpaint';
+      // 찾은 위치가 맞는지 확인하고 끌어 맞추는 일은 보정 방식을 고르는 것과 별개다.
+      // 예전에는 덮기 계열에서만 상자가 보여서, 진단 직후 위치가 어긋난 걸 알아도
+      // 방식을 바꿔야만 고칠 수 있었다. 이제 어떤 방식에서든 상자가 보인다.
+      var hasTargets = (correctionTextWords || []).length > 0;
+      var brushable = currentMethod === 'sticker' || currentMethod === 'inpaint';
       var tools = document.getElementById('coverTools');
-      tools.style.display = usesText ? 'block' : 'none';
+      tools.style.display = hasTargets ? 'block' : 'none';
+      tools.classList.toggle('no-brush', !brushable);
+      // 브러시는 덮기 계열에서만 결과에 반영된다 — 다른 방식으로 옮기면 도형으로 되돌린다
+      if (!brushable && coverEditMode === 'brush') {
+        coverEditMode = 'shape';
+        document.querySelectorAll('.ct-btn').forEach(function (btn) {
+          btn.classList.toggle('selected', btn.dataset.edit === 'shape');
+        });
+      }
       tools.classList.toggle('is-brush', coverEditMode === 'brush');
       frame.querySelectorAll('.brush-layer').forEach(function (b) { b.remove(); });
-      if (!usesText) return;
+      if (!hasTargets) return;
 
       var img = document.getElementById('previewAfter');
       if (!img.naturalWidth) return;
@@ -4267,10 +4354,14 @@
         };
         repaint(false);
 
+        layer.style.cursor = brushCursorCss();
+
         var painting = false;
+        var stroke = null;
         var paintAt = function (ev) {
           var b = view.getBoundingClientRect();
           var x = (ev.clientX - b.left) * scale, y = (ev.clientY - b.top) * scale;
+          if (stroke) stroke.pts.push([x, y]);
           // 지우개면 칠한 흔적을 걷어낸다(destination-out)
           mctx.globalCompositeOperation = brushErasing ? 'destination-out' : 'source-over';
           mctx.fillStyle = '#ffffff';
@@ -4282,11 +4373,16 @@
         };
         layer.addEventListener('pointerdown', function (ev) {
           ev.preventDefault(); painting = true;
+          // 누른 순간부터 뗄 때까지가 한 획이다 — 되돌리기의 단위
+          stroke = { erasing: brushErasing, r: brushSizePx * scale / 2, pts: [] };
+          brushStrokes.push(stroke);
+          syncBrushUndoBtn();
           layer.setPointerCapture(ev.pointerId); paintAt(ev);
         });
         layer.addEventListener('pointermove', function (ev) { if (painting) paintAt(ev); });
         layer.addEventListener('pointerup', function (ev) {
           painting = false;
+          stroke = null;
           if (layer.releasePointerCapture) layer.releasePointerCapture(ev.pointerId);
           repaint(false);                // 표시를 걷어 실제 결과가 보이게 한다
           selectMethod(currentMethod);   // 칠한 대로 다시 그린다
@@ -4402,7 +4498,7 @@
       currentCorrectionCanvas = null;
       lastCorrectionMeta = null;
       // 칠한 자국은 이미 사진에 박혔다. 남겨두면 다음 방식에서 또 칠해진다.
-      brushMaskCanvas = null;
+      resetBrush();
       document.getElementById('previewAfter').src = correctionBaseUrl;
       previewCaption.textContent = '여기까지 적용했어요 (' + appliedSteps.length + '단계). '
         + '다른 방식을 고르면 이 결과 위에 얹혀요.';
@@ -4416,7 +4512,7 @@
       appliedSteps.pop();
       currentCorrectionCanvas = null;
       lastCorrectionMeta = null;
-      brushMaskCanvas = null;
+      resetBrush();
       document.getElementById('previewAfter').src = correctionBaseUrl;
       previewCaption.textContent = appliedSteps.length === 0
         ? '적용한 보정을 모두 되돌렸어요 — 원본 상태예요.'
@@ -4707,11 +4803,25 @@
     brushSizeEl.addEventListener('input', function () {
       brushSizePx = Number(brushSizeEl.value);
       brushSizeValueEl.textContent = brushSizePx;
+      var layer = document.querySelector('#previewFrame .brush-layer');
+      if (layer) layer.style.cursor = brushCursorCss(); // 커서도 같은 굵기로
     });
 
     document.getElementById('brushErase').addEventListener('change', function () {
       brushErasing = this.checked;
       renderCoverHandles(); // 커서 모양을 바꾸기 위해 다시 그린다
+    });
+
+    document.getElementById('brushUndo').addEventListener('click', undoBrushStroke);
+    // 그림 도구에서 Ctrl+Z는 당연히 되어야 한다. 입력칸에 있을 때는 글자 되돌리기가
+    // 우선이므로 가로채지 않는다.
+    document.addEventListener('keydown', function (ev) {
+      if (!(ev.ctrlKey || ev.metaKey) || String(ev.key).toLowerCase() !== 'z' || ev.shiftKey) return;
+      if (coverEditMode !== 'brush' || brushStrokes.length === 0) return;
+      var t = ev.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      ev.preventDefault();
+      undoBrushStroke();
     });
 
     var fillPixelEl = document.getElementById('fillPixel');
@@ -4918,7 +5028,7 @@
       polaroidPreview.style.display = 'none';
       fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
       fluxConsentGiven = false; // 새 사진이면 동의를 다시 받는다
-      brushMaskCanvas = null;   // 칠한 것도 사진마다 초기화
+      resetBrush();             // 칠한 것과 획 기록도 사진마다 초기화
       brushErasing = false;
       var be = document.getElementById('brushErase'); if (be) be.checked = false;
       document.getElementById('captionInput').value = '';
@@ -4964,6 +5074,13 @@
         renderAppliedSteps();
       },
       stackPending: function (canvas, meta) { currentCorrectionCanvas = canvas; lastCorrectionMeta = meta; },
+      brushStrokeCount: function () { return brushStrokes.length; },
+      setMethodForTest: function (m) { currentMethod = m; },
+      renderCoverHandles: renderCoverHandles,
+      setCoverEditMode: function (m) { coverEditMode = m; },
+      getCoverEditMode: function () { return coverEditMode; },
+      undoBrushStroke: undoBrushStroke,
+      brushCursorCss: brushCursorCss,
       applyStep: applyStep,
       undoStep: undoStep,
       getFinalCanvas: getFinalCanvas,
