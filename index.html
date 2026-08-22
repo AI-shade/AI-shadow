@@ -677,6 +677,8 @@
 
   .target-picker { margin-bottom: 1.1rem; }
   .target-picker-head { font-size: 0.82rem; font-weight: 600; margin: 0 0 0.55rem; }
+  /* 안내를 제목과 같은 줄에 두면 한 줄이 너무 길어져 읽히지 않는다 */
+  .target-picker-head .hint { display: block; font-weight: 400; color: var(--muted); margin-top: 0.15rem; }
   .target-picker ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
   .target-picker li { margin: 0; }
   .target-picker label {
@@ -768,6 +770,31 @@
      (이전에는 원본이 78px 썸네일이라 비교가 불가능했다) */
   /* 보정 화면 좌우 컬럼 — 각자 독립적으로 쌓인다 */
   .correct-left, .correct-right { display: flex; flex-direction: column; }
+  /* 보정 쌓기 */
+  .stack-box { margin-top: 1rem; }
+  .stack-apply { width: 100%; }
+  .stack-empty { font-size: 0.78rem; color: var(--muted); margin: 0.5rem 0 0; line-height: 1.5; }
+  .stack-list { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.35rem; counter-reset: st; }
+  .stack-list li {
+    display: flex; align-items: center; gap: 0.55rem;
+    background: var(--soft); border-radius: 12px; padding: 0.45rem 0.7rem;
+    font-size: 0.8rem; line-height: 1.45;
+  }
+  .stack-list li::before {
+    counter-increment: st; content: counter(st);
+    flex: 0 0 auto; width: 1.25rem; height: 1.25rem; border-radius: 50%;
+    background: var(--accent); color: var(--ink);
+    font-size: 0.68rem; font-weight: 700; display: grid; place-items: center;
+  }
+  .stack-list .st-text { flex: 1 1 auto; min-width: 0; }
+  .stack-list .st-undo {
+    flex: 0 0 auto; border: none; background: transparent; cursor: pointer;
+    color: var(--muted); font-size: 0.74rem; font-weight: 600;
+    padding: 0.15rem 0.4rem; border-radius: 8px;
+  }
+  .stack-list .st-undo:hover { background: var(--card); color: var(--risk-high); }
+  .stack-list .st-undo[disabled] { opacity: 0.4; cursor: default; }
+
   .correct-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.2rem; }
 
   /* 처리 중 표시. 예전에는 사진 아래 작은 캡션 한 줄뿐이라 돌고 있는 건지
@@ -1493,6 +1520,12 @@
     <div class="edit-instruction" id="editInstruction" style="display:none;">
       <strong>Claude가 생성할 편집 지시문 (fal.ai 연동 후 사용 예정)</strong>
       "Do not modify the person in any way. Preserve facial features, skin tone, hair, clothing and pose with pixel-level accuracy. Only alter the background."
+    </div>
+
+    <div class="stack-box">
+      <button class="primary stack-apply" id="applyStepBtn">＋ 이 보정 적용하고 방식 더 얹기</button>
+      <p class="stack-empty" id="stackEmpty">적용하면 이 결과 위에 다른 방식을 겹쳐 쓸 수 있어요. 예: 배경을 흐린 뒤 간판까지 덮기</p>
+      <ol class="stack-list" id="stackList"></ol>
     </div>
 
     <button class="secondary" id="downloadResultBtn" style="margin-top:0.4rem;">⬇ 처리된 사진 다운로드</button>
@@ -3281,6 +3314,12 @@
       var pv = document.getElementById('previewAfter');
       if (pv) pv.removeAttribute('src');
       currentCorrectionCanvas = null;
+      // 쌓아둔 보정도 같이 비운다. 남겨두면 새 사진의 보정 화면에 이전 사진의
+      // 단계 목록이 잠깐 보이고, 되돌리기를 누르면 이전 사진이 튀어나온다.
+      appliedSteps = [];
+      baseHistory = [];
+      correctionBaseUrl = null;
+      renderAppliedSteps();
     }
 
     function showScreen(name) {
@@ -3326,6 +3365,12 @@
     var lastOcrResult = null;
     var lastRiskResult = null;
     var currentCorrectionCanvas = null; // 다운로드 버튼용 — 현재 미리보기에 표시 중인 처리 결과
+    // 보정을 겹쳐 쌓기 위한 상태.
+    // 방식마다 원본에서 새로 시작하면 흐림과 글자 덮기를 같이 쓸 수 없다.
+    // "적용"을 누르면 지금 결과가 새 기준 사진이 되고, 다음 방식은 그 위에 얹힌다.
+    var correctionBaseUrl = null; // 지금까지 적용한 보정이 누적된 사진
+    var appliedSteps = [];        // 적용 순서대로 쌓인 [{ method, detail }]
+    var baseHistory = [];         // 되돌리기용 — 적용 직전의 기준 사진들
     var correctionTextWords = null; // 2단계 보정용 — Tesseract로 다시 계산한 실제 위치(bbox) 텍스트 목록
 
     photoInput.addEventListener('change', function () {
@@ -4049,6 +4094,11 @@
       var pv = document.getElementById('previewAfter');
       pv.removeAttribute('src');
       currentCorrectionCanvas = null;
+      // 새 사진이면 쌓아둔 보정도 처음부터 다시
+      correctionBaseUrl = uploadedPhotoUrl;
+      appliedSteps = [];
+      baseHistory = [];
+      renderAppliedSteps();
       showScreen('correct');
 
       // AI 배경교체 카드 상태 배지 — fal.ai 키 연동 여부를 물어서 표시 (결과 대기 없이 비동기로)
@@ -4136,11 +4186,16 @@
       renderVerify();
     });
     document.getElementById('backToResultBtn').addEventListener('click', function () { showScreen('result'); });
-    document.getElementById('goVerifyBtn').addEventListener('click', function () {
-      if (!currentCorrectionCanvas) {
+    document.getElementById('goVerifyBtn').addEventListener('click', async function () {
+      var meta = combinedMeta();
+      var finalCanvas = await getFinalCanvas();
+      if (!finalCanvas || !meta) {
         alert('먼저 보정 방식을 선택하고 결과가 나올 때까지 기다려주세요.');
         return;
       }
+      // 쌓아 올린 결과와 거쳐온 단계 전부를 검증에 넘긴다
+      currentCorrectionCanvas = finalCanvas;
+      lastCorrectionMeta = meta;
       correctionApplied = true;
       showScreen('verify');
       renderVerify();
@@ -4304,6 +4359,97 @@
       });
     }
 
+    var METHOD_LABEL = {
+      blur: '배경 흐림', sticker: '자연스럽게 덮기', inpaint: 'AI로 지우고 메우기',
+      outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체'
+    };
+
+    function renderAppliedSteps() {
+      var list = document.getElementById('stackList');
+      var empty = document.getElementById('stackEmpty');
+      if (!list) return;
+      list.innerHTML = '';
+      empty.style.display = appliedSteps.length === 0 ? 'block' : 'none';
+      appliedSteps.forEach(function (st, i) {
+        var li = document.createElement('li');
+        var txt = document.createElement('span');
+        txt.className = 'st-text';
+        txt.textContent = METHOD_LABEL[st.method] || st.method;
+        li.appendChild(txt);
+        // 마지막 것만 되돌릴 수 있다. 중간을 빼려면 그 뒤 것들을 다시 계산해야 하는데,
+        // AI 방식은 돈이 드는 재호출이라 조용히 다시 부르면 안 된다.
+        var undo = document.createElement('button');
+        undo.type = 'button';
+        undo.className = 'st-undo';
+        undo.textContent = '되돌리기';
+        undo.disabled = i !== appliedSteps.length - 1;
+        if (undo.disabled) undo.title = '마지막에 적용한 것부터 되돌릴 수 있어요';
+        undo.addEventListener('click', undoStep);
+        li.appendChild(undo);
+        list.appendChild(li);
+      });
+    }
+
+    // 지금 미리보기를 기준 사진에 박아 넣는다. 다음 방식은 이 위에 얹힌다.
+    function applyStep() {
+      if (!currentCorrectionCanvas || !lastCorrectionMeta) {
+        alert('먼저 보정 방식을 고르고 결과가 나올 때까지 기다려주세요.');
+        return;
+      }
+      baseHistory.push(correctionBaseUrl);
+      correctionBaseUrl = currentCorrectionCanvas.toDataURL('image/png');
+      appliedSteps.push(lastCorrectionMeta);
+      currentCorrectionCanvas = null;
+      lastCorrectionMeta = null;
+      // 칠한 자국은 이미 사진에 박혔다. 남겨두면 다음 방식에서 또 칠해진다.
+      brushMaskCanvas = null;
+      document.getElementById('previewAfter').src = correctionBaseUrl;
+      previewCaption.textContent = '여기까지 적용했어요 (' + appliedSteps.length + '단계). '
+        + '다른 방식을 고르면 이 결과 위에 얹혀요.';
+      renderAppliedSteps();
+      renderCoverHandles();
+    }
+
+    function undoStep() {
+      if (baseHistory.length === 0) return;
+      correctionBaseUrl = baseHistory.pop();
+      appliedSteps.pop();
+      currentCorrectionCanvas = null;
+      lastCorrectionMeta = null;
+      brushMaskCanvas = null;
+      document.getElementById('previewAfter').src = correctionBaseUrl;
+      previewCaption.textContent = appliedSteps.length === 0
+        ? '적용한 보정을 모두 되돌렸어요 — 원본 상태예요.'
+        : '마지막 보정을 되돌렸어요 (' + appliedSteps.length + '단계 남음).';
+      renderAppliedSteps();
+      renderCoverHandles();
+    }
+
+    // 검증·다운로드가 쓸 최종 결과. 적용해 둔 것만 있고 지금 고른 방식이 없을 수도 있다.
+    async function getFinalCanvas() {
+      if (currentCorrectionCanvas) return currentCorrectionCanvas;
+      if (appliedSteps.length === 0) return null;
+      var img = await loadImage(correctionBaseUrl);
+      var c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      return c;
+    }
+
+    // 3단계 검증에는 거쳐온 모든 단계를 알려준다 — 마지막 것만 주면
+    // 앞 단계에서 가린 것을 "처리 안 됨"으로 판정한다.
+    function combinedMeta() {
+      var steps = appliedSteps.concat(lastCorrectionMeta ? [lastCorrectionMeta] : []);
+      if (steps.length === 0) return null;
+      if (steps.length === 1) return steps[0];
+      return {
+        method: steps[steps.length - 1].method,
+        detail: steps.map(function (st, i) {
+          return (i + 1) + ') ' + (METHOD_LABEL[st.method] || st.method) + ' — ' + st.detail;
+        }).join(' ')
+      };
+    }
+
     async function selectMethod(method) {
       var previousMethod = currentMethod;
       currentMethod = method;
@@ -4317,7 +4463,7 @@
 
       if (method === 'outfit') {
         if (!(await checkFluxStatus())) {
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = 'AI 옷 바꾸기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
@@ -4329,14 +4475,14 @@
           selectMethod(NO_CONSENT_FALLBACK);
           return;
         }
-        if (!uploadedPhotoUrl || !lastFaceResult) {
+        if (!correctionBaseUrl || !lastFaceResult) {
           previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
           return;
         }
 
         var ofFaces = (lastFaceResult && lastFaceResult.faces) || [];
         if (ofFaces.length === 0) {
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '얼굴을 찾지 못해서 옷 위치를 알 수 없어요 — 이 방식은 쓸 수 없습니다. 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
@@ -4346,7 +4492,7 @@
         try {
           previewCaption.textContent = 'AI가 옷을 바꾸는 중이에요.';
           setPreviewBusy('AI가 옷을 평범한 옷으로 바꾸는 중이에요\n10~20초 정도 걸려요'); 
-          var ofImg = await loadImage(uploadedPhotoUrl);
+          var ofImg = await loadImage(correctionBaseUrl);
           var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult);
           clearPreviewBusy();
           currentCorrectionCanvas = of.canvas;
@@ -4358,7 +4504,7 @@
         } catch (err) {
           clearPreviewBusy();
           console.error('[옷교체] 실패:', err);
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '⚠ AI 옷 바꾸기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
         }
@@ -4367,7 +4513,7 @@
 
       if (method === 'inpaint') {
         if (!(await checkFluxStatus())) {
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = 'AI로 지우고 메우기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
@@ -4379,12 +4525,12 @@
           selectMethod(NO_CONSENT_FALLBACK);
           return;
         }
-        if (!uploadedPhotoUrl || !lastFaceResult) {
+        if (!correctionBaseUrl || !lastFaceResult) {
           previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
           return;
         }
 
-        var inImg = await loadImage(uploadedPhotoUrl);
+        var inImg = await loadImage(correctionBaseUrl);
         var iw = inImg.naturalWidth, ih = inImg.naturalHeight;
         // 실측 결과 인페인팅은 작은 글씨엔 훌륭하지만 간판엔 가짜 글씨를 만들어낸다.
         // 그래서 여기서 갈라서, 간판은 스티커로 덮는다.
@@ -4399,7 +4545,7 @@
         });
 
         if (split.inpaint.length === 0 && split.signboard.length === 0) {
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '지울 위치를 아는 텍스트를 찾지 못했어요 — 이 방식으로는 처리할 게 없습니다.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
@@ -4438,7 +4584,7 @@
         } catch (err) {
           clearPreviewBusy();
           console.error('[인페인팅] 실패:', err);
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '⚠ AI로 지우고 메우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
         }
@@ -4448,7 +4594,7 @@
       if (method === 'ai') {
         var ready = await checkFluxStatus();
         if (!ready) {
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '✨ AI 배경교체는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
           editInstruction.textContent = '';
           currentCorrectionCanvas = null;
@@ -4468,11 +4614,11 @@
         editInstruction.textContent = '';
         currentCorrectionCanvas = null;
         try {
-          var fluxData = await runFluxBackgroundReplace(uploadedPhotoUrl, lastRiskResult, lastOcrResult);
+          var fluxData = await runFluxBackgroundReplace(correctionBaseUrl, lastRiskResult, lastOcrResult);
           var outImg = await loadImage('data:image/png;base64,' + fluxData.imageBase64);
           // 비율 가드: kontext는 출력 해상도를 모델이 정하므로 원본과 달라질 수 있다.
           // "처리 후에도 사진 비율은 원본과 같아야 한다"를 지키려고 원본 크기로 되돌린다.
-          var srcImg = await loadImage(uploadedPhotoUrl);
+          var srcImg = await loadImage(correctionBaseUrl);
           var outCanvas = document.createElement('canvas');
           outCanvas.width = srcImg.naturalWidth;
           outCanvas.height = srcImg.naturalHeight;
@@ -4493,7 +4639,7 @@
         } catch (err) {
           clearPreviewBusy();
           console.error('[AI배경교체] 실패:', err);
-          previewAfter.src = uploadedPhotoUrl;
+          previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '⚠ AI 배경교체에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
@@ -4501,12 +4647,12 @@
         return;
       }
 
-      if (!uploadedPhotoUrl || !lastFaceResult) {
+      if (!correctionBaseUrl || !lastFaceResult) {
         previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
         return;
       }
 
-      var img = await loadImage(uploadedPhotoUrl);
+      var img = await loadImage(correctionBaseUrl);
       // Claude Vision(lastOcrResult)은 내용은 정확하지만 위치가 근사치라 크롭/스티커엔 안 씀 —
       // 위치가 실제 픽셀 기준인 Tesseract 재계산 결과(correctionTextWords)를 사용함
       var texts = getSelectedTexts();
@@ -4545,6 +4691,7 @@
     methodCards.forEach(function (card) {
       card.addEventListener('click', function () { selectMethod(card.dataset.method); });
     });
+    document.getElementById('applyStepBtn').addEventListener('click', applyStep);
 
     document.querySelectorAll('.ct-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -4607,12 +4754,13 @@
     });
     blurValueEl.textContent = blurLabelFor(Number(blurRangeEl.value));
 
-    document.getElementById('downloadResultBtn').addEventListener('click', function () {
-      if (!currentCorrectionCanvas) {
+    document.getElementById('downloadResultBtn').addEventListener('click', async function () {
+      var out = await getFinalCanvas();
+      if (!out) {
         alert(currentMethod === 'ai' ? 'AI 배경교체는 아직 준비 중이라 다운로드할 결과물이 없어요.' : '먼저 보정 방식을 선택해주세요.');
         return;
       }
-      currentCorrectionCanvas.toBlob(function (blob) {
+      out.toBlob(function (blob) {
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
@@ -4807,6 +4955,19 @@
       renderTargetPicker: renderTargetPicker,
       getSelectedTexts: getSelectedTexts,
       getSelectedTargetIds: function () { return selectedTargetIds; },
+      // 보정 쌓기 검증용
+      stackState: function () {
+        return { base: correctionBaseUrl, steps: appliedSteps.slice(), history: baseHistory.length };
+      },
+      stackSeed: function (baseUrl) {
+        correctionBaseUrl = baseUrl; appliedSteps = []; baseHistory = [];
+        renderAppliedSteps();
+      },
+      stackPending: function (canvas, meta) { currentCorrectionCanvas = canvas; lastCorrectionMeta = meta; },
+      applyStep: applyStep,
+      undoStep: undoStep,
+      getFinalCanvas: getFinalCanvas,
+      combinedMeta: combinedMeta,
     };
   })();
 </script>
