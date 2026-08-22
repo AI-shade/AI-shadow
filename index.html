@@ -171,6 +171,19 @@
      .reveal 클래스는 스크립트가 붙일 때만 달린다 — JS가 안 돌면 내용은 그냥 보인다.
      진단 도구(main) 안쪽에는 걸지 않는다. 사진을 보정하는 중에 요소가 움직이면
      방해가 되고, 도구는 JS가 인라인 display를 갈아끼우는 구조라 충돌하기도 쉽다. */
+  /* 아주 옅은 입자. 장식이 아니라 띠 자국을 없애려고 넣는다.
+     흰 바탕에 큰 그라데이션을 깔면 색이 29px씩 같은 값으로 머물다 한 단계씩
+     뛰어서, 모니터에 따라 동심원 띠로 보인다(실측: 파랑 채널 255→226 구간에
+     가장 넓은 계단 29px). 입자를 얹으면 그 계단이 흩어져 눈에 안 띈다.
+     외부 파일 없이 SVG 노이즈를 data URI로 박아 요청이 늘지 않는다.
+     빛 층 다음에 놓아 빛 위, 본문 아래에 깔린다. */
+  .page-grain {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    opacity: 0.16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
   /* 첫 화면(히어로)은 스크립트를 거치지 않고 CSS만으로 나타난다.
      IntersectionObserver에 맡겼더니 아래쪽 CDN 스크립트(Tesseract·face-api)가
      메인 스레드를 잡고 있는 동안 콜백이 밀려서, 내용이 떴다가 사라지고 1.5초 뒤에
@@ -1125,6 +1138,7 @@
     <span class="gb-aurora"><i></i></span>
   </div>
 </div>
+<div class="page-grain" aria-hidden="true"></div>
 
 <nav class="site-nav">
   <div class="nav-inner">
