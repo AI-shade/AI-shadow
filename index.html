@@ -1134,6 +1134,126 @@
     font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: 0;
     line-height: 1.4; margin: 0 0 2.2rem; word-break: keep-all;
   }
+  /* ---- 세 단계 소개 (핀 고정) ----
+     트랙은 세 화면 높이(단계당 한 화면)고, 안쪽 무대가 sticky로 화면에 붙는다.
+     스크롤이 트랙을 지나는 동안 화면은 넘어가지 않고 단계만 바뀐다.
+     진단 도구에는 이 방식을 쓰지 않는다 — 사진을 올리려는 사람이 스크롤에 갇힌다. */
+  .steps-section { padding: 0; }
+  .steps-track { height: 300vh; position: relative; }
+  .steps-stage {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; align-items: center; overflow: hidden;
+  }
+  .steps-inner { width: 100%; }
+  .steps-viz {
+    display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: center;
+  }
+
+  .steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
+  .steps-list li {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding: 1rem 1.2rem; border-radius: 20px;
+    background: transparent; border: 1px solid transparent;
+    /* 지나간 단계와 올 단계는 물러나 있고, 지금 단계만 앞으로 나온다 */
+    opacity: 0.38; transform: translateY(6px);
+    transition: opacity 0.45s ease, transform 0.45s ease, background 0.45s ease, border-color 0.45s ease;
+  }
+  .steps-list li.on {
+    opacity: 1; transform: none;
+    background: var(--card); border-color: var(--line); box-shadow: var(--shadow-card);
+  }
+  .sl-num {
+    flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%;
+    display: grid; place-items: center; font-size: 0.86rem; font-weight: 700;
+    background: var(--soft); color: var(--muted);
+    transition: background 0.45s ease, color 0.45s ease;
+  }
+  .steps-list li.on .sl-num { background: var(--accent); color: var(--ink); }
+  .sl-body { display: grid; gap: 0.3rem; }
+  .sl-body strong { font-size: 1.02rem; }
+  .sl-body span { font-size: 0.88rem; color: var(--muted); line-height: 1.65; word-break: keep-all; }
+
+  /* 오른쪽 화면 목업 — 세 장을 겹쳐 두고 지금 것만 보인다 */
+  .steps-panes { position: relative; min-height: 20rem; }
+  .steps-pane {
+    position: absolute; inset: 0; display: grid; gap: 0.7rem; align-content: center;
+    opacity: 0; transform: translateY(14px) scale(0.985);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    pointer-events: none;
+  }
+  .steps-pane.on { opacity: 1; transform: none; }
+  .sp-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    box-shadow: var(--shadow-card); padding: 0.95rem 1.1rem;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  }
+  .sp-card.ok { gap: 0.9rem; flex-wrap: nowrap; }
+  .sp-chip {
+    font-size: 0.74rem; font-weight: 600; color: var(--ink);
+    background: var(--soft); border-radius: 999px; padding: 0.2rem 0.6rem; white-space: nowrap;
+  }
+  .sp-chip.risk { background: var(--risk-high-soft); color: var(--risk-high); }
+  .sp-line { flex: 1 1 100%; height: 0.5rem; border-radius: 999px; background: var(--soft); }
+  .sp-line.short { flex-basis: 55%; }
+  .sp-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .sp-shot {
+    position: relative; aspect-ratio: 4 / 3; border-radius: 16px;
+    background: var(--soft); border: 1px solid var(--line); overflow: hidden;
+  }
+  .sp-tag {
+    position: absolute; left: 0.5rem; top: 0.5rem; z-index: 1;
+    font-size: 0.66rem; font-weight: 700; border-radius: 999px; padding: 0.12rem 0.5rem;
+    background: var(--card); color: var(--muted); box-shadow: var(--shadow-soft);
+  }
+  .sp-tag.on { background: var(--accent); color: var(--ink); }
+  .sp-box {
+    position: absolute; left: 18%; bottom: 22%; width: 52%; height: 18%;
+    border-radius: 6px; border: 2px solid var(--accent-2); background: rgba(255, 122, 107, 0.16);
+  }
+  .sp-box.covered { border-color: transparent; background: var(--line-strong); }
+  .sp-check {
+    flex: 0 0 auto; width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    background: var(--risk-low-soft); display: grid; place-items: center;
+  }
+  .sp-check svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: var(--risk-low); stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round; }
+  .sp-ok-text { display: grid; gap: 0.15rem; }
+  .sp-ok-text strong { font-size: 0.95rem; }
+  .sp-ok-text span { font-size: 0.8rem; color: var(--muted); }
+
+  .steps-progress {
+    margin-top: 2.4rem; height: 3px; border-radius: 999px; background: var(--line); overflow: hidden;
+  }
+  .steps-progress span {
+    display: block; height: 100%; width: 100%; border-radius: 999px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left center;
+  }
+
+  /* 좁은 화면에서는 붙이지 않는다 — 한 화면에 다 안 들어가고, 폰에서 스크롤이
+     잠긴 느낌은 특히 답답하다. 세 단계를 그냥 세로로 쌓아 전부 보여준다.
+     모션 축소 설정에서도 같은 모습이 되도록 아래에서 한 번 더 푼다. */
+  @media (max-width: 1000px) {
+    .steps-section { padding: 4rem 0; }
+    .steps-track { height: auto; }
+    .steps-stage { position: static; height: auto; display: block; overflow: visible; }
+    .steps-viz { grid-template-columns: 1fr; gap: 1.6rem; }
+    .steps-list li { opacity: 1; transform: none; background: var(--card); border-color: var(--line); }
+    .steps-list li .sl-num { background: var(--accent); color: var(--ink); }
+    .steps-panes { position: static; min-height: 0; display: grid; gap: 1rem; }
+    .steps-pane { position: static; opacity: 1; transform: none; }
+    .steps-progress { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .steps-section { padding: 4rem 0; }
+    .steps-track { height: auto; }
+    .steps-stage { position: static; height: auto; display: block; overflow: visible; }
+    .steps-list li { opacity: 1; transform: none; background: var(--card); border-color: var(--line); }
+    .steps-list li .sl-num { background: var(--accent); color: var(--ink); }
+    .steps-panes { position: static; min-height: 0; display: grid; gap: 1rem; }
+    .steps-pane { position: static; opacity: 1; transform: none; transition: none; }
+    .steps-progress { display: none; }
+  }
+
   .feature-grid, .why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .feature-card, .why-card {
     background: var(--card); border: 1px solid var(--line); border-radius: 22px;
@@ -1233,6 +1353,7 @@
     </a>
     <ul class="nav-links">
       <li><a href="#tool">진단하기</a></li>
+      <li><a href="#steps">사용법</a></li>
       <li><a href="#features">기능</a></li>
       <li><a href="#why">왜 안전한가</a></li>
       <li><a href="#faq">자주 묻는 질문</a></li>
@@ -1622,6 +1743,85 @@
   </div>
 </main>
 
+<!-- 세 단계 소개.
+     스크롤 트랙(steps-track)은 세 화면 높이고, 그 안의 무대(steps-stage)가
+     화면에 붙어(sticky) 있는 동안 스크롤 진행도에 따라 단계가 하나씩 넘어간다.
+     좁은 화면과 모션 축소 설정에서는 붙이지 않고 그냥 세로로 쌓는다. -->
+<section class="site-section steps-section" id="steps">
+  <div class="steps-track" id="stepsTrack">
+    <div class="steps-stage">
+      <div class="section-inner steps-inner">
+        <p class="section-eyebrow">어떻게 쓰나요</p>
+        <h2 class="section-title">세 단계면 끝나요</h2>
+
+        <div class="steps-viz">
+          <ol class="steps-list" id="stepsList">
+            <li data-step="0">
+              <span class="sl-num">1</span>
+              <span class="sl-body">
+                <strong>진단</strong>
+                <span>사진과 함께 올릴 글을 넣으면, 간판·전화번호·지번 같은 위치 단서와
+                교복·명찰처럼 소속을 드러내는 것까지 찾아내요. 위험도와 근거를 같이 보여드려요.</span>
+              </span>
+            </li>
+            <li data-step="1">
+              <span class="sl-num">2</span>
+              <span class="sl-body">
+                <strong>보정</strong>
+                <span>무엇을 고칠지 직접 고르고, 흐림·덮기·AI 지우기를 겹쳐 쌓을 수 있어요.
+                위치가 어긋났으면 끌어 맞추면 돼요. 사진 비율은 원본 그대로예요.</span>
+              </span>
+            </li>
+            <li data-step="2">
+              <span class="sl-num">3</span>
+              <span class="sl-body">
+                <strong>검증</strong>
+                <span>고친 사진을 처음과 똑같은 검사에 한 번 더 통과시켜요.
+                정말 사라졌는지 확인하고 남은 것이 있으면 짚어드려요.</span>
+              </span>
+            </li>
+          </ol>
+
+          <div class="steps-panes" id="stepsPanes" aria-hidden="true">
+            <div class="steps-pane" data-step="0">
+              <div class="sp-card">
+                <span class="sp-chip risk">위치노출 82점</span>
+                <span class="sp-line"></span><span class="sp-line short"></span>
+              </div>
+              <div class="sp-card">
+                <span class="sp-chip">간판 "OO어린이집"</span><span class="sp-line"></span>
+              </div>
+              <div class="sp-card">
+                <span class="sp-chip">교복 감지</span><span class="sp-line short"></span>
+              </div>
+            </div>
+            <div class="steps-pane" data-step="1">
+              <div class="sp-compare">
+                <div class="sp-shot"><span class="sp-tag">원본</span><span class="sp-box"></span></div>
+                <div class="sp-shot"><span class="sp-tag on">보정 후</span><span class="sp-box covered"></span></div>
+              </div>
+              <div class="sp-card">
+                <span class="sp-chip">1) 배경 흐림</span><span class="sp-chip">2) 간판 덮기</span>
+              </div>
+            </div>
+            <div class="steps-pane" data-step="2">
+              <div class="sp-card ok">
+                <span class="sp-check" aria-hidden="true">
+                  <svg viewBox="0 0 32 32"><path d="M8 16.5 L13.5 22 L24 10"/></svg>
+                </span>
+                <span class="sp-ok-text"><strong>다시 검사했어요</strong><span>남은 위치 단서 없음</span></span>
+              </div>
+              <div class="sp-card"><span class="sp-chip">위치노출 82 → 12점</span><span class="sp-line short"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="steps-progress" aria-hidden="true"><span id="stepsBar"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="site-section" id="features">
   <div class="section-inner">
     <p class="section-eyebrow">기능</p>
@@ -1783,6 +1983,80 @@
     track.style.setProperty('--pulse', current.toFixed(3));
   })();
 
+  /* 세 단계 소개 — 무대가 화면에 붙어 있는 동안 스크롤 진행도로 단계를 넘긴다.
+     붙이는 건 CSS(sticky)가 하고, 여기서는 "지금 몇 번째 단계인가"만 정한다.
+     그래야 스크립트가 죽어도 무대는 그대로 붙어 있고 첫 단계가 보인다.
+
+     좁은 화면·모션 축소에서는 CSS가 핀 고정을 풀고 세 단계를 전부 펼쳐 놓으므로,
+     여기서도 손대지 않는다. 어중간하게 클래스를 붙이면 펼친 상태에서 두 번째·세 번째가
+     흐려진 채로 남는다. */
+  (function () {
+    var track = document.getElementById('stepsTrack');
+    var list = document.getElementById('stepsList');
+    var panes = document.getElementById('stepsPanes');
+    var bar = document.getElementById('stepsBar');
+    if (!track || !list || !panes || !bar) return;
+
+    var items = list.querySelectorAll('li');
+    var pages = panes.querySelectorAll('.steps-pane');
+    var STEPS = items.length;
+    var pinned = window.matchMedia('(min-width: 1001px)');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var last = -1, ticking = false;
+
+    function active() { return pinned.matches && !reduce.matches; }
+
+    function setStep(i) {
+      if (i === last) return;
+      last = i;
+      for (var k = 0; k < STEPS; k++) {
+        items[k].classList.toggle('on', k === i);
+        pages[k].classList.toggle('on', k === i);
+      }
+    }
+
+    function clear() {
+      last = -1;
+      for (var k = 0; k < STEPS; k++) {
+        items[k].classList.remove('on');
+        pages[k].classList.remove('on');
+      }
+    }
+
+    function frame() {
+      ticking = false;
+      if (!active()) return;
+      var vh = window.innerHeight || 1;
+      var r = track.getBoundingClientRect();
+      // 트랙이 화면을 지나가는 총 거리 — 트랙 높이에서 화면 한 장을 뺀 만큼
+      var total = Math.max(1, track.offsetHeight - vh);
+      var p = Math.min(1, Math.max(0, -r.top / total));
+      bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+      // 진행도를 단계 수로 나눠 떨어뜨린다. 끝(p=1)에서 범위를 넘지 않게 자른다.
+      setStep(Math.min(STEPS - 1, Math.floor(p * STEPS)));
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(frame);
+    }
+
+    function onMode() {
+      if (active()) { onScroll(); }
+      else { clear(); bar.style.transform = ''; }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { onMode(); onScroll(); });
+    if (pinned.addEventListener) {
+      pinned.addEventListener('change', onMode);
+      reduce.addEventListener('change', onMode);
+    }
+    onMode();
+    frame();
+  })();
+
   /* 랜딩 구간의 요소를 화면에 들어올 때 하나씩 올려 보여준다.
      opacity: 0으로 시작하는 방식이라 스크립트가 죽으면 내용이 영영 안 보인다.
      그래서 (1) .reveal 클래스를 여기서 붙이고 — HTML에는 없다 —
@@ -1795,8 +2069,8 @@
     // 히어로와 스크롤 유도는 여기 없다 — 첫 화면이라 CSS 애니메이션이 맡는다.
     // 관찰자는 스크롤해서 내려가야 보이는 것들만 담당한다.
     var GROUPS = [
-      ['.site-section .section-eyebrow', 0],
-      ['.site-section .section-title', 0],
+      ['.site-section:not(.steps-section) .section-eyebrow', 0],
+      ['.site-section:not(.steps-section) .section-title', 0],
       ['.feature-card', 90],
       ['.why-card', 90],
       ['.faq-list details', 60],
@@ -5088,6 +5362,16 @@
       stackPending: function (canvas, meta) { currentCorrectionCanvas = canvas; lastCorrectionMeta = meta; },
       brushStrokeCount: function () { return brushStrokes.length; },
       setMethodForTest: function (m) { currentMethod = m; },
+      // 핀 고정 단계 검증용
+      stepsState: function () {
+        var on = document.querySelectorAll('#stepsList li.on');
+        return {
+          active: on.length ? Number(on[0].dataset.step) : null,
+          onCount: on.length,
+          paneOn: document.querySelectorAll('#stepsPanes .steps-pane.on').length,
+          bar: document.getElementById('stepsBar').style.transform,
+        };
+      },
       renderCoverHandles: renderCoverHandles,
       setCoverEditMode: function (m) { coverEditMode = m; },
       getCoverEditMode: function () { return coverEditMode; },
