@@ -52,11 +52,14 @@ const heroInView = p => p.evaluate(() => {
     return false;
   }, { timeout: 15000, polling: 300 }).catch(() => {});
   await p.waitForTimeout(600);
-  const faq = await p.evaluate(() => ({
-    y: Math.round(scrollY),
-    near: Math.abs(document.getElementById('faq').getBoundingClientRect().top) < 500,
-  }));
-  check('#앵커로 들어오면 그 자리로 간다', faq.y > 1000 && faq.near, 'y=' + faq.y + ' near=' + faq.near);
+  const faq = await p.evaluate(() => {
+    const el = document.getElementById('faq');
+    const top = el.getBoundingClientRect().top + scrollY;
+    return { y: Math.round(scrollY), top: Math.round(top), h: el.offsetHeight,
+             inside: scrollY >= top - 600 && scrollY <= top + el.offsetHeight };
+  });
+  check('#앵커로 들어오면 그 자리로 간다', faq.y > 1000 && faq.inside,
+    'y=' + faq.y + ' 섹션 ' + faq.top + '~' + (faq.top + faq.h));
 
   // 4) 화면 전환은 여전히 도구로 올려준다
   await p.goto('http://localhost:8000/index.html', { waitUntil: 'load' });
@@ -65,16 +68,20 @@ const heroInView = p => p.evaluate(() => {
     // 검증 화면을 띄우고 "다른 사진으로 처음부터 다시"를 누르면 showScreen('form')이 돈다
     document.getElementById('screen-form').style.display = 'none';
     document.getElementById('screen-verify').style.display = 'block';
+    document.documentElement.style.scrollBehavior = 'auto';
     scrollTo(0, 6000);
   });
-  await p.waitForTimeout(400);
+  await p.waitForTimeout(600);
   const before = await p.evaluate(() => ({
     y: Math.round(scrollY),
     toolTop: Math.round(document.getElementById('tool').getBoundingClientRect().top),
   }));
   check('전환 전에는 도구가 화면 밖에 있다', before.toolTop < -200, 'toolTop=' + before.toolTop);
+  // scroll-behavior: smooth + 14화면 길이라 이동이 1.1초쯤 걸린다(직접 추적해 확인).
+  // "두 번 연속 같은 위치"로 멈춤을 판단하면 이징 구간의 정체를 멈춤으로 오해하므로
+  // 실측 시간보다 넉넉히 기다린 뒤에 잰다.
   await p.evaluate(() => document.getElementById('restartBtn').click());
-  await p.waitForTimeout(900);
+  await p.waitForTimeout(2000);
   const after = await p.evaluate(() => ({
     y: Math.round(scrollY),
     toolTop: Math.round(document.getElementById('tool').getBoundingClientRect().top),
