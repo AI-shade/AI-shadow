@@ -3417,6 +3417,94 @@
     }
 
     // 얼굴 기준으로 몸통까지 포함하는 "피사체 영역"을 추정 (전신 사진에서 몸통까지 흐려지는 것 방지)
+    // ===== 인물 분할 (MediaPipe Selfie Segmenter) =====
+    //
+    // 배경 흐림의 "선명하게 남길 영역"을 얼굴 상자에서 유추한 도형으로 그려왔다.
+    // 얼굴 폭 3.2배 x 높이 7배짜리 타원 하나라, 사람 모양을 전혀 따라가지 못했다 —
+    // 팔을 벌리면 팔이 잘리고, 앉아 있으면 엉뚱한 데가 남고, 사람 주변 배경이
+    // 통째로 선명하게 남았다. 도형으로는 원리적으로 못 맞춘다.
+    //
+    // 픽셀 단위로 사람을 갈라내는 모델을 쓴다. 브라우저 안에서 돌아서
+    // 사진이 밖으로 나가지 않고(이 서비스의 핵심 원칙) 비용도 들지 않는다.
+    // 모델은 배경 흐림이나 AI 배경교체를 처음 쓸 때만 받아온다(약 1MB).
+    var segmenterPromise = null;
+    var personMaskCache = { key: null, canvas: null };
+
+    function getSegmenter() {
+      if (segmenterPromise) return segmenterPromise;
+      segmenterPromise = (async function () {
+        var vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+        var fileset = await vision.FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+        );
+        return vision.ImageSegmenter.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite',
+            delegate: 'CPU',
+          },
+          runningMode: 'IMAGE',
+          outputCategoryMask: true,
+          outputConfidenceMasks: false,
+        });
+      })().catch(function (e) {
+        console.warn('[인물분할] 모델을 못 받았습니다 — 얼굴 기준 도형으로 대체:', e.message);
+        segmenterPromise = null; // 다음에 다시 시도할 수 있게
+        return null;
+      });
+      return segmenterPromise;
+    }
+
+    // 사람이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하면 null.
+    // 같은 사진을 여러 번 보정하므로 사진 단위로 캐시한다 — 슬라이더를 움직일 때마다
+    // 다시 돌리면 한 번에 150ms씩 든다.
+    async function getPersonMask(img, cacheKey) {
+      if (cacheKey && personMaskCache.key === cacheKey && personMaskCache.canvas) {
+        return personMaskCache.canvas;
+      }
+      var seg = await getSegmenter();
+      if (!seg) return null;
+      var out = null;
+      try {
+        var res = seg.segment(img);
+        var cat = res.categoryMask;
+        var w = cat.width, h = cat.height;
+        var data = cat.getAsUint8Array();
+
+        var cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        var ctx = cv.getContext('2d');
+        var idata = ctx.createImageData(w, h);
+        var person = 0;
+        for (var i = 0; i < data.length; i++) {
+          // 이 모델의 카테고리 마스크는 0이 사람, 그 외가 배경이다.
+          var on = data[i] === 0 ? 255 : 0;
+          if (on) person++;
+          idata.data[i * 4] = 255;
+          idata.data[i * 4 + 1] = 255;
+          idata.data[i * 4 + 2] = 255;
+          idata.data[i * 4 + 3] = on;
+        }
+        ctx.putImageData(idata, 0, 0);
+        cat.close();
+
+        var pct = person / data.length;
+        // 사람을 거의 못 찾았거나 화면 전체를 사람이라고 하면 믿을 수 없다.
+        // 그대로 쓰면 사진 전체가 흐려지거나 전혀 안 흐려진다.
+        if (pct < 0.02 || pct > 0.95) {
+          console.warn('[인물분할] 결과가 미덥지 않아 버립니다 — 인물 비율 ' + (pct * 100).toFixed(1) + '%');
+          return null;
+        }
+        out = cv;
+      } catch (e) {
+        console.warn('[인물분할] 실패 — 얼굴 기준 도형으로 대체:', e.message);
+        return null;
+      }
+      if (cacheKey) personMaskCache = { key: cacheKey, canvas: out };
+      return out;
+    }
+
+    function clearPersonMaskCache() { personMaskCache = { key: null, canvas: null }; }
+
     function computeSubjectRegion(faceBox, imgW, imgH) {
       var cx = faceBox.x + faceBox.width / 2;
       var bodyWidth = faceBox.width * 3.2;
@@ -3471,8 +3559,8 @@
       mctx.fill();
     }
 
-    function restorePersonFromOriginal(resultCanvas, originalImg, faces, imgW, imgH) {
-      if (!faces || faces.length === 0) return resultCanvas;
+    function restorePersonFromOriginal(resultCanvas, originalImg, faces, imgW, imgH, personMask) {
+      if (!personMask && (!faces || faces.length === 0)) return resultCanvas;
 
       var personLayer = document.createElement('canvas');
       personLayer.width = imgW; personLayer.height = imgH;
@@ -3481,11 +3569,20 @@
       var mask = document.createElement('canvas');
       mask.width = imgW; mask.height = imgH;
       var mctx = mask.getContext('2d');
-      var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.025));
-      mctx.filter = 'blur(' + feather + 'px)';
-      mctx.fillStyle = '#ffffff';
-      faces.forEach(function (f) { drawPersonSilhouette(mctx, f.box, imgW, imgH); });
-      mctx.filter = 'none';
+      if (personMask) {
+        // 픽셀 단위 마스크가 있으면 사람 윤곽 그대로 되돌린다.
+        // 도형으로 덮던 때는 사진의 57%가 원본으로 되돌아가 AI가 한 일이 안 보였다.
+        var edge2 = Math.max(2, Math.min(8, Math.min(imgW, imgH) * 0.005));
+        mctx.filter = 'blur(' + edge2 + 'px)';
+        mctx.drawImage(personMask, 0, 0, imgW, imgH);
+        mctx.filter = 'none';
+      } else {
+        var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.025));
+        mctx.filter = 'blur(' + feather + 'px)';
+        mctx.fillStyle = '#ffffff';
+        faces.forEach(function (f) { drawPersonSilhouette(mctx, f.box, imgW, imgH); });
+        mctx.filter = 'none';
+      }
 
       var pctx = personLayer.getContext('2d');
       pctx.globalCompositeOperation = 'destination-in';
@@ -3502,7 +3599,7 @@
     // 세로로 긴 영역이라 중심이 허리쯤에 오고, 정작 얼굴은 위쪽 가장자리라 흐림 구간에
     // 걸려 같이 뭉개졌다. 지금은 영역 전체를 꽉 채운 뒤 마스크 자체를 흐려서 가장자리만
     // 부드럽게 만든다 — 얼굴이든 발끝이든 영역 안이면 100% 선명하게 남는다.
-    function applyBackgroundBlur(img, faces, imgW, imgH, blurPx) {
+    function applyBackgroundBlur(img, faces, imgW, imgH, blurPx, personMask) {
       var strength = Math.max(2, Math.min(60, blurPx || 18));
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
@@ -3511,7 +3608,25 @@
       ctx.drawImage(img, 0, 0, imgW, imgH);
       ctx.filter = 'none';
 
-      if (!faces || faces.length === 0) return canvas; // 얼굴이 없으면 전체 흐림만
+      // 픽셀 단위 인물 마스크가 있으면 그걸 쓴다 — 사람 윤곽을 그대로 따라간다.
+      // 얼굴을 못 찾았어도 마스크만 있으면 배경만 흐릴 수 있다.
+      if (personMask) {
+        var cut = document.createElement('canvas');
+        cut.width = imgW; cut.height = imgH;
+        var cctx = cut.getContext('2d');
+        cctx.drawImage(img, 0, 0, imgW, imgH);
+        cctx.globalCompositeOperation = 'destination-in';
+        // 가장자리를 아주 살짝만 흐린다. 많이 흐리면 인물 테두리가 번져 보이고,
+        // 아예 안 흐리면 계단처럼 각져 보인다.
+        var edge = Math.max(1.5, Math.min(6, Math.min(imgW, imgH) * 0.004));
+        cctx.filter = 'blur(' + edge + 'px)';
+        cctx.drawImage(personMask, 0, 0, imgW, imgH);
+        cctx.filter = 'none';
+        ctx.drawImage(cut, 0, 0);
+        return canvas;
+      }
+
+      if (!faces || faces.length === 0) return canvas; // 얼굴도 마스크도 없으면 전체 흐림만
 
       var sharp = document.createElement('canvas');
       sharp.width = imgW; sharp.height = imgH;
@@ -3747,6 +3862,7 @@
       appliedSteps = [];
       baseHistory = [];
       correctionBaseUrl = null;
+      clearPersonMaskCache();  // 사진이 바뀌면 인물 마스크도 다시 계산해야 한다
       renderAppliedSteps();
     }
 
@@ -5135,9 +5251,12 @@
           outCanvas.width = srcImg.naturalWidth;
           outCanvas.height = srcImg.naturalHeight;
           outCanvas.getContext('2d').drawImage(outImg, 0, 0, outCanvas.width, outCanvas.height);
-          // 프롬프트로 부탁하는 것과 별개로, 인물 영역은 원본으로 되돌려 확실히 막는다
+          // 프롬프트로 부탁하는 것과 별개로, 인물 영역은 원본으로 되돌려 확실히 막는다.
+          // 픽셀 단위 마스크를 쓰면 사람만 정확히 되돌아온다 — 도형으로 덮던 때는
+          // 사진의 57%가 원본이 되어 AI가 한 일이 거의 안 보였다.
+          var aiMask = await getPersonMask(srcImg, correctionBaseUrl);
           restorePersonFromOriginal(outCanvas, srcImg, (lastFaceResult && lastFaceResult.faces) || [],
-            outCanvas.width, outCanvas.height);
+            outCanvas.width, outCanvas.height, aiMask);
           if (outImg.naturalWidth !== srcImg.naturalWidth || outImg.naturalHeight !== srcImg.naturalHeight) {
             console.log('[AI배경교체] 크기 보정 — ' + outImg.naturalWidth + 'x' + outImg.naturalHeight
               + ' -> ' + outCanvas.width + 'x' + outCanvas.height);
@@ -5172,12 +5291,24 @@
       var canvas;
 
       if (method === 'blur') {
-        canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight, currentBlurPx);
-        // 얼굴을 못 찾으면 남길 영역을 알 수 없어 사진 전체가 흐려진다. 그런데 안내는
-        // 늘 "배경만 흐려진다"고 말해서 실제 결과와 어긋났다(실사용 제보).
-        previewCaption.textContent = faces.length > 0
-          ? '인물모드처럼 배경만 흐려지고, 아이(몸통 포함)는 선명하게 유지돼요.'
-          : '얼굴을 찾지 못해서 사진 전체가 흐려졌어요. 인물만 선명하게 남기려면 얼굴이 정면으로 보이는 사진이어야 해요 — 지금은 글자를 가리는 용도로만 쓸 수 있어요.';
+        // 사람을 픽셀 단위로 갈라낸다. 처음 한 번은 모델을 받느라 1초쯤 걸린다.
+        var blurMask = null;
+        try {
+          if (!personMaskCache.canvas || personMaskCache.key !== correctionBaseUrl) {
+            setPreviewBusy('사람과 배경을 갈라내는 중이에요\n처음 한 번만 잠깐 걸려요');
+          }
+          blurMask = await getPersonMask(img, correctionBaseUrl);
+        } finally {
+          clearPreviewBusy();
+        }
+        canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight, currentBlurPx, blurMask);
+        // 안내는 실제로 무엇을 기준으로 남겼는지 그대로 말해야 한다.
+        // 예전에는 얼굴을 못 찾아 사진 전체가 흐려졌는데도 "배경만 흐려진다"고 적혀 있었다.
+        previewCaption.textContent = blurMask
+          ? '사람 윤곽을 그대로 따라 배경만 흐렸어요. 팔이나 다리가 잘렸으면 흐림 정도를 낮추거나 다른 방식을 써주세요.'
+          : (faces.length > 0
+            ? '사람을 정확히 갈라내지 못해 얼굴 기준으로 대략 남겼어요 — 인물 주변 배경도 함께 선명할 수 있어요.'
+            : '사람을 찾지 못해서 사진 전체가 흐려졌어요. 지금은 글자를 가리는 용도로만 쓸 수 있어요.');
       } else if (method === 'sticker') {
         canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx,
           brushMaskHasPaint() ? brushMaskCanvas : null);
@@ -5468,6 +5599,8 @@
       restorePersonFromOriginal: restorePersonFromOriginal,
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
+      getPersonMask: getPersonMask,
+      clearPersonMaskCache: clearPersonMaskCache,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)

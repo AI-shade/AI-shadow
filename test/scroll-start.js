@@ -44,7 +44,14 @@ const heroInView = p => p.evaluate(() => {
 
   // 3) #앵커로 들어오면 그 자리로
   await p.goto('http://localhost:8000/index.html#faq', { waitUntil: 'load' });
-  await p.waitForTimeout(1600);
+  // 페이지가 14화면으로 길어져 앵커 이동이 늦게 끝난다. 위치가 멈출 때까지 기다린다.
+  await p.waitForFunction(() => {
+    const y = Math.round(scrollY);
+    if (window.__lastY === y) return true;
+    window.__lastY = y;
+    return false;
+  }, { timeout: 15000, polling: 300 }).catch(() => {});
+  await p.waitForTimeout(600);
   const faq = await p.evaluate(() => ({
     y: Math.round(scrollY),
     near: Math.abs(document.getElementById('faq').getBoundingClientRect().top) < 500,
