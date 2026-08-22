@@ -1,0 +1,65 @@
+// 게시 시각 역산 — "3일 전" → 실제 날짜와 요일 (API 호출 없음, 비용 없음)
+//
+// 이 계산이 한 칸이라도 틀리면 "매주 화요일 발레학원" 같은 결론 자체가 틀어진다.
+// 실제로 두 번 틀렸다:
+//   1) 서버가 기준 시각을 UTC로 넘겨서, 한국 자정~오전 9시에는 날짜가 하루 어긋났다.
+//   2) 모델에게 역산을 시켰더니 날짜는 맞히면서 요일을 틀렸다 —
+//      같은 수요일 네 건을 "화요일과 수요일에 반복"이라고 설명했다.
+// 그래서 산수는 서버가 하고, 그 산수를 여기서 잠근다.
+import { resolvePostDate } from '../server/schedule-date.js';
+
+let pass = 0, fail = 0;
+function eq(name, got, want) {
+  const ok = JSON.stringify(got) === JSON.stringify(want);
+  if (ok) { pass++; console.log('  ✓ ' + name); }
+  else { fail++; console.log('  ✗ ' + name + ' — 기대 ' + JSON.stringify(want) + ' / 실제 ' + JSON.stringify(got)); }
+}
+function check(name, cond, detail) {
+  if (cond) { pass++; console.log('  ✓ ' + name); }
+  else { fail++; console.log('  ✗ ' + name + (detail ? ' — ' + detail : '')); }
+}
+
+// 2026-08-23은 일요일
+const SUN = new Date(2026, 7, 23);
+const d = (rel, now = SUN) => resolvePostDate(rel, now);
+
+console.log('— 기본 역산 (기준: 2026-08-23 일요일) —');
+eq('3일 전', d('3일 전').날짜 + ' ' + d('3일 전').요일, '2026-08-20 목');
+eq('4일 전', d('4일 전').날짜 + ' ' + d('4일 전').요일, '2026-08-19 수');
+eq('어제', d('어제').날짜 + ' ' + d('어제').요일, '2026-08-22 토');
+eq('그제', d('그제').날짜 + ' ' + d('그제').요일, '2026-08-21 금');
+eq('방금 전은 오늘', d('방금 전').날짜 + ' ' + d('방금 전').요일, '2026-08-23 일');
+eq('2시간 전도 오늘', d('2시간 전').날짜, '2026-08-23');
+eq('35분 전도 오늘', d('35분 전').날짜, '2026-08-23');
+eq('2주 전', d('2주 전').날짜 + ' ' + d('2주 전').요일, '2026-08-09 일');
+eq('공백이 없어도 읽는다', d('4일전').날짜, '2026-08-19');
+
+console.log('\n— 7의 배수는 늘 같은 요일 —');
+const ballet = ['4일 전', '11일 전', '18일 전', '25일 전'].map(r => d(r).요일);
+check('4·11·18·25일 전이 모두 같은 요일', new Set(ballet).size === 1, ballet.join(','));
+const spread = ['2일 전', '6일 전', '10일 전', '15일 전'].map(r => d(r).요일);
+check('2·6·10·15일 전은 모두 다른 요일', new Set(spread).size === 4, spread.join(','));
+
+console.log('\n— 달 넘김 —');
+eq('25일 전이면 지난달로 넘어간다', d('25일 전').날짜, '2026-07-29');
+eq('연말을 넘어도 맞는다',
+  d('5일 전', new Date(2027, 0, 2)).날짜 + ' ' + d('5일 전', new Date(2027, 0, 2)).요일,
+  '2026-12-28 월');
+
+console.log('\n— 어림값과 실패 —');
+check('개월 단위는 어림값으로 표시한다', d('1개월 전').어림값 === true);
+check('일 단위는 어림값이 아니다', d('9일 전').어림값 === false);
+eq('읽을 수 없으면 null', d('알 수 없음'), null);
+eq('빈 문자열도 null', d(''), null);
+eq('undefined도 null', resolvePostDate(undefined, SUN), null);
+
+console.log('\n— 시간대에 흔들리지 않는다 —');
+// UTC로 계산하면 한국 자정 직후에 하루가 밀린다. 현지 날짜 기준이어야 한다.
+const midnight = new Date(2026, 7, 23, 0, 25); // 00:25 KST — 예전에 버그가 터지던 시각
+eq('자정 직후에도 오늘은 오늘', d('방금 전', midnight).날짜, '2026-08-23');
+eq('자정 직후 3일 전', d('3일 전', midnight).날짜 + ' ' + d('3일 전', midnight).요일, '2026-08-20 목');
+const lateNight = new Date(2026, 7, 23, 23, 50);
+eq('밤 11시 50분에도 같은 답', d('3일 전', lateNight).날짜, '2026-08-20');
+
+console.log('\n결과: ' + pass + '/' + (pass + fail) + ' 통과');
+process.exit(fail ? 1 : 0);

@@ -3109,7 +3109,7 @@
         if (noFaceChoice === 'safe') {
           console.warn('[프라이버시] "안전 우선" 선택 — 이 스크린샷은 스케줄 분석에서 제외합니다(로컬로는 캡션/시점 추출이 불가능해서 건너뜀).');
           return {
-            caption: '', relativeTime: '', backgroundTexts: [],
+            caption: '', relativeTime: '', placeTag: '', backgroundTexts: [],
             faceCount: 0, timingMs: performance.now() - t0,
             skippedNoFaceConsent: true,
           };
@@ -3118,14 +3118,19 @@
       }
 
       var maskedCanvas = maskFaces(img, faceResult.faces);
-      var maskedDataUrl = maskedCanvas.toDataURL('image/jpeg', 0.85);
+      // 사진과 달리 스크린샷은 UI 글자가 작다(위치 태그 12px 안팎). JPEG로 줄이면
+      // 그 글자가 먼저 뭉개진다 — 정작 가장 값진 위치 단서다. PNG로 그대로 보낸다.
+      var maskedDataUrl = maskedCanvas.toDataURL('image/png');
       var base64 = maskedDataUrl.split(',')[1];
 
-      var data = await postJson(SCREENSHOT_BACKEND_URL, { imageBase64: base64, mediaType: 'image/jpeg' });
+      var data = await postJson(SCREENSHOT_BACKEND_URL, { imageBase64: base64, mediaType: 'image/png' });
       var timingMs = performance.now() - t0;
       console.log('[스크린샷분석] 처리 완료 — ' + Math.round(timingMs) + 'ms (얼굴 ' + faceResult.faces.length + '개 마스킹)', data);
       return {
         caption: data.캡션 || '', relativeTime: data.게시시점 || '', backgroundTexts: data.배경텍스트 || [],
+        // SNS가 붙인 위치 태그. 사진 안 글자가 아니라 앱 화면 글자라 배경텍스트와 따로 받는다 —
+        // 검증에서 이걸 안 물어봐서 장소 반복을 통째로 놓쳤다.
+        placeTag: data.위치태그 || '',
         faceCount: faceResult.faces.length, timingMs: timingMs,
         maskedDataUrl: OCR_DEBUG ? maskedDataUrl : null, rawImgUrl: OCR_DEBUG ? imgUrl : null,
       };
@@ -3146,7 +3151,10 @@
       var extracted = await Promise.all(fileUrls.map(function (url) { return runScreenshotExtractionPipeline(url); }));
 
       var posts = extracted.map(function (e) {
-        return { relativeTime: e.relativeTime, caption: e.caption, detectedTexts: e.backgroundTexts };
+        return {
+          relativeTime: e.relativeTime, caption: e.caption,
+          placeTag: e.placeTag, detectedTexts: e.backgroundTexts,
+        };
       });
       var pattern = await runSchedulePatternPipeline(posts);
       var timingMs = performance.now() - t0;
@@ -5606,6 +5614,9 @@
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
       runOutfitSwap: runOutfitSwap, // 옷 교체 실호출 검증용 (비용 발생)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
+      // 생활패턴 감지 검증용 — 스크린샷 판독(Claude Vision)과 패턴 분석(Claude) 둘 다 비용 발생
+      runScreenshotExtractionPipeline: runScreenshotExtractionPipeline,
+      runScheduleAnalysisPipeline: runScheduleAnalysisPipeline,
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,
       // 검수 목록(빼기·내용 고치기) 검증용

@@ -11,6 +11,7 @@ import cors from 'cors';
 import Anthropic from '@anthropic-ai/sdk';
 import { fal } from '@fal-ai/client';
 import { estimateFillCostUsd } from './fill-cost.js';
+import { resolvePostDate } from './schedule-date.js';
 
 const PORT = process.env.PORT || 3001;
 // 사용자가 지정한 모델. 날짜 접미사(-20251001) 없는 정식 모델 ID를 사용함
@@ -339,18 +340,32 @@ app.post('/api/analyze-image', async (req, res) => {
 });
 
 // ===== 스크린샷에서 캡션/게시시점/배경 위치단서 추출 (스케줄 패턴 분석용) =====
+// 위치 태그를 따로 물어본다.
+// 예전에는 "사진 배경에서 위치를 특정할 수 있는 텍스트"만 요구했는데, SNS가 사용자
+// 이름 아래에 붙이는 위치 태그는 사진 안이 아니라 화면 UI라서 그 정의에 걸리지 않았다.
+// 검증에서 "리틀스타 발레학원"·"햇살어린이집"·"푸른숲 태권도장" 세 개를 전부 놓쳤고,
+// 그 결과 장소 반복 세트가 "패턴 없음"으로 판정됐다. 정작 가장 값싼 위치 단서인데도.
 const SCREENSHOT_PROMPT = `이 이미지는 SNS 게시물 스크린샷입니다. 다음 정보를 최대한 정확히 추출해줘:
 1. 캡션 (게시글 본문 텍스트) — 화면 캡처라 폰트가 선명하니 최대한 정확히 읽어줘
 2. 게시 시점 — 화면에 보이는 상대적 시간 표현 그대로 (예: "3일 전", "1주 전", "방금 전")
-3. 사진 배경에서 위치를 특정할 수 있는 텍스트 (간판, 표지판, 장소명 등) — 있는 경우만
+3. 위치 태그 — 사용자 이름(@아이디) 바로 아래나 옆줄에 적힌 장소 이름.
+   대개 핀 모양(📍) 뒤에 옵니다. 예: "📍 행복어린이집" 이면 "행복어린이집".
+   사진 속 간판이 아니라 앱이 표시하는 글자입니다.
+4. 사진 배경에서 위치를 특정할 수 있는 텍스트 (간판, 표지판, 장소명 등) — 있는 경우만
+
+중요: 장소·기관 이름(어린이집, 유치원, 학원, 도장, 놀이터, 상호명 등)은
+화면 어느 자리에 있든 하나도 빠뜨리지 마세요. 위치 태그인지 사진 속 간판인지
+판단이 애매하면 3번과 4번 양쪽에 다 넣어도 됩니다 — 빠뜨리는 것보다 낫습니다.
 
 JSON으로만 응답해줘 (다른 설명 없이):
 {
   "캡션": "...",
   "게시시점": "...",
+  "위치태그": "...",
   "배경텍스트": ["...", "..."]
 }
-해당 정보가 화면에 없으면 캡션/게시시점은 빈 문자열, 배경텍스트는 빈 배열로 응답해줘.`;
+해당 정보가 화면에 없으면 캡션/게시시점/위치태그는 빈 문자열, 배경텍스트는 빈 배열로 응답해줘.
+없는 것을 지어내지 마세요 — 특히 위치 태그와 배경텍스트는 화면에 실제로 보일 때만 채우세요.`;
 
 app.post('/api/analyze-screenshot', async (req, res) => {
   const { imageBase64, mediaType } = req.body || {};
@@ -358,10 +373,11 @@ app.post('/api/analyze-screenshot', async (req, res) => {
     return res.status(400).json({ error: '이미지(imageBase64)가 없습니다.' });
   }
   try {
-    const result = await callClaudeVision(imageBase64, mediaType, SCREENSHOT_PROMPT, 512);
+    const result = await callClaudeVision(imageBase64, mediaType, SCREENSHOT_PROMPT, 640);
     res.json({
       캡션: result.parsed.캡션 || '',
       게시시점: result.parsed.게시시점 || '',
+      위치태그: result.parsed.위치태그 || '',
       배경텍스트: result.parsed.배경텍스트 || [],
       timingMs: result.timingMs,
       usage: result.usage,
@@ -381,20 +397,46 @@ const SCHEDULE_SYSTEM_PROMPT = `당신은 SNS 게시물의 누적 패턴에서 �
 
 주의사항:
 - 게시 시각이 "3일 전", "1주 전" 같은 상대 표기로 들어옵니다.
-  기준 시각을 참고해 실제 날짜와 요일을 역산하세요.
+  기준 시각에 오늘 날짜와 요일이 함께 적혀 있으니, 그것을 출발점으로 역산하세요.
+  기준 시각은 현지 시간이며 시간대가 표기되어 있습니다 — UTC로 바꿔 계산하지 마세요.
 - OCR로 추출된 텍스트라 일부 오인식이 있을 수 있습니다.
   유사한 표현은 같은 장소로 간주해도 좋습니다.
 - 패턴이 없으면 억지로 만들지 말고 "패턴 없음"으로 답하세요.
+- 근거 게시물이 3개 미만인 패턴은 "반복"이라고 단정하지 마세요. 두 번 같은 일이
+  있었다고 매주 그렇다는 뜻은 아닙니다. 그런 경우에는 패턴으로 세지 말고,
+  설명에서 "게시물이 더 쌓이면 드러날 수 있다" 정도로만 짚으세요.
+- 화면에서 읽어낸 정보에 없는 장소명이나 시간을 지어내지 마세요.
+  감지된텍스트가 비어 있으면 장소가 없는 것입니다.
 
 출력 길이 제약: "부모에게전할설명"은 3문장 이내로 간결하게 작성하세요.`;
 
-function buildScheduleUserPrompt(posts, currentDatetime) {
-  const postsJson = posts.map((p, i) => ({
-    번호: i + 1,
-    상대시각: p.relativeTime || '(알 수 없음)',
-    캡션: p.caption || '',
-    감지된텍스트: p.detectedTexts || [],
-  }));
+// 기준 시각을 UTC(toISOString)로 넘기면 한국(UTC+9)에서는 자정~오전 9시 사이에
+// 날짜가 하루 어긋난다. 그 상태로 "3일 전"을 역산하면 요일까지 틀린다 —
+// 실제로 목요일 반복을 화요일 반복이라고 답한 적이 있다(2026-08-23 00:25 KST 실측).
+// 현지 날짜와 요일을 직접 계산해 넘겨서 모델이 역산할 여지를 줄인다.
+function localDatetimeLabel(d) {
+  const pad = (n) => String(n).padStart(2, '0');
+  const weekday = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+  const tzMin = -d.getTimezoneOffset();
+  const sign = tzMin >= 0 ? '+' : '-';
+  const tz = 'UTC' + sign + pad(Math.floor(Math.abs(tzMin) / 60)) + ':' + pad(Math.abs(tzMin) % 60);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} (${weekday}요일) `
+    + `${pad(d.getHours())}:${pad(d.getMinutes())} ${tz}`;
+}
+
+function buildScheduleUserPrompt(posts, currentDatetime, now) {
+  const postsJson = posts.map((p, i) => {
+    const when = resolvePostDate(p.relativeTime, now || new Date());
+    return {
+      번호: i + 1,
+      상대시각: p.relativeTime || '(알 수 없음)',
+      실제날짜: when ? when.날짜 : '(계산 불가)',
+      요일: when ? (when.어림값 ? when.요일 + '(어림)' : when.요일) : '(계산 불가)',
+      위치태그: p.placeTag || '',
+      캡션: p.caption || '',
+      감지된텍스트: p.detectedTexts || [],
+    };
+  });
 
   return `기준 시각(스크린샷 업로드 시점): ${currentDatetime}
 
@@ -404,7 +446,8 @@ ${JSON.stringify({ 게시물목록: postsJson }, null, 2)}
 
 다음을 분석해주세요:
 
-1. 각 게시물의 실제 날짜와 요일을 역산
+1. 날짜와 요일은 이미 계산해서 드렸습니다. 다시 계산하지 말고 그대로 쓰세요.
+   "(어림)"이 붙은 요일은 개월 단위를 30일로 어림한 값이라 요일 패턴 근거로 쓰지 마세요.
 2. 반복 패턴 탐지:
    - 요일 패턴 (특정 요일에 반복되는 장소/활동)
    - 시간대 패턴 (특정 시간대에 반복 노출되는 위치)
@@ -414,9 +457,6 @@ ${JSON.stringify({ 게시물목록: postsJson }, null, 2)}
 
 JSON으로 응답 (다른 설명 없이):
 {
-  "역산된게시물": [
-    {"번호": 1, "상대시각": "3일 전", "실제날짜": "2026-08-16", "요일": "토"}
-  ],
   "패턴발견여부": "있음/없음",
   "발견된패턴": [
     {"유형": "요일패턴", "내용": "설명", "근거게시물": [1, 3]}
@@ -433,11 +473,10 @@ app.post('/api/analyze-schedule-pattern', async (req, res) => {
     return res.json({ 패턴발견여부: '없음', 발견된패턴: [], 예측가능정보: '', 부모에게전할설명: '분석할 과거 게시물이 없어요.', timingMs: 0 });
   }
   try {
-    const currentDatetime = new Date().toISOString();
-    const userPrompt = buildScheduleUserPrompt(posts, currentDatetime);
+    const currentDatetime = localDatetimeLabel(new Date());
+    const userPrompt = buildScheduleUserPrompt(posts, currentDatetime, new Date());
     const result = await callClaudeText(SCHEDULE_SYSTEM_PROMPT, userPrompt);
     res.json({
-      역산된게시물: result.parsed.역산된게시물 || [],
       패턴발견여부: result.parsed.패턴발견여부 || '없음',
       발견된패턴: result.parsed.발견된패턴 || [],
       예측가능정보: result.parsed.예측가능정보 || '',
