@@ -87,8 +87,12 @@ async function runCase(page, testCase) {
     // #3 단계별 표시 도입 후: 결과 화면은 얼굴+텍스트 판독만 끝나면 먼저 뜨고,
     // 위험도 진단(및 디버그 비교표)은 백그라운드에서 이어서 채워짐 — 그것까지 기다려야 함
     await page.waitForSelector('#screen-result[style*="display: block"]', { timeout: 60000 });
+    // "진단 완료" 신호로 riskScore의 skel 클래스를 보고 있었는데, 점수 로딩을
+    // 스켈레톤에서 "굴러가는 게이지"로 바꾸면서 그 클래스가 아예 없어졌다.
+    // 그러면 이 대기가 즉시 통과해 진단이 끝나기 전에 결과를 읽는다(실제로 겪음).
+    // 로딩 표시가 사라지는 것을 완료 신호로 쓴다.
     await page.waitForFunction(
-      () => !document.getElementById('riskScore').classList.contains('skel'),
+      () => document.getElementById('riskPending').style.display === 'none',
       { timeout: 60000 }
     );
 
