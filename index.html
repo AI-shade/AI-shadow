@@ -101,7 +101,12 @@
     opacity: 0.92;
   }
   .glow-track { position: absolute; inset: 0; }
-  .glow-track > span { position: absolute; display: block; }
+  /* 바깥 번짐도 심지와 같이 얇아진다. 심지만 껐다 켜면 가장자리 번짐이 그대로 남아
+     흐려진 느낌이 잘 안 난다. 가장 흐릴 때 45%까지 내려간다. */
+  .glow-track > span {
+    position: absolute; display: block;
+    opacity: calc(0.45 + 0.55 * var(--pulse, 1));
+  }
 
   /* 두 덩어리 모두 가운데가 확실히 진하고 바깥으로 빠르게 옅어진다.
      한 색을 균일하게 깔면 안개처럼 밋밋해서, 중심부에 색을 몰아준다.
@@ -1644,8 +1649,9 @@
       var doc = document.documentElement;
       var span = Math.max(1, doc.scrollHeight - (window.innerHeight || 1));
       var progress = Math.min(1, Math.max(0, (window.scrollY || doc.scrollTop || 0) / span));
-      // 위에서 진하게 시작해 두 번 흐려졌다 돌아온다
-      target = 0.30 + 0.70 * (0.5 + 0.5 * Math.cos(progress * Math.PI * 4));
+      // 위에서 진하게 시작해 두 번 흐려졌다 돌아온다.
+      // 바닥을 0.04까지 내려서 가장 흐릴 때는 심지가 거의 꺼진 것처럼 보이게 한다.
+      target = 0.04 + 0.96 * (0.5 + 0.5 * Math.cos(progress * Math.PI * 4));
     }
 
     function frame() {
