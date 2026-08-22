@@ -807,7 +807,25 @@
   @media (max-width: 860px) { .nav-links { display: none; } .nav-inner { justify-content: space-between; } }
 
   /* 히어로 */
-  .hero { padding: 4rem 0 3.2rem; }
+  /* 흰 배경이 다소 삭막해서 온기를 준다. 글자 뒤로 지나가지 않도록 아주 옅게 깔고,
+     블롭이 넘쳐 가로 스크롤이 생기지 않게 overflow를 잠근다. */
+  .hero { padding: 4rem 0 3.2rem; position: relative; overflow: hidden; }
+  .hero::before, .hero::after {
+    content: ''; position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
+    filter: blur(60px);
+  }
+  .hero::before {
+    width: 420px; height: 420px; right: -80px; top: -140px;
+    background: radial-gradient(circle, rgba(255, 216, 77, 0.55), rgba(255, 216, 77, 0) 70%);
+  }
+  .hero::after {
+    width: 340px; height: 340px; left: -120px; bottom: -160px;
+    background: radial-gradient(circle, rgba(255, 122, 107, 0.32), rgba(255, 122, 107, 0) 70%);
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero::before, .hero::after { transition: none; }
+  }
   .hero-inner {
     width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 1.4rem;
     display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
@@ -861,9 +879,27 @@
   .site-section { padding: 4rem 0; scroll-margin-top: 4.5rem; }
   /* surface가 흰색이 되면서 교차가 사라진다 — 연회색으로 구분을 유지 */
   .site-section.alt { background: var(--soft); }
+  /* 섹션 라벨을 깃발 표시로. 흰 배경만으로는 섹션 경계가 흐릿해서 구조가 안 읽힌다.
+     레퍼런스(BUNCOMO)의 "▶ EVENT" 방식을 가져왔다. */
   .section-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.45rem;
     font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); margin: 0 0 0.5rem;
+    color: var(--muted); margin: 0 0 0.55rem;
+  }
+  .section-eyebrow::before {
+    content: ''; width: 0; height: 0; flex: 0 0 auto;
+    border-left: 9px solid var(--accent-2);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+  }
+  /* 섹션 사이를 얇은 점선으로 나눈다 — 실선보다 가볍고 여백을 덜 잡아먹는다 */
+  .site-section + .site-section { border-top: 1px dashed var(--line-strong); }
+  .site-section.alt + .site-section,
+  .site-section + .site-section.alt { border-top: none; }
+  .section-title { position: relative; }
+  .section-title::after {
+    content: ''; display: block; width: 42px; height: 2px;
+    background: var(--accent); margin-top: 0.75rem; border-radius: 999px;
   }
   .section-title {
     font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: -0.02em;
@@ -904,7 +940,17 @@
   }
 
   /* CTA 띠 */
-  .cta-band { background: var(--card-dark); color: var(--on-dark); padding: 3.4rem 0; text-align: center; }
+  .cta-band {
+    background: var(--card-dark); color: var(--on-dark); padding: 3.4rem 0;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-band::before {
+    content: ''; position: absolute; pointer-events: none;
+    width: 520px; height: 520px; right: -160px; top: -220px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 216, 77, 0.20), rgba(255, 216, 77, 0) 70%);
+    filter: blur(50px);
+  }
+  .cta-band .section-inner { position: relative; z-index: 1; }
   .cta-band h2 {
     font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; margin: 0 0 0.6rem;
     letter-spacing: -0.02em; word-break: keep-all;
