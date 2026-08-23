@@ -1016,10 +1016,22 @@
     }
     /* 종합 위험도와 위치노출 위험도를 나란히 둔다. 점수 카드를 가로 전체로 두면
        내용이 왼쪽에만 몰려 오른쪽 600px가 통째로 비었다(사용자 지적). */
-    #screen-result > .rcard-score { order: 1; }
-    #screen-result > .rcard-location { order: 2; }
+    /* 점수 내역이 생기면서 왼쪽 카드만 길어져, 짝인 오른쪽 카드 아래가 통째로 비었다.
+       점수 카드를 가로 전체로 두고 게이지와 내역을 좌우로 나눈다 — 내역이 그 자리를 채운다.
+       장소 카드는 다른 짧은 카드(스케줄 경고)와 나란히 서게 일반 흐름으로 보낸다. */
+    #screen-result > .rcard-score {
+      order: 1; grid-column: 1 / -1;
+      display: grid; grid-template-columns: minmax(15rem, 19rem) 1fr;
+      column-gap: 2.6rem; align-items: start;
+    }
+    #screen-result > .rcard-score > .rcard-title,
+    #screen-result > .rcard-score > .risk-pending { grid-column: 1 / -1; }
+    /* 가로로 나란히 놓이면 위쪽 점선이 오히려 흐름을 끊는다 */
+    #screen-result > .rcard-score > .score-breakdown {
+      margin-top: 0; border-top: none; padding-top: 0.2rem;
+    }
     #screen-result > .rcard-detect { order: 3; grid-column: 1 / -1; }
-    #screen-result > .result-section:not(.rcard-location) { order: 4; }
+    #screen-result > .result-section { order: 4; }
     #screen-result > button,
     #screen-result > .disclaimer { order: 5; grid-column: 1 / -1; }
 
@@ -1631,7 +1643,9 @@
     </div>
 
     <section class="result-section rcard-location">
-      <h3>위치노출 위험도</h3>
+      <!-- 왼쪽 내역의 "간판·주소 노출"과 이름이 겹치면 같은 것으로 오해한다.
+           이쪽은 사진 한 장으로 아이가 있는 곳을 얼마나 좁힐 수 있는지를 본다. -->
+      <h3>장소 특정 가능성</h3>
       <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
       <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
       <p class="evidence" id="locationEvidence"></p>
