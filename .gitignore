@@ -46,3 +46,5 @@ wed.jpg
 # 단계별 백업 스냅샷 (로컬 되돌리기용)
 backup-*.html
 server/backup-*.js
+
+.vercel
