@@ -600,13 +600,26 @@
     font-size: 0.92rem; line-height: 1.7; border: none;
   }
   .schedule-flag {
-    display: inline-flex; align-items: center; gap: 0.3rem; justify-self: start;
-    font-size: 0.72rem; padding: 0.3rem 0.8rem; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 0.4rem; justify-self: start;
+    font-size: 0.78rem; padding: 0.34rem 0.85rem; border-radius: 999px;
     background: var(--soft); border: none; color: var(--muted);
     font-weight: 600; letter-spacing: 0; margin-bottom: 0.6rem;
   }
-  .schedule-flag.on { background: var(--risk-mid-soft); color: var(--risk-mid); }
-  .schedule-flag.on::before { content: '⚠'; font-size: 0.72rem; }
+  /* 패턴이 잡혔다는 건 아이의 동선이 예측 가능해졌다는 뜻이다.
+     노란 "주의" 색으로는 눈에 들어오지 않아 위험 등급 색을 쓴다.
+     흰 카드 위 --risk-high-soft에 --risk-high 글씨 = 4.95:1 (측정값). */
+  .schedule-flag.on {
+    background: var(--risk-high-soft); color: var(--risk-high);
+    font-weight: 800; font-size: 0.84rem; padding: 0.42rem 0.95rem;
+    box-shadow: 0 0 0 1.5px var(--risk-high) inset;
+  }
+  /* 이모지(⚠)는 기기마다 노란 그림으로 그려져 글자색을 안 따라간다.
+     같은 색으로 칠한 삼각형을 직접 그린다. */
+  .schedule-flag.on::before {
+    content: ''; flex: 0 0 auto; width: 0; height: 0;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-bottom: 9px solid currentColor;
+  }
 
   /* ---- 보정 방식 선택 ---- */
   /* 감지 결과에 오탐이 섞이면 자동으로 전부 처리했을 때 엉뚱한 곳이 보정된다.
@@ -1457,8 +1470,8 @@
   <header class="page-header">
     <span class="badge-icon" role="img" aria-label="안심앨범"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
     <div class="ph-text">
-      <h2>사진 진단</h2>
-      <p>사진을 올리고 세 단계를 따라가면 돼요</p>
+      <h2 id="appTitle">사진 진단</h2>
+      <p id="appSubtitle">사진을 올리고 세 단계를 따라가면 돼요</p>
     </div>
   </header>
 
@@ -1758,8 +1771,8 @@
   <div class="card" id="screen-pattern" style="display:none;">
     <header class="app-hero">
       <div>
-        <h2 class="rcard-title" style="margin:0;">생활 패턴 분석</h2>
-        <p class="pin-note" style="margin:0.2rem 0 0;">올려주신 과거 게시물만으로 반복되는 요일·시간대·장소를 짚어봤어요.</p>
+        <h2 class="rcard-title" style="margin:0;">분석 결과</h2>
+        <p class="pin-note" style="margin:0.2rem 0 0;">반복되는 요일·시간대·장소를 짚어봤어요.</p>
       </div>
     </header>
 
@@ -3992,6 +4005,18 @@
     // 다음에 뭐가 있는 것처럼 보인다.
     function syncStepperVisibility(name) {
       if (stepperEl) stepperEl.style.display = (name === 'pattern') ? 'none' : '';
+      // 머리말도 지금 하는 일에 맞춰야 한다. 스크린샷만 보는 화면에서
+      // "사진 진단 · 사진을 올리고 세 단계를 따라가면 돼요"는 사실과 다르다.
+      var titleEl = document.getElementById('appTitle');
+      var subEl = document.getElementById('appSubtitle');
+      if (!titleEl || !subEl) return;
+      if (name === 'pattern') {
+        titleEl.textContent = 'SNS 게시물 검사';
+        subEl.textContent = '올려주신 과거 게시물에서 반복되는 생활 패턴을 찾아요';
+      } else {
+        titleEl.textContent = '사진 진단';
+        subEl.textContent = '사진을 올리고 세 단계를 따라가면 돼요';
+      }
     }
 
     // 새 진단을 시작하면 직전 결과 이미지가 남아 있으면 안 된다
@@ -5860,6 +5885,7 @@
       runScreenshotExtractionPipeline: runScreenshotExtractionPipeline,
       runScheduleAnalysisPipeline: runScheduleAnalysisPipeline,
       renderPatternOnly: renderPatternOnly,
+      showScreenForTest: showScreen,
       syncSubmitLabel: syncSubmitLabel,
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,

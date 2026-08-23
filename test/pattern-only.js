@@ -123,6 +123,73 @@ const SHOTS = (() => {
   check('패턴이 없어도 무엇을 읽었는지는 남긴다',
     none.read.length === 1 && /1일 전/.test(none.read[0]), none.read.join(' | '));
 
+  // ── 머리말이 지금 하는 일에 맞게 바뀌는가
+  // 스크린샷만 보는 화면에서 "사진 진단 · 사진을 올리고 세 단계를"은 사실과 다르다.
+  const heads = await p.evaluate(() => {
+    const read = () => ({
+      t: document.getElementById('appTitle').textContent.trim(),
+      s: document.getElementById('appSubtitle').textContent.trim(),
+      stepper: getComputedStyle(document.getElementById('stepper')).display,
+    });
+    const T = window.__anshimTest;
+    T.showScreenForTest('form');
+    const form = read();
+    T.showScreenForTest('pattern');
+    const pattern = read();
+    T.showScreenForTest('form');
+    const back = read();
+    return { form, pattern, back };
+  });
+  check('진단 화면 머리말은 "사진 진단"', heads.form.t === '사진 진단', heads.form.t);
+  check('SNS 화면 머리말은 "SNS 게시물 검사"', heads.pattern.t === 'SNS 게시물 검사', heads.pattern.t);
+  check('SNS 화면 설명에 사진 얘기가 없다',
+    !/사진을 올리고/.test(heads.pattern.s) && /게시물/.test(heads.pattern.s), heads.pattern.s);
+  check('SNS 화면에서는 세 단계 표시를 감춘다', heads.pattern.stepper === 'none', heads.pattern.stepper);
+  check('진단 화면으로 돌아오면 머리말도 되돌아온다',
+    heads.back.t === '사진 진단' && heads.back.stepper !== 'none',
+    heads.back.t + ' / ' + heads.back.stepper);
+
+  // ── 경고 배지가 경고답게 보이는가
+  const badge = await p.evaluate(() => {
+    const f = document.getElementById('pScheduleFlag');
+    const off = (() => {
+      f.className = 'schedule-flag'; f.textContent = '없음';
+      const cs = getComputedStyle(f);
+      return { bg: cs.backgroundColor, fg: cs.color, weight: cs.fontWeight };
+    })();
+    f.className = 'schedule-flag on'; f.textContent = '있음';
+    const cs = getComputedStyle(f);
+    const bef = getComputedStyle(f, '::before');
+    return {
+      off,
+      bg: cs.backgroundColor, fg: cs.color, weight: cs.fontWeight,
+      size: parseFloat(cs.fontSize), ring: cs.boxShadow !== 'none',
+      iconColor: bef.borderBottomColor, iconContent: bef.content,
+    };
+  });
+  const lum = (c) => {
+    const [r, g, b] = c.match(/[0-9.]+/g).map(Number).slice(0, 3).map(v => {
+      v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrast = (a, b) => {
+    const [x, y] = [lum(a), lum(b)];
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+
+  check('경고 상태는 평상시보다 굵다', Number(badge.weight) > Number(badge.off.weight),
+    badge.off.weight + ' → ' + badge.weight);
+  check('경고 상태는 색이 달라진다', badge.bg !== badge.off.bg && badge.fg !== badge.off.fg);
+  check('경고 배지에 테두리가 둘러진다', badge.ring);
+  check('경고 배지 글자가 충분히 크다', badge.size >= 15, badge.size + 'px');
+  check('경고 배지 대비가 AA를 넘는다', contrast(badge.fg, badge.bg) >= 4.5,
+    contrast(badge.fg, badge.bg).toFixed(2) + ':1');
+  // 이모지(⚠)는 기기마다 노란 그림으로 그려져 글자색을 안 따라간다
+  check('경고 아이콘이 이모지가 아니다', !/⚠/.test(badge.iconContent), badge.iconContent);
+  check('경고 아이콘이 글자색을 그대로 따른다', badge.iconColor === badge.fg,
+    badge.iconColor + ' vs ' + badge.fg);
+
   check('페이지 에러 없음', errs.length === 0, errs.slice(0, 2).join(' / '));
 
   console.log('\n결과: ' + pass + '/' + (pass + fail) + ' 통과');
