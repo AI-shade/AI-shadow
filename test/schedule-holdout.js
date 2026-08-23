@@ -110,10 +110,14 @@ function near(a, b) {
       const said = JSON.stringify(d.patterns || []) + (d.predictedInfo || '');
       check('요일을 ' + wd + '요일로 정확히 짚는다', said.includes(wd + '요일'),
         '실제: ' + (said.match(/[월화수목금토일]요일/g) || ['(언급 없음)']).join(','));
-    } else if (set.name === 'h3-alias') {
-      check('표기가 달라도 같은 장소로 묶는다',
-        d.scheduleOn === true && /장소/.test(kinds), '판정 ' + (d.scheduleOn ? kinds : '패턴 없음'));
-    } else if (set.name === 'h4-coincidence') {
+    } else if (set.name === 'h3-mixeddate') {
+      check('상대·절대 표기를 섞어 써도 같은 요일 반복을 잡는다',
+        d.scheduleOn === true && /요일/.test(kinds), '판정 ' + (d.scheduleOn ? kinds : '패턴 없음'));
+      const wd3 = set.truth.note.match(/모두 (.)요일/)[1];
+      const said3 = JSON.stringify(d.patterns || []) + (d.predictedInfo || '');
+      check('요일을 ' + wd3 + '요일로 정확히 짚는다', said3.includes(wd3 + '요일'),
+        '실제: ' + (said3.match(/[월화수목금토일]요일/g) || ['(언급 없음)']).join(','));
+    } else if (set.name === 'h4-decoy') {
       check('우연한 요일 겹침을 요일 패턴이라 단정하지 않는다',
         !/요일/.test(kinds), '실제 ' + (kinds || '(패턴 없음)'));
     }

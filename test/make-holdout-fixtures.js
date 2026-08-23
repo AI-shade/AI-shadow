@@ -27,6 +27,11 @@ function absDate(daysAgo) {
   const d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() - daysAgo);
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
+function dotDate(daysAgo) {
+  const d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() - daysAgo);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+}
 function weekdayOf(daysAgo) {
   const d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() - daysAgo);
   return ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
@@ -35,66 +40,67 @@ function weekdayOf(daysAgo) {
 const SETS = [
   {
     name: 'h1-sign',
-    label: 'H1 · 다크모드 + 사진 속 간판으로만 장소가 드러남',
-    style: 'dark',
+    label: 'H1 · 밝은 화면 + 사진 속 현수막으로만 장소가 드러남',
+    style: 'story',
     truth: {
       pattern: true, kinds: ['장소'],
-      note: '위치 태그가 없다. 장소는 사진 속 간판(하늘유치원)에만 있다. 2·4·10·15일 전 = 서로 다른 요일',
-      places: ['하늘유치원'],
+      note: '위치 태그가 없다. 장소는 사진 속 현수막(별빛어린이집)에만 있다. 1·5·10·16일 전 = 서로 다른 요일',
+      places: ['별빛어린이집'],
     },
     posts: [
-      { rel: '2일 전', place: '', sign: '하늘유치원', cap: '오늘 재롱잔치 연습했대요' },
-      { rel: '4일 전', place: '', sign: '하늘유치원 정문', cap: '등원길, 오늘도 안 울고 들어갔어요' },
-      { rel: '10일 전', place: '', sign: '하늘유치원', cap: '친구랑 손잡고 나오는 중' },
-      { rel: '15일 전', place: '', sign: '하늘유치원 알림장', cap: '오늘 활동 사진 받았어요' },
+      { rel: '1일 전', place: '', sign: '별빛어린이집', cap: '오늘 급식 다 먹었대요' },
+      { rel: '5일 전', place: '', sign: '별빛어린이집 여름축제', cap: '축제날이라 들떠 있었어요' },
+      { rel: '10일 전', place: '', sign: '별빛어린이집', cap: '현장학습 다녀왔습니다' },
+      { rel: '16일 전', place: '', sign: '별빛어린이집 알림', cap: '오늘 활동 사진이에요' },
     ],
   },
   {
     name: 'h2-absdate',
-    label: 'H2 · 절대 날짜 표기 + 같은 요일 피아노 학원',
+    label: 'H2 · 절대 날짜 표기 + 같은 요일 수영장',
     style: 'band',
     truth: {
       pattern: true, kinds: ['요일'],
-      note: '상대 표기가 아니라 "2026년 8월 19일" 식 절대 날짜. 4·11·18·25일 전 = 모두 ' + weekdayOf(4) + '요일',
-      places: ['소리봄 피아노학원'],
+      note: '"2026.08.20" 식 점 구분 절대 날짜. 3·10·17·24일 전 = 모두 ' + weekdayOf(3) + '요일',
+      places: ['한빛 수영장'],
     },
     posts: [
-      { rel: absDate(4), place: '소리봄 피아노학원', sign: '', cap: '피아노 레슨 다녀왔어요 🎹' },
-      { rel: absDate(11), place: '소리봄 피아노학원', sign: '', cap: '오늘은 체르니 들어갔대요' },
-      { rel: absDate(18), place: '소리봄 피아노학원', sign: '', cap: '레슨 끝나고 아이스크림' },
-      { rel: absDate(25), place: '소리봄 피아노학원', sign: '', cap: '피아노 가는 길' },
+      { rel: dotDate(3), place: '한빛 수영장', sign: '', cap: '오늘도 자유형 연습 🏊' },
+      { rel: dotDate(10), place: '한빛 수영장', sign: '', cap: '물속에서 눈 뜨기 성공!' },
+      { rel: dotDate(17), place: '한빛 수영장', sign: '', cap: '수영 끝나고 컵라면' },
+      { rel: dotDate(24), place: '한빛 수영장', sign: '', cap: '오늘은 배영 배웠어요' },
     ],
   },
   {
-    name: 'h3-alias',
-    label: 'H3 · 같은 장소를 게시물마다 다르게 적음',
-    style: 'story',
+    name: 'h3-mixeddate',
+    label: 'H3 · 최근은 상대, 오래된 건 절대 날짜 (섞어 쓰기)',
+    style: 'feed',
     truth: {
-      pattern: true, kinds: ['장소'],
-      note: '표기는 다르지만 전부 같은 키즈카페. 1·3·9·12일 전 = 서로 다른 요일',
-      places: ['블루밍 키즈카페', 'Blooming Kids Cafe', '블루밍키즈카페', '블루밍 키즈 카페'],
+      pattern: true, kinds: ['요일'],
+      note: '실제 SNS가 하는 방식 — 최근은 "2일 전", 오래되면 날짜. 2·9·16·23일 전 = 모두 '
+        + weekdayOf(2) + '요일',
+      places: ['해맑음 미술학원'],
     },
     posts: [
-      { rel: '1일 전', place: '블루밍 키즈카페', sign: '', cap: '오늘도 여기서 두 시간 놀았어요' },
-      { rel: '3일 전', place: 'Blooming Kids Cafe', sign: '', cap: '트램폴린이 제일 좋대요' },
-      { rel: '9일 전', place: '블루밍키즈카페', sign: '', cap: '비 오는 날엔 실내가 최고' },
-      { rel: '12일 전', place: '블루밍 키즈 카페', sign: '', cap: '친구 생일파티 다녀왔어요 🎂' },
+      { rel: '2일 전', place: '해맑음 미술학원', sign: '', cap: '오늘은 수채화 그렸어요 🎨' },
+      { rel: '9일 전', place: '해맑음 미술학원', sign: '', cap: '미술 가는 날' },
+      { rel: absDate(16), place: '해맑음 미술학원', sign: '', cap: '점토 수업이었대요' },
+      { rel: absDate(23), place: '해맑음 미술학원', sign: '', cap: '그림 전시회 준비 중' },
     ],
   },
   {
-    name: 'h4-coincidence',
-    label: 'H4 · 우연히 요일이 겹치는 함정',
+    name: 'h4-decoy',
+    label: 'H4 · 장소가 매번 다른데 요일만 우연히 겹침',
     style: 'band',
     truth: {
       pattern: false, kinds: [],
-      note: '3·10일 전이 우연히 같은 요일이지만 장소·활동이 전부 다르다. 요일 패턴이라 단정하면 과잉 판정',
+      note: '4·11일 전이 같은 요일이지만 장소·활동이 전부 다르다. 요일 패턴이라 단정하면 과잉 판정',
       places: [],
     },
     posts: [
-      { rel: '3일 전', place: '', sign: '', cap: '동네 산책 나왔어요' },
-      { rel: '5일 전', place: '', sign: '', cap: '집에서 케이크 만들기' },
-      { rel: '10일 전', place: '', sign: '', cap: '삼촌이 놀러 왔어요' },
-      { rel: '13일 전', place: '', sign: '', cap: '새 신발 신고 한 바퀴 👟' },
+      { rel: '4일 전', place: '', sign: '', cap: '동네 도서관 다녀왔어요' },
+      { rel: '6일 전', place: '', sign: '', cap: '아빠랑 자전거 탔어요 🚲' },
+      { rel: '11일 전', place: '', sign: '', cap: '이모네 강아지 보고 왔어요' },
+      { rel: '19일 전', place: '', sign: '', cap: '집에서 종이접기' },
     ],
   },
 ];
@@ -103,6 +109,7 @@ const THEMES = {
   dark: { bg: '#0f0f10', fg: '#f2f2f3', sub: '#9aa0a6', line: '#26262a', chip: '#1c1c20' },
   band: { bg: '#ffffff', fg: '#1a1a1a', sub: '#7b8794', line: '#e8eaee', chip: '#f3f5f7' },
   story: { bg: '#fffdf8', fg: '#1a1a1a', sub: '#8a7f6d', line: '#efe7d8', chip: '#f7f1e4' },
+  feed: { bg: '#f7f8fa', fg: '#111827', sub: '#6b7280', line: '#e5e7eb', chip: '#eef2f7' },
 };
 
 function postHtml(p, set, idx) {
@@ -156,6 +163,12 @@ function daysAgoOf(rel) {
   const m = String(rel).match(/^(\d+)일/);
   if (m) return parseInt(m[1], 10);
   // 절대 날짜는 오늘로부터 며칠 전인지 되계산
+  const dot = String(rel).match(/^(\d{4})\.(\d{2})\.(\d{2})$/);
+  if (dot) {
+    const d = new Date(+dot[1], +dot[2] - 1, +dot[3]);
+    const t0 = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
+    return Math.round((t0 - d) / 86400000);
+  }
   const a = String(rel).match(/(\d+)년\s*(\d+)월\s*(\d+)일/);
   if (a) {
     const d = new Date(+a[1], +a[2] - 1, +a[3]);
@@ -172,10 +185,10 @@ function daysAgoOf(rel) {
     const uniq = new Set(mods).size;
     const wantSame = set.truth.kinds.includes('요일');
     if (wantSame && uniq !== 1) throw new Error(set.name + ': 같은 요일이어야 하는데 mod7 ' + mods.join(','));
-    if (set.name === 'h4-coincidence' && uniq === mods.length) {
+    if (set.name === 'h4-decoy' && uniq === mods.length) {
       throw new Error('h4: 우연히 겹치는 요일이 하나는 있어야 함정이 된다 — mod7 ' + mods.join(','));
     }
-    if (!wantSame && set.name !== 'h4-coincidence' && uniq !== mods.length) {
+    if (!wantSame && set.name !== 'h4-decoy' && uniq !== mods.length) {
       throw new Error(set.name + ': 요일이 모두 달라야 하는데 mod7 ' + mods.join(','));
     }
   }
