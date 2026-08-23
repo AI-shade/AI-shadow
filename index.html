@@ -4659,11 +4659,7 @@
 
       // 캡션을 안 쓰겠다고 했으면 이 카드 자체가 필요 없다.
       // "캡션을 입력하시면 다듬어드려요"는 이미 안 쓰기로 한 사람에게는 잔소리다.
-      var captionCard = document.getElementById('captionCard');
-      var hasCaption = !document.getElementById('noCaption').checked
-        && !!document.getElementById('captionInput').value.trim();
-      captionCard.style.display = hasCaption ? '' : 'none';
-      if (!hasCaption) return;
+      if (!syncCaptionCardVisibility()) return;
 
       var captionList = document.getElementById('captionSuggestions');
       captionList.innerHTML = '';
@@ -4790,6 +4786,8 @@
       // 내역도 미리 자리를 잡아둔다. 점수만 굴리다가 항목이 뒤늦게 툭 나타나면
       // 방금 지어낸 값처럼 보인다. 뼈대를 깔고 숫자를 같이 굴리다 제자리를 찾게 한다.
       var sbEls = ensureBreakdownSkeleton();
+      ensureChainSkeleton();
+      syncCaptionCardVisibility();
 
       var t = 0;
       stopScoreTicker();
@@ -4829,6 +4827,44 @@
       { 항목: '인물 식별성', 상한: 20 },
       { 항목: '게시 습관', 상한: 15 },
     ];
+
+    // 장소 사슬도 자리를 미리 잡아둔다.
+    // 점수 카드는 뼈대를 깔아 높이가 고정됐는데 옆의 장소 카드는 비어 있다가
+    // 결과가 오면서 256px에서 529px로 두 배가 됐다 — 화면이 통째로 밀려 내려간다.
+    // 단계 이름과 개수는 고정이므로 미리 그려둘 수 있다.
+    var LC_STEPS = ['소속이 보인다', '글자로 장소가 적혀 있다', '올린 시점이 곧 그때다', '누가 볼 수 있나'];
+
+    // 캡션을 썼는지는 점수를 기다릴 필요 없이 이미 안다.
+    // 결과가 온 뒤에 감추면 카드가 사라지며 아래 내용이 215px 솟구친다(실측).
+    function syncCaptionCardVisibility() {
+      var card = document.getElementById('captionCard');
+      if (!card) return false;
+      var has = !document.getElementById('noCaption').checked
+        && !!document.getElementById('captionInput').value.trim();
+      card.style.display = has ? '' : 'none';
+      return has;
+    }
+
+    function ensureChainSkeleton() {
+      var el = document.getElementById('locChain');
+      if (!el) return;
+      el.innerHTML = '';
+      LC_STEPS.forEach(function (name) {
+        var li = document.createElement('li');
+        li.className = 'off';
+        var what = document.createElement('span');
+        what.className = 'lc-what';
+        what.textContent = name;
+        var tag = document.createElement('span');
+        tag.className = 'lc-tag';
+        tag.textContent = '확인 중';
+        var why = document.createElement('p');
+        why.className = 'lc-why';
+        why.textContent = '살펴보는 중…';
+        li.appendChild(what); li.appendChild(tag); li.appendChild(why);
+        el.appendChild(li);
+      });
+    }
 
     function ensureBreakdownSkeleton() {
       var sb = document.getElementById('scoreBreakdown');
