@@ -534,6 +534,14 @@
   }
   li.caption-skel::before { content: ' a0'; }
 
+  /* 조치·패턴 뼈대 — .action-list li와 같은 글자 크기·행간이라야 결과가 와도
+     카드 높이가 그대로다. 줄마다 너비를 달리해 진짜 문장처럼 보이게 한다. */
+  /* .skel은 inline-block이라 줄상자에 여백이 더 붙는다(줄마다 +5px). 블록으로 두고
+     실제 줄 높이(글자 0.92rem × 행간 1.8)를 그대로 준다. */
+  li.action-skel { display: block; list-style: none; height: calc(0.92rem * 1.8); margin: 0; width: 88%; }
+  li.action-skel:nth-child(2) { width: 72%; }
+  li.action-skel:nth-child(3) { width: 80%; }
+
   li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.4rem 0; border-radius: 8px; }
   /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김 */
   p.evidence.skel { display: block; width: 90%; height: 1rem; margin: 0.3rem 0; }
@@ -1733,7 +1741,7 @@
       <ol class="loc-chain" id="locChain"></ol>
     </section>
 
-    <section class="result-section">
+    <section class="result-section" id="scheduleCard">
       <h3>스케줄 유출 경고</h3>
       <span class="schedule-flag" id="scheduleFlag">없음</span>
       <ul class="action-list" id="schedulePatternList" style="margin-top:0.5rem; display:none;"></ul>
@@ -1748,7 +1756,7 @@
       </div>
     </section>
 
-    <section class="result-section">
+    <section class="result-section" id="actionCard">
       <h3>권장 조치</h3>
       <ul class="action-list" id="actionList"></ul>
     </section>
@@ -4697,6 +4705,8 @@
       document.getElementById('scheduleEvidence').textContent = r.scheduleEvidence;
 
       var patternList = document.getElementById('schedulePatternList');
+      // 뼈대에서 실제 값으로 넘어갈 때 개수가 다를 수 있다 — 캡션 카드와 같이 부드럽게
+      withHeightTransition(document.getElementById('scheduleCard'), function () {
       patternList.innerHTML = '';
       if (r.schedulePatterns && r.schedulePatterns.length > 0) {
         r.schedulePatterns.forEach(function (p) {
@@ -4726,20 +4736,24 @@
 
       var predictedEl = document.getElementById('schedulePredicted');
       if (r.schedulePredicted) {
+        predictedEl.className = 'evidence';
         predictedEl.textContent = '⚠ 예측 가능해지는 정보: ' + r.schedulePredicted;
         predictedEl.style.display = 'block';
       } else {
         predictedEl.style.display = 'none';
       }
+      });
 
       document.getElementById('summaryText').textContent = r.summary;
 
-      var actionList = document.getElementById('actionList');
-      actionList.innerHTML = '';
-      r.actions.forEach(function (a) {
-        var li = document.createElement('li');
-        li.textContent = a;
-        actionList.appendChild(li);
+      withHeightTransition(document.getElementById('actionCard'), function () {
+        var actionList = document.getElementById('actionList');
+        actionList.innerHTML = '';
+        (r.actions || []).forEach(function (a) {
+          var li = document.createElement('li');
+          li.textContent = a;
+          actionList.appendChild(li);
+        });
       });
 
       // 캡션을 안 쓰겠다고 했으면 이 카드 자체가 필요 없다.
@@ -4951,6 +4965,39 @@
       return has;
     }
 
+    // 결과가 도착할 때 페이지 아래쪽이 밀리던 이유 — 권장 조치는 빈 채로 73px만
+    // 차지하고 있었고, 스케줄 패턴·예측은 자리가 아예 없다가 툭 나타났다(실측 +124px).
+    // 위쪽 점수 카드들처럼 여기도 미리 자리를 잡아둔다.
+    function skeletonLines(el, n) {
+      el.innerHTML = '';
+      for (var i = 0; i < n; i++) {
+        var li = document.createElement('li');
+        li.className = 'skel action-skel';
+        el.appendChild(li);
+      }
+    }
+
+    function ensureBottomSkeleton() {
+      // 권장조치는 서버 프롬프트가 "최대 3개"로 정해두었다 — 3줄이 흔한 경우다.
+      skeletonLines(document.getElementById('actionList'), 3);
+
+      // 패턴·예측은 과거 게시물을 올렸을 때만 나온다. 안 올렸으면 끝까지 안 나오니
+      // 자리를 잡으면 오히려 없던 빈칸이 생긴다. 올렸을 때만 잡는다.
+      var patternList = document.getElementById('schedulePatternList');
+      var predicted = document.getElementById('schedulePredicted');
+      if (pastCount > 0) {
+        skeletonLines(patternList, 2);
+        patternList.style.display = 'block';
+        predicted.textContent = '';
+        predicted.className = 'evidence skel';
+        predicted.style.display = 'block';
+      } else {
+        patternList.innerHTML = '';
+        patternList.style.display = 'none';
+        predicted.style.display = 'none';
+      }
+    }
+
     function ensureBreakdownSkeleton() {
       var sb = document.getElementById('scoreBreakdown');
       var list = document.getElementById('sbList');
@@ -4993,16 +5040,7 @@
       document.getElementById('riskPending').style.display = 'flex';
       SKELETON_TEXT_IDS.forEach(function (id) { document.getElementById(id).classList.add('skel'); });
       startScoreTicker();
-      document.getElementById('schedulePatternList').style.display = 'none';
-      document.getElementById('schedulePredicted').style.display = 'none';
-
-      var actionList = document.getElementById('actionList');
-      actionList.innerHTML = '';
-      for (var i = 0; i < 3; i++) {
-        var li = document.createElement('li');
-        li.className = 'skel skel-li';
-        actionList.appendChild(li);
-      }
+      ensureBottomSkeleton();
 
       // 뼈대 줄이 실제 줄과 규격이 달라 결과가 오면 카드가 튀었다(215 → 174).
       // 얇은 막대(30px) 두 줄이 아니라, 실제 제안 줄과 같은 모양·개수(3줄)로 깐다.
@@ -6431,6 +6469,12 @@
       showScreenForTest: showScreen,
       renderResultForTest: renderResult,
       renderLocationChainForTest: renderLocationChain,
+      renderPhotoAndPinsForTest: renderPhotoAndPins,
+      // 결과 화면이 자리를 잡는지 재려면 과거 게시물 개수를 흉내내야 한다
+      setPastCountForTest: function (n, photoUrl) {
+        pastCount = n;
+        if (photoUrl) uploadedPhotoUrl = photoUrl;
+      },
       buildMockDiagnosisForTest: buildMockDiagnosis,
       gradeOfForTest: gradeOf,
       startRiskPendingForTest: startRiskPending,
