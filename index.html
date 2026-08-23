@@ -3281,7 +3281,7 @@
       // 실측: 같은 72점인데 호출마다 "중"/"상"으로 갈리는 비일관성을 발견해서 고정 규칙으로 바꿈
       // (기존 mock의 등급 경계값과 동일하게 유지: 70↑ 상, 45↑ 중, 그 외 하).
       var score = data.종합위험도점수;
-      var grade = score >= 70 ? '상' : score >= 45 ? '중' : '하';
+      var grade = gradeOf(score);
       if (grade !== data.종합위험도등급) {
         console.log('[위험도진단] Claude가 준 등급(' + data.종합위험도등급 + ')과 점수 기준 등급(' + grade + ')이 달라 점수 기준으로 확정함');
       }
@@ -4315,18 +4315,78 @@
       syncPastHint();
     });
 
-    function buildMockDiagnosis(inputs, ocrResult) {
-      var ocrWords = (ocrResult && ocrResult.words) || [];
-      var ocrTextJoined = ocrWords.map(function (w) { return w.text; }).join(', ');
-      var hasOcrText = ocrTextJoined.length > 0;
+    // 서버(server.js의 gradeOf)와 같은 규칙이어야 한다. 예전에는 클라이언트가 45를,
+    // 서버가 40을 써서 40~44점 구간에서 배지는 "중"인데 게이지는 "하" 색으로 칠해졌다.
+    function gradeOf(score) {
+      return score >= 70 ? '상' : score >= 40 ? '중' : '하';
+    }
 
-      var score = 55;
-      if (inputs.privacySetting === '전체공개') score += 15;
-      if (inputs.uploadTiming === '실시간 업로드') score += 10;
-      if (hasOcrText || inputs.backgroundNotes.trim().length > 0) score += 8;
-      score = Math.max(20, Math.min(score, 96));
-      var grade = score >= 70 ? '상' : score >= 45 ? '중' : '하';
-      var locationScore = Math.max(15, Math.min(score - 5, 92));
+    // Claude 호출이 실패했을 때 쓰는 규칙 기반 폴백.
+    // 예전에는 riskFactors를 만들지 않아서, 실패하면 "왜 이 점수인지" 내역 카드가
+    // 통째로 사라졌다(renderRiskFields가 factors.length === 0이면 숨긴다).
+    // 하필 이미 무너진 상황에서 점수를 납득시킬 근거까지 같이 사라지던 셈이라,
+    // 서버와 같은 네 항목·같은 상한으로 채우고 총점도 그 합으로 낸다.
+    function buildMockDiagnosis(inputs, ocrResult, faceResult) {
+      var ocrWords = (ocrResult && ocrResult.words) || [];
+      // Claude Vision이 죽으면 Tesseract로 넘어가는데, 얼룩이나 무늬를 글자로 잘못
+      // 읽어서 "개  a 4°" 같은 것이 섞여 나온다. 그걸 근거로 점수를 주면 없는 위험을
+      // 지어내는 셈이라, 뜻이 될 만한 길이(한글 2자 또는 영숫자 4자)만 센다.
+      var meaningful = ocrWords.filter(function (w) {
+        var t = String(w.text || '');
+        return /[가-힣]{2,}/.test(t) || /[A-Za-z0-9]{4,}/.test(t);
+      });
+      var ocrTextJoined = meaningful.map(function (w) { return w.text; }).join(', ');
+      var hasOcrText = ocrTextJoined.length > 0;
+      var clues = (ocrResult && ocrResult.visualClues) || [];
+      var faces = (faceResult && faceResult.faces) || [];
+      var hasNotes = inputs.backgroundNotes.trim().length > 0;
+
+      // ① 간판·주소 노출 (상한 30) — 사진에서 읽힌 글자 종류로 매긴다
+      var placeWords = meaningful.filter(function (w) {
+        return /상호명|간판|주소|지번|전화번호/.test(String(w.type || ''));
+      });
+      var f1 = Math.min(30, placeWords.length * 12 + (hasOcrText ? 6 : 0) + (hasNotes ? 5 : 0));
+      var f1why = placeWords.length > 0
+        ? '사진에서 ' + placeWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
+          + ' 같은 글자가 읽혀서 건물·번지까지 좁혀질 수 있어요.'
+        : (hasOcrText
+          ? '간판·주소로 분류될 만한 글자는 아니지만 "' + ocrTextJoined + '"가 읽혔어요.'
+          : (hasNotes
+            ? '배경으로 적어주신 "' + inputs.backgroundNotes.trim() + '"만으로도 장소가 좁혀질 수 있어요.'
+            : '간판·주소·전화번호로 읽히는 글자가 없어요.'));
+
+      // ② 소속 노출 (상한 25) — 교복·명찰·기관 로고
+      var belong = clues.filter(function (c) {
+        return /교복|원복|명찰|로고|엠블럼|기관/.test(String(c.종류 || '') + String(c.근거 || ''));
+      });
+      var f2 = Math.min(25, belong.length * 13);
+      var f2why = belong.length > 0
+        ? belong.map(function (c) { return c.종류; }).join('·') + '이(가) 보여서 다니는 기관까지 좁혀져요.'
+        : '교복·명찰·기관 로고가 보이지 않아요.';
+
+      // ③ 인물 식별성 (상한 20) — 얼굴 수
+      var f3 = Math.min(20, faces.length > 0 ? 10 + (faces.length - 1) * 5 : 0);
+      var f3why = faces.length > 0
+        ? '얼굴 ' + faces.length + '개가 감지돼서 인물이 특정될 수 있어요.'
+        : '얼굴이 감지되지 않아 인물 특정은 어려워요.';
+
+      // ④ 게시 습관 (상한 15) — 공개 범위 + 업로드 시점
+      var openToAll = inputs.privacySetting === '전체공개';
+      var realtime = inputs.uploadTiming === '실시간 업로드';
+      var f4 = (openToAll ? 8 : 0) + (realtime ? 7 : 0);
+      var f4why = (openToAll ? '전체공개' : '공개 범위를 좁혀두셨고') + ', '
+        + (realtime ? '실시간 업로드예요.' : '시간차를 두고 올리셨어요.');
+
+      var riskFactors = [
+        { 항목: '간판·주소 노출', 점수: f1, 상한: 30, 근거: f1why },
+        { 항목: '소속 노출', 점수: f2, 상한: 25, 근거: f2why },
+        { 항목: '인물 식별성', 점수: f3, 상한: 20, 근거: f3why },
+        { 항목: '게시 습관', 점수: f4, 상한: 15, 근거: f4why },
+      ];
+      // 총점은 항목의 합이다 — 서버와 같은 규칙이라 게이지와 "합계 …점"이 늘 맞는다
+      var score = riskFactors.reduce(function (n, f) { return n + f.점수; }, 0);
+      var grade = gradeOf(score);
+      var locationScore = Math.max(10, Math.min(f1 + f2 + (realtime ? 10 : 0), 95));
 
       var bgNote = hasOcrText
         ? '사진에서 실제로 "' + ocrTextJoined + '" 텍스트가 감지돼서 특정 장소로 위치가 특정될 가능성이 있어요.'
@@ -4346,6 +4406,10 @@
 
       return {
         score: score, grade: grade, locationScore: locationScore,
+        riskFactors: riskFactors,
+        isFallback: true,
+        // 장소 사슬이 쓴다 — 실제 호출 경로와 같은 모양으로 맞춘다
+        uploadTiming: inputs.uploadTiming, privacySetting: inputs.privacySetting,
         locationEvidence: bgNote + ' ' + timingNote,
         scheduleOn: scheduleOn,
         scheduleEvidence: scheduleEvidence,
@@ -4354,7 +4418,8 @@
           '배경에 학원/어린이집 이름표나 간판이 보인다면 스마트 크롭이나 스티커로 가린 뒤 올리는 걸 추천해요.',
           inputs.uploadTiming === '실시간 업로드' ? '가능하면 몇 시간 정도 지난 뒤에 업로드해보세요.' : '지금처럼 시간차를 두고 올리는 습관을 유지해주세요.',
         ],
-        summary: '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
+        summary: '⚠️ Claude 진단 호출에 실패해서 규칙 기반으로 대략 매긴 점수예요. ' +
+          '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
           (inputs.companions ? '함께 계신 "' + inputs.companions + '"과의 사진이라 신원 특정 위험은 크지 않지만, ' : '') +
           '공개 범위와 업로드 시점 설정에 따라 위치·생활 패턴 노출 위험이 달라질 수 있으니 위 권장 조치를 참고해보세요.',
         // 캡션 제안은 지어내지 않는다. 백엔드(Claude)가 실제 캡션을 보고 다듬은 것만 쓴다.
@@ -4371,7 +4436,7 @@
       var full = arc.getTotalLength();
       arc.style.strokeDasharray = full;
       arc.style.strokeDashoffset = full * (1 - Math.max(0, Math.min(100, score)) / 100);
-      arc.setAttribute('stroke', score >= 70 ? 'var(--risk-high)' : score >= 45 ? 'var(--risk-mid)' : 'var(--risk-low)');
+      arc.setAttribute('stroke', score >= 70 ? 'var(--risk-high)' : score >= 40 ? 'var(--risk-mid)' : 'var(--risk-low)');
     }
 
     function addPin(wrap, legend, num, xPct, yPct, label, kind) {
@@ -4823,13 +4888,13 @@
         var loc = Math.round((1 - wave) * 70 + 15 + Math.random() * 12);
         riskEl.textContent = risk;
         locEl.textContent = loc;
-        badgeEl.textContent = risk >= 70 ? '상' : risk >= 45 ? '중' : '하';
-        badgeEl.className = 'risk-chip risk-' + (risk >= 70 ? '상' : risk >= 45 ? '중' : '하');
+        badgeEl.textContent = gradeOf(risk);
+        badgeEl.className = 'risk-chip risk-' + gradeOf(risk);
         barEl.style.width = loc + '%';
         if (arc) {
           arc.style.strokeDasharray = full;
           arc.style.strokeDashoffset = full * (1 - risk / 100);
-          arc.setAttribute('stroke', risk >= 70 ? 'var(--risk-high)' : risk >= 45 ? 'var(--risk-mid)' : 'var(--risk-low)');
+          arc.setAttribute('stroke', risk >= 70 ? 'var(--risk-high)' : risk >= 40 ? 'var(--risk-mid)' : 'var(--risk-low)');
         }
         // 항목 숫자도 같은 박자로 굴린다. 합계는 굴러가는 값의 합이라 늘 아귀가 맞는다.
         var partial = 0;
@@ -5123,7 +5188,7 @@
           var tRiskStart = performance.now();
           var result;
           // 위험도 진단·캡션 제안·스케줄 패턴 분석은 서로 독립적인 호출이라 동시에 실행해서 시간을 줄임
-          var scheduleFallback = buildMockDiagnosis(inputs, ocrResult); // 실패 시에만 쓸 규칙 기반 값
+          var scheduleFallback = buildMockDiagnosis(inputs, ocrResult, faceResult); // 실패 시에만 쓸 규칙 기반 값
           var schedulePromise = runScheduleAnalysisPipeline(pastFilesSnapshot).catch(function (schedErr) {
             console.warn('[스케줄분석] 실패 — 규칙 기반 폴백으로 전환:', schedErr.message);
             return {
@@ -5158,7 +5223,7 @@
           } catch (riskErr) {
             console.warn('[위험도진단] Claude API 실패 — 규칙 기반 폴백으로 전환:', riskErr.message);
             var scheduleResultOnRiskFail = await schedulePromise;
-            result = buildMockDiagnosis(inputs, ocrResult);
+            result = buildMockDiagnosis(inputs, ocrResult, faceResult);
             result.scheduleOn = scheduleResultOnRiskFail.scheduleOn;
             result.scheduleEvidence = scheduleResultOnRiskFail.evidence;
             result.schedulePatterns = scheduleResultOnRiskFail.patterns;
@@ -6366,6 +6431,8 @@
       showScreenForTest: showScreen,
       renderResultForTest: renderResult,
       renderLocationChainForTest: renderLocationChain,
+      buildMockDiagnosisForTest: buildMockDiagnosis,
+      gradeOfForTest: gradeOf,
       startRiskPendingForTest: startRiskPending,
       stopScoreTickerForTest: stopScoreTicker,
       syncSubmitLabel: syncSubmitLabel,
