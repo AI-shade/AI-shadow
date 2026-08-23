@@ -13,6 +13,7 @@
 // 않았습니다. 이 테스트는 그 배선이 살아있는지 확인합니다.
 
 const { chromium } = require('playwright');
+const { 무시해도되나 } = require('./console-noise.js');
 const path = require('path');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
@@ -58,7 +59,7 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: 520, height: 1600 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  page.on('console', (m) => { if (!무시해도되나(m)) errors.push('console: ' + m.text()); });
 
   let riskPayload = null;
 

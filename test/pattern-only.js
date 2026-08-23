@@ -3,6 +3,7 @@
 // 사진이 있어야만 진행되던 것을, 스크린샷만으로도 생활 패턴을 볼 수 있게 열었다.
 // 얼굴·글자 검출과 보정은 올릴 사진이 있어야 뜻이 있으니 이 경로에서는 건너뛴다.
 const { chromium } = require('playwright');
+const { 무시해도되나 } = require('./console-noise.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -23,7 +24,7 @@ const SHOTS = (() => {
   const errs = [];
   p.on('pageerror', e => errs.push(String(e)));
   p.on('console', m => {
-    if (m.type() === 'error' && !/XNNPACK|INFO:|Created TensorFlow/.test(m.text())) errs.push(m.text());
+    if (!무시해도되나(m) && !/XNNPACK|INFO:|Created TensorFlow/.test(m.text())) errs.push(m.text());
   });
   await p.goto('http://localhost:8000/index.html', { waitUntil: 'load' });
   await p.waitForTimeout(1300);

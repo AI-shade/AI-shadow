@@ -4,6 +4,7 @@
 // 팔을 벌리면 팔이 잘리고 사람 주변 배경이 통째로 선명하게 남았다.
 // 지금은 브라우저 안에서 도는 분할 모델이 사람 윤곽을 픽셀 단위로 갈라낸다.
 const { chromium } = require('playwright');
+const { 무시해도되나 } = require('./console-noise.js');
 
 const PHOTO = 'childphoto.jpeg'; // 로컬에서만 쓰는 실사진. 분할은 브라우저 안에서 돌아 밖으로 나가지 않는다.
 
@@ -20,7 +21,7 @@ function check(name, cond, detail) {
   p.on('pageerror', e => errs.push(String(e)));
   // TFLite가 정보 로그를 error 채널로 뱉는다 — 진짜 오류만 센다
   p.on('console', m => {
-    if (m.type() === 'error' && !/XNNPACK|INFO:|Created TensorFlow/.test(m.text())) errs.push(m.text());
+    if (!무시해도되나(m) && !/XNNPACK|INFO:|Created TensorFlow/.test(m.text())) errs.push(m.text());
   });
 
   await p.goto('http://localhost:8000/index.html', { waitUntil: 'load' });

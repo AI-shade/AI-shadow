@@ -31,3 +31,18 @@ flux검증_비교.png
 flux검증_처리결과.png
 flux검증_클로즈업.png
 flux검증_클로즈업_인물.png
+
+# 실제 아이 얼굴이 담긴 검증용 사진 — 로컬 검증에만 쓰고 저장소에는 올리지 않는다.
+# 한 번 커밋되면 히스토리에 영구히 남으므로, 확장자가 아니라 파일명으로 못박아 둔다.
+childphoto.jpeg
+wed.jpg
+아이사진*.jpg
+
+# 데모 녹화 영상 — 저장소를 1.6GB로 불린 주범이고 배포에도 필요 없다
+*.mp4
+*.mov
+*.clipchamp
+
+# 단계별 백업 스냅샷 (로컬 되돌리기용)
+backup-*.html
+server/backup-*.js

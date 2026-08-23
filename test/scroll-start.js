@@ -3,6 +3,7 @@
 // - 주소에 #앵커가 있으면 그 자리로 가야 한다
 // - 화면 전환(진단 → 보정 → 검증)에서는 여전히 도구 위쪽으로 올려줘야 한다
 const { chromium } = require('playwright');
+const { 무시해도되나 } = require('./console-noise.js');
 
 let pass = 0, fail = 0;
 function check(name, cond, detail) {
@@ -20,7 +21,7 @@ const heroInView = p => p.evaluate(() => {
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
   const errs = [];
   p.on('pageerror', e => errs.push(String(e)));
-  p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  p.on('console', m => { if (!무시해도되나(m)) errs.push(m.text()); });
 
   // 1) 첫 진입
   await p.goto('http://localhost:8000/index.html', { waitUntil: 'load' });

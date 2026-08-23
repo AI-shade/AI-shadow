@@ -3,6 +3,7 @@
 // - 자주 묻는 질문은 쌓기 방식 — 지나간 질문도 켜둔 채로 남아 눌러볼 수 있다
 // - 좁은 화면 / 모션 축소: 붙이지 않고 전부 펼친다
 const { chromium } = require('playwright');
+const { 무시해도되나 } = require('./console-noise.js');
 
 const SECTIONS = [
   ['#stepsTrack', '세 단계', 3, false],
@@ -32,7 +33,7 @@ const st = (p, sel) => p.evaluate(s => window.__anshimTest.pinState(s), sel);
     const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
     const errs = [];
     p.on('pageerror', e => errs.push(String(e)));
-    p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+    p.on('console', m => { if (!무시해도되나(m)) errs.push(m.text()); });
     await p.goto('http://localhost:8000/index.html', { waitUntil: 'load' });
     await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
     await p.waitForTimeout(1200);

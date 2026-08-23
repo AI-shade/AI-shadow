@@ -1,0 +1,13 @@
+# 배포에 올라갈 것만 남긴다. 저장소가 1.6GB(영상·백업·검증 이미지)라
+# 그대로 올리면 배포가 느려지고, 올릴 이유도 없다.
+/*
+!/index.html
+!/package.json
+!/vercel.json
+!/api
+!/server
+
+# server 안에서도 배포에 필요 없는 것
+/server/backup-*.js
+/server/*.log
+/server/node_modules

@@ -12,6 +12,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { fal } from '@fal-ai/client';
 import { estimateFillCostUsd } from './fill-cost.js';
 import { resolvePostDate } from './schedule-date.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const PORT = process.env.PORT || 3001;
 // 사용자가 지정한 모델. 날짜 접미사(-20251001) 없는 정식 모델 ID를 사용함
@@ -30,8 +32,39 @@ if (!process.env.FAL_KEY) {
 const anthropic = new Anthropic(); // ANTHROPIC_API_KEY 환경변수에서 자동으로 읽음
 
 const app = express();
-app.use(cors({ origin: /^http:\/\/localhost(:\d+)?$/ })); // 로컬 프론트만 허용
+// 배포판은 프런트와 API가 같은 도메인이라 CORS가 애초에 걸리지 않는다.
+// 로컬 개발에서 프런트를 다른 포트로 띄우는 경우만 허용해준다.
+app.use(cors({ origin: /^http:\/\/localhost(:\d+)?$/ }));
 app.use(express.json({ limit: '15mb' })); // 마스킹된 이미지(base64)가 들어있어 넉넉하게
+
+// ── 팀원만 쓰게 하는 공유 접근 코드 ──────────────────────────────────────────
+// 배포하면 주소를 아는 사람은 누구나 이 API를 부를 수 있고, 그 비용은 우리가 낸다.
+// 코드를 모르면 아무 것도 돌아가지 않게 막는다.
+//
+// 팀원 여럿이 하나를 나눠 쓰는 열쇠라 강한 인증이 아니다 — 코드를 아는 사람은
+// 누구나 들어올 수 있고, 브라우저에도 남는다. 해커톤 데모용으로 충분한 수준이다.
+// ANSHIM_ACCESS_CODE가 없으면 열어둔다(로컬 개발에서 매번 입력하지 않도록).
+const ACCESS_CODE = (process.env.ANSHIM_ACCESS_CODE || '').trim();
+function accessOk(req) {
+  if (!ACCESS_CODE) return true;
+  const raw = String(req.get('x-anshim-code') || '');
+  // 헤더에는 ASCII만 담기므로 프런트가 퍼센트 인코딩해서 보낸다. 되돌린다.
+  // 망가진 값이 오면 decodeURIComponent가 예외를 던지므로 그대로 비교한다.
+  let given;
+  try { given = decodeURIComponent(raw); } catch (e) { given = raw; }
+  return given.trim() === ACCESS_CODE;
+}
+
+// 프런트가 "코드가 필요한 곳인가, 내 코드가 맞는가"를 물어보는 곳. 여기는 막지 않는다.
+app.get('/api/access-check', (req, res) => {
+  res.json({ required: Boolean(ACCESS_CODE), ok: accessOk(req) });
+});
+
+app.use('/api', (req, res, next) => {
+  if (req.path === '/access-check') return next();
+  if (accessOk(req)) return next();
+  res.status(401).json({ error: '접근 코드가 필요해요. 팀에서 받은 코드를 입력해주세요.' });
+});
 
 const PROMPT = `이 이미지에서 두 가지를 찾아줘.
 
@@ -918,7 +951,22 @@ app.post('/api/verify-correction', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`[server] 안심앨범 백엔드 실행 중 — http://localhost:${PORT}`);
-  console.log(`[server] 모델: ${MODEL}`);
-});
+// 로컬에서 `npm start` 하나로 프런트까지 볼 수 있게 index.html을 직접 내보낸다.
+// 프런트가 API를 상대 경로(/api/...)로 부르므로 같은 주소에서 떠 있어야 한다.
+// 저장소 전체를 static으로 열면 server/.env까지 나가므로 파일 하나만 지정한다.
+// 배포판에서는 버셀이 정적 파일을 먼저 처리하니 여기까지 오지 않는다.
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+function sendIndex(req, res) { res.sendFile(path.join(ROOT, 'index.html')); }
+app.get('/', sendIndex);
+app.get('/index.html', sendIndex);
+
+// 서버리스(버셀)에서는 이 파일이 함수로 불려 들어오므로 포트를 열지 않는다.
+// 로컬에서 `npm start`로 직접 띄울 때만 listen 한다.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`[server] 안심앨범 백엔드 실행 중 — http://localhost:${PORT}`);
+    console.log(`[server] 모델: ${MODEL}`);
+  });
+}
+
+export default app;

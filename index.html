@@ -514,6 +514,26 @@
     animation: risk-spin 0.8s linear infinite;
   }
   @keyframes risk-spin { to { transform: rotate(360deg); } }
+  /* 팀 접근 코드 문 — 코드를 넣기 전에는 아무것도 못 하게 위를 덮는다 */
+  .gate {
+    position: fixed; inset: 0; z-index: 9999; display: none;
+    align-items: center; justify-content: center; padding: 1.5rem;
+    background: var(--page); 
+  }
+  .gate.on { display: flex; }
+  .gate-box {
+    width: 100%; max-width: 24rem; background: var(--card); border-radius: 22px;
+    padding: 2rem 1.8rem; box-shadow: var(--shadow-card); text-align: center;
+  }
+  .gate-box h2 { margin: 0 0 0.5rem; font-size: 1.15rem; }
+  .gate-box p { margin: 0 0 1.3rem; font-size: 0.86rem; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+  .gate-box input {
+    width: 100%; padding: 0.8rem 1rem; font-size: 1rem; text-align: center;
+    border: 1px solid var(--line); border-radius: 14px; background: var(--soft); color: var(--ink);
+  }
+  .gate-box button { width: 100%; margin-top: 0.8rem; }
+  .gate-err { min-height: 1.4em; margin: 0.7rem 0 0; font-size: 0.82rem; color: var(--risk-high); }
+
   /* 눈에는 안 보이되 화면 낭독기에는 읽히는 칸 */
   .sr-only {
     position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
@@ -1549,6 +1569,28 @@
   if ('scrollRestoration' in history && !location.hash) {
     history.scrollRestoration = 'manual';
   }
+
+  /* #앵커를 달고 처음 들어오면 브라우저는 "지금" 그 요소가 있는 자리로 간다.
+     그런데 이 페이지는 그 뒤로 키가 자란다 — 등장 애니메이션이 열리고 핀 트랙이
+     높이를 잡으면서 목표가 아래로 밀린다. 그래서 엉뚱한 데 서 있게 된다
+     (실측: 7145에 멈췄는데 목표는 9669). 자리가 잡힌 뒤 한 번 더 맞춘다.
+     단 사용자가 이미 스크롤을 시작했다면 끼어들지 않는다. */
+  if (location.hash) {
+    var 사용자가움직임 = false;
+    ['wheel', 'touchstart', 'keydown'].forEach(function (ev) {
+      window.addEventListener(ev, function () { 사용자가움직임 = true; }, { passive: true, once: true });
+    });
+    var 다시맞추기 = function () {
+      if (사용자가움직임) return;
+      var el = document.getElementById(location.hash.slice(1));
+      if (el) el.scrollIntoView({ block: 'start', behavior: 'auto' });
+    };
+    window.addEventListener('load', function () {
+      다시맞추기();
+      setTimeout(다시맞추기, 400);
+      setTimeout(다시맞추기, 1200);
+    });
+  }
 </script>
 
 <div class="page-glow" aria-hidden="true">
@@ -1562,6 +1604,20 @@
 <!-- 결과가 도착한 걸 화면 낭독기에 알린다. 점수 자체는 90ms마다 바뀌어서
      live 영역으로 두면 쉬지 않고 읽어대므로, 상태 한 줄만 여기서 알린다. -->
 <p id="resultStatus" role="status" aria-live="polite" class="sr-only"></p>
+
+<!-- 팀 접근 코드. 배포하면 주소를 아는 사람은 누구나 API를 부를 수 있고 그 비용은
+     우리가 낸다. 코드를 모르면 아무것도 돌아가지 않는다. 로컬에서는 서버에
+     ANSHIM_ACCESS_CODE가 없으므로 이 문이 아예 뜨지 않는다. -->
+<div class="gate" id="accessGate">
+  <div class="gate-box">
+    <h2>안심앨범</h2>
+    <p>팀 내부에서 보는 화면이에요.<br />전달받은 접근 코드를 넣어주세요.</p>
+    <label for="accessInput" class="sr-only">접근 코드</label>
+    <input type="password" id="accessInput" autocomplete="off" placeholder="접근 코드" />
+    <button class="primary" id="accessBtn">들어가기</button>
+    <p class="gate-err" id="accessErr"></p>
+  </div>
+</div>
 
 <nav class="site-nav">
   <div class="nav-inner">
@@ -3045,7 +3101,79 @@
     })();
 
     // ===== 텍스트 판독: Claude Vision (기본) + Tesseract (폴백/디버그 비교용) =====
-    var CLAUDE_BACKEND_URL = 'http://localhost:3001/api/analyze-image';
+    // ===== 팀 접근 코드 =====
+    // 코드는 이 브라우저에만 남는다(localStorage). 요청마다 헤더로 붙여 보내고,
+    // 서버가 환경변수와 맞춰본다. 서버에 코드가 설정되어 있지 않으면 문은 안 뜬다.
+    var ACCESS_STORE_KEY = 'anshim-access-code';
+    function getAccessCode() {
+      try { return localStorage.getItem(ACCESS_STORE_KEY) || ''; } catch (e) { return ''; }
+    }
+    function setAccessCode(v) {
+      try { localStorage.setItem(ACCESS_STORE_KEY, v); } catch (e) { /* 사생활 보호 모드 */ }
+    }
+    // HTTP 헤더에는 ASCII만 넣을 수 있다. 한글 코드를 그대로 넣으면 fetch가
+    // 예외를 던져서, "코드가 틀렸다"가 아니라 "서버에 못 닿았다"로 보인다.
+    // 퍼센트 인코딩해서 보내고 서버가 되돌린다.
+    function accessHeader(code) {
+      return code ? { 'x-anshim-code': encodeURIComponent(code) } : {};
+    }
+    // 모든 API 요청이 거쳐 가는 곳 — 여기 한 곳에서만 코드를 붙이면 된다
+    function apiHeaders(extra) {
+      var h = accessHeader(getAccessCode());
+      if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
+      return h;
+    }
+
+    function showAccessGate(message) {
+      var gate = document.getElementById('accessGate');
+      if (!gate) return;
+      gate.classList.add('on');
+      document.getElementById('accessErr').textContent = message || '';
+      document.getElementById('accessInput').focus();
+    }
+
+    (function setupAccessGate() {
+      var gate = document.getElementById('accessGate');
+      var input = document.getElementById('accessInput');
+      var btn = document.getElementById('accessBtn');
+      if (!gate || !input || !btn) return;
+
+      async function tryCode(code) {
+        var res = await fetch('/api/access-check', { headers: accessHeader(code) });
+        return res.json();
+      }
+
+      btn.addEventListener('click', async function () {
+        var code = input.value.trim();
+        if (!code) return;
+        btn.disabled = true;
+        try {
+          var d = await tryCode(code);
+          if (d.ok) {
+            setAccessCode(code);
+            gate.classList.remove('on');
+            document.getElementById('accessErr').textContent = '';
+          } else {
+            document.getElementById('accessErr').textContent = '코드가 맞지 않아요. 다시 확인해주세요.';
+            input.select();
+          }
+        } catch (e) {
+          document.getElementById('accessErr').textContent = '확인하지 못했어요. 잠시 뒤 다시 시도해주세요.';
+        }
+        btn.disabled = false;
+      });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') btn.click(); });
+
+      // 들어오자마자 확인한다. 서버가 안 떠 있으면(로컬 개발 중) 막지 않는다 —
+      // 여기서 막아버리면 백엔드 없이 화면만 손볼 때 아무것도 못 하게 된다.
+      tryCode(getAccessCode()).then(function (d) {
+        if (d && d.required && !d.ok) showAccessGate();
+      }).catch(function () { /* 서버 없음 — 그냥 연다 */ });
+    })();
+
+    // 백엔드 주소는 상대 경로다. 예전에는 'http://localhost:3001'이 열 군데 박혀 있어서,
+    // 배포하면 방문자의 컴퓨터를 부르다 전부 실패했다.
+    var CLAUDE_BACKEND_URL = '/api/analyze-image';
 
     // 얼굴 영역을 검은 사각형으로 덮어서 Claude Vision에 보낼 이미지를 만듦.
     // 얼굴 bbox에 20% 패딩을 줘서 머리카락/턱선까지 확실히 가림. 블러 대신 완전 불투명 검정 사용
@@ -3139,11 +3267,28 @@
       return table[type] || { wPct: 22, hPct: 6 };
     }
 
+    // Claude Vision은 받은 이미지를 긴 변 1568px로 줄여서 본다. 그보다 크게 보내도
+    // 더 잘 읽지 못하면서 전송만 느려지고, 서버리스 환경은 요청 본문을 4.5MB에서
+    // 자른다(1200만 화소 사진이면 base64로 5MB를 넘긴다). 보내기 전에 맞춰 줄인다.
+    var VISION_MAX_SIDE = 1568;
+    function fitForVision(canvas) {
+      var long = Math.max(canvas.width, canvas.height);
+      if (long <= VISION_MAX_SIDE) return canvas;
+      var k = VISION_MAX_SIDE / long;
+      var out = document.createElement('canvas');
+      out.width = Math.round(canvas.width * k);
+      out.height = Math.round(canvas.height * k);
+      var ctx = out.getContext('2d');
+      ctx.imageSmoothingQuality = 'high'; // 글자를 읽어야 하므로 축소 품질을 높인다
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+      return out;
+    }
+
     async function runClaudeVisionPipeline(imgUrl, faces) {
       var timing = {};
       var t0 = performance.now();
       var img = await loadImage(imgUrl);
-      var maskedCanvas = maskFaces(img, faces);
+      var maskedCanvas = fitForVision(maskFaces(img, faces));
       var maskedDataUrl = maskedCanvas.toDataURL('image/jpeg', 0.85);
       var base64 = maskedDataUrl.split(',')[1];
       timing.maskMs = performance.now() - t0;
@@ -3151,7 +3296,7 @@
       var t1 = performance.now();
       var res = await fetch(CLAUDE_BACKEND_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ imageBase64: base64, mediaType: 'image/jpeg' }),
       });
       timing.requestMs = performance.now() - t1;
@@ -3254,8 +3399,8 @@
     }
 
     // ===== 위험도 진단 + 캡션 제안 (Claude API, 이미지 전송 없음) =====
-    var RISK_BACKEND_URL = 'http://localhost:3001/api/diagnose-risk';
-    var CAPTION_BACKEND_URL = 'http://localhost:3001/api/suggest-captions';
+    var RISK_BACKEND_URL = '/api/diagnose-risk';
+    var CAPTION_BACKEND_URL = '/api/suggest-captions';
 
     // 텍스트별 좌표(xPct,yPct)를 "상단 중앙" 같은 9분할 위치 설명으로 근사 변환.
     // Claude Vision 결과는 이미 위치 설명을 갖고 있지만(w.position), Tesseract 결과는
@@ -3269,9 +3414,14 @@
     async function postJson(url, body) {
       var res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(body),
       });
+      // 코드가 바뀌었거나 지워졌으면 여기서 다시 묻는다
+      if (res.status === 401) {
+        showAccessGate('접근 코드를 다시 넣어주세요.');
+        throw new Error('접근 코드가 필요해요.');
+      }
       if (!res.ok) {
         var errBody = await res.json().catch(function () { return {}; });
         throw new Error('요청 실패 (' + res.status + '): ' + (errBody.error || res.statusText));
@@ -3336,8 +3486,8 @@
     }
 
     // ===== 스케줄 패턴 분석 (프롬프트 문서 2번) =====
-    var SCREENSHOT_BACKEND_URL = 'http://localhost:3001/api/analyze-screenshot';
-    var SCHEDULE_PATTERN_BACKEND_URL = 'http://localhost:3001/api/analyze-schedule-pattern';
+    var SCREENSHOT_BACKEND_URL = '/api/analyze-screenshot';
+    var SCHEDULE_PATTERN_BACKEND_URL = '/api/analyze-schedule-pattern';
 
     // 스크린샷 1장에서 캡션/게시시점/배경텍스트 추출. 얼굴은 다른 사진과 동일한 프라이버시
     // 원칙에 따라 face-api로 검출해서 마스킹한 뒤에만 Claude Vision으로 전송함.
@@ -3370,6 +3520,9 @@
       var maskedCanvas = maskFaces(img, faceResult.faces);
       // 사진과 달리 스크린샷은 UI 글자가 작다(위치 태그 12px 안팎). JPEG로 줄이면
       // 그 글자가 먼저 뭉개진다 — 정작 가장 값진 위치 단서다. PNG로 그대로 보낸다.
+      // 스크린샷은 PNG 그대로 둔다 — JPEG로 압축하면 작은 한글 UI 글자가 뭉개져
+      // 판독이 틀린다(실측: "푸른숲" → "푸른솔"). 크기만 Claude가 보는 만큼으로 줄인다.
+      maskedCanvas = fitForVision(maskedCanvas);
       var maskedDataUrl = maskedCanvas.toDataURL('image/png');
       var base64 = maskedDataUrl.split(',')[1];
 
@@ -3429,7 +3582,7 @@
     }
 
     // ===== 2단계: Canvas 기반 보정 (스마트 크롭 / 배경 흐림 / 스티커) =====
-    var RECOMMEND_BACKEND_URL = 'http://localhost:3001/api/recommend-correction';
+    var RECOMMEND_BACKEND_URL = '/api/recommend-correction';
 
     async function runRecommendCorrectionPipeline(riskResult, ocrResult) {
       var payload = {
@@ -3446,13 +3599,13 @@
     // ===== AI 배경교체 (fal.ai flux-kontext-pro) =====
     // 프라이버시 예외: 여기서만 마스킹 없는 원본 이미지를 그대로 보낸다 — 기획서 0번 원칙에
     // 명시된 대로, 사용자가 "AI 배경 교체"를 명시적으로 선택하고 동의했을 때만 호출됨.
-    var FLUX_BACKEND_URL = 'http://localhost:3001/api/replace-background';
-    var INPAINT_BACKEND_URL = 'http://localhost:3001/api/inpaint-regions';
-    var FLUX_STATUS_URL = 'http://localhost:3001/api/flux-status';
+    var FLUX_BACKEND_URL = '/api/replace-background';
+    var INPAINT_BACKEND_URL = '/api/inpaint-regions';
+    var FLUX_STATUS_URL = '/api/flux-status';
 
     async function checkFluxStatus() {
       try {
-        var res = await fetch(FLUX_STATUS_URL);
+        var res = await fetch(FLUX_STATUS_URL, { headers: apiHeaders() });
         var data = await res.json();
         return !!data.ready;
       } catch (e) {
@@ -6310,7 +6463,7 @@
     });
 
     // ===== 3단계: 결과 재검증 (프롬프트 문서 5번) =====
-    var VERIFY_BACKEND_URL = 'http://localhost:3001/api/verify-correction';
+    var VERIFY_BACKEND_URL = '/api/verify-correction';
     var METHOD_LABEL = { blur: '배경 흐림', sticker: '자연스럽게 덮기', inpaint: 'AI로 지우고 메우기', outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체' };
 
     // 여러 얼굴 중 가장 큰(주요) 얼굴 기준으로 개수/크기/각도 요약 — 원본·처리후 비교용
@@ -6498,6 +6651,7 @@
       renderResultForTest: renderResult,
       renderLocationChainForTest: renderLocationChain,
       renderPhotoAndPinsForTest: renderPhotoAndPins,
+      apiHeadersForTest: apiHeaders,
       // 결과 화면이 자리를 잡는지 재려면 과거 게시물 개수를 흉내내야 한다
       setPastCountForTest: function (n, photoUrl) {
         pastCount = n;
