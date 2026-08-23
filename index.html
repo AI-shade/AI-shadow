@@ -528,6 +528,32 @@
   .rcard-score .gauge-wrap { flex: 1; align-items: center; }
 
   /* 왜 이 점수인지 — 항목 점수의 합이 곧 종합 점수라, 눈으로 더해볼 수 있어야 한다 */
+  /* 장소가 어떻게 좁혀지는지 — 감지된 것은 진하게, 없는 것은 흐리게 남긴다.
+     없는 항목을 지우면 카드 높이가 사진마다 달라져 짝 카드와 아랫변이 어긋난다. */
+  .chain-head { font-size: 0.8rem; font-weight: 700; margin: 1.1rem 0 0.55rem; }
+  .loc-chain { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; counter-reset: lc; }
+  .loc-chain li {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 0.55rem; align-items: baseline;
+    font-size: 0.84rem; line-height: 1.55;
+  }
+  .loc-chain li::before {
+    counter-increment: lc; content: counter(lc);
+    width: 1.3rem; height: 1.3rem; border-radius: 50%;
+    background: var(--risk-mid-soft); color: var(--risk-mid);
+    font-size: 0.68rem; font-weight: 800; display: grid; place-items: center;
+  }
+  .loc-chain .lc-what { font-weight: 600; }
+  .loc-chain .lc-tag {
+    font-size: 0.68rem; font-weight: 700; white-space: nowrap;
+    background: var(--risk-mid-soft); color: var(--risk-mid);
+    border-radius: 999px; padding: 0.1rem 0.5rem;
+  }
+  .loc-chain .lc-why { grid-column: 2 / -1; font-size: 0.78rem; color: var(--muted);
+                       margin: -0.1rem 0 0; word-break: keep-all; }
+  .loc-chain li.off::before { background: var(--soft); color: var(--muted); }
+  .loc-chain li.off .lc-what { color: var(--muted); font-weight: 600; }
+  .loc-chain li.off .lc-tag { background: var(--soft); color: var(--muted); }
+
   .score-breakdown { margin-top: 1.2rem; border-top: 1px dashed var(--line-strong); padding-top: 0.9rem; }
   .sb-head { font-size: 0.8rem; font-weight: 700; margin: 0 0 0.6rem; color: var(--ink); }
   .sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
@@ -1032,6 +1058,8 @@
     }
     #screen-result > .rcard-detect { order: 3; grid-column: 1 / -1; }
     #screen-result > .result-section { order: 4; }
+    /* 캡션 카드는 마지막에 홀로 남아 옆이 비었다. 가로 전체를 주면 빈 반쪽이 없어진다. */
+    #screen-result > .rcard-caption { order: 4; grid-column: 1 / -1; }
     #screen-result > button,
     #screen-result > .disclaimer { order: 5; grid-column: 1 / -1; }
 
@@ -1649,6 +1677,10 @@
       <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
       <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
       <p class="evidence" id="locationEvidence"></p>
+      <!-- 점수만 있으면 "그래서 어떻게 알아낸다는 건데"가 남는다.
+           이미 감지한 것들로 좁혀지는 순서를 보여준다. 새로 호출하지 않는다. -->
+      <p class="chain-head">이렇게 좁혀집니다</p>
+      <ol class="loc-chain" id="locChain"></ol>
     </section>
 
     <section class="result-section">
@@ -1669,7 +1701,9 @@
       <p class="evidence" id="summaryText"></p>
     </section>
 
-    <section class="result-section">
+    <!-- 캡션을 안 쓰겠다고 한 사람에게 "캡션을 입력하시면…"을 보여줄 이유가 없다.
+         입력했을 때만 나온다. 짝이 없어 옆이 비므로 가로 전체를 쓴다. -->
+    <section class="result-section rcard-caption" id="captionCard">
       <h3>더 안전한 캡션 제안</h3>
       <ul class="caption-suggestions" id="captionSuggestions"></ul>
     </section>
@@ -4492,6 +4526,7 @@
       var sb = document.getElementById('scoreBreakdown');
       var factors = r.riskFactors || [];
       if (factors.length > 0) {
+        // 굴러가던 뼈대를 그대로 두고 값만 바꾼다 — 목록이 사라졌다 다시 그려지면 화면이 튄다
         var sbList = document.getElementById('sbList');
         sbList.innerHTML = '';
         var sum = 0;
@@ -4566,14 +4601,20 @@
         actionList.appendChild(li);
       });
 
+      // 캡션을 안 쓰겠다고 했으면 이 카드 자체가 필요 없다.
+      // "캡션을 입력하시면 다듬어드려요"는 이미 안 쓰기로 한 사람에게는 잔소리다.
+      var captionCard = document.getElementById('captionCard');
+      var hasCaption = !document.getElementById('noCaption').checked
+        && !!document.getElementById('captionInput').value.trim();
+      captionCard.style.display = hasCaption ? '' : 'none';
+      if (!hasCaption) return;
+
       var captionList = document.getElementById('captionSuggestions');
       captionList.innerHTML = '';
       if (!r.captionSuggestions || r.captionSuggestions.length === 0) {
         var empty = document.createElement('li');
         empty.className = 'caption-empty';
-        empty.textContent = document.getElementById('noCaption').checked || !document.getElementById('captionInput').value.trim()
-          ? '캡션을 입력하시면 이 사진에 맞게 더 안전한 표현으로 다듬어드려요.'
-          : '이 캡션에서는 위치나 시간을 특정할 만한 표현을 찾지 못했어요. 그대로 쓰셔도 괜찮아요.';
+        empty.textContent = '이 캡션에서는 위치나 시간을 특정할 만한 표현을 찾지 못했어요. 그대로 쓰셔도 괜찮아요.';
         captionList.appendChild(empty);
         return;
       }
@@ -4587,6 +4628,83 @@
     function renderResult(r, faceResult, ocrResult) {
       renderPhotoAndPins(faceResult, ocrResult);
       renderRiskFields(r);
+      renderLocationChain(r, faceResult, ocrResult);
+    }
+
+    // 점수만 보여주면 "그래서 어떻게 알아낸다는 건데"가 남는다.
+    // 이미 감지해둔 것으로 좁혀지는 순서를 만든다 — 새로 호출하지 않는다.
+    // 감지되지 않은 단계도 흐리게 남긴다. 지우면 사진마다 카드 높이가 달라져
+    // 옆 카드와 아랫변이 어긋나고, "이건 없었다"는 정보도 사라진다.
+    function renderLocationChain(r, faceResult, ocrResult) {
+      var el = document.getElementById('locChain');
+      if (!el) return;
+      var clues = (ocrResult && ocrResult.visualClues) || [];
+      var words = (ocrResult && ocrResult.words) || [];
+      var faces = (faceResult && faceResult.faces) || [];
+
+      var belong = clues.filter(function (c) {
+        return /교복|원복|명찰|로고|엠블럼|기관/.test(String(c.종류 || '') + String(c.근거 || ''));
+      });
+      var placeWords = words.filter(function (w) {
+        return /상호명|간판|주소|지번|전화번호/.test(String(w.type || ''));
+      });
+      var realtime = r.uploadTiming === '실시간 업로드';
+      var openToAll = r.privacySetting === '전체공개';
+
+      var steps = [
+        {
+          on: belong.length > 0,
+          what: '소속이 보인다',
+          tag: belong.length > 0 ? belong.length + '개 감지' : '없음',
+          why: belong.length > 0
+            ? belong.map(function (c) { return c.종류; }).join('·') + ' — 다니는 기관까지 좁혀져요.'
+            : '교복·명찰·기관 로고가 보이지 않아 어디 다니는지는 알 수 없어요.',
+        },
+        {
+          on: placeWords.length > 0,
+          what: '글자로 장소가 적혀 있다',
+          tag: placeWords.length > 0 ? placeWords.length + '곳' : '없음',
+          why: placeWords.length > 0
+            ? placeWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
+              + ' — 건물·번지까지 좁혀져요.'
+            : '간판·주소·전화번호 같은 글자가 없어 건물까지는 좁혀지지 않아요.',
+        },
+        {
+          on: realtime,
+          what: '올린 시점이 곧 그때다',
+          tag: realtime ? '실시간' : '시간차',
+          why: realtime
+            ? '실시간으로 올리면 지금 그 자리에 있다는 뜻이 돼요.'
+            : '시간차를 두고 올리셔서 지금 어디 있는지는 드러나지 않아요.',
+        },
+        {
+          on: openToAll,
+          what: '누가 볼 수 있나',
+          tag: openToAll ? '전체공개' : '제한됨',
+          why: openToAll
+            ? '전체공개라 위의 단서를 누구나 모아볼 수 있어요.'
+            : '공개 범위를 좁혀두셔서 아는 사람만 볼 수 있어요.',
+        },
+      ];
+
+      el.innerHTML = '';
+      steps.forEach(function (st) {
+        var li = document.createElement('li');
+        if (!st.on) li.className = 'off';
+        var what = document.createElement('span');
+        what.className = 'lc-what';
+        what.textContent = st.what;
+        var tag = document.createElement('span');
+        tag.className = 'lc-tag';
+        tag.textContent = st.tag;
+        var why = document.createElement('p');
+        why.className = 'lc-why';
+        why.textContent = st.why;
+        li.appendChild(what); li.appendChild(tag); li.appendChild(why);
+        el.appendChild(li);
+      });
+      // 얼굴이 없으면 인물 특정이 어렵다는 사실도 알려준다 (사슬과 별개 정보)
+      void faces;
     }
 
     // ===== #3/#4: 위험도 판단 대기 중 스켈레톤 + 회전 문구 =====
@@ -4613,6 +4731,10 @@
       var full = arc ? arc.getTotalLength() : 0;
       if (arc) arc.style.transition = 'none'; // 굴리는 동안엔 부드러운 전환이 오히려 방해된다
 
+      // 내역도 미리 자리를 잡아둔다. 점수만 굴리다가 항목이 뒤늦게 툭 나타나면
+      // 방금 지어낸 값처럼 보인다. 뼈대를 깔고 숫자를 같이 굴리다 제자리를 찾게 한다.
+      var sbEls = ensureBreakdownSkeleton();
+
       var t = 0;
       stopScoreTicker();
       scoreTicker = setInterval(function () {
@@ -4631,7 +4753,57 @@
           arc.style.strokeDashoffset = full * (1 - risk / 100);
           arc.setAttribute('stroke', risk >= 70 ? 'var(--risk-high)' : risk >= 45 ? 'var(--risk-mid)' : 'var(--risk-low)');
         }
+        // 항목 숫자도 같은 박자로 굴린다. 합계는 굴러가는 값의 합이라 늘 아귀가 맞는다.
+        var partial = 0;
+        sbEls.forEach(function (el, i) {
+          var cap = SB_CAPS[i].상한;
+          var v = Math.round(((Math.sin(t / 6 + i * 1.7) + 1) / 2) * cap * 0.9 + Math.random() * cap * 0.1);
+          partial += v;
+          el.num.firstChild.nodeValue = String(v);
+          el.fill.style.width = Math.round(v / cap * 100) + '%';
+        });
+        document.getElementById('sbTotal').textContent = '합계를 내는 중… ' + partial + '점';
       }, 90);
+    }
+
+    // 점수를 기다리는 동안 보여줄 내역 뼈대. 항목 이름과 상한은 고정이라 미리 알 수 있다.
+    var SB_CAPS = [
+      { 항목: '간판·주소 노출', 상한: 30 },
+      { 항목: '소속 노출', 상한: 25 },
+      { 항목: '인물 식별성', 상한: 20 },
+      { 항목: '게시 습관', 상한: 15 },
+    ];
+
+    function ensureBreakdownSkeleton() {
+      var sb = document.getElementById('scoreBreakdown');
+      var list = document.getElementById('sbList');
+      list.innerHTML = '';
+      var els = SB_CAPS.map(function (def) {
+        var li = document.createElement('li');
+        li.className = 'pending';
+        var name = document.createElement('span');
+        name.className = 'sb-name';
+        name.textContent = def.항목;
+        var num = document.createElement('span');
+        num.className = 'sb-num';
+        num.appendChild(document.createTextNode('0'));
+        var cap = document.createElement('span');
+        cap.className = 'cap';
+        cap.textContent = ' / ' + def.상한 + '점';
+        num.appendChild(cap);
+        var bar = document.createElement('span');
+        bar.className = 'sb-bar';
+        var fill = document.createElement('span');
+        bar.appendChild(fill);
+        var why = document.createElement('p');
+        why.className = 'sb-why';
+        why.textContent = '살펴보는 중…';
+        li.appendChild(name); li.appendChild(num); li.appendChild(bar); li.appendChild(why);
+        list.appendChild(li);
+        return { li: li, num: num, fill: fill, why: why };
+      });
+      sb.style.display = 'block';
+      return els;
     }
 
     function stopScoreTicker() {
@@ -4855,6 +5027,8 @@
             result = {
               score: riskResult.score, grade: riskResult.grade,
               riskFactors: riskResult.factors,
+              // 장소 사슬이 쓴다 — 체크리스트 답을 결과에 그대로 실어 나른다
+              uploadTiming: inputs.uploadTiming, privacySetting: inputs.privacySetting,
               locationScore: riskResult.locationScore, locationEvidence: riskResult.locationEvidence,
               scheduleOn: scheduleResult.scheduleOn, scheduleEvidence: scheduleResult.evidence,
               schedulePatterns: scheduleResult.patterns, schedulePredicted: scheduleResult.predictedInfo,
@@ -6043,6 +6217,8 @@
       renderPatternOnly: renderPatternOnly,
       showScreenForTest: showScreen,
       renderResultForTest: renderResult,
+      startRiskPendingForTest: startRiskPending,
+      stopScoreTickerForTest: stopScoreTicker,
       syncSubmitLabel: syncSubmitLabel,
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,
