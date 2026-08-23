@@ -514,6 +514,16 @@
     animation: skel-sweep 1.3s ease-in-out infinite;
   }
   @keyframes skel-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  /* 캡션 제안 뼈대 — 실제 제안 줄과 같은 규격이어야 결과가 와도 카드가 안 튄다.
+     .skel이 display: inline-block이라 그냥 두면 높이가 안 잡힌다(30px에 머물렀다).
+     실제 줄과 같은 여백·글자 크기를 주고, 보이지 않는 글자 한 줄로 높이를 만든다. */
+  li.caption-skel {
+    display: block !important; list-style: none;
+    padding: 0.75rem 0.95rem; border-radius: 14px;
+    font-size: 0.92rem; line-height: 1.7;
+  }
+  li.caption-skel::before { content: ' a0'; }
+
   li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.4rem 0; border-radius: 8px; }
   /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김 */
   p.evidence.skel { display: block; width: 90%; height: 1rem; margin: 0.3rem 0; }
@@ -4661,19 +4671,23 @@
       // "캡션을 입력하시면 다듬어드려요"는 이미 안 쓰기로 한 사람에게는 잔소리다.
       if (!syncCaptionCardVisibility()) return;
 
-      var captionList = document.getElementById('captionSuggestions');
-      captionList.innerHTML = '';
-      if (!r.captionSuggestions || r.captionSuggestions.length === 0) {
-        var empty = document.createElement('li');
-        empty.className = 'caption-empty';
-        empty.textContent = '이 캡션에서는 위치나 시간을 특정할 만한 표현을 찾지 못했어요. 그대로 쓰셔도 괜찮아요.';
-        captionList.appendChild(empty);
-        return;
-      }
-      r.captionSuggestions.forEach(function (c) {
-        var li = document.createElement('li');
-        li.textContent = c;
-        captionList.appendChild(li);
+      // 제안 개수는 2~3개로 그때그때 다르다. 뼈대를 3줄로 맞춰뒀지만 2개가 오면
+      // 여전히 줄어든다 — 개수를 미리 알 수 없으니 변화를 부드럽게 만든다.
+      withHeightTransition(document.getElementById('captionCard'), function () {
+        var captionList = document.getElementById('captionSuggestions');
+        captionList.innerHTML = '';
+        if (!r.captionSuggestions || r.captionSuggestions.length === 0) {
+          var empty = document.createElement('li');
+          empty.className = 'caption-empty';
+          empty.textContent = '이 캡션에서는 위치나 시간을 특정할 만한 표현을 찾지 못했어요. 그대로 쓰셔도 괜찮아요.';
+          captionList.appendChild(empty);
+          return;
+        }
+        r.captionSuggestions.forEach(function (c) {
+          var li = document.createElement('li');
+          li.textContent = c;
+          captionList.appendChild(li);
+        });
       });
     }
 
@@ -4836,6 +4850,28 @@
 
     // 캡션을 썼는지는 점수를 기다릴 필요 없이 이미 안다.
     // 결과가 온 뒤에 감추면 카드가 사라지며 아래 내용이 215px 솟구친다(실측).
+    // 높이가 바뀌는 걸 막을 수 없을 때는, 바뀌는 방식을 부드럽게 만든다.
+    // 바꾸기 전 높이를 재고, 바꾼 뒤 높이로 옮겨간 다음 원래대로(auto) 돌려놓는다.
+    // 모션을 줄이는 설정이면 그냥 바로 바꾼다.
+    function withHeightTransition(el, change) {
+      if (!el || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        if (change) change();
+        return;
+      }
+      var before = el.getBoundingClientRect().height;
+      if (change) change();
+      var after = el.getBoundingClientRect().height;
+      if (Math.abs(after - before) < 2) return; // 사실상 안 변했으면 건드리지 않는다
+      el.style.height = before + 'px';
+      void el.offsetHeight; // 시작 높이를 한 번 확정시켜야 전환이 걸린다
+      el.style.transition = 'height 0.35s cubic-bezier(0.22, 1, 0.36, 1)';
+      el.style.height = after + 'px';
+      window.setTimeout(function () {
+        el.style.transition = '';
+        el.style.height = '';
+      }, 380);
+    }
+
     function syncCaptionCardVisibility() {
       var card = document.getElementById('captionCard');
       if (!card) return false;
@@ -4919,11 +4955,14 @@
         actionList.appendChild(li);
       }
 
+      // 뼈대 줄이 실제 줄과 규격이 달라 결과가 오면 카드가 튀었다(215 → 174).
+      // 얇은 막대(30px) 두 줄이 아니라, 실제 제안 줄과 같은 모양·개수(3줄)로 깐다.
+      // 캡션 제안은 보통 3개가 온다 — 그 경우 높이가 그대로다.
       var captionList = document.getElementById('captionSuggestions');
       captionList.innerHTML = '';
-      for (var j = 0; j < 2; j++) {
+      for (var j = 0; j < 3; j++) {
         var li2 = document.createElement('li');
-        li2.className = 'skel skel-li';
+        li2.className = 'skel caption-skel';
         captionList.appendChild(li2);
       }
 
