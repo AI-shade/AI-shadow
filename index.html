@@ -514,6 +514,11 @@
     animation: risk-spin 0.8s linear infinite;
   }
   @keyframes risk-spin { to { transform: rotate(360deg); } }
+  /* 눈에는 안 보이되 화면 낭독기에는 읽히는 칸 */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
   .skel {
     background: var(--soft) !important; color: transparent !important; border-color: transparent !important;
     border-radius: 8px; position: relative; overflow: hidden; display: inline-block; min-width: 2.5em;
@@ -593,6 +598,14 @@
   .sb-bar span { display: block; height: 100%; border-radius: 999px; background: var(--risk-mid); }
   .sb-why { grid-column: 1 / -1; font-size: 0.78rem; line-height: 1.6; color: var(--muted);
             margin: 0; word-break: keep-all; }
+  /* 뼈대 상태의 근거 줄 — 실제 줄 한 줄과 같은 높이(0.78rem × 1.6)여야 안 튄다 */
+  p.sb-why.skel { display: block; height: calc(0.78rem * 1.6); width: 82%; }
+  .sb-list li:nth-child(2) p.sb-why.skel { width: 68%; }
+  .sb-list li:nth-child(3) p.sb-why.skel { width: 76%; }
+  /* 굴러가는 동안의 숫자는 아직 진짜가 아니다 — 결과와 같은 무게로 보이면 안 된다.
+     예전에는 li에 .pending을 붙이기만 하고 CSS가 아예 없어서 아무 차이가 없었다. */
+  .sb-list li.pending .sb-name, .sb-list li.pending .sb-num { color: var(--muted); }
+  .sb-list li.pending .sb-bar span { background: var(--line-strong); }
   /* 0점 항목은 흐리게 — 위험이 없다는 것도 정보다 */
   .sb-list li.zero .sb-name, .sb-list li.zero .sb-num { color: var(--muted); font-weight: 600; }
   .sb-list li.zero .sb-bar span { background: var(--line-strong); }
@@ -1546,6 +1559,9 @@
   </div>
 </div>
 <div class="page-grain" aria-hidden="true"></div>
+<!-- 결과가 도착한 걸 화면 낭독기에 알린다. 점수 자체는 90ms마다 바뀌어서
+     live 영역으로 두면 쉬지 않고 읽어대므로, 상태 한 줄만 여기서 알린다. -->
+<p id="resultStatus" role="status" aria-live="polite" class="sr-only"></p>
 
 <nav class="site-nav">
   <div class="nav-inner">
@@ -1614,7 +1630,7 @@
   <!-- 화면 1: 업로드 -->
   <div class="card" id="screen-form">
     <div class="field">
-      <label>사진</label>
+      <label for="photoInput">사진</label>
       <div class="drop-zone" id="fileDrop">
         <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
         <span id="fileDropLabel">클릭해서 사진을 선택하세요</span>
@@ -1627,14 +1643,14 @@
     </div>
 
     <div class="field">
-      <label>캡션 <span class="hint">이 사진과 함께 올릴 글</span></label>
+      <label for="captionInput">캡션 <span class="hint">이 사진과 함께 올릴 글</span></label>
       <textarea id="captionInput" placeholder="예: 오늘부터 OO어린이집 다니기 시작했어요! 하원길에 놀이터에서 한 컷"></textarea>
       <label class="checkline"><input type="checkbox" id="noCaption"> 캡션 없이 사진만 올릴 거예요</label>
     </div>
 
     <div class="row2">
       <div class="field">
-        <label>계정 공개 범위</label>
+        <label for="privacySetting">계정 공개 범위</label>
         <select id="privacySetting">
           <option value="전체공개">전체공개</option>
           <option value="친구공개">친구공개</option>
@@ -1642,7 +1658,7 @@
         </select>
       </div>
       <div class="field">
-        <label>업로드 시점</label>
+        <label for="uploadTiming">업로드 시점</label>
         <select id="uploadTiming">
           <option value="실시간 업로드">실시간 업로드</option>
           <option value="며칠 지난 후">며칠 지난 후</option>
@@ -1652,17 +1668,17 @@
 
     <div class="row2">
       <div class="field">
-        <label>함께 나온 사람</label>
+        <label for="companions">함께 나온 사람</label>
         <input type="text" id="companions" placeholder="예: 엄마, 친구 가족" />
       </div>
       <div class="field">
-        <label>배경 특이사항</label>
+        <label for="backgroundNotes">배경 특이사항</label>
         <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
       </div>
     </div>
 
     <div class="field">
-      <label>과거 게시물 스크린샷 <span class="hint">선택, 여러 장 가능 — 사진 없이 이것만 올려도 생활 패턴은 분석해드려요</span></label>
+      <label for="pastInput">과거 게시물 스크린샷 <span class="hint">선택, 여러 장 가능 — 사진 없이 이것만 올려도 생활 패턴은 분석해드려요</span></label>
       <div class="drop-zone small" id="pastDrop">
         <span id="pastDropLabel">스크린샷을 선택하면 반복 패턴까지 짚어드려요</span>
         <input type="file" id="pastInput" accept="image/*" multiple />
@@ -1978,7 +1994,7 @@
     <h3 style="font-size:1.05rem; font-weight:600; letter-spacing:-0.01em; margin:0 0 0.8rem; color:var(--ink);">🔧 Claude Vision vs Tesseract 비교</h3>
     <div style="margin-bottom:0.9rem;">
       <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">Claude Vision에 실제로 전송된 이미지 (얼굴 마스킹 적용됨)</p>
-      <img id="debugMaskedImg" style="max-width:220px; border-radius:12px; border:1px solid var(--line); display:block;" />
+      <img id="debugMaskedImg" alt="얼굴을 가린 뒤 서버로 보낸 사진" style="max-width:220px; border-radius:12px; border:1px solid var(--line); display:block;" />
     </div>
     <div style="overflow-x:auto;">
       <table id="debugCompareTable" style="width:100%; font-size:0.76rem; border-collapse:collapse; min-width:480px; margin-bottom:0.9rem;"></table>
@@ -1989,11 +2005,11 @@
     <div style="display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:0.9rem;">
       <div>
         <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">원본 이미지</p>
-        <img id="debugRawImg" style="max-width:170px; border-radius:12px; border:1px solid var(--line); display:block;" />
+        <img id="debugRawImg" alt="원본 사진" style="max-width:170px; border-radius:12px; border:1px solid var(--line); display:block;" />
       </div>
       <div>
         <p style="font-size:0.72rem; color:var(--muted); margin:0 0 0.3rem;">전처리 후 (흑백+대비강화)</p>
-        <img id="debugPreImg" style="max-width:170px; border-radius:12px; border:1px solid var(--line); display:block;" />
+        <img id="debugPreImg" alt="OCR 전처리를 거친 사진" style="max-width:170px; border-radius:12px; border:1px solid var(--line); display:block;" />
       </div>
     </div>
     <p style="font-size:0.78rem; margin:0 0 0.5rem;"><strong>전처리 전 OCR 텍스트:</strong> <span id="debugRawText" style="color:var(--muted);"></span></p>
@@ -4644,6 +4660,11 @@
     // 사진 진단을 통째로 다시 돌리면 돈이 또 든다.
     var lastDiagnosis = null;
 
+    function setResultStatus(text) {
+      var el = document.getElementById('resultStatus');
+      if (el) el.textContent = text;
+    }
+
     function renderRiskFields(r) {
       lastDiagnosis = r;
       var badge = document.getElementById('riskBadge');
@@ -4661,7 +4682,8 @@
       var sb = document.getElementById('scoreBreakdown');
       var factors = r.riskFactors || [];
       if (factors.length > 0) {
-        // 굴러가던 뼈대를 그대로 두고 값만 바꾼다 — 목록이 사라졌다 다시 그려지면 화면이 튄다
+        // 목록을 다시 그린다. 뼈대와 실제 줄의 규격이 같아서 다시 그려도 높이는 그대로다
+        // (test/settle.js가 종합 점수 카드 530 → 530px로 확인한다).
         var sbList = document.getElementById('sbList');
         sbList.innerHTML = '';
         var sum = 0;
@@ -4698,6 +4720,9 @@
       } else {
         sb.style.display = 'none';
       }
+
+      setResultStatus('진단이 끝났어요. 종합 위험도 ' + r.score + '점, ' + r.grade + ' 등급. '
+        + '장소 특정 가능성 ' + r.locationScore + '점. ' + (r.summary || ''));
 
       var flag = document.getElementById('scheduleFlag');
       flag.textContent = r.scheduleOn ? '경고' : '없음';
@@ -5020,8 +5045,10 @@
         var fill = document.createElement('span');
         bar.appendChild(fill);
         var why = document.createElement('p');
-        why.className = 'sb-why';
-        why.textContent = '살펴보는 중…';
+        // 글자로 "살펴보는 중…"이라고 쓰면 눌러야 하거나 기다려야 하는 무언가로
+        // 읽힌다(실사용 제보). 숫자는 이미 눈앞에서 굴러가고 있으니, 여기는
+        // "곧 문장이 들어올 자리"라는 것만 뼈대 막대로 보이면 된다.
+        why.className = 'sb-why skel';
         li.appendChild(name); li.appendChild(num); li.appendChild(bar); li.appendChild(why);
         list.appendChild(li);
         return { li: li, num: num, fill: fill, why: why };
@@ -5041,6 +5068,7 @@
       SKELETON_TEXT_IDS.forEach(function (id) { document.getElementById(id).classList.add('skel'); });
       startScoreTicker();
       ensureBottomSkeleton();
+      setResultStatus('위험도를 계산하고 있어요. 잠시 뒤 결과가 이 화면에 채워집니다.');
 
       // 뼈대 줄이 실제 줄과 규격이 달라 결과가 오면 카드가 튀었다(215 → 174).
       // 얇은 막대(30px) 두 줄이 아니라, 실제 제안 줄과 같은 모양·개수(3줄)로 깐다.
