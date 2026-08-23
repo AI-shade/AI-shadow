@@ -527,6 +527,26 @@
   .rcard-score, .rcard-location { display: flex; flex-direction: column; }
   .rcard-score .gauge-wrap { flex: 1; align-items: center; }
 
+  /* 왜 이 점수인지 — 항목 점수의 합이 곧 종합 점수라, 눈으로 더해볼 수 있어야 한다 */
+  .score-breakdown { margin-top: 1.2rem; border-top: 1px dashed var(--line-strong); padding-top: 0.9rem; }
+  .sb-head { font-size: 0.8rem; font-weight: 700; margin: 0 0 0.6rem; color: var(--ink); }
+  .sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  .sb-list li { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 0.7rem; align-items: baseline; }
+  .sb-name { font-size: 0.84rem; font-weight: 600; }
+  .sb-num { font-size: 0.84rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sb-num .cap { color: var(--muted); font-weight: 600; }
+  .sb-bar { grid-column: 1 / -1; height: 4px; border-radius: 999px; background: var(--soft); overflow: hidden; }
+  .sb-bar span { display: block; height: 100%; border-radius: 999px; background: var(--risk-mid); }
+  .sb-why { grid-column: 1 / -1; font-size: 0.78rem; line-height: 1.6; color: var(--muted);
+            margin: 0; word-break: keep-all; }
+  /* 0점 항목은 흐리게 — 위험이 없다는 것도 정보다 */
+  .sb-list li.zero .sb-name, .sb-list li.zero .sb-num { color: var(--muted); font-weight: 600; }
+  .sb-list li.zero .sb-bar span { background: var(--line-strong); }
+  .sb-total {
+    margin: 0.9rem 0 0; padding-top: 0.6rem; border-top: 1px solid var(--line);
+    font-size: 0.88rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+
   .gauge-wrap {
     display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap;
     margin: 0; padding: 0; background: transparent; text-align: left;
@@ -1593,6 +1613,12 @@
           <p class="gauge-hint">100에 가까울수록 사진만으로 아이를 특정하기 쉬워요.</p>
         </div>
       </div>
+      <!-- 왜 이 점수인지 — 항목 점수의 합이 곧 종합 점수다 -->
+      <div class="score-breakdown" id="scoreBreakdown" style="display:none;">
+        <p class="sb-head">이 점수는 이렇게 나왔어요</p>
+        <ul class="sb-list" id="sbList"></ul>
+        <p class="sb-total" id="sbTotal"></p>
+      </div>
     </div>
 
     <div class="rcard rcard-detect">
@@ -1791,6 +1817,12 @@
       <ul class="action-list" id="pPatternList" style="margin-top:0.5rem; display:none;"></ul>
       <p class="evidence" id="pPredicted" style="font-weight:700; display:none;"></p>
       <p class="evidence" id="pEvidence"></p>
+    </section>
+
+    <section class="result-section" id="pSkipNotice" style="display:none;">
+      <h3>분석에서 뺀 스크린샷</h3>
+      <p class="evidence" id="pSkipText"></p>
+      <button class="ghost-link" id="pIncludeBtn">그래도 포함해서 다시 분석 ↻</button>
     </section>
 
     <section class="result-section">
@@ -2778,6 +2810,11 @@
     }
 
     // 사진 1장을 받아 얼굴 검출 + 랜드마크 기반 각도 추정을 실행
+    // 처음엔 빠른 크기로 보고, 못 찾을 때만 키운다. 대부분의 사진은 첫 번째에서 끝난다.
+    // 1216까지 올려봤지만 896이 찾지 못한 얼굴을 더 찾아내지는 못하면서 8초까지 걸렸다.
+    // 1600은 두 명짜리 사진에서 3명을 잡아내 오탐이 생긴다(실측).
+    var FACE_INPUT_SIZES = [608, 896];
+
     async function runFaceDetectionPipeline(imgUrl) {
       var timing = {};
       var t0 = performance.now();
@@ -2792,11 +2829,29 @@
       // 기본값(inputSize 416, scoreThreshold 0.5)은 사진 속 인물이 화면 전체를 채우지 않는
       // 일반적인 스냅샷에서 얼굴을 놓치는 경우가 있었음 (실측: 신뢰도 46~47%로 기본 임계값 미달).
       // inputSize를 키우고 threshold를 낮추면 오탐(얼굴 없는 사진에서 잘못 검출) 없이 더 잘 잡음 — 실측으로 확인.
+      //
+      // 그런데 608도 SNS 스크린샷에서는 부족했다. 검출기는 이미지를 정사각형으로 줄여
+      // 넣는데, 1080x2400 같은 세로로 긴 화면은 그 과정에서 얼굴이 너무 작아진다.
+      // 같은 사진을 단독으로 넣으면 2명을 찾는데 스크린샷 안에 넣으면 1명만 찾았고,
+      // 얼굴이 더 작으면 0명이 되어 "얼굴을 자동으로 찾지 못했어요" 창이 떴다(실사용 제보).
+      //
+      // 한 번에 크게 잡지 않고 못 찾았을 때만 올린다.
+      // 실측 — 1080x2400: 608에서 1명 · 896에서 2명.
       var t2 = performance.now();
-      var detections = await faceapi
-        .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.3 }))
-        .withFaceLandmarks();
+      var detections = [];
+      var usedInputSize = 0;
+      for (var si = 0; si < FACE_INPUT_SIZES.length; si++) {
+        usedInputSize = FACE_INPUT_SIZES[si];
+        detections = await faceapi
+          .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: usedInputSize, scoreThreshold: 0.3 }))
+          .withFaceLandmarks();
+        if (detections.length > 0) break;
+        if (si < FACE_INPUT_SIZES.length - 1) {
+          console.warn('[얼굴검출] ' + usedInputSize + '에서 0명 — ' + FACE_INPUT_SIZES[si + 1] + '으로 다시 시도');
+        }
+      }
       timing.detectMs = performance.now() - t2;
+      timing.inputSize = usedInputSize;
       timing.totalMs = performance.now() - t0;
 
       var imgArea = img.naturalWidth * img.naturalHeight;
@@ -2918,6 +2973,9 @@
     // (submitBtn 클릭 핸들러에서 리셋).
     var noFaceConsentPromise = null;
     var noFaceConsentChoice = null;
+    // 얼굴을 못 찾은 스크린샷을 그래도 보낼지 — 기본은 보내지 않음.
+    // 사용자가 결과 화면에서 명시적으로 켤 때만 true가 된다.
+    var includeUnmaskedScreenshots = false;
     function resolveNoFaceConsent(context) {
       if (noFaceConsentChoice) return Promise.resolve(noFaceConsentChoice);
       if (noFaceConsentPromise) return noFaceConsentPromise;
@@ -3125,6 +3183,7 @@
       console.log('[위험도진단] 처리 완료 — ' + Math.round(timingMs) + 'ms', data);
       return {
         score: score, grade: grade,
+        factors: data.위험요인 || [],
         locationScore: data.위치노출위험도점수, locationEvidence: data.위치노출근거,
         actions: data.권장조치 || [], summary: data.종합설명,
         timingMs: timingMs, usage: data.usage,
@@ -3158,18 +3217,25 @@
       var faceResult = await runFaceDetectionPipeline(imgUrl);
       var img = await loadImage(imgUrl);
 
+      // 얼굴을 못 찾으면 가릴 수가 없고, 가리지 못한 원본을 밖으로 보내지 않는 것이
+      // 이 서비스의 약속이다. 그래서 그 스크린샷은 분석에서 뺀다.
+      //
+      // 예전에는 여기서 확인 창을 띄웠다. 그런데 사진과 스크린샷을 함께 올리면,
+      // 사진은 멀쩡히 얼굴을 찾았는데도 스크린샷 한 장 때문에 결과 화면 위로
+      // "얼굴을 자동으로 찾지 못했어요" 창이 튀어나왔다(실사용 제보).
+      // 사용자는 이미 끝났다고 생각하던 참이라 흐름이 끊긴다.
+      // 이제 묻지 않고 안전한 쪽(제외)으로 처리하고, 어떤 장을 왜 뺐는지 결과에 적는다.
+      // 그래도 포함하고 싶으면 결과 화면에서 다시 고를 수 있다(includeUnmaskedScreenshots).
+      if ((faceResult.faces || []).length === 0 && !includeUnmaskedScreenshots) {
+        console.warn('[프라이버시] 스크린샷에서 얼굴 검출 0명 — 가릴 수 없으므로 분석에서 제외합니다.');
+        return {
+          caption: '', relativeTime: '', placeTag: '', backgroundTexts: [],
+          faceCount: 0, timingMs: performance.now() - t0,
+          skippedNoFaceConsent: true,
+        };
+      }
       if ((faceResult.faces || []).length === 0) {
-        console.warn('[프라이버시] 스크린샷에서 얼굴 검출 0명 — 사용자 확인을 먼저 받습니다.');
-        var noFaceChoice = await resolveNoFaceConsent('screenshot');
-        if (noFaceChoice === 'safe') {
-          console.warn('[프라이버시] "안전 우선" 선택 — 이 스크린샷은 스케줄 분석에서 제외합니다(로컬로는 캡션/시점 추출이 불가능해서 건너뜀).');
-          return {
-            caption: '', relativeTime: '', placeTag: '', backgroundTexts: [],
-            faceCount: 0, timingMs: performance.now() - t0,
-            skippedNoFaceConsent: true,
-          };
-        }
-        console.warn('[프라이버시] "그래도 원본으로 분석" 선택 — 마스킹되지 않은 원본을 Claude Vision으로 전송합니다(명시적 동의).');
+        console.warn('[프라이버시] 사용자가 명시적으로 포함을 선택 — 마스킹되지 않은 원본을 전송합니다.');
       }
 
       var maskedCanvas = maskFaces(img, faceResult.faces);
@@ -3215,12 +3281,14 @@
       var timingMs = performance.now() - t0;
       console.log('[스케줄분석] 전체 처리 완료 — ' + Math.round(timingMs) + 'ms (스크린샷 ' + pastFiles.length + '장)');
 
+      var skipped = extracted.filter(function (e) { return e.skippedNoFaceConsent; }).length;
       return {
         scheduleOn: pattern.패턴발견여부 === '있음',
         patterns: pattern.발견된패턴 || [],
         predictedInfo: pattern.예측가능정보 || '',
         evidence: pattern.부모에게전할설명 || '',
         extracted: extracted, timingMs: timingMs,
+        skippedCount: skipped, totalCount: extracted.length,
       };
     }
 
@@ -4405,6 +4473,48 @@
       document.getElementById('locationBar').style.width = r.locationScore + '%';
       document.getElementById('locationEvidence').textContent = r.locationEvidence;
 
+      // 왜 이 점수인지 — 항목을 그대로 보여주고 합계를 적는다.
+      // 종합 점수를 모델이 통째로 내놓게 두면 근거를 댈 수 없어서, 항목별로 받아 서버가 더한다.
+      var sb = document.getElementById('scoreBreakdown');
+      var factors = r.riskFactors || [];
+      if (factors.length > 0) {
+        var sbList = document.getElementById('sbList');
+        sbList.innerHTML = '';
+        var sum = 0;
+        factors.forEach(function (f) {
+          var pt = Number(f.점수) || 0;
+          var cap = Number(f.상한) || 0;
+          sum += pt;
+          var li = document.createElement('li');
+          if (pt === 0) li.className = 'zero';
+          var name = document.createElement('span');
+          name.className = 'sb-name';
+          name.textContent = f.항목;
+          var num = document.createElement('span');
+          num.className = 'sb-num';
+          num.appendChild(document.createTextNode(String(pt)));
+          var capEl = document.createElement('span');
+          capEl.className = 'cap';
+          capEl.textContent = ' / ' + cap + '점';
+          num.appendChild(capEl);
+          var bar = document.createElement('span');
+          bar.className = 'sb-bar';
+          var fill = document.createElement('span');
+          fill.style.width = (cap ? Math.round(pt / cap * 100) : 0) + '%';
+          bar.appendChild(fill);
+          var why = document.createElement('p');
+          why.className = 'sb-why';
+          why.textContent = f.근거 || '';
+          li.appendChild(name); li.appendChild(num); li.appendChild(bar); li.appendChild(why);
+          sbList.appendChild(li);
+        });
+        document.getElementById('sbTotal').textContent =
+          '합계 ' + factors.map(function (f) { return Number(f.점수) || 0; }).join(' + ') + ' = ' + sum + '점';
+        sb.style.display = 'block';
+      } else {
+        sb.style.display = 'none';
+      }
+
       var flag = document.getElementById('scheduleFlag');
       flag.textContent = r.scheduleOn ? '경고' : '없음';
       flag.className = r.scheduleOn ? 'schedule-flag on' : 'schedule-flag';
@@ -4612,6 +4722,20 @@
 
       // 무엇을 읽었는지 보여준다. 패턴이 없다고 나왔을 때 "제대로 읽긴 한 건가"를
       // 확인할 방법이 없으면 결과를 믿을 수 없다.
+      // 뺀 장이 있으면 그 사실과 되돌릴 방법을 함께 알린다.
+      // 조용히 빼버리면 왜 결과가 빈약한지 알 수 없다.
+      var skipBox = document.getElementById('pSkipNotice');
+      if (skipBox) {
+        if (r.skippedCount > 0) {
+          document.getElementById('pSkipText').textContent =
+            '스크린샷 ' + r.totalCount + '장 중 ' + r.skippedCount + '장은 얼굴을 찾지 못해 분석에서 뺐어요. '
+            + '얼굴을 가릴 수 없는 사진은 밖으로 보내지 않습니다.';
+          skipBox.style.display = 'block';
+        } else {
+          skipBox.style.display = 'none';
+        }
+      }
+
       var read = document.getElementById('pReadList');
       read.innerHTML = '';
       (r.extracted || []).forEach(function (e, i) {
@@ -4620,7 +4744,7 @@
         if (e.relativeTime) bits.push(e.relativeTime);
         if (e.placeTag) bits.push('📍 ' + e.placeTag);
         (e.backgroundTexts || []).forEach(function (t) { bits.push('“' + t + '”'); });
-        if (e.skippedNoFaceConsent) bits.push('(전송하지 않음 — 안전 우선 선택)');
+        if (e.skippedNoFaceConsent) bits.push('얼굴을 못 찾아 분석에서 뺐어요 (가릴 수 없어서 보내지 않았어요)');
         li.textContent = (i + 1) + '번: ' + (bits.length ? bits.join(' · ') : '읽어낸 정보 없음');
         read.appendChild(li);
       });
@@ -4644,6 +4768,7 @@
       }
       var myGeneration = ++diagnosisGeneration;
       noFaceConsentChoice = null; // 새 진단을 시작하니 이전 사진에서의 선택을 이어받지 않도록 초기화
+      includeUnmaskedScreenshots = false;
       noFaceConsentPromise = null;
       var inputs = {
         caption: document.getElementById('noCaption').checked ? '' : document.getElementById('captionInput').value,
@@ -4715,6 +4840,7 @@
             var scheduleResult = await schedulePromise;
             result = {
               score: riskResult.score, grade: riskResult.grade,
+              riskFactors: riskResult.factors,
               locationScore: riskResult.locationScore, locationEvidence: riskResult.locationEvidence,
               scheduleOn: scheduleResult.scheduleOn, scheduleEvidence: scheduleResult.evidence,
               schedulePatterns: scheduleResult.patterns, schedulePredicted: scheduleResult.predictedInfo,
@@ -5070,6 +5196,12 @@
       showScreen('form');
       // 스크린샷은 그대로 두고 사진만 고르면 되도록 파일 선택창을 바로 연다
       photoInput.click();
+    });
+    document.getElementById('pIncludeBtn').addEventListener('click', function () {
+      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 Claude Vision으로 보냅니다. 계속할까요?')) return;
+      includeUnmaskedScreenshots = true;
+      var files = document.getElementById('pastInput').files;
+      if (files && files.length > 0) runPatternOnly(files);
     });
     document.getElementById('pRestartBtn').addEventListener('click', function () {
       document.getElementById('restartBtn').click();
@@ -5889,12 +6021,14 @@
       labelBrushBlobs: labelBrushBlobs,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
       runOutfitSwap: runOutfitSwap, // 옷 교체 실호출 검증용 (비용 발생)
+      runFaceDetectionPipeline: runFaceDetectionPipeline, // 얼굴 검출 단독 검증용 (로컬 실행이라 비용 없음)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
       // 생활패턴 감지 검증용 — 스크린샷 판독(Claude Vision)과 패턴 분석(Claude) 둘 다 비용 발생
       runScreenshotExtractionPipeline: runScreenshotExtractionPipeline,
       runScheduleAnalysisPipeline: runScheduleAnalysisPipeline,
       renderPatternOnly: renderPatternOnly,
       showScreenForTest: showScreen,
+      renderResultForTest: renderResult,
       syncSubmitLabel: syncSubmitLabel,
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,

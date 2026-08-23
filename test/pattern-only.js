@@ -100,9 +100,42 @@ const SHOTS = (() => {
   check('위치 태그와 사진 속 글자를 구분해 적는다',
     /“하늘유치원”/.test(rendered.read[0]) && /📍 하늘유치원/.test(rendered.read[1]),
     rendered.read.slice(0, 2).join(' | '));
-  check('전송하지 않은 스크린샷은 그렇다고 적는다',
-    /전송하지 않음/.test(rendered.read[2]), rendered.read[2]);
+  check('뺀 스크린샷은 이유를 적는다',
+    /얼굴을 못 찾아/.test(rendered.read[2]) && /보내지 않았어요/.test(rendered.read[2]), rendered.read[2]);
   check('가로 스크롤 없음', !rendered.ov);
+
+  // ── 뺀 스크린샷을 알리고 되돌릴 수 있는가
+  // 예전에는 얼굴을 못 찾을 때마다 확인 창을 띄웠다. 사진과 스크린샷을 함께 올리면
+  // 사진은 멀쩡한데도 스크린샷 하나 때문에 결과 화면 위로 창이 튀어나왔다(실사용 제보).
+  // 지금은 묻지 않고 안전한 쪽(제외)으로 처리하되, 어떤 장을 왜 뺐는지 반드시 알린다.
+  const skip = await p.evaluate(() => {
+    const T = window.__anshimTest;
+    T.renderPatternOnly({
+      scheduleOn: false, patterns: [], predictedInfo: '', evidence: '패턴이 없어요.',
+      extracted: [
+        { relativeTime: '1일 전', placeTag: '', backgroundTexts: [] },
+        { relativeTime: '', placeTag: '', backgroundTexts: [], skippedNoFaceConsent: true },
+        { relativeTime: '', placeTag: '', backgroundTexts: [], skippedNoFaceConsent: true },
+      ],
+      skippedCount: 2, totalCount: 3,
+    }, 3);
+    const box = document.getElementById('pSkipNotice');
+    const shown = getComputedStyle(box).display !== 'none';
+    const text = document.getElementById('pSkipText').textContent;
+    // 뺀 게 없을 때는 안내가 사라져야 한다
+    T.renderPatternOnly({
+      scheduleOn: false, patterns: [], predictedInfo: '', evidence: '패턴이 없어요.',
+      extracted: [{ relativeTime: '1일 전', placeTag: '', backgroundTexts: [] }],
+      skippedCount: 0, totalCount: 1,
+    }, 1);
+    return { shown, text, hiddenWhenNone: getComputedStyle(box).display === 'none',
+             hasBtn: !!document.getElementById('pIncludeBtn') };
+  });
+  check('뺀 장이 있으면 그 사실을 알린다', skip.shown);
+  check('몇 장 중 몇 장인지 적는다', /3장 중 2장/.test(skip.text), skip.text);
+  check('왜 뺐는지 적는다', /보내지 않습니다|가릴 수 없/.test(skip.text), skip.text);
+  check('그래도 포함할 방법을 준다', skip.hasBtn);
+  check('뺀 장이 없으면 안내를 감춘다', skip.hiddenWhenNone);
 
   // ── 패턴이 없을 때도 읽은 내용은 보여줘야 한다
   const none = await p.evaluate(() => {

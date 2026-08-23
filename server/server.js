@@ -193,14 +193,27 @@ ${visualClues}
 "${body.caption || ''}"
 
 위 정보를 종합해서 다음을 작성해주세요:
-1. 종합 위험도 점수 (0~100점)와 등급(상/중/하)
+1. 아래 네 항목에 각각 점수를 매기고, 왜 그 점수인지 한 문장으로 적기
 2. 위치노출 위험도 점수와 근거
 3. 부모가 취할 수 있는 구체적 조치 제안
 
+점수 항목과 상한(이 상한을 넘기지 마세요):
+- 위치 단서 (0~30): 간판·주소·지번·전화번호처럼 어디인지 알 수 있는 것
+- 소속 노출 (0~25): 교복·원복·명찰·기관 로고처럼 어디 다니는지 알 수 있는 것
+- 인물 식별성 (0~20): 얼굴이 또렷한 정도, 함께 찍힌 사람
+- 게시 습관 (0~15): 계정 공개 범위, 실시간 업로드 여부
+
+근거가 없으면 0점을 주세요. 억지로 점수를 채우지 마세요.
+종합 점수는 이 네 항목의 합으로 계산되므로 따로 적지 않아도 됩니다.
+
 반드시 JSON 형식으로만 응답하세요 (다른 설명 없이):
 {
-  "종합위험도점수": 0,
-  "종합위험도등급": "상/중/하",
+  "위험요인": [
+    {"항목": "위치 단서", "점수": 0, "근거": "한 문장"},
+    {"항목": "소속 노출", "점수": 0, "근거": "한 문장"},
+    {"항목": "인물 식별성", "점수": 0, "근거": "한 문장"},
+    {"항목": "게시 습관", "점수": 0, "근거": "한 문장"}
+  ],
   "위치노출위험도점수": 0,
   "위치노출근거": "설명",
   "권장조치": ["조치1", "조치2"],
@@ -208,13 +221,41 @@ ${visualClues}
 }`;
 }
 
+// 종합 점수를 모델이 통째로 내놓게 두면 "왜 72점인가"에 답할 수가 없다.
+// 항목별로 받아서 서버가 더한다 — 화면에 보이는 숫자와 계산이 반드시 맞아떨어진다.
+// 상한을 넘기거나 빠뜨린 항목은 여기서 바로잡는다. 모델의 산수를 믿지 않는다.
+const RISK_FACTORS = [
+  { 항목: '위치 단서', 상한: 30 },
+  { 항목: '소속 노출', 상한: 25 },
+  { 항목: '인물 식별성', 상한: 20 },
+  { 항목: '게시 습관', 상한: 15 },
+];
+
+function normalizeRiskFactors(raw) {
+  const given = Array.isArray(raw) ? raw : [];
+  return RISK_FACTORS.map((def) => {
+    const hit = given.find((g) => String(g && g.항목 || '').replace(/\s/g, '') === def.항목.replace(/\s/g, ''));
+    let score = Number(hit && hit.점수);
+    if (!isFinite(score) || score < 0) score = 0;
+    score = Math.min(def.상한, Math.round(score));
+    return { 항목: def.항목, 점수: score, 상한: def.상한, 근거: (hit && hit.근거) || '해당하는 근거를 찾지 못했어요.' };
+  });
+}
+
+function gradeOf(score) {
+  return score >= 70 ? '상' : score >= 40 ? '중' : '하';
+}
+
 app.post('/api/diagnose-risk', async (req, res) => {
   try {
     const userPrompt = buildRiskUserPrompt(req.body || {});
     const result = await callClaudeText(RISK_SYSTEM_PROMPT, userPrompt);
+    const factors = normalizeRiskFactors(result.parsed.위험요인);
+    const total = factors.reduce((n, f) => n + f.점수, 0);
     res.json({
-      종합위험도점수: result.parsed.종합위험도점수,
-      종합위험도등급: result.parsed.종합위험도등급,
+      위험요인: factors,
+      종합위험도점수: total,
+      종합위험도등급: gradeOf(total),
       위치노출위험도점수: result.parsed.위치노출위험도점수,
       위치노출근거: result.parsed.위치노출근거,
       권장조치: result.parsed.권장조치 || [],
