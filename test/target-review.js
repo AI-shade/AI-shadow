@@ -122,6 +122,42 @@ function check(name, cond, detail) {
   check('짚은 줄이 목록에서도 강조된다', peek.hi);
   check('손을 떼면 테두리가 사라진다', peek.off);
 
+  // ── Tesseract가 잘못 읽은 것이 목록에 오르지 않는가 ──────────────────────
+  // 실사용: 아이 사진에서 옷 주름을 "개  a 4°"로 읽어 체크된 채로 올라왔고,
+  // 사용자가 매번 직접 빼줘야 했다. 뜻을 이루지 않는 것은 아예 올리지 않는다.
+  const 잣대 = await p.evaluate(() => {
+    const f = window.__anshimTest.looksLikeTextForTest;
+    return {
+      뺄것: ['개  a 4°', '개', 'a 4', '°', 'ab', '4', '  ', 'ㅁ ㅁ'].map((t) => [t, f(t)]),
+      남길것: ['푸른숲유치원', '본죽', '12-3', '02-123-4567', 'ABC', '서울시 강남구'].map((t) => [t, f(t)]),
+    };
+  });
+  잣대.뺄것.forEach(([t, ok]) => check('잘못 읽은 "' + t + '"는 글자로 치지 않는다', ok === false));
+  잣대.남길것.forEach(([t, ok]) => check('"' + t + '"는 글자로 친다', ok === true));
+
+  // 조용히 지우면 "왜 못 찾았지"가 된다 — 뺐다는 사실은 밝혀야 한다
+  const 안내 = await p.evaluate(() => {
+    const T = window.__anshimTest;
+    T.setTargets([]);
+    T.setDroppedNoiseForTest(2);
+    T.renderTargetPicker();
+    const 빈목록 = document.querySelector('#targetList .t-none').textContent;
+    T.setTargets([{ text: '푸른숲유치원', bbox: { x0: 10, y0: 10, x1: 80, y1: 30 }, confidence: 90 }]);
+    T.setDroppedNoiseForTest(1);
+    T.renderTargetPicker();
+    const 남은줄 = document.querySelectorAll('#targetList li').length;
+    const 아래안내 = document.querySelector('#targetList .t-none');
+    T.setDroppedNoiseForTest(0);
+    T.renderTargetPicker();
+    const 뺀게없을때 = !document.querySelector('#targetList .t-none');
+    return { 빈목록, 남은줄, 아래안내: 아래안내 ? 아래안내.textContent : '', 뺀게없을때 };
+  });
+  check('전부 잡음이면 뺐다고 알린다', /잘못 읽은 2곳은 뺐어요/.test(안내.빈목록), 안내.빈목록);
+  check('전부 잡음이어도 브러시를 안내한다', /브러시/.test(안내.빈목록));
+  check('남은 것이 있으면 목록은 그대로 보인다', 안내.남은줄 === 1, String(안내.남은줄));
+  check('남은 것이 있어도 뺀 개수를 알린다', /1곳은 목록에서 뺐어요/.test(안내.아래안내), 안내.아래안내);
+  check('뺀 것이 없으면 군더더기 안내가 안 뜬다', 안내.뺀게없을때);
+
   check('페이지 에러 없음', errs.length === 0, errs.slice(0, 2).join(' / '));
 
   console.log('\n결과: ' + pass + '/' + (pass + fail) + ' 통과');

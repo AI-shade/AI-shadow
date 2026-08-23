@@ -4458,6 +4458,7 @@
     var appliedSteps = [];        // 적용 순서대로 쌓인 [{ method, detail }]
     var baseHistory = [];         // 되돌리기용 — 적용 직전의 기준 사진들
     var correctionTextWords = null; // 2단계 보정용 — Tesseract로 다시 계산한 실제 위치(bbox) 텍스트 목록
+    var droppedNoiseCount = 0; // 뜻을 이루지 않아 검수 목록에서 뺀 개수 (숨겼다는 사실은 알려준다)
 
     photoInput.addEventListener('change', function () {
       var file = photoInput.files[0];
@@ -4503,15 +4504,20 @@
     // 통째로 사라졌다(renderRiskFields가 factors.length === 0이면 숨긴다).
     // 하필 이미 무너진 상황에서 점수를 납득시킬 근거까지 같이 사라지던 셈이라,
     // 서버와 같은 네 항목·같은 상한으로 채우고 총점도 그 합으로 낸다.
+    // Tesseract는 얼룩·무늬·옷 주름을 글자로 잘못 읽는다(실측: 아이 사진에서 "개  a 4°").
+    // 뜻을 이루는 덩어리가 하나도 없으면 글자로 치지 않는다.
+    // 한글은 2자, 영문·숫자는 3자가 이어져야 하고, 전화번호·지번처럼 숫자와 기호가
+    // 섞인 짧은 것(02, 12-3)은 살린다 — 그런 건 짧아도 장소를 특정한다.
+    function looksLikeText(text) {
+      var t = String(text || '').trim();
+      if (!t) return false;
+      return /[가-힣]{2,}/.test(t) || /[A-Za-z0-9]{3,}/.test(t) || /\d[\d\-.]{2,}/.test(t);
+    }
+
     function buildMockDiagnosis(inputs, ocrResult, faceResult) {
       var ocrWords = (ocrResult && ocrResult.words) || [];
-      // Claude Vision이 죽으면 Tesseract로 넘어가는데, 얼룩이나 무늬를 글자로 잘못
-      // 읽어서 "개  a 4°" 같은 것이 섞여 나온다. 그걸 근거로 점수를 주면 없는 위험을
-      // 지어내는 셈이라, 뜻이 될 만한 길이(한글 2자 또는 영숫자 4자)만 센다.
-      var meaningful = ocrWords.filter(function (w) {
-        var t = String(w.text || '');
-        return /[가-힣]{2,}/.test(t) || /[A-Za-z0-9]{4,}/.test(t);
-      });
+      // 잘못 읽은 것을 근거로 점수를 주면 없는 위험을 지어내는 셈이다
+      var meaningful = ocrWords.filter(function (w) { return looksLikeText(w.text); });
       var ocrTextJoined = meaningful.map(function (w) { return w.text; }).join(', ');
       var hasOcrText = ocrTextJoined.length > 0;
       var clues = (ocrResult && ocrResult.visualClues) || [];
@@ -5600,11 +5606,24 @@
       list.innerHTML = '';
       box.style.display = 'block';
 
+      // 조용히 빼버리면 "왜 못 찾았지"가 된다. 뺐다는 사실은 밝힌다.
+      function 뺀것안내() {
+        if (droppedNoiseCount <= 0) return null;
+        var p = document.createElement('p');
+        p.className = 't-none';
+        p.textContent = '글자처럼 보였지만 뜻을 이루지 않는 ' + droppedNoiseCount +
+          '곳은 목록에서 뺐어요. 가려야 할 자리가 남았다면 브러시로 직접 칠해주세요.';
+        return p;
+      }
+
       if (all.length === 0) {
         selectedTargetIds = [];
         var none = document.createElement('p');
         none.className = 't-none';
-        none.textContent = '위치를 아는 텍스트를 찾지 못했어요 — 텍스트를 지우는 방식은 쓸 수 없어요.';
+        none.textContent = droppedNoiseCount > 0
+          ? '읽을 만한 텍스트를 찾지 못했어요 — 잘못 읽은 ' + droppedNoiseCount +
+            '곳은 뺐어요. 가릴 곳이 있다면 브러시로 직접 칠해주세요.'
+          : '위치를 아는 텍스트를 찾지 못했어요 — 텍스트를 지우는 방식은 쓸 수 없어요.';
         list.appendChild(none);
         return;
       }
@@ -5674,6 +5693,9 @@
 
         list.appendChild(li);
       });
+
+      var 안내 = 뺀것안내();
+      if (안내) list.appendChild(안내);
     }
 
     // 원본 전송 동의가 필요한 방식들 — 취소했을 때 여기로 되돌리면 안 된다
@@ -5743,10 +5765,19 @@
             console.warn('[2단계보정] 재탐색 실패 — 전체 스캔 결과만으로 진행:', e.message);
           }
         }
+        // 뜻을 이루지 않는 것은 목록에서 뺀다. 예전에는 "개  a 4°" 같은 것이
+        // 체크된 채로 올라와서, 사용자가 매번 직접 빼줘야 했다(실사용 확인).
+        var 읽힌수 = correctionTextWords.length;
+        correctionTextWords = correctionTextWords.filter(function (w) { return looksLikeText(w.text); });
+        droppedNoiseCount = 읽힌수 - correctionTextWords.length;
+        if (droppedNoiseCount > 0) {
+          console.log('[2단계보정] 뜻을 이루지 않아 뺀 것 ' + droppedNoiseCount + '개');
+        }
         console.log('[2단계보정] 보정에 쓸 텍스트 최종 ' + correctionTextWords.length + '개');
       } catch (e) {
         console.warn('[2단계보정] 위치 재계산 실패 — 빈 목록으로 진행:', e.message);
         correctionTextWords = [];
+        droppedNoiseCount = 0;
       } finally {
         methodCards.forEach(function (c) { c.disabled = false; });
         // 목록은 반드시 위치 계산이 끝난 뒤에 그린다. 화면 진입 직후에 그렸더니
@@ -6652,6 +6683,8 @@
       renderLocationChainForTest: renderLocationChain,
       renderPhotoAndPinsForTest: renderPhotoAndPins,
       apiHeadersForTest: apiHeaders,
+      looksLikeTextForTest: looksLikeText,
+      setDroppedNoiseForTest: function (n) { droppedNoiseCount = n; },
       // 결과 화면이 자리를 잡는지 재려면 과거 게시물 개수를 흉내내야 한다
       setPastCountForTest: function (n, photoUrl) {
         pastCount = n;
