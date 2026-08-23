@@ -92,7 +92,7 @@ const SHOTS = (() => {
     };
   });
 
-  check('경고 배지가 "있음"으로 강조된다', rendered.flag === '있음' && rendered.flagOn);
+  check('경고 배지가 "경고"로 강조된다', rendered.flag === '경고' && rendered.flagOn, rendered.flag);
   check('패턴을 줄마다 보여준다', rendered.patterns.length === 2, String(rendered.patterns.length));
   check('근거 게시물 번호를 함께 적는다', /근거: 1번, 2번, 3번, 4번/.test(rendered.patterns[0]), rendered.patterns[0]);
   check('예측 가능 정보를 보여준다', rendered.predictedShown && /유치원/.test(rendered.predicted));
@@ -189,6 +189,40 @@ const SHOTS = (() => {
   check('경고 아이콘이 이모지가 아니다', !/⚠/.test(badge.iconContent), badge.iconContent);
   check('경고 아이콘이 글자색을 그대로 따른다', badge.iconColor === badge.fg,
     badge.iconColor + ' vs ' + badge.fg);
+
+  // ── 긴 설명이 한글 단어 중간에서 끊기지 않는가
+  // word-break 기본값은 한글을 아무 글자에서나 끊는다 — "빈도와"가 "빈도/와"로,
+  // "예측"이 "예/측"으로 갈라져 읽다 걸린다(실사용 제보).
+  const wrap = await p.evaluate(() => {
+    const T = window.__anshimTest;
+    T.showScreenForTest('pattern');
+    T.renderPatternOnly({
+      scheduleOn: true,
+      patterns: [{ 유형: '장소반복', 내용: '햇살어린이집이 네 게시물 모두에서 등장하며 등원 시간대까지 드러난다', 근거게시물: [1, 2, 3, 4] }],
+      predictedInfo: '아이가 햇살어린이집을 정기적으로 다니고 있으며, 평일뿐 아니라 토요일에도 등원하는 패턴. '
+        + '게시물 빈도와 요일 분포를 보면 주 3~4회 이상 방문하는 것으로 추정 가능. '
+        + '이는 아이의 일주일 생활 동선을 충분히 예측 가능하게 만듦.',
+      evidence: '어린이집 이름이 반복 노출되고 있습니다.',
+      extracted: [],
+    }, 0);
+    const pick = (sel) => {
+      const el = document.querySelector(sel);
+      const cs = getComputedStyle(el);
+      const parentW = el.parentElement.getBoundingClientRect().width;
+      const w = el.getBoundingClientRect().width;
+      return { wordBreak: cs.wordBreak, gap: Math.round(parentW - w), w: Math.round(w) };
+    };
+    return {
+      predicted: pick('#pPredicted'),
+      evidence: pick('#pEvidence'),
+      item: pick('#pPatternList li'),
+    };
+  });
+  check('예측 문단이 단어를 붙여 끊는다', wrap.predicted.wordBreak === 'keep-all', wrap.predicted.wordBreak);
+  check('안내 문단도 단어를 붙여 끊는다', wrap.evidence.wordBreak === 'keep-all', wrap.evidence.wordBreak);
+  check('패턴 목록도 단어를 붙여 끊는다', wrap.item.wordBreak === 'keep-all', wrap.item.wordBreak);
+  // 읽기 폭 제한 자체는 남기되, 오른쪽이 눈에 띄게 비면 안 된다(전에는 247px 남았다)
+  check('오른쪽에 남는 자리가 과하지 않다', wrap.predicted.gap < 140, wrap.predicted.gap + 'px');
 
   check('페이지 에러 없음', errs.length === 0, errs.slice(0, 2).join(' / '));
 

@@ -491,7 +491,7 @@
     font-size: 0.64rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 0.05rem;
   }
   .pin-legend .num.face { background: var(--ink); color: var(--card); }
-  .pin-note { text-align: left; font-size: 0.75rem; line-height: 1.65; color: var(--muted); margin: 0 0 1.5rem; max-width: 52ch; }
+  .pin-note { text-align: left; font-size: 0.75rem; line-height: 1.65; color: var(--muted); margin: 0 0 1.5rem; max-width: 64ch; word-break: keep-all; }
 
   /* 위험도 판단 대기 중 스켈레톤 + 진행 표시 */
   .risk-pending {
@@ -591,9 +591,18 @@
   .sub-score-line strong { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
   .bar-track { height: 8px; background: var(--soft); border-radius: 999px; overflow: hidden; margin-bottom: 0.9rem; }
   .bar-fill { height: 100%; background: var(--ink); border-radius: 999px; transition: width 0.6s ease; }
-  p.evidence { font-size: 0.92rem; line-height: 1.75; margin: 0.15rem 0 0; max-width: 62ch; }
+  /* word-break 기본값은 한글을 아무 글자에서나 끊는다 — "빈도와"가 "빈도/와"로,
+     "예측"이 "예/측"으로 갈라져 읽다 걸린다. keep-all로 단어를 붙여둔다.
+     62ch는 라틴 문자 기준의 읽기 폭이라 한글에서는 오른쪽이 247px씩 비었다(실측).
+     한 줄에 50자 안팎이 되도록 넓힌다. */
+  p.evidence {
+    font-size: 0.92rem; line-height: 1.75; margin: 0.15rem 0 0;
+    max-width: 76ch; word-break: keep-all;
+  }
   .action-list { margin: 0; padding-left: 1.1rem; }
-  .action-list li { font-size: 0.92rem; line-height: 1.8; }
+  /* 목록 항목도 한글이 단어 중간에서 끊기지 않게 */
+  .action-list li {
+    word-break: keep-all; font-size: 0.92rem; line-height: 1.8; }
   .caption-suggestions { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }
   .caption-suggestions li {
     background: var(--soft); padding: 0.75rem 0.95rem; border-radius: 14px;
@@ -4397,7 +4406,7 @@
       document.getElementById('locationEvidence').textContent = r.locationEvidence;
 
       var flag = document.getElementById('scheduleFlag');
-      flag.textContent = r.scheduleOn ? '있음' : '없음';
+      flag.textContent = r.scheduleOn ? '경고' : '없음';
       flag.className = r.scheduleOn ? 'schedule-flag on' : 'schedule-flag';
       document.getElementById('scheduleEvidence').textContent = r.scheduleEvidence;
 
@@ -4583,7 +4592,7 @@
 
     function renderPatternOnly(r, count) {
       var flag = document.getElementById('pScheduleFlag');
-      flag.textContent = r.scheduleOn ? '있음' : '없음';
+      flag.textContent = r.scheduleOn ? '경고' : '없음';
       flag.className = r.scheduleOn ? 'schedule-flag on' : 'schedule-flag';
       document.getElementById('pEvidence').textContent = r.evidence || '';
 
