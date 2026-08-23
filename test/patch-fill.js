@@ -153,6 +153,73 @@ async function main() {
   check('빈 목록이어도 정상', edge.b === '200x150');
   check('null이어도 정상', edge.c === '200x150');
 
+  // ── 브러시로 여기저기 칠했을 때, 자국마다 제 둘레 색을 뽑는가 ──
+  //
+  // 예전에는 획 전부를 감싸는 상자 하나에서 색을 한 번만 뽑아 모든 자국에 같은 색을
+  // 발랐다. 아이 둘에 나눠 칠하면 그 상자가 사진 대부분을 덮어서, 정작 뽑히는 건
+  // 바깥 배경색이었다 — 옷 위에 엉뚱한 갈색 얼룩이 생겼다(실사용 제보).
+  const blob = await page.evaluate(async () => {
+    const T = window.__anshimTest;
+    const W = 400, H = 300;
+    const src = document.createElement('canvas');
+    src.width = W; src.height = H;
+    const c = src.getContext('2d');
+    c.fillStyle = '#cc2222'; c.fillRect(0, 0, W / 3, H);
+    c.fillStyle = '#22aa44'; c.fillRect(W / 3, 0, W / 3, H);
+    c.fillStyle = '#2244cc'; c.fillRect(2 * W / 3, 0, W / 3, H);
+    const img = new Image(); img.src = src.toDataURL('image/png'); await img.decode();
+
+    const mask = document.createElement('canvas');
+    mask.width = W; mask.height = H;
+    const m = mask.getContext('2d');
+    m.fillStyle = '#fff';
+    const spots = [[W / 6, H / 2], [W / 2, H / 2], [5 * W / 6, H / 2]];
+    spots.forEach(([x, y]) => { m.beginPath(); m.arc(x, y, 18, 0, Math.PI * 2); m.fill(); });
+
+    const seg = T.labelBrushBlobs(mask);
+    const out = T.applyPatchFill(img, [], W, H, 'color', 16, mask);
+    const octx = out.getContext('2d');
+    const at = (x, y) => {
+      const d = octx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+      return [d[0], d[1], d[2]];
+    };
+
+    // 붙어 있는 자국은 하나로 세어야 한다
+    const joined = document.createElement('canvas');
+    joined.width = W; joined.height = H;
+    const j = joined.getContext('2d');
+    j.fillStyle = '#fff';
+    j.fillRect(50, 50, 60, 20);
+    j.fillRect(100, 50, 60, 20);
+    const segJoined = T.labelBrushBlobs(joined);
+
+    const blank = document.createElement('canvas');
+    blank.width = 40; blank.height = 40;
+
+    return {
+      blobs: seg.blobs.length,
+      filled: spots.map(([x, y]) => at(x, y)),
+      joined: segJoined.blobs.length,
+      empty: T.labelBrushBlobs(blank).blobs.length,
+    };
+  });
+
+  check('떨어진 자국 세 개를 세 덩어리로 나눈다', blob.blobs === 3, String(blob.blobs));
+  check('겹친 자국은 한 덩어리로 센다', blob.joined === 1, String(blob.joined));
+  check('아무것도 안 칠했으면 덩어리 0개', blob.empty === 0, String(blob.empty));
+
+  const dom = (col) => (col[0] > col[1] && col[0] > col[2]) ? 'R' : (col[1] > col[0] && col[1] > col[2]) ? 'G' : 'B';
+  check('빨강 위 자국은 빨강으로 채운다', dom(blob.filled[0]) === 'R', blob.filled[0].join(','));
+  check('초록 위 자국은 초록으로 채운다', dom(blob.filled[1]) === 'G', blob.filled[1].join(','));
+  check('파랑 위 자국은 파랑으로 채운다', dom(blob.filled[2]) === 'B', blob.filled[2].join(','));
+  check('세 자국이 같은 색이 되지 않는다',
+    JSON.stringify(blob.filled[0]) !== JSON.stringify(blob.filled[1])
+    && JSON.stringify(blob.filled[1]) !== JSON.stringify(blob.filled[2]),
+    blob.filled.map(x => x.join(',')).join(' / '));
+  check('뽑은 색이 실제 주변색과 같다',
+    blob.filled[0].join(',') === '204,34,34' && blob.filled[2].join(',') === '34,68,204',
+    blob.filled.map(x => x.join(',')).join(' / '));
+
   if (errors.length) {
     console.log('\n  페이지 에러: ' + errors.join(' | '));
     fail++;

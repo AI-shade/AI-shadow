@@ -3753,6 +3753,71 @@
       return { color: color, uniform: stdev < 18, stdev: stdev };
     }
 
+    // 칠한 자국을 "떨어져 있는 덩어리"별로 나눈다.
+    //
+    // 예전에는 획을 전부 감싸는 상자 하나에서 주변색을 한 번만 뽑아 칠한 곳 전체에
+    // 같은 색을 발랐다. 아이 둘에 나눠 칠하면 그 상자가 사진 대부분을 덮어서,
+    // 정작 뽑히는 건 바깥 야외 배경색이었다 — 옷 위에 갈색 얼룩이 생긴 원인이다.
+    // 덩어리마다 제 둘레에서 색을 뽑아야 옷은 옷색, 셔츠는 셔츠색이 된다.
+    //
+    // 라벨링은 축소한 해상도에서 한다(긴 변 320px). 덩어리를 가르는 데는 충분하고
+    // 원본 해상도로 훑으면 큰 사진에서 몇 초씩 걸린다. 최종 경계는 원본 마스크로
+    // 잘라내므로 축소 때문에 가장자리가 뭉개지지는 않는다.
+    function labelBrushBlobs(mask) {
+      var W = mask.width, H = mask.height;
+      var scale = Math.min(1, 320 / Math.max(W, H));
+      var w = Math.max(1, Math.round(W * scale)), h = Math.max(1, Math.round(H * scale));
+
+      var small = document.createElement('canvas');
+      small.width = w; small.height = h;
+      var sctx = small.getContext('2d');
+      sctx.drawImage(mask, 0, 0, w, h);
+      var d = sctx.getImageData(0, 0, w, h).data;
+
+      var labels = new Int32Array(w * h); // 0 = 안 칠함
+      var blobs = [];
+      var stack = new Int32Array(w * h);
+
+      for (var i = 0; i < w * h; i++) {
+        if (d[i * 4 + 3] <= 10 || labels[i] !== 0) continue;
+        var id = blobs.length + 1;
+        var bb = { x0: w, y0: h, x1: -1, y1: -1, px: 0 };
+        var top = 0;
+        stack[top++] = i;
+        labels[i] = id;
+        while (top > 0) {
+          var cur = stack[--top];
+          var cx = cur % w, cy = (cur - cx) / w;
+          if (cx < bb.x0) bb.x0 = cx;
+          if (cx > bb.x1) bb.x1 = cx;
+          if (cy < bb.y0) bb.y0 = cy;
+          if (cy > bb.y1) bb.y1 = cy;
+          bb.px++;
+          // 4방향이면 대각선으로만 이어진 획이 갈라진다 — 8방향으로 잇는다
+          for (var dy = -1; dy <= 1; dy++) {
+            for (var dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              var nx = cx + dx, ny = cy + dy;
+              if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+              var ni = ny * w + nx;
+              if (labels[ni] !== 0 || d[ni * 4 + 3] <= 10) continue;
+              labels[ni] = id;
+              stack[top++] = ni;
+            }
+          }
+        }
+        blobs.push({
+          id: id, pixels: bb.px,
+          // 원본 해상도 좌표로 되돌린다
+          box: {
+            x0: bb.x0 / scale, y0: bb.y0 / scale,
+            x1: (bb.x1 + 1) / scale, y1: (bb.y1 + 1) / scale,
+          },
+        });
+      }
+      return { w: w, h: h, labels: labels, blobs: blobs };
+    }
+
     // 칠한 자국을 감싸는 상자. 주변색을 어디서 뽑을지 정하는 데 쓴다.
     function brushMaskBounds(mask) {
       if (!mask) return null;
@@ -3811,13 +3876,43 @@
         effect.width = imgW; effect.height = imgH;
         var ectx = effect.getContext('2d');
         if (mode === 'color') {
-          // 칠한 영역의 "주변" 색을 뽑아야 한다. 예전에는 이미지 전체를 박스로 넘겼는데,
-          // sampleBoxSurround는 박스 안쪽을 표본에서 빼므로 표본이 0개가 되어 기본값인
-          // 검정이 나왔다 — 칠한 자리가 새까맣게 칠해지던 원인이다.
-          var bb = brushMaskBounds(brushMask);
-          var st = bb ? sampleBoxSurround(clean, bb) : { color: [128, 128, 128] };
-          ectx.fillStyle = 'rgb(' + st.color[0] + ',' + st.color[1] + ',' + st.color[2] + ')';
-          ectx.fillRect(0, 0, imgW, imgH);
+          // 떨어져 있는 덩어리마다 제 둘레에서 색을 뽑는다.
+          // 하나의 상자로 합쳐서 뽑으면(예전 방식) 여기저기 칠했을 때 상자가 사진
+          // 대부분을 덮어 엉뚱한 배경색 하나가 모든 자국에 발린다.
+          // sampleBoxSurround는 상자 안쪽을 표본에서 빼므로, 상자가 이미지 전체면
+          // 표본이 0개가 되어 검정이 나온다 — 예전에 새까맣게 칠해지던 원인이다.
+          var seg = labelBrushBlobs(brushMask);
+          if (seg.blobs.length === 0) {
+            ectx.fillStyle = 'rgb(128,128,128)';
+            ectx.fillRect(0, 0, imgW, imgH);
+          } else {
+            var colors = seg.blobs.map(function (bl) {
+              var st = sampleBoxSurround(clean, bl.box);
+              return st.color;
+            });
+            // 축소 해상도에서 덩어리별 색을 칠한 뒤 원본 크기로 늘린다.
+            // 늘리면서 생기는 뭉개짐은 아래 destination-in이 원본 마스크로 잘라내 없앤다.
+            var lab = document.createElement('canvas');
+            lab.width = seg.w; lab.height = seg.h;
+            var lctx = lab.getContext('2d');
+            var out = lctx.createImageData(seg.w, seg.h);
+            for (var li = 0; li < seg.labels.length; li++) {
+              var id = seg.labels[li];
+              if (id === 0) continue;
+              var c = colors[id - 1];
+              out.data[li * 4] = c[0];
+              out.data[li * 4 + 1] = c[1];
+              out.data[li * 4 + 2] = c[2];
+              out.data[li * 4 + 3] = 255;
+            }
+            lctx.putImageData(out, 0, 0);
+            // 축소본을 늘리면 덩어리 경계 바깥이 비어 원본 마스크 가장자리가 안 덮인다.
+            // 살짝 부풀려 그려서 마스크 전체가 색으로 차게 한다.
+            ectx.imageSmoothingEnabled = false;
+            var grow = Math.max(2, Math.round(Math.max(imgW, imgH) / seg.w) + 1);
+            ectx.drawImage(lab, -grow, -grow, imgW + grow * 2, imgH + grow * 2);
+            ectx.imageSmoothingEnabled = true;
+          }
         } else {
           drawMosaic(ectx, clean, { x0: 0, y0: 0, x1: imgW, y1: imgH }, cellPx);
         }
@@ -5611,6 +5706,7 @@
       clearPersonMaskCache: clearPersonMaskCache,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
+      labelBrushBlobs: labelBrushBlobs,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
       runOutfitSwap: runOutfitSwap, // 옷 교체 실호출 검증용 (비용 발생)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
