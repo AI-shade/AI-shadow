@@ -5,7 +5,7 @@
 //
 // 실행: npm install && npm start  (server/.env에 ANTHROPIC_API_KEY 필요)
 
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import Anthropic from '@anthropic-ai/sdk';
@@ -15,6 +15,15 @@ import { resolvePostDate } from './schedule-date.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+
+// dotenv는 기본적으로 "실행한 위치"에서 .env를 찾는다. 저장소 루트에서
+// `npm start`(= node server/server.js)로 띄우면 server/.env를 못 보고,
+// 키가 없는 채로 조용히 뜬다 — 화면은 멀쩡한데 전부 폴백으로 도는 상태가 된다.
+// 어디서 띄우든 이 파일 옆의 .env를 읽게 한다.
+// 배포판(버셀)에는 .env 파일이 없고 환경변수가 직접 주입되므로, 없어도 그냥 넘어간다.
+dotenv.config({ path: path.join(HERE, '.env') });
+
 const PORT = process.env.PORT || 3001;
 // 사용자가 지정한 모델. 날짜 접미사(-20251001) 없는 정식 모델 ID를 사용함
 // (Anthropic 모델 ID는 날짜 접미사를 붙이지 않는 것이 현재 규칙).
@@ -23,10 +32,33 @@ const MODEL = 'claude-haiku-4-5';
 if (!process.env.ANTHROPIC_API_KEY) {
   console.error('[server] ⚠ ANTHROPIC_API_KEY가 설정되지 않았습니다. server/.env를 만들어주세요 (.env.example 참고).');
 }
+// fal.ai는 업로드한 파일과 생성 결과를 공개 CDN URL로 서빙하고, 요청 페이로드를
+// 기본 30일간 대시보드 히스토리에 보관한다. 아이 얼굴 사진을 다루는 서비스라
+// 둘 다 기본값으로 두면 안 된다.
+//
+// ACL(initialAcl)로 아예 비공개로 만드는 방법은 실제로 시도해봤고 둘 다 막혔다:
+//   - 입력에 걸면 → FLUX 러너가 URL을 못 읽어서 file_download_error로 실패
+//   - 출력에 걸면 → 우리 서버도 못 받는다 (FAL_KEY를 Authorization에 넣어도 403/404)
+// CDN이 전부-아니면-전무라서, 쓸 수 있는 레버는 "만료 시간"뿐이다.
+//   - 입력(원본 사진·마스크): 러너가 큐에서 대기했다 가져가므로 여유를 두되 10분
+//     (실제 처리는 보통 10~30초. 1시간은 불필요하게 길다)
+//   - 출력(보정 결과): 서버가 즉시 내려받아 base64로 돌려주므로 최소값
+// fal의 만료 최소 단위가 60초라 'immediate'도 실제로는 60초다.
+const FAL_INPUT_LIFECYCLE = { expiresIn: 600 };
+const FAL_OUTPUT_STORAGE = { expiresIn: 'immediate' };
+
 if (!process.env.FAL_KEY) {
   console.warn('[server] ⚠ FAL_KEY가 설정되지 않았습니다 — AI 배경교체(/api/replace-background)는 준비 중 상태로 동작합니다.');
 } else {
-  fal.config({ credentials: process.env.FAL_KEY });
+  fal.config({
+    credentials: process.env.FAL_KEY,
+    // SDK에 store-io 옵션이 없어서(v1.10.1) 미들웨어로 헤더를 직접 붙인다.
+    // 이게 있어야 요청 입출력 JSON이 fal 쪽에 30일간 남지 않는다.
+    requestMiddleware: async (request) => ({
+      ...request,
+      headers: { ...(request.headers || {}), 'x-fal-store-io': '0' },
+    }),
+  });
 }
 
 const anthropic = new Anthropic(); // ANTHROPIC_API_KEY 환경변수에서 자동으로 읽음
@@ -689,10 +721,11 @@ app.post('/api/replace-background', async (req, res) => {
     const buffer = Buffer.from(imageBase64, 'base64');
     const ext = mt.includes('png') ? 'png' : 'jpg';
     const file = new File([buffer], 'photo.' + ext, { type: mt });
-    const uploadedUrl = await fal.storage.upload(file);
+    const uploadedUrl = await fal.storage.upload(file, { lifecycle: FAL_INPUT_LIFECYCLE });
 
     const result = await fal.subscribe('fal-ai/flux-pro/kontext', {
       input: { prompt: editPrompt, image_url: uploadedUrl },
+      storageSettings: FAL_OUTPUT_STORAGE,
     });
 
     const output = result.data || result;
@@ -708,7 +741,6 @@ app.post('/api/replace-background', async (req, res) => {
 
     res.json({
       imageBase64: outputBase64,
-      sourceUrl: outputImage.url,
       width: outputImage.width,
       height: outputImage.height,
       editPrompt: editPrompt,
@@ -793,12 +825,13 @@ app.post('/api/inpaint-regions', async (req, res) => {
     const ext = mt.includes('png') ? 'png' : 'jpg';
     // 마스크는 흑백 경계가 뭉개지면 안 되므로 항상 PNG로 올린다 (JPEG 압축 금지)
     const [imageUrl, maskUrl] = await Promise.all([
-      fal.storage.upload(new File([Buffer.from(imageBase64, 'base64')], 'photo.' + ext, { type: mt })),
-      fal.storage.upload(new File([Buffer.from(maskBase64, 'base64')], 'mask.png', { type: 'image/png' })),
+      fal.storage.upload(new File([Buffer.from(imageBase64, 'base64')], 'photo.' + ext, { type: mt }), { lifecycle: FAL_INPUT_LIFECYCLE }),
+      fal.storage.upload(new File([Buffer.from(maskBase64, 'base64')], 'mask.png', { type: 'image/png' }), { lifecycle: FAL_INPUT_LIFECYCLE }),
     ]);
 
     const result = await fal.subscribe('fal-ai/flux-pro/v1/fill', {
       input: { prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl },
+      storageSettings: FAL_OUTPUT_STORAGE,
     });
 
     const output = result.data || result;
@@ -811,7 +844,6 @@ app.post('/api/inpaint-regions', async (req, res) => {
 
     res.json({
       imageBase64: outputBase64,
-      sourceUrl: outputImage.url,
       width: outputImage.width,
       height: outputImage.height,
       editPrompt: editPrompt,
@@ -955,7 +987,7 @@ app.post('/api/verify-correction', async (req, res) => {
 // 프런트가 API를 상대 경로(/api/...)로 부르므로 같은 주소에서 떠 있어야 한다.
 // 저장소 전체를 static으로 열면 server/.env까지 나가므로 파일 하나만 지정한다.
 // 배포판에서는 버셀이 정적 파일을 먼저 처리하니 여기까지 오지 않는다.
-const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = path.join(HERE, '..');
 function sendIndex(req, res) { res.sendFile(path.join(ROOT, 'index.html')); }
 app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
