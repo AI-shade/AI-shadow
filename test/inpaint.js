@@ -1,4 +1,4 @@
-// 안심앨범 — AI 인페인팅(/api/inpaint-regions) 테스트
+// 아이섀도우 — AI 인페인팅(/api/inpaint-regions) 테스트
 //
 // 사용법: 이 폴더(test)에서 → node inpaint.js
 //   백엔드가 http://localhost:3001 에서 돌고 있어야 합니다.

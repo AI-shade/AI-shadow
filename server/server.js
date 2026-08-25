@@ -1,4 +1,4 @@
-// 안심앨범 — Claude Vision 중계 백엔드
+// 아이섀도우 — Claude Vision 중계 백엔드
 //
 // 역할: 브라우저는 이 서버에만 이미지를 보내고, 이 서버가 Anthropic API 키를 붙여
 // Claude Vision을 호출한다. API 키는 여기(.env)에만 있고 브라우저로는 절대 나가지 않는다.
@@ -996,7 +996,7 @@ app.get('/index.html', sendIndex);
 // 로컬에서 `npm start`로 직접 띄울 때만 listen 한다.
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`[server] 안심앨범 백엔드 실행 중 — http://localhost:${PORT}`);
+    console.log(`[server] 아이섀도우 백엔드 실행 중 — http://localhost:${PORT}`);
     console.log(`[server] 모델: ${MODEL}`);
   });
 }

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "안심앨범 — 아이 사진을 SNS에 올리기 전에 위험을 진단하고 가려주는 웹앱",
+  "description": "아이섀도우 — 아이 사진을 SNS에 올리기 전에 위험을 진단하고 가려주는 웹앱",
   "scripts": {
     "start": "node server/server.js"
   },

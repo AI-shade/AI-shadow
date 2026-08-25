@@ -1,4 +1,4 @@
-// 안심앨범 — 얼굴분석(face-api.js) + 텍스트판독(Claude Vision/Tesseract) 회귀 테스트
+// 아이섀도우 — 얼굴분석(face-api.js) + 텍스트판독(Claude Vision/Tesseract) 회귀 테스트
 //
 // 사용법:
 //   1) 프로젝트 루트에서 정적 서버 실행: python -m http.server 8000

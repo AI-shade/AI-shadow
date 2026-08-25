@@ -12,7 +12,7 @@ const { spawn } = require('node:child_process');
 const path = require('node:path');
 const net = require('node:net');
 
-const CODE = '안심앨범팀2026'; // 한글이 헤더에 그대로 들어가면 fetch가 예외를 던진다 — 일부러 한글로 본다
+const CODE = '아이섀도우팀2026'; // 한글이 헤더에 그대로 들어가면 fetch가 예외를 던진다 — 일부러 한글로 본다
 let pass = 0, fail = 0;
 function ok(cond, name, detail) {
   if (cond) { pass++; console.log('  ✓ ' + name + (detail ? '  ' + detail : '')); }

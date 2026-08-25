@@ -1,4 +1,4 @@
-// 안심앨범 — 옷 교체 마스크(computeClothingRegion / buildClothingMask) 테스트
+// 아이섀도우 — 옷 교체 마스크(computeClothingRegion / buildClothingMask) 테스트
 //
 // 사용법: 이 폴더(test)에서 → node outfit-mask.js
 //   프론트가 http://localhost:8000 에서 돌고 있어야 합니다. AI 호출 없음 (비용 0).

@@ -1,4 +1,4 @@
-// 안심앨범 — 텍스트 영역 분기(classifyTextRegions) 테스트
+// 아이섀도우 — 텍스트 영역 분기(classifyTextRegions) 테스트
 //
 // 사용법: 이 폴더(test)에서 → node text-routing.js
 //   프론트가 http://localhost:8000 에서 돌고 있어야 합니다.

@@ -1,7 +1,7 @@
 {
   "name": "anshim-album-backend",
   "private": true,
-  "description": "안심앨범 - Claude Vision API 중계 백엔드 (API 키를 브라우저에 노출하지 않기 위한 프록시)",
+  "description": "아이섀도우 - Claude Vision API 중계 백엔드 (API 키를 브라우저에 노출하지 않기 위한 프록시)",
   "type": "module",
   "main": "server.js",
   "scripts": {

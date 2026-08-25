@@ -1,4 +1,4 @@
-// 안심앨범 — 주변색 채우기 / 모자이크(applyPatchFill) 테스트
+// 아이섀도우 — 주변색 채우기 / 모자이크(applyPatchFill) 테스트
 //
 // 사용법: 이 폴더(test)에서 → node patch-fill.js
 //   프론트가 http://localhost:8000 에서 돌고 있어야 합니다. AI 호출 없음 (비용 0).

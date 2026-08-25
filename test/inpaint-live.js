@@ -1,4 +1,4 @@
-// 안심앨범 — AI 인페인팅 실호출 검증 (클라이언트 → 서버 → fal → 복원 전 경로)
+// 아이섀도우 — AI 인페인팅 실호출 검증 (클라이언트 → 서버 → fal → 복원 전 경로)
 //
 // ⚠️ 이 테스트는 실제로 fal.ai를 호출합니다 — 1회당 약 $0.03, 30초 정도 걸립니다.
 //    다른 테스트들(preview-layout / text-routing / crop-ratio / inpaint-mask / inpaint)은

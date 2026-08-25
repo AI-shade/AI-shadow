@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>김현미 · 포트폴리오 — 안심앨범</title>
+<meta name="description" content="아이 사진 SNS 위험 진단 앱 '안심앨범'을 설계·구현·검증·배포한 기록.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    color-scheme: light;
+    --page:#ffffff;
+    --surface:#ffffff;
+    --card:#ffffff;
+    --card-dark:#1c1c1c;
+    --card-tan:#f1eefb;
+    --ink:#1a1a1a;
+    --muted:#6b6875;
+    --line:#ece9f2;
+    --accent:#c9bdf5;
+    --accent-ink:#1a1a1a;
+    --accent-2:#2fa66b;
+    --purple:#8b7fe8;
+    --purple-soft:#efeafd;
+    --green:#2fa66b;
+    --green-soft:#e8f8ef;
+    --risk-high:#b23b2e;
+    --risk-mid:#8a5a00;
+    --risk-low:#1f7a52;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--page);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    word-break:keep-all;
+    overflow-wrap:break-word;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; }
+  .wrap{ max-width:1100px; margin:0 auto; padding:0 24px; }
+
+  /* ---------- placeholder styling (remove border once filled in) ---------- */
+  .fillme{
+    background: repeating-linear-gradient(135deg, #fff5cc, #fff5cc 8px, #ffedb0 8px, #ffedb0 16px);
+    border:1.5px dashed #c9a227;
+    border-radius:8px;
+    padding:.15em .5em;
+    font-style:normal;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:40;
+    background:rgba(247,243,238,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px;
+  }
+  .brand{ font-weight:700; font-size:1rem; letter-spacing:-.01em; }
+  .brand .sep{ color:var(--muted); font-weight:400; margin:0 .35em; }
+  .badge-pill{
+    display:inline-flex; align-items:center; gap:.4em;
+    background:var(--card-dark); color:#fff;
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.02em;
+    padding:.45em .9em; border-radius:999px;
+  }
+  .badge-pill .dot{ width:6px; height:6px; border-radius:50%; background:var(--green); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative; overflow:hidden;
+    padding:88px 0 40px;
+  }
+  .blob{
+    position:absolute; border-radius:50%; filter:blur(40px); opacity:.4; z-index:0;
+    pointer-events:none;
+  }
+  .blob-1{ width:280px; height:280px; top:-100px; right:-60px; background:radial-gradient(circle, var(--purple), transparent 72%); }
+  .blob-2{ width:240px; height:240px; top:120px; left:-100px; background:radial-gradient(circle, var(--green), transparent 72%); }
+
+  .hero-inner{ position:relative; z-index:1; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:.5em;
+    background:var(--card); border:1px solid var(--line);
+    padding:.5em 1em; border-radius:999px;
+    font-size:.82rem; color:var(--muted); font-weight:600;
+    margin-bottom:22px;
+  }
+  .eyebrow b{ color:var(--ink); }
+
+  h1.headline{
+    font-size:clamp(1.7rem, 3.4vw, 2.65rem);
+    font-weight:700; letter-spacing:-.02em;
+    max-width:640px; margin:0 0 20px;
+  }
+  .byline{
+    font-size:1rem; color:var(--muted); margin:0 0 30px;
+  }
+  .byline strong{ color:var(--ink); }
+
+  .cta-row{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:.5em;
+    padding:.9em 1.5em; border-radius:999px;
+    font-weight:700; font-size:.95rem;
+    text-decoration:none; border:1px solid transparent;
+    transition:transform .15s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+  .btn-primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn-secondary{ background:var(--card); color:var(--ink); border-color:var(--line); }
+  .hint{ font-size:.82rem; color:var(--muted); }
+
+  /* ---------- risk chip signature element ---------- */
+  .chip-stage{
+    margin-top:56px; display:flex; justify-content:center;
+  }
+  .risk-chip{
+    display:inline-flex; align-items:center; gap:.6em;
+    background:var(--card); border-radius:16px;
+    padding:14px 20px; box-shadow:0 2px 16px rgba(40,30,20,.08);
+    font-family:var(--mono); font-size:.85rem;
+  }
+  .risk-chip .tag{
+    font-weight:700; padding:.3em .7em; border-radius:999px; color:#fff;
+    background:var(--risk-high);
+    transition:background-color .6s ease;
+  }
+  .risk-chip.resolved .tag{ background:var(--risk-low); }
+  .risk-chip .msg{ color:var(--muted); transition:color .6s ease; }
+  .risk-chip .msg::after{ content:"위치노출 82점 — 상호명·전화번호·지번 그대로 노출"; }
+  .risk-chip.resolved .msg::after{ content:"위치노출 12점 — 텍스트 마스킹 완료"; }
+  @media (prefers-reduced-motion:reduce){
+    .risk-chip .tag, .risk-chip .msg{ transition:none; }
+  }
+
+  /* ---------- sections ---------- */
+  section{ padding:72px 0; }
+  .section-head{ margin-bottom:36px; max-width:640px; }
+  .kicker{
+    font-family:var(--mono); font-size:.78rem; letter-spacing:.06em;
+    color:var(--muted); text-transform:uppercase; margin-bottom:10px;
+    display:block;
+  }
+  h2{ font-size:clamp(1.4rem,2.6vw,1.9rem); font-weight:700; margin:0 0 12px; letter-spacing:-.01em; }
+  .lede{ color:var(--muted); font-size:1.02rem; margin:0; }
+
+  .card{
+    background:var(--card); border-radius:22px;
+    padding:28px; box-shadow:0 2px 14px rgba(40,30,20,.06);
+  }
+  .grid{ display:grid; gap:20px; }
+  .grid-2{ grid-template-columns:repeat(2,1fr); }
+  .grid-3{ grid-template-columns:repeat(3,1fr); }
+  @media (max-width:760px){
+    .grid-2, .grid-3{ grid-template-columns:1fr; }
+  }
+
+  /* problem section */
+  .problem-quote{
+    font-family:var(--mono); font-size:.95rem; color:var(--ink);
+    background:var(--card-tan); border-radius:18px; padding:20px 24px;
+    margin-top:24px;
+  }
+  .problem-quote .num{ color:var(--risk-high); font-weight:700; }
+
+  /* solution section */
+  .shot-frame{
+    border-radius:20px; overflow:hidden; border:1px solid var(--line);
+    box-shadow:0 8px 30px rgba(40,30,20,.12);
+  }
+  .feature-tags{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  .feature-tags span{
+    background:var(--surface); border:1px solid var(--line);
+    padding:.5em 1em; border-radius:999px; font-size:.82rem; font-weight:600;
+  }
+
+  .annot-wrap{ position:relative; border-radius:18px; overflow:hidden; margin-top:24px; }
+  .annot-wrap img{ width:100%; }
+  .annot{
+    position:absolute; transform:translate(-50%,-100%);
+    background:var(--card-dark); color:#fff;
+    font-family:var(--mono); font-size:.72rem;
+    padding:.35em .7em; border-radius:8px; white-space:nowrap;
+  }
+  .annot::after{
+    content:""; position:absolute; left:50%; top:100%;
+    transform:translateX(-50%); border:5px solid transparent;
+    border-top-color:var(--card-dark);
+  }
+  .annot-1{ top:26%; left:38%; }
+  .annot-2{ top:52%; left:78%; }
+  .annot-3{ top:60%; left:22%; }
+  @media (max-width:600px){ .annot{ font-size:.62rem; } }
+
+  /* role section — stage log */
+  .stage{
+    display:flex; gap:20px; padding:22px 0; border-top:1px solid var(--line);
+  }
+  .stage:first-child{ border-top:none; }
+  .stage-mark{
+    font-family:var(--mono); font-weight:700; font-size:.85rem;
+    background:var(--ink); color:#fff; width:34px; height:34px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .stage h3{ margin:0 0 6px; font-size:1.02rem; }
+  .stage p{ margin:0; color:var(--muted); font-size:.92rem; }
+  .stage .verify{
+    display:inline-block; margin-top:8px; font-size:.78rem;
+    color:var(--risk-low); font-family:var(--mono);
+  }
+
+  .ai-usage{
+    margin-top:32px; padding-top:32px; border-top:1px solid var(--line);
+  }
+  .ai-usage h3{ font-size:1rem; margin:0 0 14px; }
+  .ai-usage ul{ margin:0; padding-left:1.2em; color:var(--muted); font-size:.92rem; }
+  .ai-usage li{ margin-bottom:8px; }
+  .ai-usage li strong{ color:var(--ink); }
+
+  .debug-log{ display:flex; flex-direction:column; gap:14px; }
+  .debug-item{
+    display:flex; gap:16px; background:var(--surface);
+    border:1px solid var(--line); border-radius:16px; padding:20px;
+  }
+  .debug-num{
+    font-family:var(--mono); font-weight:700; font-size:.85rem;
+    background:var(--purple-soft); color:var(--accent-ink);
+    width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .debug-err{
+    font-weight:700; font-size:.98rem; margin:0 0 10px; color:var(--ink);
+  }
+  .debug-row{
+    margin:0 0 6px; font-size:.88rem; color:var(--muted); line-height:1.6;
+  }
+  .debug-row:last-child{ margin-bottom:0; }
+  .debug-row span{
+    display:inline-block; font-family:var(--mono); font-size:.7rem;
+    font-weight:700; color:var(--green); background:var(--green-soft);
+    padding:.15em .55em; border-radius:6px; margin-right:.6em;
+    vertical-align:middle;
+  }
+
+  /* results section */
+  .stat-card{
+    background:var(--card); border-radius:20px; padding:24px;
+    box-shadow:0 2px 14px rgba(40,30,20,.06);
+  }
+  .stat-num{
+    font-family:var(--mono); font-weight:700;
+    font-size:2rem; letter-spacing:-.02em; color:var(--ink);
+  }
+  .stat-num small{ font-size:1rem; color:var(--muted); font-weight:500; }
+  .stat-label{ font-size:.85rem; color:var(--muted); margin-top:6px; }
+
+  .next-list{ margin-top:36px; }
+  .next-list h3{ font-size:1rem; margin-bottom:14px; }
+  .next-item{
+    display:flex; gap:12px; align-items:flex-start;
+    padding:14px 0; border-top:1px solid var(--line);
+  }
+  .next-item:first-child{ border-top:none; }
+  .next-item .mk{ color:var(--risk-mid); font-family:var(--mono); font-weight:700; }
+
+  /* footer */
+  footer{
+    background:var(--card-dark); color:#fff; padding:56px 0 40px; margin-top:40px;
+  }
+  footer .wrap{ display:flex; flex-direction:column; gap:24px; }
+  .tagcloud{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tagcloud span{
+    font-family:var(--mono); font-size:.75rem; color:#cfc9c1;
+    border:1px solid #3a372f; padding:.4em .8em; border-radius:999px;
+  }
+  .foot-row{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+    padding-top:24px; border-top:1px solid #333029;
+  }
+  .foot-row .btn-primary{ background:var(--accent); }
+  footer small{ color:#9c968c; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav wrap">
+    <div class="brand">김현미</div>
+    <span class="badge-pill"><span class="dot"></span>Campus AX-Ton · 7회차 포트폴리오</span>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="wrap hero-inner">
+    <span class="eyebrow">이 사람은 <b>이렇게</b> 만듭니다</span>
+    <h1 class="headline">AI가 내놓은 답을 그대로 넘기지 않고, 끝까지 확인하고서야 넘어가는 사람입니다.</h1>
+    <p class="byline">이 페이지는 그 방식을 <strong>안심앨범</strong>이라는 프로젝트로 확인한 기록입니다.</p>
+
+    <!-- 링크는 제목 바로 아래, 버튼, 새 탭 -->
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://PASTE-YOUR-DEPLOYED-URL-HERE.vercel.app" target="_blank" rel="noopener">
+        안심앨범 실제로 써보기 ↗
+      </a>
+      <a class="btn btn-secondary" href="https://github.com/geunoh1017-sketch/Deepfake" target="_blank" rel="noopener">
+        코드 보기 (GitHub) ↗
+      </a>
+    </div>
+    <p class="hint">배포 링크는 위 버튼의 href를 실제 Vercel 주소로 바꿔주세요.</p>
+
+    <div class="chip-stage">
+      <div class="risk-chip" id="riskChip">
+        <span class="tag">감지됨</span>
+        <span class="msg"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <!-- 1. 문제 -->
+  <section id="problem">
+    <div class="section-head">
+      <span class="kicker">01 · 문제</span>
+      <h2>부모는 무심코 올리지만, 사진은 훨씬 많이 말합니다</h2>
+      <p class="lede">
+        아이 사진 한 장에는 얼굴만 있는 게 아닙니다. 뒤에 찍힌 간판의 전화번호와 지번,
+        교복·명찰 같은 소속 정보, 그리고 여러 장을 겹쳐보면 드러나는 요일·시간·장소의 반복
+        패턴까지 — 사진을 올리는 사람도 인지하지 못한 채 노출됩니다.
+      </p>
+    </div>
+    <div class="problem-quote">
+      실측 예시 — 야간 간판 사진 한 장에서: 상호명 "꽃집 누아블룸", 전화번호
+      "<span class="num">010-4956-6091</span>", 지번 "<span class="num">1118-1</span>"까지
+      전부 판독 가능. 기존 로컬 OCR(Tesseract)은 이 중 상호명 일부만 잡아냈고,
+      전화번호·지번은 <span class="num">0건</span> 검출.
+    </div>
+  </section>
+
+  <!-- 2. 해결 -->
+  <section id="solution">
+    <div class="section-head">
+      <span class="kicker">02 · 해결</span>
+      <h2>위험을 찾아내고, 아이는 그대로 둔 채 위험한 부분만 지웁니다</h2>
+      <p class="lede">
+        얼굴 검출 → 배경 텍스트 판독(Claude Vision, 실패 시 Tesseract 자동 폴백) →
+        위험도 진단 → 스마트 크롭/블러/인페인팅 보정 → 처리 결과 재검증까지,
+        한 번의 업로드로 이어지는 파이프라인입니다.
+      </p>
+    </div>
+
+    <div class="shot-frame">
+      <img src="assets/app-landing.png" alt="안심앨범 실제 배포 화면 — 랜딩 페이지" loading="lazy">
+    </div>
+
+    <div class="feature-tags">
+      <span>얼굴 검출 · face-api.js</span>
+      <span>배경 텍스트 OCR · Claude Vision</span>
+      <span>위험도 진단 · Claude API</span>
+      <span>생활패턴 분석 · 과거 게시물 스크린샷</span>
+      <span>2단계 보정 · 크롭/블러/인페인팅/AI배경교체</span>
+      <span>3단계 재검증</span>
+    </div>
+
+    <div class="annot-wrap">
+      <img src="assets/sample-input-sign.jpg" alt="개발에 실제로 쓴 테스트 사진 — 야간 간판. 사람은 등장하지 않습니다.">
+      <span class="annot annot-1">상호명 감지</span>
+      <span class="annot annot-2">전화번호 감지</span>
+      <span class="annot annot-3">지번 감지</span>
+    </div>
+    <p class="hint" style="margin-top:10px;">
+      개발 중 정확도 검증에 실제로 썼던 사진입니다(사람 없음). 라벨 위치는 실측 판독 결과를 바탕으로 표시했습니다.
+    </p>
+  </section>
+
+  <!-- 3. 나의 역할 · AI 활용 -->
+  <section id="role">
+    <div class="section-head">
+      <span class="kicker">03 · 나의 역할 · AI 활용</span>
+      <h2>기획부터 배포까지, 77개 커밋으로 이어온 기록</h2>
+      <p class="lede">
+        목업 화면에서 시작해 단계마다 실제 기능을 하나씩 붙였습니다. 각 단계는
+        "일단 되는 것"이 아니라 "실측으로 확인된 것"만 다음 단계로 넘겼습니다.
+      </p>
+    </div>
+
+    <div class="stage"><span class="stage-mark">A</span>
+      <div><h3>얼굴 · 텍스트 실제 추출</h3>
+      <p>face-api.js로 얼굴, Tesseract.js로 배경 텍스트를 실제로 뽑아내는 단계부터 시작. 야간 네온 간판 사진에서 텍스트 0개 검출 문제를 발견하고 PSM 모드 조합으로 해결.</p>
+      <span class="verify">✓ 실사진 기준 페이지 분할 모드 3종 비교로 검증</span></div>
+    </div>
+    <div class="stage"><span class="stage-mark">B</span>
+      <div><h3>Claude Vision으로 OCR 교체</h3>
+      <p>Tesseract 오독 문제를 Claude Vision(claude-haiku-4-5)으로 해결. 실패 시 자동으로 Tesseract 폴백.</p>
+      <span class="verify">✓ 같은 사진으로 Tesseract vs Claude Vision 정확도 비교표 작성</span></div>
+    </div>
+    <div class="stage"><span class="stage-mark">C</span>
+      <div><h3>위험도 진단 · 캡션 제안 연동</h3>
+      <p>규칙 기반 mock을 실제 Claude API 호출로 교체. 점수-등급 불일치를 발견해 등급을 서버에서 확정하도록 구조를 고침.</p>
+      <span class="verify">✓ 동일 입력 3회 반복 호출로 점수 편차 실측(6점)</span></div>
+    </div>
+    <div class="stage"><span class="stage-mark">D</span>
+      <div><h3>속도 개선</h3>
+      <p>출력 토큰 제약 + 단계별 화면 표시로 체감 대기시간 단축.</p>
+      <span class="verify">✓ 출력 토큰 -34%, 응답시간 -26% 실측</span></div>
+    </div>
+    <div class="stage"><span class="stage-mark">E</span>
+      <div><h3>프라이버시 안전장치 긴급 수정</h3>
+      <p>실제 사진 검증 중 "얼굴 0개 감지 시 마스킹 없이 원본 전송"되는 구멍을 스스로 발견. 최우선으로 확인 모달을 추가.</p>
+      <span class="verify">✓ 실패 조건 7가지 실측 — 4개(57%)에서 검출 실패 확인 후 수정</span></div>
+    </div>
+    <div class="stage"><span class="stage-mark">F</span>
+      <div><h3>배포</h3>
+      <p>localhost 하드코딩 10곳, 서버리스 포트 문제, 요청 본문 4.5MB 제한 등 배포를 막던 문제를 하나씩 해결하고 팀 접근 코드로 Vercel 배포.</p>
+      <span class="verify">✓ 접근 코드 게이트 테스트 18개로 검증</span></div>
+    </div>
+
+    <div class="ai-usage">
+      <h3>AI를 어디에, 왜 썼는가</h3>
+      <ul>
+        <li><strong>Claude Vision</strong> — 배경 텍스트 판독(전화번호·지번·상호명). 얼굴은 항상 마스킹 후 전송.</li>
+        <li><strong>Claude API(Haiku)</strong> — 위험도 진단, 캡션 제안, 생활패턴 분석, 이미지 편집 지시문 생성.</li>
+        <li><strong>fal.ai (flux-kontext-pro / inpainting)</strong> — 배경 재구성·인페인팅 기반 2단계 보정.</li>
+      </ul>
+      <h3 style="margin-top:20px;">AI를 어떻게 확인했나 — 막혔던 것을 한 줄씩</h3>
+      <p class="lede" style="margin-bottom:20px;">
+        디버깅은 안 되는 곳을 찾아 고치는 일입니다. 4주 동안 실제로 막혔던 것 중 넷만 남깁니다.
+      </p>
+
+      <div class="debug-log">
+        <div class="debug-item">
+          <span class="debug-num">1</span>
+          <div class="debug-body">
+            <p class="debug-err">얼굴이 0명 검출되면, 마스킹 없이 원본이 그대로 외부로 전송되고 있었다.</p>
+            <p class="debug-row"><span>원인</span>`maskFaces()`가 검출된 얼굴이 없으면 아무 것도 가리지 않고 원본을 그대로 반환하도록 짜여 있었다.</p>
+            <p class="debug-row"><span>고침</span>얼굴 0명이면 즉시 전송을 멈추고 "안전 우선 / 그래도 원본 분석" 확인창을 먼저 띄우게 바꿨다. 실패 조건 7가지를 실측해 4개(57%)에서 검출이 뚫린다는 걸 먼저 확인한 뒤였다.</p>
+          </div>
+        </div>
+        <div class="debug-item">
+          <span class="debug-num">2</span>
+          <div class="debug-body">
+            <p class="debug-err">curl로 테스트할 때마다 Claude가 "모든 정보가 누락됐다"고 반복 답했다.</p>
+            <p class="debug-row"><span>원인</span>Claude가 불안정한 줄 알았지만, 실은 Windows Git Bash가 curl에 한글을 넘길 때 인코딩이 깨져 서버가 의미 없는 문자를 받고 있었다.</p>
+            <p class="debug-row"><span>고침</span>서버가 실제로 받은 요청 본문을 직접 찍어보고 원인을 확정, 브라우저(fetch)는 이 문제와 무관함도 확인 — 이후 한글 테스트는 curl 대신 Playwright로만 했다.</p>
+          </div>
+        </div>
+        <div class="debug-item">
+          <span class="debug-num">3</span>
+          <div class="debug-body">
+            <p class="debug-err">안내받은 위치에 스티커를 찍었더니 간판 글자는 그대로 남고 스티커는 빈 유리창에 찍혔다.</p>
+            <p class="debug-row"><span>원인</span>"상단 중앙" 같은 대략적인 위치 설명을 고정 좌표(15/50/85%)로 매핑했는데, 사진 구도마다 실제 픽셀 위치는 전혀 달랐다.</p>
+            <p class="debug-row"><span>고침</span>숫자 좌표를 직접 물어보는 방법도 실험했지만 정확도가 낮아 기각. 텍스트 '내용'은 Claude Vision, '위치'는 실측 OCR로 역할을 나눴다.</p>
+          </div>
+        </div>
+        <div class="debug-item">
+          <span class="debug-num">4</span>
+          <div class="debug-body">
+            <p class="debug-err">보정 화면에서 사진이 원본보다 확대·절단돼서 보였다.</p>
+            <p class="debug-row"><span>원인</span>예전 목업 이미지를 화면에 맞추려고 넣어둔 CSS가, 실제 처리된 이미지에도 그대로 남아 있었다(세로 사진은 43.8%가 화면 밖으로 잘려나갔다).</p>
+            <p class="debug-row"><span>고침</span>미리보기가 실제 저장되는 파일과 같은 비율로 보이게 고치고, "처리 후에도 비율은 같아야 한다"는 원칙을 세웠다.</p>
+          </div>
+        </div>
+      </div>
+
+      <ul style="margin-top:24px;">
+        <li>이 넷 외에도 무료 회귀 테스트 <strong>55개</strong> + 실제 API 호출 테스트 <strong>8개</strong>를 매 변경마다 실행</li>
+        <li>AI 결과를 그대로 믿지 않고 <strong>3단계 재검증</strong>(같은 파이프라인에 재통과)을 별도로 구현</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4. 결과 · 배운 점 -->
+  <section id="results">
+    <div class="section-head">
+      <span class="kicker">04 · 결과 · 배운 점</span>
+      <h2>숫자로 남은 것들</h2>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="stat-card">
+        <div class="stat-num">$0.019<small>/장</small></div>
+        <div class="stat-label">진단 1회 총 API 비용 (약 26원)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">43%<small> 단축</small></div>
+        <div class="stat-label">출력 토큰 제약 후 응답시간 개선 (14~16초 → 8.8~10.1초)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">4/7<small> 조건</small></div>
+        <div class="stat-label">얼굴 검출이 실패하는 흔한 조건 (거울·원거리·기울임·가림) — 발견 즉시 안전장치 추가</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">63<small>개</small></div>
+        <div class="stat-label">자동 테스트 (무료 55 + 유료 8), 모든 변경마다 실행</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">77<small>개 커밋</small></div>
+        <div class="stat-label">기획부터 배포까지, 이 저장소에 남은 커밋 전체</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3<small>단계</small></div>
+        <div class="stat-label">탐지 → 처리 → 재검증까지 닫힌 루프로 완성</div>
+      </div>
+    </div>
+
+    <div class="next-list">
+      <h3>다음에 바꿀 것</h3>
+      <div class="next-item"><span class="mk">→</span><span>사용자가 직접 얼굴 위치를 지정하는 수동 마스킹 UI (자동 검출이 실패해도 안전하게)</span></div>
+      <div class="next-item"><span class="mk">→</span><span>작은 로고·간판 텍스트처럼 여전히 놓치는 항목의 인식률 개선</span></div>
+      <div class="next-item"><span class="mk">→</span><span>AI 배경교체(fal.ai) 처리시간(10~30초 변동)을 더 예측 가능하게</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="tagcloud">
+      <span>#ClaudeAPI</span><span>#ClaudeVision</span><span>#face-api.js</span>
+      <span>#Tesseract.js</span><span>#fal.ai</span><span>#Node.js</span>
+      <span>#Express</span><span>#Vercel</span><span>#PrivacyByDesign</span>
+    </div>
+    <div class="foot-row">
+      <div><strong style="color:#fff;">김현미</strong><br>
+      <small>안심앨범 · Campus AX-Ton 7회차</small></div>
+      <a class="btn btn-primary" href="https://PASTE-YOUR-DEPLOYED-URL-HERE.vercel.app" target="_blank" rel="noopener">안심앨범 보러가기 ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var chip = document.getElementById('riskChip');
+    var solution = document.getElementById('solution');
+    if (!chip || !solution) return;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { chip.classList.add('resolved'); return; }
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) chip.classList.add('resolved');
+      });
+    }, { threshold: 0.3 });
+    obs.observe(solution);
+  })();
+</script>
+
+</body>
+</html>
