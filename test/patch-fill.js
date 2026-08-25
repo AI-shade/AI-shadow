@@ -220,6 +220,49 @@ async function main() {
     blob.filled[0].join(',') === '204,34,34' && blob.filled[2].join(',') === '34,68,204',
     blob.filled.map(x => x.join(',')).join(' / '));
 
+
+  // ── 가는 붓 + 큰 사진 ─────────────────────────────────────────────
+  // 덩어리 찾기는 축소본(320px)에서 하는데, 가는 획은 축소 과정에서 통째로
+  // 사라져 덩어리가 0개가 됐다. 그러면 대체 경로로 빠져 회색(128,128,128)이
+  // 칠해졌다 — "주변색으로 덮기인데 왜 회색이냐"는 제보가 두 번 들어온 그 증상.
+  // 큰 사진일수록 축소 배율이 커서 더 잘 사라지므로 휴대폰 크기로 검사한다.
+  const thin = await page.evaluate(async () => {
+    const T = window.__anshimTest;
+    const out = [];
+    for (const [W, H] of [[2000, 1500], [3000, 4000], [4032, 3024]]) {
+      for (const r of [5, 3]) {
+        const bg = document.createElement('canvas');
+        bg.width = W; bg.height = H;
+        const bx = bg.getContext('2d');
+        bx.fillStyle = '#2e7d32';
+        bx.fillRect(0, 0, W, H);
+        const img = new Image();
+        await new Promise((res) => { img.onload = res; img.src = bg.toDataURL(); });
+
+        const mask = document.createElement('canvas');
+        mask.width = W; mask.height = H;
+        const mx = mask.getContext('2d');
+        mx.fillStyle = '#ffffff';
+        mx.beginPath();
+        mx.arc(W * 0.25, H * 0.7, r, 0, Math.PI * 2);
+        mx.fill();
+
+        const cv = T.applyPatchFill(img, [], W, H, 'color', null, mask);
+        const d = cv.getContext('2d').getImageData(Math.round(W * 0.25), Math.round(H * 0.7), 1, 1).data;
+        out.push({ 크기: W + 'x' + H, 반지름: r, 색: [d[0], d[1], d[2]] });
+      }
+    }
+    return out;
+  });
+
+  const 회색인가 = (c) => Math.abs(c[0] - 128) < 8 && Math.abs(c[1] - 128) < 8 && Math.abs(c[2] - 128) < 8;
+  check('가는 붓에서도 회색으로 칠하지 않는다',
+    thin.every((t) => !회색인가(t.색)),
+    thin.filter((t) => 회색인가(t.색)).map((t) => t.크기 + ' r' + t.반지름).join(', ') || '전부 통과');
+  check('가는 붓도 실제 주변색(#2e7d32)으로 채운다',
+    thin.every((t) => t.색.join(',') === '46,125,50'),
+    thin.map((t) => t.크기 + ' r' + t.반지름 + ' -> ' + t.색.join(',')).join(' | '));
+
   if (errors.length) {
     console.log('\n  페이지 에러: ' + errors.join(' | '));
     fail++;

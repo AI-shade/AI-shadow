@@ -16,7 +16,12 @@ function ok(cond, name, detail) {
   else { fail++; console.log('  ✗ ' + name + (detail ? '  → ' + detail : '')); }
 }
 
-const 서버항목 = [['간판·주소 노출', 30], ['소속 노출', 25], ['인물 식별성', 20], ['게시 습관', 15]];
+// server.js의 RISK_FACTORS와 같아야 한다. 캡션 노출은 원래 캡션 제안에서만 보고
+// 점수에는 안 들어갔는데, 실제로는 캡션이 가장 대놓고 흘리는 통로라 항목으로 넣었다.
+const 서버항목 = [
+  ['간판·주소 노출', 26], ['소속 노출', 22], ['인물 식별성', 18],
+  ['캡션 노출', 18], ['게시 습관', 16],
+];
 
 const 상황 = {
   최악: {
@@ -57,10 +62,10 @@ const 상황 = {
     const r = await page.evaluate((a) =>
       window.__anshimTest.buildMockDiagnosisForTest(a[0], a[1], a[2]), [c.inputs, c.ocr, c.face]);
 
-    ok(Array.isArray(r.riskFactors) && r.riskFactors.length === 4,
-      '항목 4개가 있다', '받은 값 ' + (r.riskFactors ? r.riskFactors.length : '없음'));
+    ok(Array.isArray(r.riskFactors) && r.riskFactors.length === 5,
+      '항목 5개가 있다', '받은 값 ' + (r.riskFactors ? r.riskFactors.length : '없음'));
 
-    if (r.riskFactors && r.riskFactors.length === 4) {
+    if (r.riskFactors && r.riskFactors.length === 5) {
       서버항목.forEach((def, i) => {
         const f = r.riskFactors[i];
         ok(f.항목 === def[0] && f.상한 === def[1],
@@ -71,6 +76,8 @@ const 상황 = {
       });
       const sum = r.riskFactors.reduce((n, f) => n + f.점수, 0);
       ok(sum === r.score, '총점이 항목의 합과 같다', sum + ' vs ' + r.score);
+      const capSum = r.riskFactors.reduce((n, f) => n + f.상한, 0);
+      ok(capSum === 100, '상한을 다 더하면 100이다', String(capSum));
       ok(r.grade === (r.score >= 70 ? '상' : r.score >= 40 ? '중' : '하'), '등급이 총점과 맞는다');
     }
 
@@ -95,12 +102,52 @@ const 상황 = {
       };
     }, r);
     ok(drawn.보임, '내역 카드가 화면에 남아 있다');
-    ok(drawn.줄수 === 4, '내역이 4줄로 그려진다', String(drawn.줄수));
+    ok(drawn.줄수 === 5, '내역이 5줄로 그려진다', String(drawn.줄수));
     ok(drawn.합계.indexOf('= ' + r.score + '점') >= 0,
       '"합계 … = N점"이 게이지와 맞는다', drawn.합계 + ' / 게이지 ' + drawn.게이지);
     ok(drawn.게이지 === String(r.score), '게이지 숫자가 총점과 같다', drawn.게이지);
     ok(drawn.배지 === r.grade, '배지가 등급과 같다', drawn.배지);
   }
+
+  console.log('\n[캡션 노출 — 새로 넣은 항목]');
+  const 캡션 = await page.evaluate((base) => {
+    const f = window.__anshimTest.buildMockDiagnosisForTest;
+    const mk = (cap) => {
+      const d = f(Object.assign({}, base, { caption: cap }), { words: [], visualClues: [] }, { faces: [] });
+      return d.riskFactors.find((x) => x.항목 === '캡션 노출');
+    };
+    return {
+      없음: mk(''),
+      평범: mk('오늘도 즐거운 하루'),
+      위험: mk('오늘 푸른숲어린이집 첫 등원! 매주 화요일 4시에 놀아요'),
+    };
+  }, { privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '', companions: '' });
+  ok(캡션.없음.점수 === 0, '캡션을 안 쓰면 0점이다', String(캡션.없음.점수));
+  ok(/쓰지 않으셔서/.test(캡션.없음.근거), '안 썼다는 사실을 근거로 말한다', 캡션.없음.근거);
+  ok(캡션.평범.점수 === 0, '평범한 캡션은 0점이다', String(캡션.평범.점수));
+  ok(캡션.위험.점수 > 0, '기관명·요일·시간이 있으면 점수가 붙는다', String(캡션.위험.점수));
+  ok(캡션.위험.점수 > 캡션.평범.점수, '위험한 캡션이 평범한 캡션보다 높다',
+    캡션.위험.점수 + ' vs ' + 캡션.평범.점수);
+
+  console.log('\n[조사(이/가) — 목록을 이어붙인 문장에 "이(가)"가 그대로 남던 문제]');
+  // 예전엔 "이름·일정·시간대이(가) 적혀 있어요"처럼 조사 자리를 placeholder로 남겨뒀다.
+  // 마지막 낱말의 받침 여부에 따라 이/가 중 하나만 골라 붙어야 한다.
+  const 최악근거 = await page.evaluate((c) => {
+    const d = window.__anshimTest.buildMockDiagnosisForTest(c.inputs, c.ocr, c.face);
+    return d.riskFactors.find((x) => x.항목 === '소속 노출').근거;
+  }, 상황.최악);
+  ok(!/\(가\)|\(이\)/.test(최악근거), '소속 노출 근거에 "이(가)" placeholder가 안 남는다', 최악근거);
+  ok(최악근거 === '교복·로고/엠블럼이 보여서 다니는 기관까지 좁혀져요.',
+    '받침 있는 마지막 낱말("엠블럼")엔 "이"가 붙는다', 최악근거);
+
+  const 캡션근거 = await page.evaluate(() => {
+    const f = window.__anshimTest.buildMockDiagnosisForTest;
+    const d = f({ privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '', companions: '',
+      caption: '오늘 푸른숲어린이집 첫 등원! 매주 화요일 4시에 놀아요' }, { words: [], visualClues: [] }, { faces: [] });
+    return d.riskFactors.find((x) => x.항목 === '캡션 노출').근거;
+  });
+  ok(!/\(가\)|\(이\)/.test(캡션근거), '캡션 노출 근거에 "이(가)" placeholder가 안 남는다', 캡션근거);
+  ok(/시간대가 적혀 있어요\.$/.test(캡션근거), '받침 없는 마지막 낱말("시간대")엔 "가"가 붙는다', 캡션근거);
 
   console.log('\n[상황에 따라 점수가 실제로 달라지는가]');
   const scores = await page.evaluate((all) => all.map((c) =>

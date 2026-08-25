@@ -76,8 +76,8 @@ async function setup(p, method, mode) {
     'noBrush=' + r.noBrush + ' brushBtn=' + r.brushBtnShown);
   check('도형 모드에서는 붓 조절 도구를 감춘다', r.brushCtrlShown === false, String(r.brushCtrlShown));
 
-  r = await setup(p, 'inpaint', 'shape');
-  check('AI 지우고 메우기에서도 브러시 도구가 보인다', r.noBrush === false);
+  // AI 지우고 메우기는 방식 목록에서 뺐다(큰 간판에 가짜 글씨를 만들어내는 문제).
+  // 브러시가 열리는 방식은 이제 '자연스럽게 덮기' 하나다 — 위에서 이미 검사한다.
 
   // 브러시 모드에서 다른 방식으로 옮기면 도형으로 되돌아온다
   r = await setup(p, 'sticker', 'brush');

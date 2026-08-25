@@ -100,6 +100,18 @@ async function main() {
   r = await run([{ text: '꽃집 누아블룸', type: '상호명', approximate: true, xPct: 50, yPct: 37, wPct: 26, hPct: 12 }]);
   check('근사 상호명은 간판으로 분류', r.signboard.length, 1);
 
+  console.log('\n유형이 다섯 낱말 화이트리스트 밖일 때 (실사용 제보 — isPlaceWord와 같은 종류의 버그)');
+  // '상호명'·'간판' 정확 비교만 하면 Claude가 붙인 '학교명'·'현수막'·'기관명' 같은
+  // 자유 문구 유형은 전부 놓쳐서 인페인팅으로 새고, 실제로는 가짜 글씨가 생성된다.
+  r = await run([{ text: '○○중학교', type: '학교명', approximate: true, xPct: 50, yPct: 20, wPct: 26, hPct: 12 }]);
+  check('근사 학교명은 간판으로 분류', r.signboard.length, 1);
+  r = await run([{ text: '○○축제', type: '현수막', approximate: true, xPct: 50, yPct: 20, wPct: 26, hPct: 12 }]);
+  check('근사 현수막은 간판으로 분류', r.signboard.length, 1);
+  r = await run([{ text: '○○센터', type: '기관명', approximate: true, xPct: 50, yPct: 20, wPct: 26, hPct: 12 }]);
+  check('근사 기관명은 간판으로 분류', r.signboard.length, 1);
+  r = await run([{ text: '???', type: '알수없음', approximate: true, xPct: 50, yPct: 20, wPct: 26, hPct: 12 }]);
+  check('유형을 못 가르면 안전하게 간판(과잉 대응)으로 분류', r.signboard.length, 1);
+
   console.log('\n경계 조건');
   r = await run([]);
   check('빈 목록이면 둘 다 비어있음', r.inpaint.length + r.signboard.length, 0);

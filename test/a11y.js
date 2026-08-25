@@ -122,7 +122,7 @@ const OCR = { words: [], visualClues: [] };
   }, R);
   ok(/계산하고 있어요/.test(pend.상태), '대기 중에는 계산 중이라고 알린다');
   ok(pend.기다리는문구.length === 0, '"살펴보는 중" 같은 문구가 화면에 없다', pend.기다리는문구.join(' | '));
-  ok(pend.뼈대줄 === 4, '근거 자리는 글자 대신 뼈대 막대다', pend.뼈대줄 + '줄');
+  ok(pend.뼈대줄 === 5, '근거 자리는 글자 대신 뼈대 막대다 (항목 5개)', pend.뼈대줄 + '줄');
 
   const fin = await page.evaluate((a) => {
     window.__anshimTest.stopScoreTickerForTest();

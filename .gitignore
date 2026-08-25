@@ -37,6 +37,9 @@ flux검증_클로즈업_인물.png
 childphoto.jpeg
 wed.jpg
 아이사진*.jpg
+# test/background-replace-live.js가 childphoto.jpeg에서 만들어내는 얼굴 검출 기준
+# 사진(test/hallucinated-people.js가 읽음) — 같은 아이 얼굴이 그대로 담겨 있다.
+test/real-face-fixture.png
 
 # 데모 녹화 영상 — 저장소를 1.6GB로 불린 주범이고 배포에도 필요 없다
 *.mp4
