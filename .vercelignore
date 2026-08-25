@@ -6,6 +6,7 @@
 !/vercel.json
 !/api
 !/server
+!/public
 
 # server 안에서도 배포에 필요 없는 것
 /server/backup-*.js
