@@ -2,20 +2,23 @@
 <html lang="ko">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>아이섀도우</title>
+<title>아이SHADOW</title>
 <!-- 탭 아이콘. 파일을 따로 두지 않고 여기에 그려 넣는다 — 이 페이지는 파일 하나로
      굴러가야 하고, 배포 경로가 바뀌어도 아이콘이 깨지지 않는다.
-     네비 로고는 돋보기 안에 체크가 들어 있지만 16px에서는 그 체크가 뭉개져
-     덩어리로 보인다(실측). 실루엣만 남기고 안쪽 획은 뺐다. -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23ff7a6b'/%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='14' cy='14' r='8'/%3E%3Cpath d='M20.5 20.5 L26.5 26.5'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/png;base64,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">
-<meta name="theme-color" content="#ff7a6b">
+     배경 없이 누끼로 두되, SVG 안에 prefers-color-scheme 규칙을 넣어
+     어두운 탭에서는 아이를 밝게 뒤집는다. 안 그러면 갈색 아이가 어두운 탭에서 사라진다.
+     (크롬·파이어폭스는 이 규칙을 따르고, 사파리는 안 따를 수 있다 —
+      그 경우 밝은 쪽 색으로 보인다.)
+     홈 화면 아이콘(apple-touch-icon)은 PNG라 이 규칙이 안 먹으므로 배경을 남겨둔다. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cstyle%3E.k{fill:%233a2a22}.s{fill:%23d9a389}@media(prefers-color-scheme:dark){.k{fill:%23fbe3d6}.s{fill:%23a8735a}}%3C/style%3E%3Cg class='s' transform='translate(12.5,29.5) scale(1.15,0.62) skewX(-34) translate(-16,-29)'%3E%3Cpath d='M15.85 3.00 L16.05 3.00 L15.75 3.30 L15.85 3.40 L16.45 3.20 L17.36 3.30 L17.56 3.40 L17.46 3.50 L17.56 3.71 L18.37 3.91 L18.37 4.11 L19.17 4.71 L19.98 4.71 L19.88 4.91 L19.38 5.22 L19.78 5.52 L19.68 5.62 L19.88 6.22 L19.78 6.73 L19.38 7.33 L19.28 7.33 L19.38 7.23 L19.38 6.73 L19.28 6.63 L19.17 6.73 L19.07 7.13 L18.67 7.64 L18.67 8.04 L18.87 8.44 L18.57 8.64 L18.47 9.05 L17.76 9.75 L16.96 9.75 L16.86 9.65 L16.55 9.75 L16.55 9.95 L17.26 10.36 L17.56 10.76 L17.46 11.06 L18.37 13.08 L18.37 13.38 L19.98 18.22 L19.98 18.72 L19.88 18.82 L19.58 18.82 L18.87 19.22 L18.37 19.33 L17.86 19.73 L17.66 21.04 L17.06 22.05 L17.06 23.26 L16.86 23.86 L16.96 24.06 L17.36 24.16 L17.56 24.77 L18.17 25.07 L18.97 25.17 L19.28 25.47 L19.28 25.98 L18.67 26.38 L17.06 26.38 L16.96 26.48 L17.66 27.19 L18.07 27.39 L18.77 27.49 L19.07 27.79 L19.07 28.40 L18.47 28.80 L17.26 29.00 L15.85 28.60 L14.44 28.60 L14.03 28.29 L13.93 27.89 L14.24 26.98 L14.14 26.28 L14.34 25.98 L14.03 25.17 L13.93 23.56 L14.44 21.95 L14.44 21.14 L14.03 20.84 L13.93 20.13 L13.63 19.73 L12.22 19.33 L12.02 19.12 L12.02 18.62 L12.42 17.01 L12.42 16.30 L12.52 16.20 L12.93 12.98 L13.23 11.47 L13.73 10.26 L13.63 9.35 L13.73 9.25 L14.34 9.25 L14.54 9.05 L14.54 8.54 L14.44 8.44 L14.24 8.54 L13.93 8.44 L14.03 8.24 L13.93 8.14 L13.63 8.14 L13.23 7.94 L13.23 7.84 L13.53 7.84 L13.63 7.53 L13.43 6.93 L13.13 6.73 L13.23 6.53 L13.03 6.22 L13.33 5.72 L13.43 5.22 L13.73 4.81 L13.63 4.61 L13.33 4.81 L13.33 4.71 L13.93 4.11 L14.54 4.01 L14.64 3.91 L14.34 3.71 L15.04 3.71 L15.45 3.20 L15.75 3.10 Z'/%3E%3C/g%3E%3Cg class='k' transform='translate(12.5,29.5) translate(-16,-29)'%3E%3Cpath d='M15.85 3.00 L16.05 3.00 L15.75 3.30 L15.85 3.40 L16.45 3.20 L17.36 3.30 L17.56 3.40 L17.46 3.50 L17.56 3.71 L18.37 3.91 L18.37 4.11 L19.17 4.71 L19.98 4.71 L19.88 4.91 L19.38 5.22 L19.78 5.52 L19.68 5.62 L19.88 6.22 L19.78 6.73 L19.38 7.33 L19.28 7.33 L19.38 7.23 L19.38 6.73 L19.28 6.63 L19.17 6.73 L19.07 7.13 L18.67 7.64 L18.67 8.04 L18.87 8.44 L18.57 8.64 L18.47 9.05 L17.76 9.75 L16.96 9.75 L16.86 9.65 L16.55 9.75 L16.55 9.95 L17.26 10.36 L17.56 10.76 L17.46 11.06 L18.37 13.08 L18.37 13.38 L19.98 18.22 L19.98 18.72 L19.88 18.82 L19.58 18.82 L18.87 19.22 L18.37 19.33 L17.86 19.73 L17.66 21.04 L17.06 22.05 L17.06 23.26 L16.86 23.86 L16.96 24.06 L17.36 24.16 L17.56 24.77 L18.17 25.07 L18.97 25.17 L19.28 25.47 L19.28 25.98 L18.67 26.38 L17.06 26.38 L16.96 26.48 L17.66 27.19 L18.07 27.39 L18.77 27.49 L19.07 27.79 L19.07 28.40 L18.47 28.80 L17.26 29.00 L15.85 28.60 L14.44 28.60 L14.03 28.29 L13.93 27.89 L14.24 26.98 L14.14 26.28 L14.34 25.98 L14.03 25.17 L13.93 23.56 L14.44 21.95 L14.44 21.14 L14.03 20.84 L13.93 20.13 L13.63 19.73 L12.22 19.33 L12.02 19.12 L12.02 18.62 L12.42 17.01 L12.42 16.30 L12.52 16.20 L12.93 12.98 L13.23 11.47 L13.73 10.26 L13.63 9.35 L13.73 9.25 L14.34 9.25 L14.54 9.05 L14.54 8.54 L14.44 8.44 L14.24 8.54 L13.93 8.44 L14.03 8.24 L13.93 8.14 L13.63 8.14 L13.23 7.94 L13.23 7.84 L13.53 7.84 L13.63 7.53 L13.43 6.93 L13.13 6.73 L13.23 6.53 L13.03 6.22 L13.33 5.72 L13.43 5.22 L13.73 4.81 L13.63 4.61 L13.33 4.81 L13.33 4.71 L13.93 4.11 L14.54 4.01 L14.64 3.91 L14.34 3.71 L15.04 3.71 L15.45 3.20 L15.75 3.10 Z'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta name="theme-color" content="#fbe3d6">
 <meta name="description" content="아이 사진을 SNS에 올리기 전에 위치·소속이 드러나는지 진단하고, 아이는 그대로 둔 채 위험한 부분만 가려주는 서비스.">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   /* =========================================================================
-     아이섀도우 — 시각 언어 v2 (가이드라인.md · 소프트 대시보드)
+     아이SHADOW — 시각 언어 v2 (가이드라인.md · 소프트 대시보드)
 
      3층 구조: 따뜻한 회베이지 바닥(--page) → 크림 앱면(--surface) → 둥근 흰 카드(--card).
      모서리를 크게 굴리고(카드 22px / 작은 요소 14px / 버튼 알약형), 그림자는 아주 옅게.
@@ -245,12 +248,10 @@
 
   /* 히어로 아래에 더 있다는 표시 */
   .scroll-cue {
-    /* 시안처럼 첫 화면 맨 아래 가운데. 흐름에 두면 히어로 높이에 따라 자리가
-       들쭉날쭉해서, 화면 아래에 고정으로 앉힌다. */
-    position: absolute; left: 50%; bottom: 1.6rem; transform: translateX(-50%);
-    z-index: 2;
+    /* 예시 피드를 다 본 뒤 진단으로 넘어가는 자리라 흐름 안에 둔다.
+       (예전에는 히어로 바닥에 절대 위치로 붙어 있었다.) */
     display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-    margin: 0; width: fit-content;
+    margin: 0.4rem auto 2.6rem; width: fit-content;
     /* 섹션 라벨과 달리 여기는 문장이라, 자간을 벌리고 대문자로 만들면 한글이 흩어져 보인다 */
     color: var(--muted); font-size: 0.76rem; font-weight: 600;
     letter-spacing: 0.02em; text-decoration: none;
@@ -312,19 +313,19 @@
   /* 원형 아이콘 (가이드라인 3절) — 코랄 원 안에 먹색 선 아이콘 6.84:1 */
   .brand-mark { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 1.15rem; }
   .brand-mark .badge-icon {
-    width: 40px; height: 40px; border-radius: 999px;
-    background: var(--accent-2); color: #1a1a1a;
-    display: flex; align-items: center; justify-content: center; padding: 9px;
+    width: 44px; height: 44px; color: #1a1a1a;
+    display: flex; align-items: center; justify-content: center; padding: 0;
   }
+  .brand-mark .badge-icon svg { width: 44px; height: 44px; display: block; }
 
   header.page-header { display: flex; align-items: center; gap: 0.75rem; margin: 0; }
   header.page-header .ph-text { min-width: 0; }
+  /* 네비 마크와 같은 것. 배경 없이 누끼로 얹는다. */
   header.page-header .badge-icon {
-    width: 38px; height: 38px; border-radius: 999px; flex: 0 0 auto;
-    background: var(--accent-2); color: #1a1a1a;
-    display: flex; align-items: center; justify-content: center; padding: 9px;
+    width: 42px; height: 42px; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center; padding: 0;
   }
-  header.page-header .badge-icon .mono-icon { width: 100%; height: 100%; stroke: currentColor; }
+  header.page-header .badge-icon svg { width: 42px; height: 42px; display: block; }
   header.page-header h2 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em; }
   header.page-header p { margin: 0.1rem 0 0; font-size: 0.84rem; color: var(--muted); }
 
@@ -565,7 +566,7 @@
     padding: 0.75rem 0.95rem; border-radius: 14px;
     font-size: 0.92rem; line-height: 1.7;
   }
-  li.caption-skel::before { content: ' a0'; }
+  li.caption-skel::before { content: '\00a0'; }
 
   /* 조치·패턴 뼈대 — .action-list li와 같은 글자 크기·행간이라야 결과가 와도
      카드 높이가 그대로다. 줄마다 너비를 달리해 진짜 문장처럼 보이게 한다. */
@@ -617,17 +618,17 @@
 
   .score-breakdown { margin-top: 1.2rem; border-top: 1px dashed var(--line-strong); padding-top: 0.9rem; }
   .sb-head { font-size: 0.8rem; font-weight: 700; margin: 0 0 0.6rem; color: var(--ink); }
-  .sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  .sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.42rem; }
   .sb-list li { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 0.7rem; align-items: baseline; }
-  .sb-name { font-size: 0.84rem; font-weight: 600; }
-  .sb-num { font-size: 0.84rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sb-name { font-size: 0.79rem; font-weight: 600; }
+  .sb-num { font-size: 0.79rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .sb-num .cap { color: var(--muted); font-weight: 600; }
-  .sb-bar { grid-column: 1 / -1; height: 4px; border-radius: 999px; background: var(--soft); overflow: hidden; }
+  .sb-bar { grid-column: 1 / -1; height: 3px; border-radius: 999px; background: var(--soft); overflow: hidden; }
   .sb-bar span { display: block; height: 100%; border-radius: 999px; background: var(--risk-mid); }
-  .sb-why { grid-column: 1 / -1; font-size: 0.78rem; line-height: 1.6; color: var(--muted);
+  .sb-why { grid-column: 1 / -1; font-size: 0.74rem; line-height: 1.55; color: var(--muted);
             margin: 0; word-break: keep-all; }
   /* 뼈대 상태의 근거 줄 — 실제 줄 한 줄과 같은 높이(0.78rem × 1.6)여야 안 튄다 */
-  p.sb-why.skel { display: block; height: calc(0.78rem * 1.6); width: 82%; }
+  p.sb-why.skel { display: block; height: calc(0.74rem * 1.55); width: 82%; }
   .sb-list li:nth-child(2) p.sb-why.skel { width: 68%; }
   .sb-list li:nth-child(3) p.sb-why.skel { width: 76%; }
   /* 굴러가는 동안의 숫자는 아직 진짜가 아니다 — 결과와 같은 무게로 보이면 안 된다.
@@ -637,6 +638,19 @@
   /* 0점 항목은 흐리게 — 위험이 없다는 것도 정보다 */
   .sb-list li.zero .sb-name, .sb-list li.zero .sb-num { color: var(--muted); font-weight: 600; }
   .sb-list li.zero .sb-bar span { background: var(--line-strong); }
+  /* 오각형 — 값이 도착하면 형태가 부드럽게 자란다 */
+  .radar-ring { fill: none; stroke: var(--line); stroke-width: 1; }
+  .radar-spoke { stroke: var(--line); stroke-width: 1; }
+  .radar-shape {
+    fill: var(--risk-mid); fill-opacity: 0.3;
+    stroke: var(--risk-mid); stroke-width: 1.8; stroke-linejoin: round;
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .radar-dot { fill: var(--risk-mid); r: 2.6; transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  .radar-label { font-size: 11px; fill: var(--muted); font-weight: 600; }
+  .radar-val { font-size: 11px; fill: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { .radar-shape, .radar-dot { transition: none; } }
+
   .sb-total {
     margin: 0.9rem 0 0; padding-top: 0.6rem; border-top: 1px solid var(--line);
     font-size: 0.88rem; font-weight: 800; font-variant-numeric: tabular-nums;
@@ -646,18 +660,27 @@
     display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap;
     margin: 0; padding: 0; background: transparent; text-align: left;
   }
-  .gauge-ring { position: relative; width: 150px; height: 150px; flex: 0 0 auto; }
-  .gauge-ring svg { width: 100%; height: 100%; display: block; }
-  #gaugeArc { transition: stroke-dashoffset 0.7s ease, stroke 0.3s ease; }
-  @media (prefers-reduced-motion: reduce) { #gaugeArc { transition: none; } }
+  .gauge-ring {
+    position: relative; width: 100%; max-width: 400px; aspect-ratio: 240 / 225;
+    flex: 0 0 auto; margin: 0 auto;
+  }
+  .gauge-ring svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  @media (max-width: 460px) { .gauge-ring { max-width: 300px; } }
+  /* 낮은 점수일 때 오각형이 중앙(바닥값 RADAR_FLOOR)까지 오그라들어 오각형 선·꼭짓점이
+     점수 숫자 위를 그대로 지나갔다(사용자 제보). 바닥값을 올리면 "낮은 점수"라는 의미
+     자체가 왜곡되므로, 대신 숫자 뒤에 카드색 배경을 깔아 어떤 점수에서도 선이 숫자를
+     가리지 않게 한다. inset:0으로 전체를 덮던 방식에서 내용 크기만큼만 덮는 방식으로 바꿨다 —
+     숫자 자릿수가 바뀌어도(1~3자리) 배경이 항상 딱 맞게 따라간다. */
   .gauge-center {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 0.1rem; pointer-events: none;
+    background: var(--card); border-radius: 999px; padding: 0.5rem 1rem;
   }
   /* 굴러가는 동안 자릿수가 바뀌어도 숫자 폭이 흔들리지 않도록 */
   .gauge-score-label, .sub-score-line strong { font-variant-numeric: tabular-nums; }
   .gauge-score-label {
-    font-size: 2.5rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--ink);
+    font-size: 2.2rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--ink);
   }
   .gauge-unit { font-size: 0.76rem; font-weight: 500; color: var(--muted); }
   .gauge-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 0.55rem; min-width: 0; }
@@ -685,7 +708,7 @@
   @media (max-width: 460px) {
     .gauge-wrap { gap: 1.1rem; }
     .gauge-ring { width: 118px; height: 118px; }
-    .gauge-score-label { font-size: 2rem; }
+    .gauge-score-label { font-size: 1.6rem; }
   }
 
   /* =========================================================================
@@ -830,12 +853,12 @@
     font-size: 0.82rem; font-weight: 600; color: var(--ink);
     min-width: 4.5rem; font-variant-numeric: tabular-nums;
   }
-  .bs-btn, .fs-btn {
+  .bs-btn, .fs-btn, .cw-btn, .em-btn {
     border: none; background: transparent; color: var(--muted); cursor: pointer;
     font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px;
   }
-  .bs-btn:hover, .fs-btn:hover { color: var(--ink); }
-  .bs-btn.selected, .fs-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
+  .bs-btn:hover, .fs-btn:hover, .cw-btn:hover, .em-btn:hover { color: var(--ink); }
+  .bs-btn.selected, .fs-btn.selected, .cw-btn.selected, .em-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
 
   .checkline {
     display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem;
@@ -875,6 +898,16 @@
   }
   .target-picker .t-kind.rough { color: var(--risk-mid); border-color: var(--risk-mid); }
   .target-picker .t-none { color: var(--muted); font-size: 0.84rem; margin: 0; }
+  /* 체크를 고쳐도 AI 방식은 바로 다시 부르지 않는다 — 부를 때마다 돈이 나가고
+     사진이 한 번 더 밖으로 나간다. 대신 "예전 선택으로 만든 미리보기다"라고
+     알려주고, 다시 만들지는 여기서 직접 누르게 한다. */
+  .target-redo {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+    flex-wrap: wrap; margin-top: 0.6rem; padding: 0.65rem 0.85rem;
+    background: var(--soft); border: 1px dashed var(--line-strong); border-radius: 14px;
+  }
+  .target-redo span { font-size: 0.78rem; color: var(--muted); line-height: 1.5; word-break: keep-all; }
+  .target-redo button { margin: 0; width: auto; flex: 0 0 auto; padding: 0.5rem 1rem; font-size: 0.8rem; }
 
   /* 클로드가 읽은 내용을 그대로 고칠 수 있어야 한다. 읽기 전용 글씨처럼 보이되
      누르면 입력칸인 게 드러나게 한다 — 처음부터 테두리를 두르면 목록이 시끄럽다. */
@@ -1107,8 +1140,20 @@
     }
     /* 칸이 세로로 길어졌으므로 안내 아이콘·문구를 가운데로. .drop-zone이 블록이라
        justify-content만 줬을 땐 아무 효과가 없었다. */
+    /* 사진과 스크린샷이 위아래로 절반씩 나눠 갖는다 */
+    #screen-form > .upload-col { gap: 1rem; }
+    #screen-form > .upload-col .up-part {
+      flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0;
+    }
+    /* 미리보기가 뜨면 그 칸은 내용만큼만 — 아래 칸을 밀지언정 덮지는 않는다 */
+    #screen-form > .upload-col .up-part.has-preview { flex: 0 0 auto; }
+    #screen-form > .upload-col .up-part.has-preview .drop-zone {
+      flex: 0 0 auto; min-height: 0; padding: 0.7rem 0.9rem;
+    }
+    #screen-form > .upload-col .polaroid { max-width: 100%; margin-top: 0.7rem; }
+    #screen-form > .upload-col .up-part label { margin-bottom: 0.4rem; }
     #screen-form > :nth-child(1) .drop-zone {
-      flex: 1; min-height: 240px;
+      flex: 1; min-height: 130px;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 0.15rem;
       text-align: center;
@@ -1135,8 +1180,8 @@
        장소 카드는 다른 짧은 카드(스케줄 경고)와 나란히 서게 일반 흐름으로 보낸다. */
     #screen-result > .rcard-score {
       order: 1; grid-column: 1 / -1;
-      display: grid; grid-template-columns: minmax(15rem, 19rem) 1fr;
-      column-gap: 2.6rem; align-items: start;
+      display: grid; grid-template-columns: minmax(22rem, 0.9fr) 1.1fr;
+      column-gap: 2.2rem; align-items: start;
     }
     #screen-result > .rcard-score > .rcard-title,
     #screen-result > .rcard-score > .risk-pending { grid-column: 1 / -1; }
@@ -1182,6 +1227,135 @@
   }
 
 
+  /* ===== 과거 게시물 패턴만 확인하는 별도 입구 =====
+     .sc-card는 가운데 정렬 캐러셀 카드 스타일이라 그대로 쓰되, 폼 내용(드롭존·버튼)은
+     가운데 정렬이면 오히려 읣기 어려워서 왼쪽 정렬로 되돌린다. */
+  .pattern-entry { padding: 1rem 0 3.4rem; }
+  .pe-card { text-align: left; }
+  .pe-card .sc-eyebrow, .pe-card .sc-title { text-align: center; display: block; }
+  .pe-card .sc-eyebrow { display: inline-block; }
+  .pe-desc {
+    max-width: 46ch; margin: 0 auto 1.6rem; text-align: center;
+    color: var(--muted); line-height: 1.6; font-size: 0.94rem;
+    word-break: keep-all; /* "예측되는지" 같은 한 어절이 줄 끝에서 잘리지 않게 */
+  }
+  .pe-field { max-width: 420px; margin: 0 auto 1.4rem; }
+  .pe-card > button.primary { display: block; margin: 0 auto; }
+
+  /* ===== 올리기 전에 잠깐 — 인스타 피드 예시 캐러셀 =====
+     사진을 달라고 하기 전에 "무엇이 위험한지"를 먼저 눈으로 보여주는 자리.
+     실제 SNS 게시물처럼 보이게 만들되, 위험한 곳에 빨간 배지를 얹어 짚어준다. */
+  .self-check { padding: 3.4rem 0 1rem; }
+  .sc-card {
+    background: var(--soft); border-radius: 28px;
+    padding: 2.6rem 1.6rem 2.4rem; text-align: center;
+    max-width: 1020px; margin: 0 auto;
+  }
+  .sc-eyebrow {
+    display: inline-block; font-size: 0.82rem; font-weight: 700;
+    color: var(--ink); background: var(--accent);
+    padding: 0.38rem 0.95rem; border-radius: 999px; margin-bottom: 1rem;
+  }
+  .sc-title {
+    font-size: 1.5rem; font-weight: 700; letter-spacing: -0.018em;
+    margin: 0 0 1.7rem; word-break: keep-all;
+  }
+
+  /* 가로로 넘기는 트랙. 화살표로도, 손가락으로도 넘어간다. */
+  .sc-wrap { position: relative; }
+  .sc-track {
+    will-change: transform;
+    display: flex; gap: 0.9rem; overflow-x: auto;
+    padding: 0.2rem 0.2rem 1rem; margin: 0 -0.2rem;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    justify-content: center;
+  }
+  /* 넘칠 때는 왼쪽부터 — 가운데 정렬이면 첫 카드가 잘려 스크롤이 어긋난다 */
+  .sc-wrap.has-more .sc-track { justify-content: flex-start; }
+  .sc-track::-webkit-scrollbar { display: none; }
+
+  .ig-card {
+    flex: 0 0 220px;
+    background: var(--card); border-radius: 16px; overflow: hidden;
+    text-align: left; box-shadow: var(--shadow-card);
+  }
+  .ig-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.75rem; }
+  .ig-ava { display: flex; color: var(--muted); }
+  .ig-user { font-size: 0.78rem; font-weight: 600; flex: 1; min-width: 0;
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ig-ico { width: 18px; height: 18px; fill: none; stroke: currentColor;
+            stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .ig-more { color: var(--muted); flex: 0 0 auto; }
+
+  .ig-photo { position: relative; aspect-ratio: 1 / 1; background: var(--soft); }
+  .ig-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ig-badge {
+    position: absolute; top: 0.55rem; right: 0.55rem;
+    background: var(--risk-high); color: #fff;
+    font-size: 0.7rem; font-weight: 700; padding: 0.28rem 0.62rem; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  }
+
+  .ig-acts { display: flex; gap: 0.7rem; padding: 0.6rem 0.75rem 0.35rem; color: var(--ink); }
+  .ig-likes { margin: 0; padding: 0 0.75rem; font-size: 0.74rem; font-weight: 700; }
+  .ig-cap {
+    margin: 0.22rem 0 0; padding: 0 0.75rem; font-size: 0.74rem; line-height: 1.55;
+    word-break: keep-all;
+  }
+  .ig-cap strong { font-weight: 700; }
+  /* 왜 위험한지는 빨간 글씨로 — 배지가 무엇을 가리키는지 한 줄로 잇는다 */
+  .ig-note {
+    margin: 0.3rem 0 0; padding: 0 0.75rem; font-size: 0.72rem; line-height: 1.5;
+    color: var(--risk-high); word-break: keep-all;
+  }
+  .ig-time { margin: 0.3rem 0 0.8rem; padding: 0 0.75rem; font-size: 0.66rem; color: var(--muted); }
+
+  .sc-nav {
+    position: absolute; top: 42%; transform: translateY(-50%);
+    width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); padding: 0;
+  }
+  .sc-nav svg { width: 17px; height: 17px; fill: none; stroke: currentColor;
+                stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .sc-nav.prev { left: -6px; }
+  .sc-nav.next { right: -6px; }
+  .sc-nav:hover { border-color: var(--line-strong); }
+  .sc-nav[disabled] { opacity: 0.3; cursor: default; }
+  /* 카드가 화면에 다 들어가면 화살표 자체가 필요 없다 */
+  .sc-wrap:not(.has-more) .sc-nav { display: none; }
+
+  .sc-credit { margin: 0.2rem 0 1.3rem; font-size: 0.68rem; color: var(--muted); }
+  .sc-foot { margin: 0 0 1.1rem; font-size: 0.88rem; color: var(--muted); word-break: keep-all; }
+  /* button.primary 스타일은 button에만 걸려 있어서 <a>에는 안 먹는다.
+     같은 모양을 여기서 다시 준다 — 폭은 내용에 맞춘다. */
+  .sc-cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    text-decoration: none; padding: 0.85rem 1.9rem;
+    background: var(--accent); color: #1a1a1a;
+    border-radius: 999px; font-size: 0.94rem; font-weight: 700;
+    box-shadow: var(--shadow-soft);
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  }
+  .sc-cta:hover { background: var(--accent-hover); box-shadow: var(--shadow-lift); }
+  .sc-cta:active { transform: translateY(1px); }
+
+  @media (min-width: 1000px) {
+    .ig-card { flex: 0 0 300px; }
+    .ig-user { font-size: 0.86rem; }
+    .ig-likes { font-size: 0.8rem; }
+    .ig-cap, .ig-note { font-size: 0.8rem; }
+    .ig-time { font-size: 0.72rem; }
+    .ig-badge { font-size: 0.76rem; }
+  }
+
+  @media (max-width: 460px) {
+    .sc-card { padding: 2rem 1rem 1.9rem; border-radius: 22px; }
+    .sc-title { font-size: 1.24rem; }
+    .sc-nav.prev { left: -2px; } .sc-nav.next { right: -2px; }
+  }
+
   /* ===================== 웹사이트 구조 ===================== */
   .section-inner { width: 100%; max-width: var(--page-max); margin: 0 auto; padding: 0 1.4rem; }
   .section-inner.narrow { max-width: 860px; }
@@ -1211,11 +1385,13 @@
     font-weight: 700; font-size: 1rem; color: var(--ink); text-decoration: none;
     letter-spacing: -0.01em; flex: 0 0 auto;
   }
+  /* 배경 없이 누끼로 얹는다. 색 면이 하나 줄어드는 만큼 글자와 나란히 놓기 좋다.
+     (탭 아이콘은 배경을 유지한다 — 투명하면 어두운 탭에서 아이가 사라진다.) */
   .nav-mark {
-    width: 30px; height: 30px; border-radius: 50%; background: var(--accent-2);
-    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    width: 34px; height: 34px; display: inline-flex; align-items: center;
+    justify-content: center; flex: 0 0 auto;
   }
-  .nav-mark .mono-icon { width: 17px; height: 17px; stroke: var(--ink); }
+  .nav-mark svg { width: 34px; height: 34px; display: block; }
   .nav-links { list-style: none; display: flex; gap: 1.4rem; margin: 0 auto 0 1rem; padding: 0; }
   .nav-links a {
     color: var(--muted); text-decoration: none; font-size: 0.88rem; font-weight: 500;
@@ -1573,9 +1749,21 @@
 <script>
   /* 새로고침하면 브라우저가 이전 스크롤 위치를 되살린다. 페이지가 길어서
      그 자리가 대개 한복판이라, 히어로를 못 보고 중간부터 시작하게 된다.
-     주소에 #앵커가 있을 때는 그 자리로 가야 하므로 건드리지 않는다. */
-  if ('scrollRestoration' in history && !location.hash) {
+     링크를 받아 #앵커로 들어온 경우는 그 자리로 보내야 하니 건드리지 않는다.
+
+     새로고침은 예외다. 메뉴를 눌러 돌아다니면 주소에 #tool 같은 게 붙어 남는데,
+     그대로 새로고침하면 앵커 때문에 또 한복판에서 시작한다. 새로고침이면
+     앵커를 떼고 맨 위에서 다시 시작한다 — 새로고침은 "처음부터 다시 보겠다"는 뜻이다. */
+  var 진입 = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
+  var 새로고침 = 진입 ? 진입.type === 'reload'
+                     : !!(performance.navigation && performance.navigation.type === 1);
+  if ('scrollRestoration' in history && (새로고침 || !location.hash)) {
     history.scrollRestoration = 'manual';
+  }
+  if (새로고침) {
+    // 앵커를 미리 떼야 브라우저가 그 자리로 뛰지 않는다.
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    window.addEventListener('load', function () { window.scrollTo(0, 0); });
   }
 
   /* #앵커를 달고 처음 들어오면 브라우저는 "지금" 그 요소가 있는 자리로 간다.
@@ -1609,6 +1797,11 @@
   </div>
 </div>
 <div class="page-grain" aria-hidden="true"></div>
+<!-- 아이SHADOW 마크. 도형은 여기 한 번만 두고 <use>로 갖다 쓴다 —
+     여러 벌 박아두면 색이나 모양을 고칠 때 한 곳을 빠뜨린다. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><g id="ishadow-mark"><g fill="#d9a389" transform="translate(12.5,29.5) scale(1.15,0.62) skewX(-34) translate(-16,-29)"><path d="M15.85 3.00 L16.05 3.00 L15.75 3.30 L15.85 3.40 L16.45 3.20 L17.36 3.30 L17.56 3.40 L17.46 3.50 L17.56 3.71 L18.37 3.91 L18.37 4.11 L19.17 4.71 L19.98 4.71 L19.88 4.91 L19.38 5.22 L19.78 5.52 L19.68 5.62 L19.88 6.22 L19.78 6.73 L19.38 7.33 L19.28 7.33 L19.38 7.23 L19.38 6.73 L19.28 6.63 L19.17 6.73 L19.07 7.13 L18.67 7.64 L18.67 8.04 L18.87 8.44 L18.57 8.64 L18.47 9.05 L17.76 9.75 L16.96 9.75 L16.86 9.65 L16.55 9.75 L16.55 9.95 L17.26 10.36 L17.56 10.76 L17.46 11.06 L18.37 13.08 L18.37 13.38 L19.98 18.22 L19.98 18.72 L19.88 18.82 L19.58 18.82 L18.87 19.22 L18.37 19.33 L17.86 19.73 L17.66 21.04 L17.06 22.05 L17.06 23.26 L16.86 23.86 L16.96 24.06 L17.36 24.16 L17.56 24.77 L18.17 25.07 L18.97 25.17 L19.28 25.47 L19.28 25.98 L18.67 26.38 L17.06 26.38 L16.96 26.48 L17.66 27.19 L18.07 27.39 L18.77 27.49 L19.07 27.79 L19.07 28.40 L18.47 28.80 L17.26 29.00 L15.85 28.60 L14.44 28.60 L14.03 28.29 L13.93 27.89 L14.24 26.98 L14.14 26.28 L14.34 25.98 L14.03 25.17 L13.93 23.56 L14.44 21.95 L14.44 21.14 L14.03 20.84 L13.93 20.13 L13.63 19.73 L12.22 19.33 L12.02 19.12 L12.02 18.62 L12.42 17.01 L12.42 16.30 L12.52 16.20 L12.93 12.98 L13.23 11.47 L13.73 10.26 L13.63 9.35 L13.73 9.25 L14.34 9.25 L14.54 9.05 L14.54 8.54 L14.44 8.44 L14.24 8.54 L13.93 8.44 L14.03 8.24 L13.93 8.14 L13.63 8.14 L13.23 7.94 L13.23 7.84 L13.53 7.84 L13.63 7.53 L13.43 6.93 L13.13 6.73 L13.23 6.53 L13.03 6.22 L13.33 5.72 L13.43 5.22 L13.73 4.81 L13.63 4.61 L13.33 4.81 L13.33 4.71 L13.93 4.11 L14.54 4.01 L14.64 3.91 L14.34 3.71 L15.04 3.71 L15.45 3.20 L15.75 3.10 Z"/></g><g fill="#3a2a22" transform="translate(12.5,29.5) translate(-16,-29)"><path d="M15.85 3.00 L16.05 3.00 L15.75 3.30 L15.85 3.40 L16.45 3.20 L17.36 3.30 L17.56 3.40 L17.46 3.50 L17.56 3.71 L18.37 3.91 L18.37 4.11 L19.17 4.71 L19.98 4.71 L19.88 4.91 L19.38 5.22 L19.78 5.52 L19.68 5.62 L19.88 6.22 L19.78 6.73 L19.38 7.33 L19.28 7.33 L19.38 7.23 L19.38 6.73 L19.28 6.63 L19.17 6.73 L19.07 7.13 L18.67 7.64 L18.67 8.04 L18.87 8.44 L18.57 8.64 L18.47 9.05 L17.76 9.75 L16.96 9.75 L16.86 9.65 L16.55 9.75 L16.55 9.95 L17.26 10.36 L17.56 10.76 L17.46 11.06 L18.37 13.08 L18.37 13.38 L19.98 18.22 L19.98 18.72 L19.88 18.82 L19.58 18.82 L18.87 19.22 L18.37 19.33 L17.86 19.73 L17.66 21.04 L17.06 22.05 L17.06 23.26 L16.86 23.86 L16.96 24.06 L17.36 24.16 L17.56 24.77 L18.17 25.07 L18.97 25.17 L19.28 25.47 L19.28 25.98 L18.67 26.38 L17.06 26.38 L16.96 26.48 L17.66 27.19 L18.07 27.39 L18.77 27.49 L19.07 27.79 L19.07 28.40 L18.47 28.80 L17.26 29.00 L15.85 28.60 L14.44 28.60 L14.03 28.29 L13.93 27.89 L14.24 26.98 L14.14 26.28 L14.34 25.98 L14.03 25.17 L13.93 23.56 L14.44 21.95 L14.44 21.14 L14.03 20.84 L13.93 20.13 L13.63 19.73 L12.22 19.33 L12.02 19.12 L12.02 18.62 L12.42 17.01 L12.42 16.30 L12.52 16.20 L12.93 12.98 L13.23 11.47 L13.73 10.26 L13.63 9.35 L13.73 9.25 L14.34 9.25 L14.54 9.05 L14.54 8.54 L14.44 8.44 L14.24 8.54 L13.93 8.44 L14.03 8.24 L13.93 8.14 L13.63 8.14 L13.23 7.94 L13.23 7.84 L13.53 7.84 L13.63 7.53 L13.43 6.93 L13.13 6.73 L13.23 6.53 L13.03 6.22 L13.33 5.72 L13.43 5.22 L13.73 4.81 L13.63 4.61 L13.33 4.81 L13.33 4.71 L13.93 4.11 L14.54 4.01 L14.64 3.91 L14.34 3.71 L15.04 3.71 L15.45 3.20 L15.75 3.10 Z"/></g></g></defs>
+</svg>
 <!-- 결과가 도착한 걸 화면 낭독기에 알린다. 점수 자체는 90ms마다 바뀌어서
      live 영역으로 두면 쉬지 않고 읽어대므로, 상태 한 줄만 여기서 알린다. -->
 <p id="resultStatus" role="status" aria-live="polite" class="sr-only"></p>
@@ -1618,7 +1811,7 @@
      ANSHIM_ACCESS_CODE가 없으므로 이 문이 아예 뜨지 않는다. -->
 <div class="gate" id="accessGate">
   <div class="gate-box">
-    <h2>아이섀도우</h2>
+    <h2>아이SHADOW</h2>
     <p>팀 내부에서 보는 화면이에요.<br />전달받은 접근 코드를 넣어주세요.</p>
     <label for="accessInput" class="sr-only">접근 코드</label>
     <input type="password" id="accessInput" autocomplete="off" placeholder="접근 코드" />
@@ -1630,11 +1823,13 @@
 <nav class="site-nav">
   <div class="nav-inner">
     <a class="nav-brand" href="#top">
-      <span class="nav-mark"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
-      아이섀도우
+      <!-- 마크가 곧 "아이"다. 옆 글자까지 "아이SHADOW"면 같은 말을 두 번 한다. -->
+      <span class="nav-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#ishadow-mark"/></svg></span>
+      SHADOW
     </a>
     <ul class="nav-links">
       <li><a href="#tool">진단하기</a></li>
+      <li><a href="#pattern-check">패턴만 검사</a></li>
       <li><a href="#steps">사용법</a></li>
       <li><a href="#features">기능</a></li>
       <li><a href="#why">왜 안전한가</a></li>
@@ -1665,17 +1860,143 @@
       <div class="hv-card hv-3"><span class="hv-tag">3단계 재검증</span><span class="hv-line short"></span></div>
     </div>
   </div>
-  <a class="scroll-cue" href="#tool">
-    <span>아래로 내려 진단하기</span>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-  </a>
 </header>
+
+
+<!-- 올리기 전에 잠깐 — 무엇이 위험한지 먼저 눈으로 보여준다.
+     사진을 달라고 하기 전에 "이런 게 문제였구나"를 알려주는 자리다.
+     사진은 Wikimedia Commons의 CC 이미지이고 계정·게시물은 지어낸 예시다.
+
+     school-sign.jpg·license-plate.jpg는 원래 미국 사진(HOOVER HIGH SCHOOL,
+     SOUTH CAROLINA 번호판)이었다 — 한국 사용자 대상 앱에서 예시가 미국 맥락이면
+     "우리 얘기가 아니네"로 읽혀 와닿지 않는다는 문제 제보로 교체함(정사각형으로
+     자른 것 외에는 손대지 않음, CC BY-SA는 "변경 사항 명시" 요건이 있어 남겨둔다):
+       - school-sign.jpg: 증산중학교 교문, 저작자 0301rabbit, CC BY-SA 4.0
+         https://commons.wikimedia.org/wiki/File:증산중학교_교문.jpg
+       - license-plate.jpg: 대구 영업용 번호판, 저작자 Jhcbs1019, CC BY-SA 4.0
+         https://commons.wikimedia.org/wiki/File:South_Korean_license_plate_for_commercial_passenger_cars,_Daegu_(after_Nov._2006,_European-sized).jpg
+     apartment.jpg·playground.jpg는 원래부터 한국 맥락(서울 아파트 스카이라인)이거나
+     국적이 드러나는 글자가 없어 그대로 둠. -->
+<section class="self-check" id="selfcheck">
+  <div class="section-inner">
+    <div class="sc-card">
+      <span class="sc-eyebrow">올리기 전에 잠깐</span>
+      <h2 class="sc-title">사진 올리기 전, 이것부터 확인해보세요</h2>
+      <div class="sc-wrap">
+        <div class="sc-track" id="scTrack">
+      <article class="ig-card">
+        <header class="ig-head">
+          <span class="ig-ava" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="10" r="3.1"/><path d="M5.6 19.4a7.3 7.3 0 0 1 12.8 0"/></svg></span>
+          <span class="ig-user">mom_haewon</span>
+          <svg class="ig-ico ig-more" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+        </header>
+        <div class="ig-photo">
+          <img src="public/self-check/school-sign.jpg" alt="" loading="lazy" decoding="async" width="440" height="440" />
+          <span class="ig-badge">학교명 노출</span>
+        </div>
+        <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
+        <p class="ig-likes">좋아요 128개</p>
+        <p class="ig-cap"><strong>mom_haewon</strong> 오늘 첫 등교 완료! 🎒✨</p>
+        <p class="ig-note">간판에 학교 이름이 그대로 나와 있어요</p>
+        <p class="ig-time">2시간 전</p>
+      </article>
+      <article class="ig-card">
+        <header class="ig-head">
+          <span class="ig-ava" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="10" r="3.1"/><path d="M5.6 19.4a7.3 7.3 0 0 1 12.8 0"/></svg></span>
+          <span class="ig-user">seoul_mom22</span>
+          <svg class="ig-ico ig-more" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+        </header>
+        <div class="ig-photo">
+          <img src="public/self-check/apartment.jpg" alt="" loading="lazy" decoding="async" width="440" height="440" />
+          <span class="ig-badge">동·호수 노출</span>
+        </div>
+        <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
+        <p class="ig-likes">좋아요 94개</p>
+        <p class="ig-cap"><strong>seoul_mom22</strong> 이사 온 우리 동네, 뷰가 예술이에요 🏢</p>
+        <p class="ig-note">동·호수까지 특정될 수 있는 배경이에요</p>
+        <p class="ig-time">5시간 전</p>
+      </article>
+      <article class="ig-card">
+        <header class="ig-head">
+          <span class="ig-ava" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="10" r="3.1"/><path d="M5.6 19.4a7.3 7.3 0 0 1 12.8 0"/></svg></span>
+          <span class="ig-user">daddy_junho</span>
+          <svg class="ig-ico ig-more" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+        </header>
+        <div class="ig-photo">
+          <img src="public/self-check/license-plate.jpg" alt="" loading="lazy" decoding="async" width="440" height="440" />
+          <span class="ig-badge">번호판 노출</span>
+        </div>
+        <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
+        <p class="ig-likes">좋아요 211개</p>
+        <p class="ig-cap"><strong>daddy_junho</strong> 새 차 뽑았어요 🚗💨</p>
+        <p class="ig-note">번호판이 선명하게 보여요</p>
+        <p class="ig-time">1일 전</p>
+      </article>
+      <article class="ig-card">
+        <header class="ig-head">
+          <span class="ig-ava" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="10" r="3.1"/><path d="M5.6 19.4a7.3 7.3 0 0 1 12.8 0"/></svg></span>
+          <span class="ig-user">playdate_with_us</span>
+          <svg class="ig-ico ig-more" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+        </header>
+        <div class="ig-photo">
+          <img src="public/self-check/playground.jpg" alt="" loading="lazy" decoding="async" width="440" height="440" />
+          <span class="ig-badge">일정 노출</span>
+        </div>
+        <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
+        <p class="ig-likes">좋아요 76개</p>
+        <p class="ig-cap"><strong>playdate_with_us</strong> 매주 화요일 4시, 이 놀이터에서 놀아요 🛝</p>
+        <p class="ig-note">요일·시간이 반복되면 위치가 예측돼요</p>
+        <p class="ig-time">3시간 전</p>
+      </article>
+        </div>
+        <button type="button" class="sc-nav prev" id="scPrev" aria-label="이전 예시"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button type="button" class="sc-nav next" id="scNext" aria-label="다음 예시"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <p class="sc-credit">사진: Wikimedia Commons (CC BY / CC BY-SA / CC0) · 계정명·게시물은 예시입니다</p>
+      <p class="sc-foot">눈으로 다 확인하기 어렵다면, 사진 한 장이면 저희가 대신 확인해드려요.</p>
+      <a class="primary sc-cta" href="#tool">사진으로 확인하기</a>
+    </div>
+  </div>
+</section>
+
+<!-- 과거 게시물 패턴만 보고 싶은 사람을 위한 별도 입구 (사용자 요청 — 예전에는 이 기능이
+     사진 진단 폼 안 "과거 게시물 스크린샷" 칸 하나로만 곁다리로 붙어 있어서, 사진 없이
+     패턴만 보고 싶은 사람도 "사진", "캡션", "공개 범위" 같은 안 맞는 질문칸을 다 지나쳐야
+     했다. 결과 화면(#screen-pattern)과 분석 함수(runPatternOnly)는 이미 사진 없이도
+     동작하도록 돼 있었으니, 입구만 따로 만들면 된다. -->
+<section class="site-section pattern-entry" id="pattern-check">
+  <div class="section-inner">
+    <div class="sc-card pe-card">
+      <span class="sc-eyebrow">사진 없이도 확인 가능</span>
+      <h2 class="sc-title">과거 게시물 패턴만 따로 확인하기</h2>
+      <p class="pe-desc">사진을 올릴 필요 없어요. 지금까지 올린 게시물 스크린샷만 있으면
+        같은 요일·시간·장소가 반복되는지, 그래서 다음 게시물 시점이 예측되는지 짚어드려요.</p>
+      <div class="field pe-field">
+        <label for="patternOnlyInput">과거 게시물 스크린샷 <span class="hint">여러 장</span></label>
+        <div class="drop-zone" id="patternOnlyDrop">
+          <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
+          <span id="patternOnlyDropLabel">스크린샷을 선택하면 반복 패턴을 짚어드려요</span>
+          <input type="file" id="patternOnlyInput" accept="image/*" multiple />
+        </div>
+        <p class="file-count" id="patternOnlyCount" style="display:none;"></p>
+      </div>
+      <button class="primary" id="patternOnlySubmitBtn">패턴만 확인하기</button>
+    </div>
+  </div>
+</section>
+
+<!-- 예시를 다 보고 나서 진단으로 넘어가는 자리. 예전에는 히어로 맨 아래에
+     붙어 있어서 눌러도 피드를 건너뛰었다. -->
+<a class="scroll-cue" href="#tool">
+  <span>아래로 내려 진단하기</span>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+</a>
 
 <main id="tool">
   <!-- 히어로: 화면에 단 하나뿐인 다크 카드 (가이드라인 5절 "다크 카드는 최대 하나") -->
   <div class="app-hero">
   <header class="page-header">
-    <span class="badge-icon" role="img" aria-label="아이섀도우"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
+    <span class="badge-icon" role="img" aria-label="아이SHADOW"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#ishadow-mark"/></svg></span>
     <div class="ph-text">
       <h2 id="appTitle">사진 진단</h2>
       <p id="appSubtitle">사진을 올리고 세 단계를 따라가면 돼요</p>
@@ -1693,16 +2014,31 @@
 
   <!-- 화면 1: 업로드 -->
   <div class="card" id="screen-form">
-    <div class="field">
-      <label for="photoInput">사진</label>
-      <div class="drop-zone" id="fileDrop">
-        <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
-        <span id="fileDropLabel">클릭해서 사진을 선택하세요</span>
-        <input type="file" id="photoInput" accept="image/*" />
+    <!-- 왼쪽 칸: 위는 올릴 사진, 아래는 과거 게시물 스크린샷.
+         스크린샷 칸이 체크리스트 맨 끝에 붙어 있을 때는 "이건 뭐지?" 하는 자리였다.
+         둘 다 "파일을 올리는 일"이라 같은 칸에 위아래로 두는 편이 읽힌다. -->
+    <div class="field upload-col">
+      <div class="up-part">
+        <label for="photoInput">사진</label>
+        <div class="drop-zone" id="fileDrop">
+          <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
+          <span id="fileDropLabel">클릭해서 사진을 선택하세요</span>
+          <input type="file" id="photoInput" accept="image/*" />
+        </div>
+        <div class="polaroid" id="polaroidPreview" style="display:none;">
+          <img id="photoPreview" alt="업로드한 사진 미리보기" />
+          <div class="cap" id="polaroidCap">우리 아이 오늘</div>
+        </div>
       </div>
-      <div class="polaroid" id="polaroidPreview" style="display:none;">
-        <img id="photoPreview" alt="업로드한 사진 미리보기" />
-        <div class="cap" id="polaroidCap">우리 아이 오늘</div>
+
+      <div class="up-part">
+        <label for="pastInput">과거 게시물 스크린샷 <span class="hint">선택 · 여러 장</span></label>
+        <div class="drop-zone" id="pastDrop">
+          <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
+          <span id="pastDropLabel">반복되는 요일·시간·장소를 짚어드려요</span>
+          <input type="file" id="pastInput" accept="image/*" multiple />
+        </div>
+        <p class="file-count" id="fileCount" style="display:none;"></p>
       </div>
     </div>
 
@@ -1741,15 +2077,6 @@
       </div>
     </div>
 
-    <div class="field">
-      <label for="pastInput">과거 게시물 스크린샷 <span class="hint">선택, 여러 장 가능 — 사진 없이 이것만 올려도 생활 패턴은 분석해드려요</span></label>
-      <div class="drop-zone small" id="pastDrop">
-        <span id="pastDropLabel">스크린샷을 선택하면 반복 패턴까지 짚어드려요</span>
-        <input type="file" id="pastInput" accept="image/*" multiple />
-      </div>
-      <p class="file-count" id="fileCount" style="display:none;"></p>
-    </div>
-
     <button class="primary" id="submitBtn">위험도 진단하기</button>
   </div>
 
@@ -1774,11 +2101,17 @@
       <p class="risk-pending" id="riskPending"><span class="spin"></span><span id="riskPendingText">위험 요소 판단 중…</span></p>
 
       <div class="gauge-wrap">
+        <!-- 원형 게이지 대신 오각형. 원은 총점 하나만 말했지만 오각형은
+             "어느 항목이 무거운가"까지 한 그림에서 읽힌다.
+             축마다 상한이 다르므로 각자 상한 대비 비율로 그린다 — 점수를 그대로
+             반지름에 쓰면 상한 큰 항목이 늘 커 보여 모양이 거짓말을 한다. -->
         <div class="gauge-ring">
-          <svg viewBox="0 0 160 160" aria-hidden="true">
-            <circle cx="80" cy="80" r="66" fill="none" stroke="var(--line)" stroke-width="13"/>
-            <circle id="gaugeArc" cx="80" cy="80" r="66" fill="none" stroke="var(--gold)"
-                    stroke-width="13" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+          <svg viewBox="0 0 240 230" class="sb-radar" id="sbRadar" role="img" aria-labelledby="radarTitle">
+            <title id="radarTitle">항목별 위험도 오각형</title>
+            <g id="radarGrid"></g>
+            <polygon id="radarShape" class="radar-shape" points="" />
+            <g id="radarDots"></g>
+            <g id="radarLabels"></g>
           </svg>
           <div class="gauge-center">
             <div class="gauge-score-label" id="riskScore">–</div>
@@ -1861,7 +2194,7 @@
   <div class="card" id="screen-correct" style="display:none;">
     <div class="correct-left">
     <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.6rem; max-width:22ch; color:var(--ink);">
-      Claude가 위험요소별 보정 방식을 추천했어요
+      어떻게 보정할지 골라주세요
     </h3>
     <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
 
@@ -1900,27 +2233,45 @@
       <output class="bs-value" id="blurRangeValue" for="blurRange">보통</output>
     </div>
 
+    <!-- 컬러체인지 / 엠블럼 처리 — 마스크 인페인팅으로 채울 옷 디자인을 고른다.
+         마스크(누구를 지킬지)는 그대로 두고, 이 선택은 프롬프트 문구만 바꾼다. -->
+    <div class="blur-strength" id="outfitStyle" style="display:none; flex-direction: column; align-items: flex-start; gap:0.6rem;">
+      <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+        <span class="bs-label">컬러체인지</span>
+        <div class="bs-options" role="group" aria-label="컬러체인지">
+          <button type="button" class="cw-btn" data-cw="keep" title="색은 그대로 두고 교복 티(깃·여밈·가슴 마크)만 없앤다 — 색까지 바꾸는 쪽이 더 안전해요">색 안 바꾸기</button>
+          <button type="button" class="cw-btn selected" data-cw="brown" title="상의 오트밀 · 트림 다크브라운">오트밀 &amp; 브라운</button>
+          <button type="button" class="cw-btn" data-cw="navy" title="상의 연하늘 · 트림 네이비">스카이 &amp; 네이비</button>
+          <button type="button" class="cw-btn" data-cw="gray" title="상의 웜그레이 · 트림 차콜">그레이 &amp; 차콜</button>
+          <button type="button" class="cw-btn" data-cw="green" title="상의 크림 · 트림 딥그린">크림 &amp; 포레스트</button>
+        </div>
+        <span id="cwSampleTag" style="font-size:0.72rem; color: var(--muted);"></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+        <span class="bs-label">가슴 마크(엠블럼) 처리</span>
+        <div class="bs-options" role="group" aria-label="가슴 마크 처리">
+          <button type="button" class="em-btn selected" data-em="pocket" title="원복 느낌 유지 · 권장">무늬 없는 포켓으로</button>
+          <button type="button" class="em-btn" data-em="none" title="가장 안전">완전히 지우기</button>
+        </div>
+      </div>
+    </div>
+
     <div class="target-picker" id="targetPicker" style="display:none;">
       <p class="target-picker-head">찾은 것이 맞는지 확인해주세요
         <span class="hint">체크한 것만 처리해요 · 내용이 다르면 눌러서 고치고, 아예 틀린 건 빼주세요</span></p>
       <ul id="targetList"></ul>
+      <!-- AI 방식은 체크를 고칠 때마다 다시 부르면 요금이 나가고 원본이 또 나간다.
+           체크는 체크만 하고, 다시 만드는 건 여기서 직접 누른다. -->
+      <div class="target-redo" id="targetRedo" style="display:none;">
+        <span>고른 항목이 바뀌었어요. 지금 미리보기는 바꾸기 전 선택으로 만든 거예요.</span>
+        <button type="button" class="secondary" id="targetRedoBtn">고른 것으로 다시 만들기</button>
+      </div>
     </div>
 
     <div class="method-grid">
       <button class="method-card selected" data-method="blur">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><circle cx="16" cy="16" r="10" stroke-dasharray="3 4.5"/><circle cx="16" cy="16" r="14.5" stroke-dasharray="2 6"/></svg> 배경 흐림 <span class="m-badge" id="badge-blur" style="display:none;">1순위</span></div>
         <div class="m-reason" id="reason-blur">인물모드 스타일로, 아이는 선명하게 유지돼요. 얼굴을 못 찾은 사진에서는 전체가 흐려져요.</div>
-      </button>
-      <button class="method-card" data-method="inpaint">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 24 L20 8 L24 12 L8 28 Z"/><path d="M20 8 L24 4 L28 8 L24 12 Z"/><path d="M4 24 L3 29 L8 28"/></svg> AI로 지우고 메우기
-          <span class="m-badge" id="badge-inpaint-status" style="background:var(--muted);">확인 중</span>
-        </div>
-        <div class="m-reason">
-          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.35rem 0.35rem 0; display:inline-block;">⚠ 원본 전송</span>
-          전화번호·주소처럼 작은 글씨를 지우고 그 자리를 배경으로 메워요. 사진을 자르지
-          않으니 구도와 비율이 그대로예요. 큰 간판은 AI가 가짜 글씨를 만들어내서,
-          간판만 스티커로 덮어요.
-        </div>
       </button>
       <button class="method-card" data-method="outfit">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 4 L16 7 L20 4 L27 8 L24 13 L26 28 L6 28 L8 13 L5 8 Z"/></svg> AI 옷 바꾸기
@@ -2184,8 +2535,8 @@
         <p>과거 게시물 스크린샷을 함께 넣으면 "매주 같은 요일·시간대" 같은 생활 패턴이 드러나는지 짚어드려요.</p>
       </article>
       <article class="feature-card pin-item">
-        <h3>여섯 가지 보정</h3>
-        <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI로 지우고 메우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
+        <h3>다섯 가지 보정</h3>
+        <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
       </article>
     </div>
   </div>
@@ -2251,14 +2602,14 @@
 <footer class="site-footer">
   <div class="section-inner footer-inner">
     <div class="foot-brand">
-      <span class="nav-mark"><svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8.5"/><path d="M20.2 20.2 L27.5 27.5"/><path d="M10.5 14.5 L13.2 17.2 L18 11.6"/></svg></span>
+      <span class="nav-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#ishadow-mark"/></svg></span>
       <div>
-        <strong>아이섀도우</strong>
+        <strong>아이SHADOW</strong>
         <p>아이 사진 SNS 위험진단 서비스</p>
       </div>
     </div>
     <div class="foot-cols">
-      <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
+      <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#pattern-check">패턴만 검사</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
       <div><h4>만든 곳</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
       <div><h4>사용 기술</h4><ul><li>Claude Vision</li><li>face-api.js</li><li>Tesseract.js</li><li>fal.ai FLUX</li></ul></div>
     </div>
@@ -2268,15 +2619,16 @@
 
 <!-- AI 배경교체 전송 동의 모달: "AI 배경 교체" 선택 시에만 뜸, 다른 3가지 방식은 안 뜸 -->
 <div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-  <div class="card" style="max-width:380px; margin:0; box-shadow:var(--shadow-lift);">
+  <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
     <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의</h3>
-    <p class="evidence">AI 방식(지우고 메우기 · 옷 바꾸기 · 배경 교체)은 다른 기능과 달리 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다.</p>
-    <ul class="action-list" style="margin-bottom:1.1rem;">
-      <li>배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저에서 처리돼요</li>
-      <li>AI 방식만 예외적으로 원본 전송이 필요해요</li>
-      <li>한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요</li>
-      <li>전송된 이미지는 처리 후 저장되지 않아요</li>
+    <p class="evidence">AI 방식(옷 바꾸기 · 배경 교체)은 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다. 배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요.</p>
+    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">fal.ai가 밝힌 사진 처리 방침</p>
+    <ul class="action-list" style="margin-bottom:0.8rem;">
+      <li>사진에 대한 권리는 그대로 올린 사람에게 있어요</li>
+      <li><strong>AI 모델 학습에는 쓰지 않아요</strong> — 개선에 쓰는 건 익명·집계된 사용 기록뿐이에요</li>
+      <li><strong>다만 “처리 후 바로 삭제”는 약속돼 있지 않아요.</strong> 계정을 닫으면 30일 안에, 2년간 안 쓰면 그때 지운다고만 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
     </ul>
+    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
     <button class="primary" id="fluxConsentAgree">동의하고 진행</button>
     <button class="secondary" id="fluxConsentCancel">취소</button>
   </div>
@@ -2293,6 +2645,18 @@
     <button class="secondary" id="noFaceConsentOriginal">그래도 원본으로 분석</button>
   </div>
 </div>
+
+<!-- GSAP + ScrollTrigger — 네비 숨김/다시 내리기에만 쓴다.
+     아래 스크립트보다 먼저 놓아야 gsap·ScrollTrigger가 읽힌다. -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"
+  integrity="sha384-HOvlOYPIs/zjoIkWUGXkVmXsjr8GuZLV+Q+rcPwmJOVZVpvTSXQChiN4t9Euv9Vc"
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"
+  integrity="sha384-P8VzCVnT9NBUkMrpcIZrJbA7EBjJvh/fJS6PmP+4nLIM284DtsImIv8D0fFjIkeh"
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"
+  integrity="sha384-xb96EMJeax+NLXMC88ZBa1xAeAW+kn+horHh/zFlbMLG2UPWhMJJSlv7fi57hS+Q"
+  crossorigin="anonymous"></script>
 
 <script>
   /* 스크롤에 따라 빛의 심지가 흐려졌다 진해졌다 한다.
@@ -2350,6 +2714,85 @@
     window.addEventListener('resize', sync);
     if (window.ResizeObserver) new ResizeObserver(sync).observe(nav);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+  })();
+
+  /* 내려가면 네비를 감추고, 올리면 다시 내린다.
+     (GSAP ScrollTrigger — codepen.io/GreenSock/pen/qBawMGb 의 방식 그대로)
+     감춘 사이에 Tab으로 네비 링크에 닿으면 보이지 않는 곳에 초점이 가므로 다시 내린다.
+     모션 축소를 켜둔 사람에게는 아예 걸지 않는다 — 네비는 항상 떠 있다.
+     GSAP를 못 불러와도 네비는 sticky로 그대로 있다. */
+  (function () {
+    var nav = document.querySelector('.site-nav');
+    if (!nav || !window.gsap || !window.ScrollTrigger) return;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // progress(1) — 만들자마자 "다 보이는" 끝 상태로 두고 시작한다.
+    var showAnim = gsap.from(nav, {
+      yPercent: -100,
+      paused: true,
+      duration: 0.2
+    }).progress(1);
+
+    ScrollTrigger.create({
+      start: 'top top',
+      end: 'max',
+      onUpdate: function (self) {
+        // direction -1 = 위로 올리는 중
+        if (self.direction === -1) showAnim.play(); else showAnim.reverse();
+      }
+    });
+
+    nav.addEventListener('focusin', function () { showAnim.play(); });
+  })();
+
+  /* 히어로 — 스크롤에 따라 오른쪽 카드 석 장이 서로 다른 속도로 어긋난다.
+     개별 요소만 transform으로 옮기는 것이라 페이지의 sticky와 부딪히지 않는다
+     (페이지 전체를 미는 ScrollSmoother와 다른 점이 이것이다).
+     900px 아래에서는 카드가 아예 감춰져 있으므로 걸지 않는다. */
+  (function () {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.matchMedia().add(
+      '(min-width: 901px) and (prefers-reduced-motion: no-preference)',
+      function () {
+        [['.hv-1', -70], ['.hv-2', -130], ['.hv-3', -40]].forEach(function (pair) {
+          var el = hero.querySelector(pair[0]);
+          if (!el) return;
+          gsap.to(el, {
+            y: pair[1], ease: 'none',
+            scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }
+          });
+        });
+      }
+    );
+  })();
+
+  /* 히어로 제목이 글자 단위로 올라온다.
+     .reveal 그룹에는 히어로가 없어서(사이트 섹션만 등록된다) 서로 겹칠 일이 없다.
+     SplitText의 aria 기본값이 'auto'라 원문이 aria-label로 남는다 — 읽어주는 도구에는 그대로다.
+     플러그인을 못 불러오거나 모션 축소면 제목은 그냥 처음부터 보인다. */
+  (function () {
+    var title = document.querySelector('.hero-title');
+    if (!title || !window.gsap || !window.SplitText) return;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    gsap.registerPlugin(SplitText);
+
+    function play() {
+      var split = new SplitText(title, { type: 'chars, lines', linesClass: 'hero-line' });
+      gsap.from(split.chars, {
+        yPercent: 110, opacity: 0, duration: 0.7, ease: "power3.out",
+        stagger: 0.018,
+        onComplete: function () { split.revert(); }   // 원래 글자로 되돌려 둔다
+      });
+    }
+    // 글꼴이 바뀌면 줄이 다시 나뉜다 — 다 놓인 뒤에 쪼갠다.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(play);
+    else window.addEventListener("load", play, { once: true });
   })();
 
   /* 핀 고정 섹션 공통 드라이버.
@@ -2477,6 +2920,7 @@
       ['.site-section:not(.steps-section):not(.pinned-section) .section-eyebrow', 0],
       ['.site-section:not(.steps-section):not(.pinned-section) .section-title', 0],
       ['.cta-band .section-inner > *', 90],
+      ['.self-check .sc-card', 0],
     ];
 
     var all = [];
@@ -3109,6 +3553,78 @@
     })();
 
     // ===== 텍스트 판독: Claude Vision (기본) + Tesseract (폴백/디버그 비교용) =====
+    // ===== 올리기 전에 잠깐 — 예시 캐러셀 =====
+    // 카드 폭 + 간격만큼 밀어준다. 값을 상수로 박으면 글자 크기가 바뀔 때 어긋나므로
+    // 실제 카드에서 잰다. 끝에 닿으면 화살표를 흐리게 해서 더 없다는 걸 알린다.
+    (function setupSelfCheck() {
+      var track = document.getElementById('scTrack');
+      var prev = document.getElementById('scPrev');
+      var next = document.getElementById('scNext');
+      if (!track || !prev || !next) return;
+
+      function step() {
+        var card = track.querySelector('.ig-card');
+        if (!card) return 236;
+        var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 14;
+        return card.getBoundingClientRect().width + gap;
+      }
+      function syncEnds() {
+        var max = track.scrollWidth - track.clientWidth;
+        // 넘치지 않으면 화살표를 통째로 감춘다 (CSS의 .has-more)
+        track.parentElement.classList.toggle('has-more', max > 2);
+        prev.disabled = track.scrollLeft <= 2;
+        next.disabled = track.scrollLeft >= max - 2;
+      }
+      prev.addEventListener('click', function () { userTouched = true; track.scrollBy({ left: -step(), behavior: 'smooth' }); });
+      next.addEventListener('click', function () { userTouched = true; track.scrollBy({ left: step(), behavior: 'smooth' }); });
+      track.addEventListener('scroll', syncEnds, { passive: true });
+      window.addEventListener('resize', function () { syncEnds(); onScroll(); });
+      syncEnds();
+
+      // ── 페이지를 내리면 피드도 같이 흐른다 ──────────────────────────────
+      // 섹션이 화면을 지나가는 만큼(0~1)을 가로 위치로 옮긴다.
+      // 넘칠 때는 실제 스크롤을, 다 들어갈 때는 살짝 미끄러지게 한다.
+      // 손으로 한 번이라도 넘긴 뒤에는 끼어들지 않는다 — 내가 맞춰둔 자리를
+      // 스크롤이 도로 옮겨버리면 빼앗긴 느낌이 든다.
+      var userTouched = false;
+      ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (ev) {
+        track.addEventListener(ev, function () { userTouched = true; }, { passive: true });
+      });
+      var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var ticking = false;
+      function apply() {
+        ticking = false;
+        if (userTouched || reduce) return;
+        var sec = document.getElementById('selfcheck');
+        if (!sec) return;
+        var r = sec.getBoundingClientRect();
+        // 섹션 위가 화면 아래에 닿을 때 0, 섹션 아래가 화면 위를 지날 때 1
+        var span = r.height + window.innerHeight;
+        var p = (window.innerHeight - r.top) / span;
+        p = Math.max(0, Math.min(1, p));
+        var max = track.scrollWidth - track.clientWidth;
+        if (max > 2) {
+          track.scrollLeft = p * max;            // 넘칠 때 — 진짜로 넘긴다
+          track.style.transform = '';
+        } else {
+          // 다 들어갈 때 — 카드가 상자 안에서 좌우로 미끄러진다.
+          // scrollWidth는 다 들어가면 clientWidth와 같아서 여유를 못 잰다.
+          // 첫 카드 왼쪽 ~ 마지막 카드 오른쪽으로 실제 차지한 폭을 잰다.
+          var cards = track.querySelectorAll('.ig-card');
+          var used = cards.length
+            ? cards[cards.length - 1].getBoundingClientRect().right - cards[0].getBoundingClientRect().left
+            : 0;
+          var slack = Math.max(0, (track.clientWidth - used) / 2);
+          var drift = Math.min(52, slack);
+          track.style.transform = 'translateX(' + (drift - p * drift * 2).toFixed(1) + 'px)';
+        }
+      }
+      function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(apply); } }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+    })();
+
     // ===== 팀 접근 코드 =====
     // 코드는 이 브라우저에만 남는다(localStorage). 요청마다 헤더로 붙여 보내고,
     // 서버가 환경변수와 맞춰본다. 서버에 코드가 설정되어 있지 않으면 문은 안 뜬다.
@@ -3667,13 +4183,145 @@
       return data;
     }
 
+    // ===== 컬러체인지 프리셋 (구버전 buildOutfitPrompt/COLORWAYS 이식) =====
+    // 예전 버전은 flux-kontext-pro로 이미지 전체를 다시 그리면서 "사람은 건드리지 마"라고
+    // 프롬프트로 부탁했지만, 새 버전은 buildClothingMask로 옷 영역만 흰색으로 열어
+    // 마스크 자체가 사람을 보호한다(이 파일 상단 참고, 여기서는 손대지 않음).
+    // 그래서 이 프리셋들은 "무엇을 지켜라"가 아니라 "마스크 안을 무슨 색·디자인으로
+    // 채워라"는 문구로만 쓰인다 — 사람 보존은 전적으로 마스크가 담당한다.
+    var COLORWAYS = {
+      // 색을 그대로 두는 선택. 옷 색은 손대지 않고 교복임을 드러내는 것(깃·여밈 모양,
+      // 가슴 마크, 글자)만 지운다. 색까지 바꾸는 쪽이 기관 특정을 더 확실히 끊지만,
+      // 사진 분위기를 그대로 두고 싶을 때가 있어서 열어둔다.
+      keep: { label: '색 안 바꾸기', keepColors: true, sample: null },
+      brown: { label: '오트밀 & 브라운',
+        top: 'oatmeal beige (#CCB490)', trim: 'dark chocolate brown (#483018)',
+        bottomSolid: 'solid dark chocolate brown (#483018)',
+        bottomPlaid: 'a brown-and-beige plaid with stronger contrast than the original',
+        sample: 'brown' },
+      navy: { label: '스카이 & 네이비',
+        top: 'light sky blue (#C6D4E4)', trim: 'deep navy (#26304A)',
+        bottomSolid: 'solid deep navy (#181824)',
+        bottomPlaid: 'a navy-and-white plaid',
+        sample: 'navy' },
+      gray: { label: '그레이 & 차콜',
+        top: 'soft warm gray (#D5D5D0)', trim: 'charcoal (#3A3A3E)',
+        bottomSolid: 'solid charcoal (#3A3A3E)',
+        bottomPlaid: 'a gray-and-charcoal plaid',
+        sample: null },
+      green: { label: '크림 & 포레스트',
+        top: 'off-white cream (#EFE9DA)', trim: 'forest green (#2F4A34)',
+        bottomSolid: 'solid forest green (#2F4A34)',
+        bottomPlaid: 'a green-and-cream plaid',
+        sample: null },
+    };
+
+    var EMBLEM_MODES = {
+      pocket: 'Include a small plain patch pocket on the chest in the same fabric — no logo, no lettering, no motif, no crest on it.',
+      none: 'Keep the chest completely plain: no pocket, no logo, no lettering, no motif, no crest.',
+    };
+    var EMBLEM_MODE_KO = { pocket: '무늬 없는 포켓으로 바꿔요', none: '흔적 없이 완전히 지워요' };
+
+    // 마스크 안을 채울 프롬프트. 마스크가 이미 "여기만 새로 그려라"를 강제하므로
+    // 여기서는 인물 보존 문구를 넣지 않는다(넣어도 무해하지만 중복) — 순수하게 디자인만 지시.
+    function buildOutfitFillPrompt(colorway, emblemMode) {
+      var cw = COLORWAYS[colorway] || COLORWAYS.brown;
+      var emblem = EMBLEM_MODES[emblemMode] || EMBLEM_MODES.pocket;
+      // 색을 그대로 두는 선택 — 색 지시를 아예 빼고, 교복임을 드러내는 것만 지운다.
+      if (cw.keepColors) {
+        return 'a plain simple childrens outfit keeping the exact same colors and fabric as the garment already worn — do not change any color. '
+          + 'Use a collar and closure style clearly different from a school or kindergarten uniform. '
+          + emblem + ' '
+          + 'Keep the bottoms in their existing color and pattern. '
+          + 'No logos, no badges, no crest, no institution lettering, no school uniform markings. '
+          + 'Natural fabric folds matching the pose, photorealistic, not an illustration.';
+      }
+      // 실사용 제보: 색을 정확한 헥스값까지 지정해도 결과가 원본 옷 색 쪽으로 끌려갔다.
+      // fal FLUX Fill은 마스크 주변(가장자리 살결·배경)의 색에도 영향을 받는 것으로
+      // 보여서, "원본 색은 무시하라"를 명시하고 목표 색을 문장 앞뒤에서 두 번 반복해
+      // 강조한다 — 한 번만 말하면 다른 지시문 사이에서 무뎌지는 것으로 실측됨.
+      return 'IMPORTANT — completely replace the fabric color; ignore whatever color the current garment is: '
+        + 'a plain simple childrens outfit dyed a solid, saturated ' + cw.top + ' (not the original color, not a blend with it), with a narrow trim band at the cuffs and collar in ' + cw.trim + '. '
+        + 'Use a collar and closure style clearly different from a school or kindergarten uniform. '
+        + emblem + ' '
+        + 'Bottoms are either ' + cw.bottomSolid + ' shorts or trousers, or ' + cw.bottomPlaid + ' pleated skirt — whichever matches the garment already worn. '
+        + 'No other logos, no badges, no crest, no institution lettering, no school uniform markings. '
+        + 'Natural fabric folds matching the pose, photorealistic, not an illustration. '
+        + 'Reminder: the finished top must clearly read as ' + cw.top + ', a full color change, not a tint of the original.';
+    }
+
+    function buildOutfitSummaryKo(colorway, emblemMode) {
+      var cw = COLORWAYS[colorway] || COLORWAYS.brown;
+      var emblem = EMBLEM_MODE_KO[emblemMode] || EMBLEM_MODE_KO.pocket;
+      if (cw.keepColors) {
+        return '옷 색은 그대로 두고 깃·여밈을 교복이 아닌 모양으로 바꿨어요. 가슴 마크는 ' + emblem + '.';
+      }
+      return '옷을 «' + cw.label + '» 색상으로 바꾸고, 가슴 마크는 ' + emblem + '.';
+    }
+
     // 마스크 인페인팅 실행. 크기 가드가 여기 들어있다 —
     // fal은 가로·세로를 32의 배수로 내림하므로, 32의 배수로 올려 보내고 원본 크기로 되돌린다.
     // 옷 교체 — 교복·원복을 일반적인 옷으로 바꿔 기관 특정 고리를 끊는다.
     // 크기 가드(32의 배수)는 runInpaintRegions와 동일한 이유로 필요하다.
-    async function runOutfitSwap(img, faces, riskResult) {
+    // ===== fal로 보낼 크기 =====
+    // 원본을 그대로 보내면 12MP 휴대폰 사진이 base64로 4~6MB가 되는데,
+    // 버셀은 요청 4.5MB에서 자르고 함수도 60초에서 끊는다. 요금도 메가픽셀당
+    // 매겨져서 $0.60까지 간다(실측 기준 1.8MP면 $0.09).
+    // 진단에 쓰는 상한(VISION_MAX_SIDE)과 같은 값으로 맞춰 둔다.
+    var FAL_MAX_SIDE = 1568;
+    function falSendSize(ow, oh) {
+      var k = Math.min(1, FAL_MAX_SIDE / Math.max(ow, oh));
+      return { w: roundUpTo32(Math.round(ow * k)), h: roundUpTo32(Math.round(oh * k)) };
+    }
+
+    // 흰색=칠할 곳, 검정=그대로 둘 곳인 마스크를 "흰 곳만 불투명"으로 바꾼다.
+    // destination-in은 알파만 보는데 이 마스크는 검은 부분도 불투명(알파 255)이라
+    // 그대로 쓰면 아무것도 안 잘린다. 밝기를 알파로 옮겨야 한다.
+    // 가장자리는 살짝 흐려서 원본과 AI 결과가 맞닿는 선이 드러나지 않게 한다.
+    function maskToAlpha(mask, w, h) {
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      var x = c.getContext('2d');
+      var feather = Math.max(1, Math.round(Math.max(w, h) * 0.004));
+      x.filter = 'blur(' + feather + 'px)';
+      x.drawImage(mask, 0, 0, w, h);
+      x.filter = 'none';
+      var im = x.getImageData(0, 0, w, h), pix = im.data;
+      for (var i = 0; i < pix.length; i += 4) {
+        pix[i + 3] = pix[i];              // 빨강(=밝기)을 알파로
+        pix[i] = pix[i + 1] = pix[i + 2] = 255;
+      }
+      x.putImageData(im, 0, 0);
+      return c;
+    }
+
+    // AI 결과를 마스크 안쪽에만 얹는다.
+    // 축소해서 보냈으니 결과도 작다 — 통째로 늘려 덮으면 안 건드릴 얼굴·배경까지
+    // 같이 뭉개진다. 바깥은 원본 픽셀을 그대로 두고 안쪽만 늘려 얹는다.
+    // (FLUX Fill은 원래 마스크 바깥을 바꾸지 않으므로 잃는 것도 없다.
+    //  오히려 지금까지 있던 전체 재인코딩이 사라져 바깥 화질은 좋아진다.)
+    function compositeThroughMask(baseImg, outImg, mask, ow, oh) {
+      var out = document.createElement('canvas');
+      out.width = ow; out.height = oh;
+      var ox = out.getContext('2d');
+      ox.drawImage(baseImg, 0, 0, ow, oh);
+
+      var patch = document.createElement('canvas');
+      patch.width = ow; patch.height = oh;
+      var px = patch.getContext('2d');
+      px.drawImage(outImg, 0, 0, ow, oh);
+      px.globalCompositeOperation = 'destination-in';
+      px.drawImage(maskToAlpha(mask, ow, oh), 0, 0);
+
+      ox.drawImage(patch, 0, 0);
+      return out;
+    }
+
+    async function runOutfitSwap(img, faces, riskResult, colorway, emblemMode) {
+
       var ow = img.naturalWidth, oh = img.naturalHeight;
-      var sw = roundUpTo32(ow), sh = roundUpTo32(oh);
+      var send = falSendSize(ow, oh);
+      var sw = send.w, sh = send.h;
 
       var ic = document.createElement('canvas');
       ic.width = sw; ic.height = sh;
@@ -3686,7 +4334,16 @@
           width: f.box.width * sw / ow, height: f.box.height * sh / oh,
         };
       });
-      var mask = buildClothingMask(scaledFaces, sw, sh);
+      // 배경 흐림이 쓰는 인물 분리를 그대로 쓴다. 실패하면(모델 못 불러옴 등)
+      // null이 와서 예전처럼 네모로 진행한다 — 없다고 멈추지는 않는다.
+      var personMask = null;
+      try {
+        personMask = await getPersonMask(img, 'outfit:' + (img.src || '').slice(-40));
+      } catch (e) {
+        console.warn('[옷교체] 인물 분리 실패 — 네모 마스크로 진행:', e.message);
+      }
+      var mask = buildClothingMask(scaledFaces, sw, sh, personMask);
+      console.log('[옷교체] 마스크 — 인물 분리 ' + (personMask ? '사용' : '없음(네모)'));
 
       var data = await postJson(INPAINT_BACKEND_URL, {
         imageBase64: ic.toDataURL('image/png').split(',')[1],
@@ -3694,25 +4351,23 @@
         mediaType: 'image/png',
         // 프롬프트를 직접 지정한다 — 서버는 마스크가 '글자'인지 '옷'인지 모른다.
         // 로고·엠블럼·무늬가 다시 생기지 않도록 명시하는 것이 핵심.
-        promptOverride: 'a plain simple childrens outfit in solid neutral colors, plain top and plain skirt or trousers, '
-          + 'no logos, no emblems, no badges, no crest, no patterns, no checks, no stripes, no text, '
-          + 'no school uniform markings, natural fabric folds matching the pose',
+        // 컬러체인지/엠블럼 선택에 따라 문구만 바뀐다 — 마스크(위 buildClothingMask)는 그대로.
+        promptOverride: buildOutfitFillPrompt(colorway, emblemMode),
         grade: riskResult && riskResult.grade,
         locationEvidence: riskResult && riskResult.locationEvidence,
       });
 
       var outImg = await loadImage('data:image/png;base64,' + data.imageBase64);
-      var out = document.createElement('canvas');
-      out.width = ow; out.height = oh;
-      out.getContext('2d').drawImage(outImg, 0, 0, ow, oh);
+      var out = compositeThroughMask(img, outImg, mask, ow, oh);
       console.log('[옷교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
-        + ', ' + sw + 'x' + sh + ' -> ' + ow + 'x' + oh + '로 복원', data);
+        + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (마스크 안쪽만 합성)', data);
       return { canvas: out, data: data };
     }
 
     async function runInpaintRegions(img, inpaintWords, subjectRegions, riskResult) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
-      var sw = roundUpTo32(ow), sh = roundUpTo32(oh);
+      var send = falSendSize(ow, oh);
+      var sw = send.w, sh = send.h;
 
       var ic = document.createElement('canvas');
       ic.width = sw; ic.height = sh;
@@ -3737,11 +4392,9 @@
       });
 
       var outImg = await loadImage('data:image/png;base64,' + data.imageBase64);
-      var out = document.createElement('canvas');
-      out.width = ow; out.height = oh;
-      out.getContext('2d').drawImage(outImg, 0, 0, ow, oh);
+      var out = compositeThroughMask(img, outImg, mask, ow, oh);
       console.log('[인페인팅] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
-        + ', ' + sw + 'x' + sh + ' -> ' + ow + 'x' + oh + '로 복원', data);
+        + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (마스크 안쪽만 합성)', data);
       return { canvas: out, data: data };
     }
 
@@ -3775,12 +4428,25 @@
     // 높이 기준이 주력이다 — 간판은 멀리서 읽히려고 글자를 크게 만들기 때문.
     var SIGNBOARD_HEIGHT_PCT = 9;
     var SIGNBOARD_AREA_PCT = 3;
+    // renderLocationChain의 isPlaceWord와 같은 문제: Claude가 붙이는 유형은 자유 문구라
+    // '상호명'·'간판' 정확 비교로는 '학교명'·'현수막'·'기관명'·'안내판' 같은 실제 간판형을
+    // 못 잡는다(실사용 중 같은 종류의 버그로 확인됨). 유형 텍스트를 넓게 본다.
+    var SIGNBOARD_TYPE_RE = /상호|간판|표지|현수막|배너|플래카드|안내판|입간판|문패|명패|교명|학교명|기관명|건물명|층안내|메뉴판|시설명|로고|엠블럼/;
+    var SMALL_TEXT_TYPE_RE = /전화|번호판|지번|우편번호|동호수|주소(?!판)/;
 
     function isSignboardText(w) {
       // 근사 위치로 채운 항목(approximate)은 크기가 실측이 아니라 "넉넉히 덮으려고" 잡아둔
       // 기본값이다. 그 값으로 크기 판정을 하면 전화번호·지번까지 "큰 간판"으로 분류돼
       // 인페인팅에서 빠져버린다(실사용 중 발견). 이 경우엔 Claude가 준 유형으로 판단한다.
-      if (w.approximate) return w.type === '상호명' || w.type === '간판';
+      if (w.approximate) {
+        var t = String(w.type || '');
+        if (SIGNBOARD_TYPE_RE.test(t)) return true;
+        if (SMALL_TEXT_TYPE_RE.test(t)) return false;
+        // 유형으로 못 가려도 간판 쪽으로 본다 — 반대로 잘못 짐작해 인페인팅으로 보내면
+        // 실측된 가짜 글씨 생성("춧천쿠 전설룽")이 나올 수 있고, 스티커/흐림으로 덮는
+        // 쪽은 과잉 대응일 뿐 안전하다.
+        return true;
+      }
       var hPct = w.hPct || 6;
       var wPct = w.wPct || 22;
       return hPct >= SIGNBOARD_HEIGHT_PCT || (wPct * hPct / 100) >= SIGNBOARD_AREA_PCT;
@@ -3935,6 +4601,74 @@
       var left = Math.max(0, cx - bodyWidth / 2);
       var right = Math.min(imgW, cx + bodyWidth / 2);
       return { x0: left, y0: top, x1: right, y1: bottom };
+    }
+
+    // AI 배경 교체 결과에서 "원본에 없던 아이"를 찾아 지운다.
+    //
+    // restorePersonFromOriginal은 원본 아이가 있던 자리만 원본으로 되돌린다. 그런데
+    // kontext가 다른 자리에 아이를 하나 더 만들어내는 경우가 실사용에서 확인됐다 —
+    // 원본 위치를 되돌려도 그 가짜 아이는 그대로 남는다. 결과 이미지를 다시 얼굴 검출에
+    // 돌려서, 원본 얼굴 자리와 겹치지 않는 얼굴이 있으면 그 자리를 흐려서 지운다.
+    // 프롬프트로 "사람을 늘리지 마"라고 부탁하지 않는다 — 이 프로젝트는 부탁이 아니라
+    // 구조적으로 막는다(가이드라인 원칙 2번과 같은 이유).
+    function faceBoxOverlapRatio(a, b) {
+      var ix = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
+      var iy = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
+      var interArea = ix * iy;
+      var aArea = a.width * a.height;
+      return aArea > 0 ? interArea / aArea : 0;
+    }
+
+    async function removeHallucinatedPeople(outCanvas, originalFaces, imgW, imgH) {
+      var detected;
+      try {
+        detected = await runFaceDetectionPipeline(outCanvas.toDataURL('image/jpeg', 0.9));
+      } catch (e) {
+        console.warn('[AI배경교체] 결과 재검출 실패 — 중복 인물 확인을 건너뜁니다', e);
+        return outCanvas;
+      }
+      // 옷의 체크무늬·허리에 얹은 손처럼 얼굴이 아닌 패턴을 낮은 신뢰도로 "얼굴"이라고
+      // 잘못 검출하는 경우가 실측으로 확인됐다(childphoto.jpeg 실호출: 진짜 얼굴 신뢰도
+      // 0.89, 허리 부근 오탐 신뢰도 0.34). runFaceDetectionPipeline은 얼굴을 놓치지
+      // 않으려고 임계값을 0.3까지 낮춰뒀는데, 여기서 그 값을 그대로 쓰면 오탐까지
+      // "가짜 인물"로 보고 사진의 엉뚱한 곳을 흐려버린다. 그래서 여기서는 더 엄격한
+      // 값(0.6)으로 한 번 더 거른다 — 실제로 사람을 새로 그려낸 경우는 뚜렷한 얼굴이라
+      // 신뢰도가 훨씬 높다(0.89).
+      var HALLUCINATION_MIN_CONFIDENCE = 0.6;
+      var resultFaces = ((detected && detected.faces) || [])
+        .filter(function (f) { return f.confidence >= HALLUCINATION_MIN_CONFIDENCE; });
+      // 얼굴 상자의 20% 이상이 원본 얼굴과 겹치면 "같은 아이"로 본다 — kontext는 원본과
+      // 완전히 같은 좌표에 다시 그리지 않으므로, 살짝 밀린 정도까지는 같은 아이로 봐야
+      // 원본 자리를 "가짜 인물"로 오판해 불필요하게 흐리지 않는다.
+      var extras = resultFaces.filter(function (rf) {
+        return !(originalFaces || []).some(function (of) {
+          return faceBoxOverlapRatio(rf.box, of.box) > 0.2;
+        });
+      });
+      if (extras.length === 0) return outCanvas;
+
+      console.warn('[AI배경교체] 원본에 없던 인물 ' + extras.length + '명을 결과에서 발견 — 흐려서 지웁니다');
+      var blurred = document.createElement('canvas');
+      blurred.width = imgW; blurred.height = imgH;
+      var bctx = blurred.getContext('2d');
+      var outCtx = outCanvas.getContext('2d');
+      extras.forEach(function (f) {
+        var region = computeSubjectRegion(f.box, imgW, imgH);
+        var rw = region.x1 - region.x0, rh = region.y1 - region.y0;
+        if (rw <= 0 || rh <= 0) return;
+        var strength = Math.max(20, Math.min(60, Math.max(rw, rh) * 0.3));
+        bctx.clearRect(0, 0, imgW, imgH);
+        bctx.filter = 'blur(' + strength + 'px)';
+        bctx.drawImage(outCanvas, 0, 0, imgW, imgH);
+        bctx.filter = 'none';
+        outCtx.save();
+        outCtx.beginPath();
+        outCtx.rect(region.x0, region.y0, rw, rh);
+        outCtx.clip();
+        outCtx.drawImage(blurred, 0, 0, imgW, imgH);
+        outCtx.restore();
+      });
+      return outCanvas;
     }
 
     // AI 배경 교체 결과 위에 원본 인물을 다시 덮는다.
@@ -4104,18 +4838,35 @@
       };
     }
 
-    function buildClothingMask(faceBoxes, imgW, imgH) {
+    // personMask를 주면 그 사람 안쪽만 남긴다. 안 주면 예전처럼 네모 그대로.
+    //
+    // 네모만 쓰면 얼굴 아래 배경(문·벽·바닥)까지 마스크에 들어간다(실측 25.6%).
+    // fal은 그 안을 "주변과 자연스럽게" 채우려 하므로 원래 옷 색에 끌려가고,
+    // 색을 바꿔도 차이가 8~11(255 기준)밖에 안 났다. 옷만 정확히 짚어주면
+    // 바꿀 자리가 분명해져서 지시를 훨씬 잘 따른다.
+    function buildClothingMask(faceBoxes, imgW, imgH, personMask) {
       var c = document.createElement('canvas');
       c.width = imgW; c.height = imgH;
       var x = c.getContext('2d');
       x.fillStyle = '#000000';
       x.fillRect(0, 0, imgW, imgH);
 
-      x.fillStyle = '#ffffff';
+      // 옷 영역을 따로 그린 뒤 사람 모양과 겹친다
+      var t = document.createElement('canvas');
+      t.width = imgW; t.height = imgH;
+      var tx = t.getContext('2d');
+      tx.fillStyle = '#ffffff';
       (faceBoxes || []).forEach(function (f) {
         var r = computeClothingRegion(f, imgW, imgH);
-        if (r.x1 > r.x0 && r.y1 > r.y0) x.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+        if (r.x1 > r.x0 && r.y1 > r.y0) tx.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
       });
+      if (personMask) {
+        // destination-in — 사람 바깥은 지운다
+        tx.globalCompositeOperation = 'destination-in';
+        tx.drawImage(personMask, 0, 0, imgW, imgH);
+        tx.globalCompositeOperation = 'source-over';
+      }
+      x.drawImage(t, 0, 0);
 
       // 얼굴·머리카락·목을 마지막에 검게 덮는다. 얼굴이 흰색이면 AI가 아이 얼굴을
       // 다시 그린다 — 이 앱에서 가장 위험한 실패라 순서를 바꾸면 안 된다.
@@ -4147,19 +4898,37 @@
       var w = Math.max(1, x1 - x0);
 
       var sum = [0, 0, 0], sq = [0, 0, 0], n = 0;
+      // 채널마다 값별 개수를 세어 둔다(0~255). 나중에 중앙값을 뽑는 데 쓴다 —
+      // 표본을 배열에 담아 정렬하면 큰 사진에서 몇십만 개를 정렬하게 된다.
+      var hist = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)];
       for (var i = 0; i < data.length; i += 4) {
         var px = x0 + ((i / 4) % w), py = y0 + Math.floor((i / 4) / w);
         // 박스 안쪽(=지울 글자)은 표본에서 제외 — 글자색이 섞이면 대표색이 오염된다
         if (px >= box.x0 && px <= box.x1 && py >= box.y0 && py <= box.y1) continue;
-        for (var c = 0; c < 3; c++) { sum[c] += data[i + c]; sq[c] += data[i + c] * data[i + c]; }
+        for (var c = 0; c < 3; c++) {
+          var v0 = data[i + c];
+          sum[c] += v0; sq[c] += v0 * v0; hist[c][v0]++;
+        }
         n++;
       }
       if (n === 0) return { color: [0, 0, 0], uniform: false, stdev: 999 };
 
-      var color = [], varSum = 0;
+      // 대표색은 평균이 아니라 중앙값으로 뽑는다.
+      // 밝은 벽과 어두운 문이 반씩 걸리면 평균은 사진 어디에도 없는 중간 회색이 된다 —
+      // 칠해놓고 보면 "주변색이 아니라 회색으로 덮였다"가 되는 원인이 이것이다.
+      // 중앙값은 둘 중 실제로 더 넓은 쪽 색을 집는다.
+      // (실측: 사진 여덟 자리에서 바로 옆 픽셀과의 거리 합 149 → 78, 최악 42 → 9)
+      var color = [];
+      for (var c1 = 0; c1 < 3; c1++) {
+        var half = n / 2, acc = 0, v = 0;
+        for (; v < 255; v++) { acc += hist[c1][v]; if (acc >= half) break; }
+        color.push(v);
+      }
+
+      // 균일한지는 퍼진 정도로 본다 — 이건 평균 기준이 맞다.
+      var varSum = 0;
       for (var c2 = 0; c2 < 3; c2++) {
         var mean = sum[c2] / n;
-        color.push(Math.round(mean));
         varSum += Math.max(0, sq[c2] / n - mean * mean);
       }
       var stdev = Math.sqrt(varSum / 3);
@@ -4176,9 +4945,9 @@
     // 라벨링은 축소한 해상도에서 한다(긴 변 320px). 덩어리를 가르는 데는 충분하고
     // 원본 해상도로 훑으면 큰 사진에서 몇 초씩 걸린다. 최종 경계는 원본 마스크로
     // 잘라내므로 축소 때문에 가장자리가 뭉개지지는 않는다.
-    function labelBrushBlobs(mask) {
+    function labelBrushBlobs(mask, maxSide) {
       var W = mask.width, H = mask.height;
-      var scale = Math.min(1, 320 / Math.max(W, H));
+      var scale = Math.min(1, (maxSide || 320) / Math.max(W, H));
       var w = Math.max(1, Math.round(W * scale)), h = Math.max(1, Math.round(H * scale));
 
       var small = document.createElement('canvas');
@@ -4294,9 +5063,23 @@
           // 대부분을 덮어 엉뚱한 배경색 하나가 모든 자국에 발린다.
           // sampleBoxSurround는 상자 안쪽을 표본에서 빼므로, 상자가 이미지 전체면
           // 표본이 0개가 되어 검정이 나온다 — 예전에 새까맣게 칠해지던 원인이다.
+          // 덩어리 찾기는 축소본(320px)에서 한다 — 큰 사진을 원본 해상도로 훑으면
+          // 몇 초씩 걸리기 때문이다. 그런데 가는 붓으로 큰 사진에 칠하면 획이
+          // 축소 과정에서 통째로 사라져 덩어리가 0개가 됐다
+          // (실측: 4032x3024에 반지름 5px → 0개). 그러면 아래 대체 경로로 빠져
+          // 회색이 칠해졌다 — 사용자가 "주변색인데 왜 회색이냐"고 제보한 그 증상이다.
+          // 못 찾으면 해상도를 올려 한 번 더 본다. 느린 경로는 이때만 탄다.
           var seg = labelBrushBlobs(brushMask);
+          if (seg.blobs.length === 0) seg = labelBrushBlobs(brushMask, 1600);
           if (seg.blobs.length === 0) {
-            ectx.fillStyle = 'rgb(128,128,128)';
+            // 그래도 못 갈랐으면 칠한 자국 전체를 한 덩어리로 보고 그 둘레에서 색을 뽑는다.
+            // 어떤 경우에도 회색을 칠하지는 않는다 — 주변색으로 덮겠다고 고른 사람에게
+            // 사진에 없던 색을 바르는 건 답이 아니다.
+            var bnd = brushMaskBounds(brushMask);
+            var fb = bnd ? sampleBoxSurround(clean, bnd) : null;
+            ectx.fillStyle = fb
+              ? 'rgb(' + fb.color[0] + ',' + fb.color[1] + ',' + fb.color[2] + ')'
+              : 'rgba(0,0,0,0)';
             ectx.fillRect(0, 0, imgW, imgH);
           } else {
             var colors = seg.blobs.map(function (bl) {
@@ -4453,6 +5236,11 @@
 
     var uploadedPhotoUrl = null;
     var pastCount = 0;
+    // 패턴 전용 화면(#screen-pattern)의 "그래도 포함해서 다시 분석"·"사진도 함께
+    // 진단하기" 버튼이 쓸, 지금 화면에 떠 있는 결과를 만든 실제 파일 목록.
+    // 예전에는 두 버튼이 메인 폼의 pastInput.files를 그냥 가져다 썼는데, 별도
+    // 입구(#pattern-check)로 들어온 경우엔 그 input이 비어 있어 스크린샷이 사라졌다.
+    var lastPatternFiles = null;
 
     // 2단계 보정 화면에서 쓰기 위해 진단 단계 결과를 저장해둠
     var lastFaceResult = null;
@@ -4468,12 +5256,20 @@
     var correctionTextWords = null; // 2단계 보정용 — Tesseract로 다시 계산한 실제 위치(bbox) 텍스트 목록
     var droppedNoiseCount = 0; // 뜻을 이루지 않아 검수 목록에서 뺀 개수 (숨겼다는 사실은 알려준다)
 
+    // 옷 수정(outfit) 방식에서 고른 컬러체인지 / 엠블럼 처리 — buildOutfitFillPrompt에서 씀
+    var outfitColorway = 'brown';
+    var outfitEmblem = 'pocket';
+
+
+
     photoInput.addEventListener('change', function () {
       var file = photoInput.files[0];
       if (!file) { syncPastHint(); return; }
       uploadedPhotoUrl = URL.createObjectURL(file);
       photoPreview.src = uploadedPhotoUrl;
       polaroidPreview.style.display = 'block';
+      var upPart = polaroidPreview.closest('.up-part');
+      if (upPart) upPart.classList.add('has-preview');
       fileDropLabel.textContent = file.name;
       syncPastHint();
     });
@@ -4501,10 +5297,49 @@
       syncPastHint();
     });
 
+    // ===== 과거 게시물 패턴만 확인하는 별도 입구(#pattern-check) =====
+    // 위 pastInput(메인 폼)과는 완전히 별개다 — 사진·캡션·공개범위 같은 필드를
+    // 하나도 거치지 않고 스크린샷만으로 바로 결과 화면(pattern)으로 간다.
+    var patternOnlyInput = document.getElementById('patternOnlyInput');
+    var patternOnlyDropLabel = document.getElementById('patternOnlyDropLabel');
+    var patternOnlyCount = document.getElementById('patternOnlyCount');
+    var patternOnlySubmitBtn = document.getElementById('patternOnlySubmitBtn');
+    patternOnlyInput.addEventListener('change', function () {
+      var n = patternOnlyInput.files.length;
+      if (n > 0) {
+        patternOnlyDropLabel.textContent = n + '개 스크린샷 선택됨';
+        patternOnlyCount.style.display = 'block';
+        patternOnlyCount.textContent = '✓ 스크린샷 ' + n + '개의 생활 패턴을 분석해요';
+      } else {
+        patternOnlyDropLabel.textContent = '스크린샷을 선택하면 반복 패턴을 짚어드려요';
+        patternOnlyCount.style.display = 'none';
+      }
+    });
+    patternOnlySubmitBtn.addEventListener('click', function () {
+      if (!patternOnlyInput.files || patternOnlyInput.files.length === 0) {
+        alert('과거 게시물 스크린샷을 한 장 이상 선택해주세요.');
+        return;
+      }
+      runPatternOnly(patternOnlyInput.files, patternOnlySubmitBtn);
+    });
+
     // 서버(server.js의 gradeOf)와 같은 규칙이어야 한다. 예전에는 클라이언트가 45를,
     // 서버가 40을 써서 40~44점 구간에서 배지는 "중"인데 게이지는 "하" 색으로 칠해졌다.
     function gradeOf(score) {
       return score >= 70 ? '상' : score >= 40 ? '중' : '하';
+    }
+
+    // 한글 받침 여부로 "이/가" 같은 조사를 고른다. 사용자 제보: 목록을 이어붙인 문장
+    // ("이름·일정·시간대이(가) 적혀 있어요")에 조사 두 개를 그대로 붙여놔서 어색했다.
+    // 마지막 글자의 code point에서 0xAC00을 빼고 28로 나눈 나머지가 0이면 받침 없음.
+    function josaEndingHasBatchim(word) {
+      var s = String(word || '');
+      var code = s.charCodeAt(s.length - 1);
+      if (code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 !== 0;
+      return true; // 한글이 아니면(숫자·영문 등) 받침 있는 쪽 조사를 기본값으로 쓴다
+    }
+    function josa이가(word) {
+      return josaEndingHasBatchim(word) ? '이' : '가';
     }
 
     // Claude 호출이 실패했을 때 쓰는 규칙 기반 폴백.
@@ -4532,11 +5367,11 @@
       var faces = (faceResult && faceResult.faces) || [];
       var hasNotes = inputs.backgroundNotes.trim().length > 0;
 
-      // ① 간판·주소 노출 (상한 30) — 사진에서 읽힌 글자 종류로 매긴다
+      // ① 간판·주소 노출 (상한 26) — 사진에서 읽힌 글자 종류로 매긴다
       var placeWords = meaningful.filter(function (w) {
         return /상호명|간판|주소|지번|전화번호/.test(String(w.type || ''));
       });
-      var f1 = Math.min(30, placeWords.length * 12 + (hasOcrText ? 6 : 0) + (hasNotes ? 5 : 0));
+      var f1 = Math.min(26, placeWords.length * 11 + (hasOcrText ? 5 : 0) + (hasNotes ? 4 : 0));
       var f1why = placeWords.length > 0
         ? '사진에서 ' + placeWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
           + ' 같은 글자가 읽혀서 건물·번지까지 좁혀질 수 있어요.'
@@ -4546,33 +5381,52 @@
             ? '배경으로 적어주신 "' + inputs.backgroundNotes.trim() + '"만으로도 장소가 좁혀질 수 있어요.'
             : '간판·주소·전화번호로 읽히는 글자가 없어요.'));
 
-      // ② 소속 노출 (상한 25) — 교복·명찰·기관 로고
+      // ② 소속 노출 (상한 22) — 교복·명찰·기관 로고
       var belong = clues.filter(function (c) {
         return /교복|원복|명찰|로고|엠블럼|기관/.test(String(c.종류 || '') + String(c.근거 || ''));
       });
-      var f2 = Math.min(25, belong.length * 13);
+      var f2 = Math.min(22, belong.length * 12);
       var f2why = belong.length > 0
-        ? belong.map(function (c) { return c.종류; }).join('·') + '이(가) 보여서 다니는 기관까지 좁혀져요.'
+        ? (function () {
+          var names = belong.map(function (c) { return c.종류; });
+          return names.join('·') + josa이가(names[names.length - 1]) + ' 보여서 다니는 기관까지 좁혀져요.';
+        })()
         : '교복·명찰·기관 로고가 보이지 않아요.';
 
-      // ③ 인물 식별성 (상한 20) — 얼굴 수
-      var f3 = Math.min(20, faces.length > 0 ? 10 + (faces.length - 1) * 5 : 0);
+      // ③ 인물 식별성 (상한 18) — 얼굴 수
+      var f3 = Math.min(18, faces.length > 0 ? 9 + (faces.length - 1) * 5 : 0);
       var f3why = faces.length > 0
         ? '얼굴 ' + faces.length + '개가 감지돼서 인물이 특정될 수 있어요.'
         : '얼굴이 감지되지 않아 인물 특정은 어려워요.';
 
-      // ④ 게시 습관 (상한 15) — 공개 범위 + 업로드 시점
+      // ④ 캡션 노출 (상한 18) — 캡션에 적힌 기관명·동네명·요일·시간
+      // 캡션을 안 썼으면 0이 맞다. 안 썼으니 흘릴 것도 없다.
+      var cap = String(inputs.caption || '').trim();
+      var capHits = [];
+      if (/(어린이집|유치원|초등학교|학교|학원|아파트|단지)/.test(cap)) capHits.push('기관·단지 이름');
+      if (/(매주|매일|요일|첫 등원|첫 등교|하원|등원|등교)/.test(cap)) capHits.push('반복되는 일정');
+      if (/(\d{1,2}\s*시|오전|오후|아침|저녁)/.test(cap)) capHits.push('시간대');
+      if (/(동|읍|면|리|로|길)\s*\d/.test(cap)) capHits.push('주소 조각');
+      var f4 = cap ? Math.min(18, capHits.length * 6) : 0;
+      var f4why = !cap
+        ? '캡션을 쓰지 않으셔서 글로 흘릴 것이 없어요.'
+        : (capHits.length > 0
+          ? '캡션에 ' + capHits.join('·') + josa이가(capHits[capHits.length - 1]) + ' 적혀 있어요.'
+          : '캡션에서 위치나 시간을 특정할 만한 표현을 찾지 못했어요.');
+
+      // ⑤ 게시 습관 (상한 16) — 공개 범위 + 업로드 시점
       var openToAll = inputs.privacySetting === '전체공개';
       var realtime = inputs.uploadTiming === '실시간 업로드';
-      var f4 = (openToAll ? 8 : 0) + (realtime ? 7 : 0);
-      var f4why = (openToAll ? '전체공개' : '공개 범위를 좁혀두셨고') + ', '
+      var f5 = (openToAll ? 9 : 0) + (realtime ? 7 : 0);
+      var f5why = (openToAll ? '전체공개' : '공개 범위를 좁혀두셨고') + ', '
         + (realtime ? '실시간 업로드예요.' : '시간차를 두고 올리셨어요.');
 
       var riskFactors = [
-        { 항목: '간판·주소 노출', 점수: f1, 상한: 30, 근거: f1why },
-        { 항목: '소속 노출', 점수: f2, 상한: 25, 근거: f2why },
-        { 항목: '인물 식별성', 점수: f3, 상한: 20, 근거: f3why },
-        { 항목: '게시 습관', 점수: f4, 상한: 15, 근거: f4why },
+        { 항목: '간판·주소 노출', 점수: f1, 상한: 26, 근거: f1why },
+        { 항목: '소속 노출', 점수: f2, 상한: 22, 근거: f2why },
+        { 항목: '인물 식별성', 점수: f3, 상한: 18, 근거: f3why },
+        { 항목: '캡션 노출', 점수: f4, 상한: 18, 근거: f4why },
+        { 항목: '게시 습관', 점수: f5, 상한: 16, 근거: f5why },
       ];
       // 총점은 항목의 합이다 — 서버와 같은 규칙이라 게이지와 "합계 …점"이 늘 맞는다
       var score = riskFactors.reduce(function (n, f) { return n + f.점수; }, 0);
@@ -4620,14 +5474,20 @@
       };
     }
 
+    // 원형 게이지 자리를 오각형이 대신한다. 호가 없어졌으니 여기서는
+    // 오각형 색만 점수에 맞춘다 — 등급이 모양뿐 아니라 색으로도 읽혀야 한다.
+    function riskColor(score) {
+      return score >= 70 ? 'var(--risk-high)' : score >= 40 ? 'var(--risk-mid)' : 'var(--risk-low)';
+    }
     function setGauge(score) {
-      var arc = document.getElementById('gaugeArc');
-      // 길이를 상수로 박아두면 게이지 모양을 바꿀 때 같이 안 바뀌어 어긋난다.
-      // (반원 251.3에서 원형으로 바꾸면서 실제로 겪은 문제)
-      var full = arc.getTotalLength();
-      arc.style.strokeDasharray = full;
-      arc.style.strokeDashoffset = full * (1 - Math.max(0, Math.min(100, score)) / 100);
-      arc.setAttribute('stroke', score >= 70 ? 'var(--risk-high)' : score >= 40 ? 'var(--risk-mid)' : 'var(--risk-low)');
+      var shape = document.getElementById('radarShape');
+      if (!shape) return;
+      var c = riskColor(Math.max(0, Math.min(100, score)));
+      shape.style.fill = c;
+      shape.style.stroke = c;
+      Array.prototype.forEach.call(document.querySelectorAll('.radar-dot'), function (d) {
+        d.style.fill = c;
+      });
     }
 
     function addPin(wrap, legend, num, xPct, yPct, label, kind) {
@@ -4832,15 +5692,57 @@
       if (el) el.textContent = text;
     }
 
+    // 점수가 0에서 굴러 올라간다. 최종값을 먼저 넣어두고 시작해서,
+    // 애니메이션이 안 돌거나(모션 축소·GSAP 없음) 바로 읽어가는 쪽은 늘 제 값을 본다.
+    function 숫자굴리기(el, to) {
+      if (!el) return;
+      el.textContent = to;
+      if (!window.gsap) return;
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var box = { v: 0 };
+      gsap.to(box, {
+        v: to, duration: 0.9, ease: 'power2.out',
+        onUpdate: function () { el.textContent = Math.round(box.v); },
+        onComplete: function () { el.textContent = to; }
+      });
+    }
+
+    // 오각형이 한 번에 나타나지 않고 테두리를 따라 그려진 뒤 안이 차오른다.
+    // CSS transition(all 0.5s)이 걸려 있어서 그리는 동안은 잠시 끈다.
+    function 오각형그리기() {
+      var shape = document.getElementById('radarShape');
+      if (!shape || !window.gsap || !shape.getTotalLength) return;
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var len = 0;
+      try { len = shape.getTotalLength(); } catch (e) { return; }
+      if (!len) return;
+      var 원래전환 = shape.style.transition;
+      shape.style.transition = 'none';
+      gsap.fromTo(shape,
+        { strokeDasharray: len, strokeDashoffset: len, fillOpacity: 0 },
+        {
+          strokeDashoffset: 0, fillOpacity: 0.3, duration: 0.85, ease: 'power2.inOut',
+          onComplete: function () {
+            shape.style.strokeDasharray = '';
+            shape.style.strokeDashoffset = '';
+            shape.style.fillOpacity = '';
+            shape.style.transition = 원래전환;
+          }
+        });
+      gsap.from(document.querySelectorAll('.radar-dot'), {
+        scale: 0, transformOrigin: 'center', duration: 0.3, delay: 0.5, stagger: 0.05, ease: 'back.out(2)'
+      });
+    }
+
     function renderRiskFields(r) {
       lastDiagnosis = r;
       var badge = document.getElementById('riskBadge');
       badge.textContent = r.grade;
       badge.className = 'risk-chip risk-' + r.grade;
-      document.getElementById('riskScore').textContent = r.score;
+      숫자굴리기(document.getElementById('riskScore'), r.score);
       setGauge(r.score);
 
-      document.getElementById('locationScore').textContent = r.locationScore;
+      숫자굴리기(document.getElementById('locationScore'), r.locationScore);
       document.getElementById('locationBar').style.width = r.locationScore + '%';
       document.getElementById('locationEvidence').textContent = r.locationEvidence;
 
@@ -4881,6 +5783,7 @@
           li.appendChild(name); li.appendChild(num); li.appendChild(bar); li.appendChild(why);
           sbList.appendChild(li);
         });
+        renderRadar(factors);
         document.getElementById('sbTotal').textContent =
           '합계 ' + factors.map(function (f) { return Number(f.점수) || 0; }).join(' + ') + ' = ' + sum + '점';
         sb.style.display = 'block';
@@ -4982,7 +5885,20 @@
     // 이미 감지해둔 것으로 좁혀지는 순서를 만든다 — 새로 호출하지 않는다.
     // 감지되지 않은 단계도 흐리게 남긴다. 지우면 사진마다 카드 높이가 달라져
     // 옆 카드와 아랫변이 어긋나고, "이건 없었다"는 정보도 사라진다.
+    // 사진에서 읽힌 글자가 '장소를 좁히는 글자'인가.
+    //
+    // Claude가 붙이는 유형은 자유 문구다 — 프롬프트의 예시가 "상호명" 하나뿐이라
+    // 학교명·현수막·행사명·기관명처럼 얼마든지 다른 말이 온다. 예전에는 다섯 낱말만
+    // 통과시켜서, 사진에 "○○중학교"가 대문짝만하게 찍혀 있어도 사슬에서는 "없음"이
+    // 떴다(실사용 제보). 유형과 내용을 같이 본다.
+    var PLACE_TYPE_RE = /상호|간판|표지|현수막|배너|플래카드|주소|지번|번지|도로|전화|번호판|학교|유치원|어린이집|학원|기관|장소|건물|매장|점포|시설|지명|동네|행사/;
+    var PLACE_TEXT_RE = /학교|유치원|어린이집|초등|중학|고등|학원|교습소|아파트|빌라|번지|\d+동|\d+호|\d{2,4}-\d{3,4}|[가-힣]{2,}(로|길)\s*\d|[가-힣]{2,}(시|군|구|읍|면|동)(?![가-힣])/;
+    function isPlaceWord(w) {
+      return PLACE_TYPE_RE.test(String(w.type || '')) || PLACE_TEXT_RE.test(String(w.text || ''));
+    }
+
     function renderLocationChain(r, faceResult, ocrResult) {
+
       var el = document.getElementById('locChain');
       if (!el) return;
       var clues = (ocrResult && ocrResult.visualClues) || [];
@@ -4992,9 +5908,11 @@
       var belong = clues.filter(function (c) {
         return /교복|원복|명찰|로고|엠블럼|기관/.test(String(c.종류 || '') + String(c.근거 || ''));
       });
-      var placeWords = words.filter(function (w) {
-        return /상호명|간판|주소|지번|전화번호/.test(String(w.type || ''));
-      });
+      var placeWords = words.filter(isPlaceWord);
+      // 유형·내용 어느 쪽으로도 못 가렸더라도, 사진에 읽히는 글자가 있으면
+      // 그 자체로 장소가 좁혀질 수 있다. "없음"이라고 단정하지 않는다 —
+      // 아이 사진에서는 놓치는 쪽이 잘못 잡는 쪽보다 나쁘다.
+      var shownWords = placeWords.length > 0 ? placeWords : words;
       var realtime = r.uploadTiming === '실시간 업로드';
       var openToAll = r.privacySetting === '전체공개';
 
@@ -5008,13 +5926,15 @@
             : '교복·명찰·기관 로고가 보이지 않아 어디 다니는지는 알 수 없어요.',
         },
         {
-          on: placeWords.length > 0,
+          on: shownWords.length > 0,
           what: '글자로 장소가 적혀 있다',
-          tag: placeWords.length > 0 ? placeWords.length + '곳' : '없음',
-          why: placeWords.length > 0
-            ? placeWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
-              + ' — 건물·번지까지 좁혀져요.'
-            : '간판·주소·전화번호 같은 글자가 없어 건물까지는 좁혀지지 않아요.',
+          tag: shownWords.length > 0 ? shownWords.length + '곳' : '없음',
+          why: shownWords.length === 0
+            ? '간판·주소·전화번호 같은 글자가 없어 건물까지는 좁혀지지 않아요.'
+            : shownWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
+              + (placeWords.length > 0
+                ? ' — 건물·번지까지 좁혀져요.'
+                : ' — 사진에 글자가 읽혀요. 장소가 좁혀질 수 있어요.'),
         },
         {
           on: realtime,
@@ -5074,9 +5994,9 @@
       var locEl = document.getElementById('locationScore');
       var badgeEl = document.getElementById('riskBadge');
       var barEl = document.getElementById('locationBar');
-      var arc = document.getElementById('gaugeArc');
-      var full = arc ? arc.getTotalLength() : 0;
-      if (arc) arc.style.transition = 'none'; // 굴리는 동안엔 부드러운 전환이 오히려 방해된다
+      // 굴리는 동안엔 오각형의 부드러운 전환이 오히려 방해된다 — 잠시 끈다
+      var shapeEl = document.getElementById('radarShape');
+      if (shapeEl) shapeEl.style.transition = 'none';
 
       // 내역도 미리 자리를 잡아둔다. 점수만 굴리다가 항목이 뒤늦게 툭 나타나면
       // 방금 지어낸 값처럼 보인다. 뼈대를 깔고 숫자를 같이 굴리다 제자리를 찾게 한다.
@@ -5097,11 +6017,7 @@
         badgeEl.textContent = gradeOf(risk);
         badgeEl.className = 'risk-chip risk-' + gradeOf(risk);
         barEl.style.width = loc + '%';
-        if (arc) {
-          arc.style.strokeDasharray = full;
-          arc.style.strokeDashoffset = full * (1 - risk / 100);
-          arc.setAttribute('stroke', risk >= 70 ? 'var(--risk-high)' : risk >= 40 ? 'var(--risk-mid)' : 'var(--risk-low)');
-        }
+        setGauge(risk); // 오각형 색도 같이 굴린다
         // 항목 숫자도 같은 박자로 굴린다. 합계는 굴러가는 값의 합이라 늘 아귀가 맞는다.
         var partial = 0;
         sbEls.forEach(function (el, i) {
@@ -5116,11 +6032,14 @@
     }
 
     // 점수를 기다리는 동안 보여줄 내역 뼈대. 항목 이름과 상한은 고정이라 미리 알 수 있다.
+    // 서버(server.js의 RISK_FACTORS)와 같아야 한다. 어긋나면 뼈대와 실제 값의
+    // 줄 수가 달라져 결과가 도착할 때 화면이 튄다.
     var SB_CAPS = [
-      { 항목: '간판·주소 노출', 상한: 30 },
-      { 항목: '소속 노출', 상한: 25 },
-      { 항목: '인물 식별성', 상한: 20 },
-      { 항목: '게시 습관', 상한: 15 },
+      { 항목: '간판·주소 노출', 상한: 26 },
+      { 항목: '소속 노출', 상한: 22 },
+      { 항목: '인물 식별성', 상한: 18 },
+      { 항목: '캡션 노출', 상한: 18 },
+      { 항목: '게시 습관', 상한: 16 },
     ];
 
 
@@ -5190,10 +6109,84 @@
       }
     }
 
+    // ===== 항목별 오각형 =====
+    // 축마다 상한이 다르므로 점수/상한 비율로 그린다. 점수를 그대로 반지름에 쓰면
+    // 상한 26짜리가 상한 16짜리보다 늘 커 보여서 모양이 거짓말을 한다.
+    var RADAR_CX = 120, RADAR_CY = 112, RADAR_R = 80, RADAR_FLOOR = 0.1;
+    function radarPoint(i, n, ratio) {
+      var a = -Math.PI / 2 + (i * 2 * Math.PI) / n; // 꼭짓점 하나가 위를 향하게
+      return [RADAR_CX + Math.cos(a) * RADAR_R * ratio, RADAR_CY + Math.sin(a) * RADAR_R * ratio];
+    }
+    function drawRadarGrid(n) {
+      var grid = document.getElementById('radarGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      var NS = 'http://www.w3.org/2000/svg';
+      [0.25, 0.5, 0.75, 1].forEach(function (r) {
+        var pts = [];
+        for (var i = 0; i < n; i++) pts.push(radarPoint(i, n, r).map(function (v) { return v.toFixed(1); }).join(','));
+        var poly = document.createElementNS(NS, 'polygon');
+        poly.setAttribute('points', pts.join(' '));
+        poly.setAttribute('class', 'radar-ring');
+        grid.appendChild(poly);
+      });
+      for (var i = 0; i < n; i++) {
+        var p2 = radarPoint(i, n, 1);
+        var line = document.createElementNS(NS, 'line');
+        line.setAttribute('x1', RADAR_CX); line.setAttribute('y1', RADAR_CY);
+        line.setAttribute('x2', p2[0].toFixed(1)); line.setAttribute('y2', p2[1].toFixed(1));
+        line.setAttribute('class', 'radar-spoke');
+        grid.appendChild(line);
+      }
+    }
+    // 축 이름은 길어서 줄여 쓴다 — 도형 옆에 붙는 자리라 길면 겹친다
+    var RADAR_SHORT = {
+      '간판·주소 노출': '간판·주소', '소속 노출': '소속', '인물 식별성': '인물',
+      '캡션 노출': '캡션', '게시 습관': '게시 습관',
+    };
+    function renderRadar(factors) {
+      var wrap = document.getElementById('sbRadar');
+      if (!wrap || !factors || factors.length < 3) return;
+      var n = factors.length;
+      var NS = 'http://www.w3.org/2000/svg';
+      drawRadarGrid(n);
+      var pts = [], dots = document.getElementById('radarDots'), labs = document.getElementById('radarLabels');
+      dots.innerHTML = ''; labs.innerHTML = '';
+      factors.forEach(function (f, i) {
+        var cap = Number(f.상한) || 1;
+        var ratio = Math.max(0, Math.min(1, (Number(f.점수) || 0) / cap));
+        // 0을 중심에 그대로 찍으면 그 꼭짓점에서 도형이 오므라들어 오각형이 아니게 된다.
+        // 바닥값을 조금 주되(RADAR_FLOOR), 실제 점수는 옆 숫자가 정확히 말한다.
+        var p2 = radarPoint(i, n, RADAR_FLOOR + ratio * (1 - RADAR_FLOOR));
+        pts.push(p2[0].toFixed(1) + ',' + p2[1].toFixed(1));
+        var c = document.createElementNS(NS, 'circle');
+        c.setAttribute('cx', p2[0].toFixed(1)); c.setAttribute('cy', p2[1].toFixed(1));
+        c.setAttribute('r', '3'); c.setAttribute('class', 'radar-dot');
+        dots.appendChild(c);
+
+        var lp = radarPoint(i, n, 1.22);
+        var anchor = Math.abs(lp[0] - RADAR_CX) < 4 ? 'middle' : (lp[0] > RADAR_CX ? 'start' : 'end');
+        var t1 = document.createElementNS(NS, 'text');
+        t1.setAttribute('x', lp[0].toFixed(1)); t1.setAttribute('y', lp[1].toFixed(1));
+        t1.setAttribute('text-anchor', anchor); t1.setAttribute('class', 'radar-label');
+        t1.textContent = RADAR_SHORT[f.항목] || f.항목;
+        labs.appendChild(t1);
+        var t2 = document.createElementNS(NS, 'text');
+        t2.setAttribute('x', lp[0].toFixed(1)); t2.setAttribute('y', (lp[1] + 11).toFixed(1));
+        t2.setAttribute('text-anchor', anchor); t2.setAttribute('class', 'radar-val');
+        t2.textContent = (Number(f.점수) || 0) + '/' + cap;
+        labs.appendChild(t2);
+      });
+      document.getElementById('radarShape').setAttribute('points', pts.join(' '));
+      오각형그리기();
+      wrap.style.display = 'block';
+    }
+
     function ensureBreakdownSkeleton() {
       var sb = document.getElementById('scoreBreakdown');
       var list = document.getElementById('sbList');
       list.innerHTML = '';
+      renderRadar(SB_CAPS.map(function (d) { return { 항목: d.항목, 점수: 0, 상한: d.상한 }; }));
       var els = SB_CAPS.map(function (def) {
         var li = document.createElement('li');
         li.className = 'pending';
@@ -5226,8 +6219,8 @@
 
     function stopScoreTicker() {
       if (scoreTicker) { clearInterval(scoreTicker); scoreTicker = null; }
-      var arc = document.getElementById('gaugeArc');
-      if (arc) arc.style.transition = ''; // 실제 점수가 들어올 땐 다시 부드럽게
+      var shapeEl = document.getElementById('radarShape');
+      if (shapeEl) shapeEl.style.transition = ''; // 실제 점수가 들어올 땐 다시 부드럽게
     }
 
     function startRiskPending() {
@@ -5270,8 +6263,12 @@
     var diagnosisGeneration = 0;
 
     // 과거 게시물 스크린샷만으로 도는 경로. 사진 진단(얼굴·글자·위험도·보정)은 건너뛴다.
-    async function runPatternOnly(files) {
-      var submitBtn = document.getElementById('submitBtn');
+    // triggerBtn: 이 분석을 시작한 버튼 — 별도 입구(#pattern-check)가 생기면서
+    // "위험도 진단하기"(submitBtn) 말고 "패턴만 확인하기" 버튼에서도 이 함수를 부른다.
+    // 어느 쪽이든 다시 누르지 못하게 잠갔다가 끝나면 그 버튼만 풀어준다.
+    async function runPatternOnly(files, triggerBtn) {
+      var submitBtn = triggerBtn || document.getElementById('submitBtn');
+      lastPatternFiles = files;
       noFaceConsentChoice = null;
       noFaceConsentPromise = null;
       submitBtn.disabled = true;
@@ -5607,20 +6604,46 @@
       frame.appendChild(peek);
     }
 
+    // 브러시는 덮기·인페인팅에서만 뜬다. 안내에서 브러시를 언급하기 전에 확인한다 —
+    // 없는 도구를 쓰라고 하면 사용자가 화면을 뒤지게 된다.
+    function brushAvailable() {
+      return currentMethod === 'sticker';
+    }
+
+    // 목록에서 무엇을 고를지는 흐림·덮기처럼 브라우저 안에서 끝나는 방식에만 바로 반영한다.
+    // AI 방식(옷 바꾸기 · 배경 교체)은 한 번 부를 때마다 요금이 나가고 원본이 또
+    // 밖으로 나가므로, 체크만으로는 부르지 않고 "다시 만들기"를 눌렀을 때만 부른다.
+    // 옷 바꾸기는 이 목록을 쓰지 않는다(얼굴 위치로 옷 자리를 잡는다) — 알릴 것도 없다.
+    function 고른것바뀜() {
+      if (currentMethod === 'outfit') return;
+      if (CONSENT_METHODS.indexOf(currentMethod) === -1) {
+        selectMethod(currentMethod);
+        return;
+      }
+      showTargetRedo(true);
+    }
+
+    function showTargetRedo(on) {
+      var el = document.getElementById('targetRedo');
+      if (el) el.style.display = on ? 'flex' : 'none';
+    }
+
     function renderTargetPicker(keepSelection) {
+
       var box = document.getElementById('targetPicker');
       var list = document.getElementById('targetList');
       var all = assignTargetIds(correctionTextWords || []);
       list.innerHTML = '';
       box.style.display = 'block';
+      showTargetRedo(false);
 
       // 조용히 빼버리면 "왜 못 찾았지"가 된다. 뺐다는 사실은 밝힌다.
       function 뺀것안내() {
         if (droppedNoiseCount <= 0) return null;
         var p = document.createElement('p');
         p.className = 't-none';
-        p.textContent = '글자처럼 보였지만 뜻을 이루지 않는 ' + droppedNoiseCount +
-          '곳은 목록에서 뺐어요. 가려야 할 자리가 남았다면 브러시로 직접 칠해주세요.';
+        p.textContent = '글자처럼 보였지만 뜻을 이루지 않는 ' + droppedNoiseCount + '곳은 목록에서 뺐어요.'
+          + (brushAvailable() ? ' 가려야 할 자리가 남았다면 브러시로 직접 칠해주세요.' : '');
         return p;
       }
 
@@ -5628,9 +6651,10 @@
         selectedTargetIds = [];
         var none = document.createElement('p');
         none.className = 't-none';
+        // 목록이 비면 브러시 도구까지 통째로 숨는다(coverTools). 그러니 여기서는
+        // 방식과 무관하게 브러시를 언급하지 않는다 — 화면에 없는 것이다.
         none.textContent = droppedNoiseCount > 0
-          ? '읽을 만한 텍스트를 찾지 못했어요 — 잘못 읽은 ' + droppedNoiseCount +
-            '곳은 뺐어요. 가릴 곳이 있다면 브러시로 직접 칠해주세요.'
+          ? '읽을 만한 텍스트를 찾지 못했어요 — 잘못 읽은 ' + droppedNoiseCount + '곳은 뺐어요.'
           : '위치를 아는 텍스트를 찾지 못했어요 — 텍스트를 지우는 방식은 쓸 수 없어요.';
         list.appendChild(none);
         return;
@@ -5652,7 +6676,7 @@
           var pos = selectedTargetIds.indexOf(w._tid);
           if (cb.checked && pos === -1) selectedTargetIds.push(w._tid);
           if (!cb.checked && pos !== -1) selectedTargetIds.splice(pos, 1);
-          selectMethod(currentMethod); // 고른 것만으로 미리보기를 다시 만든다
+          고른것바뀜();
         });
 
         // 클로드가 읽은 내용이 틀릴 수 있다 — 그대로 고칠 수 있게 입력칸으로 둔다.
@@ -5684,7 +6708,7 @@
           var pos = selectedTargetIds.indexOf(w._tid);
           if (pos !== -1) selectedTargetIds.splice(pos, 1);
           renderTargetPicker(true);
-          selectMethod(currentMethod);
+          고른것바뀜();
         });
 
         label.appendChild(cb);
@@ -5707,7 +6731,7 @@
     }
 
     // 원본 전송 동의가 필요한 방식들 — 취소했을 때 여기로 되돌리면 안 된다
-    var CONSENT_METHODS = ['ai', 'inpaint', 'outfit'];
+    var CONSENT_METHODS = ['ai', 'outfit'];
     var NO_CONSENT_FALLBACK = 'blur';
 
     var currentMethod = 'blur';
@@ -5733,14 +6757,11 @@
       var aiStatusBadge = document.getElementById('badge-ai-status');
       aiStatusBadge.textContent = '확인 중';
       aiStatusBadge.style.background = 'var(--muted)';
-      var inpaintStatusBadge = document.getElementById('badge-inpaint-status');
-      inpaintStatusBadge.textContent = '확인 중';
-      inpaintStatusBadge.style.background = 'var(--muted)';
       var outfitStatusBadge = document.getElementById('badge-outfit-status');
       outfitStatusBadge.textContent = '확인 중';
       outfitStatusBadge.style.background = 'var(--muted)';
       checkFluxStatus().then(function (ready) {
-        [aiStatusBadge, inpaintStatusBadge, outfitStatusBadge].forEach(function (b) {
+        [aiStatusBadge, outfitStatusBadge].forEach(function (b) {
           b.textContent = ready ? '사용 가능' : '준비 중';
           b.style.background = ready ? 'var(--risk-low)' : 'var(--muted)';
         });
@@ -5753,48 +6774,52 @@
       // 계산이 끝나기 전에 사용자가 다른 방식을 눌러서 빈 목록으로 처리되는 걸 막기 위해
       // 계산 중엔 방식 카드를 비활성화함 (실측으로 이 레이스 컨디션을 실제로 확인함).
       document.getElementById('previewCaption').textContent = '정확한 위치 계산 중…';
-      methodCards.forEach(function (c) { c.disabled = true; });
-      try {
-        var localOcr = await runOcrPipeline(uploadedPhotoUrl);
-        correctionTextWords = localOcr.words;
+    methodCards.forEach(function (c) { c.disabled = true; });
+    try {
+      var localOcr = await runOcrPipeline(uploadedPhotoUrl);
+      correctionTextWords = localOcr.words;
 
-        // Tesseract 전체 스캔이 놓친 텍스트를, Claude가 준 근사 위치를 단서로 다시 찾는다.
-        // (예전에는 여기서 "위치를 몰라 처리 못 함"이라고 경고만 찍고 포기했다)
-        var claudeWords = (lastOcrResult && lastOcrResult.words) || [];
-        var missing = pickUnlocatedHints(claudeWords, correctionTextWords);
-        if (missing.length > 0) {
-          console.log('[2단계보정] Claude가 읽은 ' + claudeWords.length + '개 중 ' + missing.length +
-            '개는 전체 스캔이 위치를 못 찾음 — 근사 위치를 단서로 재탐색합니다:',
-            missing.map(function (w) { return '"' + w.text + '"'; }).join(', '));
-          try {
-            var recovered = await locateTextsByHints(uploadedPhotoUrl, missing);
-            correctionTextWords = correctionTextWords.concat(recovered);
-          } catch (e) {
-            console.warn('[2단계보정] 재탐색 실패 — 전체 스캔 결과만으로 진행:', e.message);
-          }
+      // Tesseract 전체 스캔이 놓친 텍스트를, Claude가 준 근사 위치를 단서로 다시 찾는다.
+      // (예전에는 여기서 "위치를 몰라 처리 못 함"이라고 경고만 찍고 포기했다)
+      var claudeWords = (lastOcrResult && lastOcrResult.words) || [];
+      var missing = pickUnlocatedHints(claudeWords, correctionTextWords);
+      if (missing.length > 0) {
+        console.log('[2단계보정] Claude가 읽은 ' + claudeWords.length + '개 중 ' + missing.length +
+          '개는 전체 스캔이 위치를 못 찾음 — 근사 위치를 단서로 재탐색합니다:',
+          missing.map(function (w) { return '"' + w.text + '"'; }).join(', '));
+        try {
+          var recovered = await locateTextsByHints(uploadedPhotoUrl, missing);
+          correctionTextWords = correctionTextWords.concat(recovered);
+        } catch (e) {
+          console.warn('[2단계보정] 재탐색 실패 — 전체 스캔 결과만으로 진행:', e.message);
         }
-        // 뜻을 이루지 않는 것은 목록에서 뺀다. 예전에는 "개  a 4°" 같은 것이
-        // 체크된 채로 올라와서, 사용자가 매번 직접 빼줘야 했다(실사용 확인).
-        var 읽힌수 = correctionTextWords.length;
-        correctionTextWords = correctionTextWords.filter(function (w) { return looksLikeText(w.text); });
-        droppedNoiseCount = 읽힌수 - correctionTextWords.length;
-        if (droppedNoiseCount > 0) {
-          console.log('[2단계보정] 뜻을 이루지 않아 뺀 것 ' + droppedNoiseCount + '개');
-        }
-        console.log('[2단계보정] 보정에 쓸 텍스트 최종 ' + correctionTextWords.length + '개');
-      } catch (e) {
-        console.warn('[2단계보정] 위치 재계산 실패 — 빈 목록으로 진행:', e.message);
-        correctionTextWords = [];
-        droppedNoiseCount = 0;
-      } finally {
-        methodCards.forEach(function (c) { c.disabled = false; });
-        // 목록은 반드시 위치 계산이 끝난 뒤에 그린다. 화면 진입 직후에 그렸더니
-        // correctionTextWords가 아직 비어 있어 늘 "텍스트를 찾지 못했다"가 떴다.
-        renderTargetPicker();
       }
+      // 뜻을 이루지 않는 것은 목록에서 뺀다. 예전에는 "개  a 4°" 같은 것이
+      // 체크된 채로 올라와서, 사용자가 매번 직접 빼줘야 했다(실사용 확인).
+      var 읽힌수 = correctionTextWords.length;
+      correctionTextWords = correctionTextWords.filter(function (w) { return looksLikeText(w.text); });
+      droppedNoiseCount = 읽힌수 - correctionTextWords.length;
+      if (droppedNoiseCount > 0) {
+        console.log('[2단계보정] 뜻을 이루지 않아 뺀 것 ' + droppedNoiseCount + '개');
+      }
+      console.log('[2단계보정] 보정에 쓸 텍스트 최종 ' + correctionTextWords.length + '개');
+    } catch (e) {
+      console.warn('[2단계보정] 위치 재계산 실패 — 빈 목록으로 진행:', e.message);
+      correctionTextWords = [];
+      droppedNoiseCount = 0;
+    } finally {
+      methodCards.forEach(function (c) { c.disabled = false; });
+      // 목록은 반드시 위치 계산이 끝난 뒤에 그린다. 화면 진입 직후에 그렸더니
+      // correctionTextWords가 아직 비어 있어 늘 "텍스트를 찾지 못했다"가 떴다.
+      renderTargetPicker();
+    }
+    
+      // 데모는 컬러체인지 기능을 보여주는 게 목적이라 옷 방식을 기본으로 연다.
+      // 실제 진단 흐름은 기존과 동일하게 블러가 기본값.
       selectMethod('blur');
 
       // Claude에게 실제 위험요소 위치를 주고 처리 방식을 추천받음 (실패해도 크롭이 기본값이라 진행에 지장 없음)
+      // 데모는 업로드도 진단도 하지 않은 가짜 결과이므로, 여기서까지 실제 Claude 호출을 하지 않는다.
       if (lastRiskResult && lastOcrResult) {
         runRecommendCorrectionPipeline(lastRiskResult, lastOcrResult).then(function (rec) {
           ['blur', 'sticker'].forEach(function (m) { document.getElementById('badge-' + m).style.display = 'none'; });
@@ -5816,6 +6841,7 @@
         });
       }
     });
+
     document.getElementById('skipCorrectBtn').addEventListener('click', function () {
       correctionApplied = false;
       lastCorrectionMeta = null;
@@ -5824,6 +6850,16 @@
     });
     document.getElementById('backToResultBtn').addEventListener('click', function () { showScreen('result'); });
     document.getElementById('pWithPhotoBtn').addEventListener('click', function () {
+      // #pattern-check(별도 입구)로 들어왔으면 스크린샷이 메인 폼의 pastInput이 아니라
+      // patternOnlyInput에 있다 — 그대로면 폼으로 넘어가는 순간 스크린샷이 빈 걸로
+      // 보인다. DataTransfer로 같은 파일들을 pastInput에 옮겨 담는다.
+      if (lastPatternFiles && lastPatternFiles.length > 0 && pastInput.files.length === 0) {
+        var dt = new DataTransfer();
+        Array.prototype.forEach.call(lastPatternFiles, function (f) { dt.items.add(f); });
+        pastInput.files = dt.files;
+        pastCount = pastInput.files.length;
+        syncPastHint();
+      }
       showScreen('form');
       // 스크린샷은 그대로 두고 사진만 고르면 되도록 파일 선택창을 바로 연다
       photoInput.click();
@@ -5859,7 +6895,9 @@
     document.getElementById('pIncludeBtn').addEventListener('click', function () {
       if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 Claude Vision으로 보냅니다. 계속할까요?')) return;
       includeUnmaskedScreenshots = true;
-      var files = document.getElementById('pastInput').files;
+      // pastInput(메인 폼)이 아니라 lastPatternFiles를 쓴다 — #pattern-check(별도 입구)로
+      // 들어온 경우엔 pastInput이 아예 비어 있다.
+      var files = lastPatternFiles;
       if (files && files.length > 0) runPatternOnly(files);
     });
     document.getElementById('pRestartBtn').addEventListener('click', function () {
@@ -5904,7 +6942,7 @@
       // 예전에는 덮기 계열에서만 상자가 보여서, 진단 직후 위치가 어긋난 걸 알아도
       // 방식을 바꿔야만 고칠 수 있었다. 이제 어떤 방식에서든 상자가 보인다.
       var hasTargets = (correctionTextWords || []).length > 0;
-      var brushable = currentMethod === 'sticker' || currentMethod === 'inpaint';
+      var brushable = currentMethod === 'sticker';
       var tools = document.getElementById('coverTools');
       tools.style.display = hasTargets ? 'block' : 'none';
       tools.classList.toggle('no-brush', !brushable);
@@ -6060,7 +7098,7 @@
     }
 
     var METHOD_LABEL = {
-      blur: '배경 흐림', sticker: '자연스럽게 덮기', inpaint: 'AI로 지우고 메우기',
+      blur: '배경 흐림', sticker: '자연스럽게 덮기',
       outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체'
     };
 
@@ -6151,12 +7189,14 @@
     }
 
     async function selectMethod(method) {
+      showTargetRedo(false);
       var previousMethod = currentMethod;
       currentMethod = method;
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
       editInstruction.style.display = method === 'ai' ? 'block' : 'none';
       document.getElementById('blurStrength').style.display = method === 'blur' ? 'flex' : 'none';
       document.getElementById('fillStyle').style.display = method === 'sticker' ? 'flex' : 'none';
+      document.getElementById('outfitStyle').style.display = method === 'outfit' ? 'flex' : 'none';
 
       clearPreviewBusy();
       var previewAfter = document.getElementById('previewAfter');
@@ -6191,101 +7231,24 @@
         currentCorrectionCanvas = null;
         try {
           previewCaption.textContent = 'AI가 옷을 바꾸는 중이에요.';
-          setPreviewBusy('AI가 옷을 평범한 옷으로 바꾸는 중이에요\n10~20초 정도 걸려요'); 
+          var cwNow = COLORWAYS[outfitColorway] || COLORWAYS.brown;
+          setPreviewBusy(cwNow.keepColors
+            ? 'AI가 색은 그대로 두고 교복 티를 지우는 중이에요\n10~20초 정도 걸려요'
+            : 'AI가 옷을 ' + cwNow.label + ' 옷으로 바꾸는 중이에요\n10~20초 정도 걸려요');
           var ofImg = await loadImage(correctionBaseUrl);
-          var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult);
+          var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult, outfitColorway, outfitEmblem);
           clearPreviewBusy();
           currentCorrectionCanvas = of.canvas;
           previewAfter.src = of.canvas.toDataURL('image/png');
-          previewCaption.textContent = '✨ 교복을 평범한 옷으로 바꿨어요 — 얼굴과 자세는 그대로예요. '
+          previewCaption.textContent = '✨ ' + buildOutfitSummaryKo(outfitColorway, outfitEmblem) + ' 얼굴과 자세는 그대로예요. '
             + '어느 기관 옷인지 알아볼 수 없게 됐는지 꼭 눈으로 확인해주세요. (약 $'
             + Number(of.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(of.data.timingMs / 1000) + '초)';
-          lastCorrectionMeta = { method: 'outfit', detail: '옷 교체 — 교복·원복을 일반 복장으로 대체' };
+          lastCorrectionMeta = { method: 'outfit', detail: '옷 교체 — ' + buildOutfitSummaryKo(outfitColorway, outfitEmblem) };
         } catch (err) {
           clearPreviewBusy();
           console.error('[옷교체] 실패:', err);
           previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '⚠ AI 옷 바꾸기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
-          currentCorrectionCanvas = null; lastCorrectionMeta = null;
-        }
-        return;
-      }
-
-      if (method === 'inpaint') {
-        if (!(await checkFluxStatus())) {
-          previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = 'AI로 지우고 메우기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
-          currentCorrectionCanvas = null; lastCorrectionMeta = null;
-          return;
-        }
-        if (!(await askFluxConsent())) {
-          // 직전 방식으로 되돌리면 그게 또 AI 방식일 때 동의창이 다시 뜬다.
-          // 취소를 반복하면 창이 끝없이 떠서 멈춘 것처럼 보였다(실사용 제보).
-          // 동의가 필요 없는 방식으로 되돌린다.
-          selectMethod(NO_CONSENT_FALLBACK);
-          return;
-        }
-        if (!correctionBaseUrl || !lastFaceResult) {
-          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
-          return;
-        }
-
-        var inImg = await loadImage(correctionBaseUrl);
-        var iw = inImg.naturalWidth, ih = inImg.naturalHeight;
-        // 실측 결과 인페인팅은 작은 글씨엔 훌륭하지만 간판엔 가짜 글씨를 만들어낸다.
-        // 그래서 여기서 갈라서, 간판은 스티커로 덮는다.
-        // 근사 위치(approximate)는 실제 글자를 빗나가는 일이 잦다. 그 자리에 마스크를
-        // 씌우면 멀쩡한 곳이 새로 그려지고(가짜 간판 글씨가 생김) 정작 위험 글자는
-        // 그대로 남는다 — 실사용에서 확인했다. 인페인팅은 정밀 위치만 다룬다.
-        var locatable = getSelectedTexts().filter(function (w) { return !w.approximate; });
-        var approxCount = getSelectedTexts().length - locatable.length;
-        var split = classifyTextRegions(locatable, iw, ih);
-        var subjects = ((lastFaceResult && lastFaceResult.faces) || []).map(function (f) {
-          return computeSubjectRegion(f.box, iw, ih);
-        });
-
-        if (split.inpaint.length === 0 && split.signboard.length === 0) {
-          previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '지울 위치를 아는 텍스트를 찾지 못했어요 — 이 방식으로는 처리할 게 없습니다.';
-          currentCorrectionCanvas = null; lastCorrectionMeta = null;
-          return;
-        }
-
-        currentCorrectionCanvas = null;
-        try {
-          var outCv, costNote = '';
-          if (split.inpaint.length > 0) {
-            previewCaption.textContent = 'AI가 글씨를 지우는 중이에요.';
-            setPreviewBusy('AI가 작은 글씨 ' + split.inpaint.length + '곳을 지우고\n배경으로 메우는 중이에요 (10~20초)'); 
-            var ip = await runInpaintRegions(inImg, split.inpaint, subjects, lastRiskResult);
-            outCv = ip.canvas;
-            costNote = ' (약 $' + Number(ip.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(ip.data.timingMs / 1000) + '초)';
-          } else {
-            outCv = document.createElement('canvas');
-            outCv.width = iw; outCv.height = ih;
-            outCv.getContext('2d').drawImage(inImg, 0, 0);
-          }
-
-          if (split.signboard.length > 0) {
-            outCv = applyPatchFill(outCv, split.signboard, outCv.width, outCv.height);
-          }
-
-          clearPreviewBusy();
-          currentCorrectionCanvas = outCv;
-          previewAfter.onload = renderCoverHandles;
-          previewAfter.src = outCv.toDataURL('image/png');
-
-          var parts = [];
-          if (split.inpaint.length > 0) parts.push('작은 글씨 ' + split.inpaint.length + '곳은 AI가 배경으로 메웠어요');
-          if (approxCount > 0) parts.push(approxCount + '곳은 정확한 위치를 못 찾아 건너뛰었어요 — "자연스럽게 덮기"에서 덮개를 끌어 맞춰주세요');
-          if (split.signboard.length > 0) parts.push('큰 간판 ' + split.signboard.length + '곳은 AI에 맡기면 가짜 글씨가 생겨서 스티커로 덮었어요');
-          previewCaption.textContent = '✨ ' + parts.join('. ') + '. 사진을 자르지 않아 비율은 원본 그대로예요.' + costNote;
-          lastCorrectionMeta = { method: 'inpaint', detail: previewCaption.textContent };
-        } catch (err) {
-          clearPreviewBusy();
-          console.error('[인페인팅] 실패:', err);
-          previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '⚠ AI로 지우고 메우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
         }
         return;
@@ -6323,6 +7286,11 @@
           outCanvas.width = srcImg.naturalWidth;
           outCanvas.height = srcImg.naturalHeight;
           outCanvas.getContext('2d').drawImage(outImg, 0, 0, outCanvas.width, outCanvas.height);
+          // kontext가 원본에 없던 아이를 다른 자리에 하나 더 그려내는 경우가 있다 —
+          // 원본 아이를 다시 덮어쓰기 전, AI가 만든 순수한 결과만 있는 지금 검출해야
+          // "어디가 새로 생긴 자리인지"가 깨끗하게 보인다.
+          await removeHallucinatedPeople(outCanvas, (lastFaceResult && lastFaceResult.faces) || [],
+            outCanvas.width, outCanvas.height);
           // 프롬프트로 부탁하는 것과 별개로, 인물 영역은 원본으로 되돌려 확실히 막는다.
           // 픽셀 단위 마스크를 쓰면 사람만 정확히 되돌아온다 — 도형으로 덮던 때는
           // 사진의 57%가 원본이 되어 AI가 한 일이 거의 안 보였다.
@@ -6394,7 +7362,9 @@
         if (texts.length > 0) doneParts.push('글자 ' + texts.length + '곳');
         if (painted) doneParts.push('직접 칠한 영역');
         previewCaption.textContent = doneParts.length === 0
-          ? '아직 덮은 곳이 없어요 — 위 목록에서 항목을 고르거나 브러시로 직접 칠해보세요.'
+          ? (brushAvailable()
+            ? '아직 덮은 곳이 없어요 — 위 목록에서 항목을 고르거나 브러시로 직접 칠해보세요.'
+            : '아직 덮은 곳이 없어요 — 위 목록에서 처리할 항목을 골라주세요.')
           : doneParts.join('과 ') + '을 ' + howText + ' 덮었어요.';
       }
 
@@ -6462,6 +7432,39 @@
       });
     });
 
+    // "고른 것으로 다시 만들기" — AI 방식에서 체크를 고친 뒤 직접 누를 때만 돈이 나간다
+    (function () {
+      var btn = document.getElementById('targetRedoBtn');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        showTargetRedo(false);
+        selectMethod(currentMethod);
+      });
+    })();
+
+    // 컬러체인지 / 엠블럼 처리 버튼 — 고르면 옷 방식 미리보기를 그 자리에서 다시 만든다
+    document.querySelectorAll('.cw-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.cw-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        outfitColorway = btn.dataset.cw;
+        var cwTag = document.getElementById('cwSampleTag');
+        if (cwTag) {
+          var cwd = COLORWAYS[outfitColorway];
+          cwTag.textContent = '';
+        }
+        if (currentMethod === 'outfit') selectMethod('outfit');
+      });
+    });
+    document.querySelectorAll('.em-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.em-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        outfitEmblem = btn.dataset.em;
+        if (currentMethod === 'outfit') selectMethod('outfit');
+      });
+    });
+
     var blurRangeEl = document.getElementById('blurRange');
     var blurValueEl = document.getElementById('blurRangeValue');
     var blurRenderTimer = null;
@@ -6493,7 +7496,7 @@
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
-        a.download = '아이섀도우_보정_' + currentMethod + '.png';
+        a.download = '아이SHADOW_보정_' + currentMethod + '.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -6503,7 +7506,7 @@
 
     // ===== 3단계: 결과 재검증 (프롬프트 문서 5번) =====
     var VERIFY_BACKEND_URL = '/api/verify-correction';
-    var METHOD_LABEL = { blur: '배경 흐림', sticker: '자연스럽게 덮기', inpaint: 'AI로 지우고 메우기', outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체' };
+    var METHOD_LABEL = { blur: '배경 흐림', sticker: '자연스럽게 덮기', outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체' };
 
     // 여러 얼굴 중 가장 큰(주요) 얼굴 기준으로 개수/크기/각도 요약 — 원본·처리후 비교용
     function pickPrimaryFaceStats(faces) {
@@ -6645,6 +7648,8 @@
       fileCount.style.display = 'none';
       pastDropLabel.textContent = '스크린샷을 선택하면 반복 패턴까지 짚어드려요';
       polaroidPreview.style.display = 'none';
+      var upPart0 = polaroidPreview.closest('.up-part');
+      if (upPart0) upPart0.classList.remove('has-preview');
       fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
       syncSubmitLabel();
       fluxConsentGiven = false; // 새 사진이면 동의를 다시 받는다
@@ -6655,6 +7660,10 @@
       document.getElementById('companions').value = '';
       document.getElementById('backgroundNotes').value = '';
       document.getElementById('debugPanel').style.display = 'none';
+      patternOnlyInput.value = '';
+      patternOnlyDropLabel.textContent = '스크린샷을 선택하면 반복 패턴을 짚어드려요';
+      patternOnlyCount.style.display = 'none';
+      lastPatternFiles = null;
       showScreen('form');
     });
 
@@ -6670,7 +7679,17 @@
       buildInpaintMask: buildInpaintMask,
       computeClothingRegion: computeClothingRegion,
       buildClothingMask: buildClothingMask,
+      buildOutfitFillPrompt: buildOutfitFillPrompt,
+      falSendSizeForTest: falSendSize,
+      maskToAlphaForTest: maskToAlpha,
+      compositeThroughMaskForTest: compositeThroughMask,
+      getOutfitChoiceForTest: function () { return { colorway: outfitColorway, emblem: outfitEmblem }; }, // 컬러체인지/엠블럼 선택 → 프롬프트 문구 검증용
+      buildOutfitSummaryKo: buildOutfitSummaryKo,
+      setOutfitStyleForTest: function (cw, em) { outfitColorway = cw; outfitEmblem = em; },
       restorePersonFromOriginal: restorePersonFromOriginal,
+      removeHallucinatedPeople: removeHallucinatedPeople,
+      faceBoxOverlapRatioForTest: faceBoxOverlapRatio,
+      runFluxBackgroundReplace: runFluxBackgroundReplace, // 실제 fal 호출 검증용 (비용 발생)
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
       getPersonMask: getPersonMask,
@@ -6692,6 +7711,7 @@
       renderPhotoAndPinsForTest: renderPhotoAndPins,
       apiHeadersForTest: apiHeaders,
       looksLikeTextForTest: looksLikeText,
+      isPlaceWordForTest: isPlaceWord,
       setDroppedNoiseForTest: function (n) { droppedNoiseCount = n; },
       // 결과 화면이 자리를 잡는지 재려면 과거 게시물 개수를 흉내내야 한다
       setPastCountForTest: function (n, photoUrl) {

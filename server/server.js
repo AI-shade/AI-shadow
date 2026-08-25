@@ -44,6 +44,23 @@ if (!process.env.ANTHROPIC_API_KEY) {
 //     (실제 처리는 보통 10~30초. 1시간은 불필요하게 길다)
 //   - 출력(보정 결과): 서버가 즉시 내려받아 base64로 돌려주므로 최소값
 // fal의 만료 최소 단위가 60초라 'immediate'도 실제로는 60초다.
+// fal이 돌려주는 메시지는 그대로 내보내면 화면에 "Forbidden"만 뜬다.
+// 무엇이 문제인지 알 수 없어서 "왜 안 되지"로 한참 헤맨다(실제로 그랬다).
+// 자주 나오는 것들은 사람 말로 바꿔서 돌려준다.
+function falErrorText(err) {
+  const raw = [err && err.message, JSON.stringify((err && err.body) || '')].join(' ');
+  if (/exhausted balance|user is locked/i.test(raw)) {
+    return 'fal.ai 잔액이 떨어져서 계정이 잠겼어요. fal.ai/dashboard/billing 에서 충전하면 다시 됩니다. (그동안 흐림·덮기·크롭은 그대로 쓸 수 있어요)';
+  }
+  if (/unauthorized|invalid.*(key|credential)/i.test(raw)) {
+    return 'fal.ai 키가 올바르지 않아요. server/.env의 FAL_KEY를 확인해주세요.';
+  }
+  if (/rate limit|too many requests/i.test(raw)) {
+    return 'fal.ai 요청이 몰렸어요. 잠시 뒤 다시 시도해주세요.';
+  }
+  return (err && err.message) || '알 수 없는 오류';
+}
+
 const FAL_INPUT_LIFECYCLE = { expiresIn: 600 };
 const FAL_OUTPUT_STORAGE = { expiresIn: 'immediate' };
 
@@ -258,18 +275,20 @@ ${visualClues}
 "${body.caption || ''}"
 
 위 정보를 종합해서 다음을 작성해주세요:
-1. 아래 네 항목에 각각 점수를 매기고, 왜 그 점수인지 한 문장으로 적기
+1. 아래 다섯 항목에 각각 점수를 매기고, 왜 그 점수인지 한 문장으로 적기
 2. 위치노출 위험도 점수와 근거
 3. 부모가 취할 수 있는 구체적 조치 제안
 
 점수 항목과 상한(이 상한을 넘기지 마세요):
-- 간판·주소 노출 (0~30): 사진에 찍힌 간판·주소·지번·전화번호처럼 글자로 드러나는 것
-- 소속 노출 (0~25): 교복·원복·명찰·기관 로고처럼 어디 다니는지 알 수 있는 것
-- 인물 식별성 (0~20): 얼굴이 또렷한 정도, 함께 찍힌 사람
-- 게시 습관 (0~15): 계정 공개 범위, 실시간 업로드 여부
+- 간판·주소 노출 (0~26): 사진에 찍힌 간판·주소·지번·전화번호처럼 글자로 드러나는 것
+- 소속 노출 (0~22): 교복·원복·명찰·기관 로고처럼 어디 다니는지 알 수 있는 것
+- 인물 식별성 (0~18): 얼굴이 또렷한 정도, 함께 찍힌 사람
+- 캡션 노출 (0~18): 위 [캡션 텍스트]가 기관명·동네명·요일·시간처럼 구체적인 것을
+  글로 적어 흘리는 정도. 캡션이 비어 있으면 0점입니다 — 안 썼으면 흘릴 것도 없습니다.
+- 게시 습관 (0~16): 계정 공개 범위, 실시간 업로드 여부
 
 근거가 없으면 0점을 주세요. 억지로 점수를 채우지 마세요.
-종합 점수는 이 네 항목의 합으로 계산되므로 따로 적지 않아도 됩니다.
+종합 점수는 이 다섯 항목의 합으로 계산되므로 따로 적지 않아도 됩니다.
 
 반드시 JSON 형식으로만 응답하세요 (다른 설명 없이):
 {
@@ -277,6 +296,7 @@ ${visualClues}
     {"항목": "간판·주소 노출", "점수": 0, "근거": "한 문장"},
     {"항목": "소속 노출", "점수": 0, "근거": "한 문장"},
     {"항목": "인물 식별성", "점수": 0, "근거": "한 문장"},
+    {"항목": "캡션 노출", "점수": 0, "근거": "한 문장"},
     {"항목": "게시 습관", "점수": 0, "근거": "한 문장"}
   ],
   "위치노출위험도점수": 0,
@@ -289,11 +309,15 @@ ${visualClues}
 // 종합 점수를 모델이 통째로 내놓게 두면 "왜 72점인가"에 답할 수가 없다.
 // 항목별로 받아서 서버가 더한다 — 화면에 보이는 숫자와 계산이 반드시 맞아떨어진다.
 // 상한을 넘기거나 빠뜨린 항목은 여기서 바로잡는다. 모델의 산수를 믿지 않는다.
+// 캡션 노출은 원래 /api/suggest-captions에서만 보고 점수에는 안 들어갔다.
+// 실제로는 캡션이 가장 대놓고 흘리는 통로다("오늘 OO어린이집 첫 등원") —
+// 분석은 이미 하고 있었으니 점수에 연결만 했다. 합은 여전히 100이다.
 const RISK_FACTORS = [
-  { 항목: '간판·주소 노출', 상한: 30 },
-  { 항목: '소속 노출', 상한: 25 },
-  { 항목: '인물 식별성', 상한: 20 },
-  { 항목: '게시 습관', 상한: 15 },
+  { 항목: '간판·주소 노출', 상한: 26 },
+  { 항목: '소속 노출', 상한: 22 },
+  { 항목: '인물 식별성', 상한: 18 },
+  { 항목: '캡션 노출', 상한: 18 },
+  { 항목: '게시 습관', 상한: 16 },
 ];
 
 function normalizeRiskFactors(raw) {
@@ -749,7 +773,7 @@ app.post('/api/replace-background', async (req, res) => {
     });
   } catch (err) {
     console.error('[server] flux-kontext-pro 호출 실패:', err.message);
-    res.status(500).json({ error: 'AI 배경교체 실패: ' + err.message });
+    res.status(500).json({ error: 'AI 배경교체 실패: ' + falErrorText(err) });
   }
 });
 
@@ -830,7 +854,11 @@ app.post('/api/inpaint-regions', async (req, res) => {
     ]);
 
     const result = await fal.subscribe('fal-ai/flux-pro/v1/fill', {
-      input: { prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl },
+      // enhance_prompt: false — 기본값이 켜져 있으면 fal이 우리 프롬프트를 자기 나름대로
+      // 다시 써서 보낸다. 옷 색을 정확한 헥스값까지 지정해도 색이 원본 쪽으로 끌려가는
+      // 문제(실사용 제보)가 있었는데, 우리가 이미 정확한 색·질감을 문장으로 다 짜둔
+      // 프롬프트를 모델이 "개선"한답시고 흐리는 것도 원인 중 하나일 수 있어 꺼둔다.
+      input: { prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl, enhance_prompt: false },
       storageSettings: FAL_OUTPUT_STORAGE,
     });
 
@@ -852,7 +880,7 @@ app.post('/api/inpaint-regions', async (req, res) => {
     });
   } catch (err) {
     console.error('[server] flux-fill 호출 실패:', err.message);
-    res.status(500).json({ error: 'AI 인페인팅 실패: ' + err.message });
+    res.status(500).json({ error: 'AI 인페인팅 실패: ' + falErrorText(err) });
   }
 });
 
@@ -871,6 +899,19 @@ const VERIFY_SYSTEM_PROMPT = `당신은 이미지 프라이버시 처리 결과�
 "얼굴이 노출되어 있다", "아이 신원이 드러난다" 같은 이유로 "재검토필요"를 주지 마세요.
 이 서비스가 다루는 위험은 **아이가 어디 있는지·어디 다니는지 알려주는 단서**
 (간판·전화번호·주소·교복·명찰·기관 로고 등)이지, 얼굴 자체가 아닙니다.
+
+**옷을 바꿨다면 그게 바로 조치입니다.**
+학교를 특정하는 것은 "교복을 입었다"가 아니라 **그 학교의 교복**입니다 — 고유한
+색 조합, 트림, 가슴팍 엠블럼·마크 같은 것들이죠. 처리 설명에 색상·디자인을 다른
+것으로 바꿨다고 적혀 있으면, 어느 기관인지 잇는 고리가 끊어진 것으로 보세요.
+"교복을 입고 있다는 사실 자체가 위험하다", "일상복으로 완전히 바꾸거나 상반신을
+가려야 한다"는 식으로 판단하지 마세요 — 그건 이 서비스가 제공하는 조치를 부정하는 것이고,
+부모는 아이가 옷을 입은 평범한 사진을 올리려는 것입니다.
+
+옷을 바꿨는데도 "재검토필요"를 줄 수 있는 경우는 이렇게 좁습니다:
+- 엠블럼·마크·이름표가 그대로 남아 있다고 처리 설명에 적혀 있을 때
+- 바꾼 색·디자인이 원래와 거의 같아 여전히 같은 기관으로 읽힐 때
+- 교복 말고 다른 단서(간판·주소·캡션의 기관명 등)가 아직 남아 있을 때
 
 검출로 확인할 수 없는 처리도 있습니다:
 사용자가 브러시로 직접 칠하거나 상자를 씌워 가린 부분은 **글자가 아니어서 텍스트 검출에
@@ -991,6 +1032,10 @@ const ROOT = path.join(HERE, '..');
 function sendIndex(req, res) { res.sendFile(path.join(ROOT, 'index.html')); }
 app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
+// 랜딩 예시 사진 같은 정적 파일. public 폴더 하나만 연다 —
+// 저장소 전체를 static으로 열면 server/.env까지 나간다.
+// (배포판에서는 버셀이 이 파일들을 먼저 처리하므로 여기까지 오지 않는다.)
+app.use('/public', express.static(path.join(ROOT, 'public'), { maxAge: '1h' }));
 
 // 서버리스(버셀)에서는 이 파일이 함수로 불려 들어오므로 포트를 열지 않는다.
 // 로컬에서 `npm start`로 직접 띄울 때만 listen 한다.
