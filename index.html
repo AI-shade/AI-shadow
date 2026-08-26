@@ -4696,8 +4696,9 @@
           width: hb.width * sw / ow, height: hb.height * sh / oh,
         };
       });
-      var mask = buildClothingMask(scaledFaces, sw, sh, personMask, handBoxes);
-      console.log('[옷교체] 마스크 — 인물 분리 ' + (personMask ? '사용' : '없음(네모)')
+      var clothesMask = await getClothesMask(img, 'outfit:' + (img.src || '').slice(0, 96));
+      var mask = buildClothingMask(scaledFaces, sw, sh, personMask, handBoxes, clothesMask);
+      console.log('[옷교체] 마스크 — ' + (clothesMask ? '옷 분할 사용' : (personMask ? '인물 분리 + 네모' : '네모만'))
         + ', 손 ' + handBoxes.length + '개 제외');
 
       var data = await postJson(INPAINT_BACKEND_URL, {
@@ -4894,6 +4895,107 @@
         return null;
       });
       return segmenterPromise;
+    }
+
+    // 옷만 갈라내는 분할기. 옷 교체 마스크를 만드는 데만 쓴다.
+    //
+    // 왜 따로 두는가: 위의 selfie_segmenter는 사람/배경 2분류라 "사람 안에서 어디가
+    // 옷인지"를 모른다. 그래서 옷 마스크를 얼굴 기준 네모(얼굴 폭 1.9배)로 짐작했는데
+    // 두 가지가 어긋났다 —
+    //   ① 어깨·깃·소맷머리가 네모 바깥에 남아 원래 옷의 위쪽이 살아남았다. 새 천이
+    //      그 아래만 칠해지니 결과가 "원래 옷 위에 덧입힌 것"처럼 보였다(실사용 제보).
+    //   ② 2분류 모델이 아이 뒤의 벽 무늬(보라색 원)까지 사람으로 삼켰다(실측). 네모를
+    //      넓히면 그 벽에도 천이 칠해진다.
+    // 이 모델은 옷을 아예 한 분류로 내놓는다. 실측한 분류 비율(아이사진1):
+    //   0 배경 73.1 / 1 머리카락 2.8 / 2 몸 피부 6.1 / 3 얼굴 피부 2.0 / 4 옷 15.9 / 5 그 외 0.1
+    // 4번을 꺼내 눈으로 확인했더니 깃·어깨·소매·셔츠·치마·반바지가 두 아이 모두
+    // 정확히 들어가고 얼굴·머리·맨팔·벽은 들어가지 않았다. 짐작할 것이 없어진다.
+    var CLOTHES_CATEGORY = 4;
+    var clothesSegmenterPromise = null;
+    var clothesMaskCache = { key: null, canvas: null };
+
+    function getClothesSegmenter() {
+      if (clothesSegmenterPromise) return clothesSegmenterPromise;
+      clothesSegmenterPromise = (async function () {
+        var vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+        var fileset = await vision.FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+        );
+        return vision.ImageSegmenter.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite',
+            delegate: 'CPU',
+          },
+          runningMode: 'IMAGE',
+          outputCategoryMask: true,
+          outputConfidenceMasks: false,
+        });
+      })().catch(function (e) {
+        console.warn('[옷분할] 모델을 못 받았습니다 — 얼굴 기준 네모로 대체:', e.message);
+        clothesSegmenterPromise = null; // 다음에 다시 시도할 수 있게
+        return null;
+      });
+      return clothesSegmenterPromise;
+    }
+
+    // 옷이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하거나 미더우면 null.
+    async function getClothesMask(img, cacheKey) {
+      if (cacheKey && clothesMaskCache.key === cacheKey && clothesMaskCache.canvas) {
+        return clothesMaskCache.canvas;
+      }
+      var seg = await getClothesSegmenter();
+      if (!seg) return null;
+      var out = null;
+      try {
+        var res = seg.segment(img);
+        var cat = res.categoryMask;
+        var w = cat.width, h = cat.height;
+        var data = cat.getAsUint8Array();
+
+        var cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        var ctx = cv.getContext('2d');
+        var idata = ctx.createImageData(w, h);
+        var clothes = 0;
+        for (var i = 0; i < data.length; i++) {
+          var on = data[i] === CLOTHES_CATEGORY ? 255 : 0;
+          if (on) clothes++;
+          idata.data[i * 4] = 255;
+          idata.data[i * 4 + 1] = 255;
+          idata.data[i * 4 + 2] = 255;
+          idata.data[i * 4 + 3] = on;
+        }
+        ctx.putImageData(idata, 0, 0);
+        cat.close();
+
+        var pct = clothes / data.length;
+        // 옷을 거의 못 찾았거나 사진 절반을 넘게 옷이라고 하면 믿을 수 없다.
+        // 그대로 쓰면 아무것도 안 바뀌거나 사진 전체가 다시 그려진다.
+        if (pct < 0.01 || pct > 0.6) {
+          console.warn('[옷분할] 결과가 미덥지 않아 버립니다 — 옷 비율 ' + (pct * 100).toFixed(1) + '%');
+          return null;
+        }
+
+        // 경계를 조금 넓힌다. 옷 경계에 원래 천이 1~2픽셀 남으면 그 색이 테두리처럼
+        // 살아남는다. 넉넉히 덮는 쪽이 원래 옷 색이 남는 것보다 낫다(과잉 대응 원칙).
+        // 살짝 번져 피부·배경을 물어도 얼굴·손은 뒤에서 다시 검게 덮는다.
+        var grow = Math.max(2, Math.round(Math.min(w, h) * 0.006));
+        var g = document.createElement('canvas');
+        g.width = w; g.height = h;
+        var gx = g.getContext('2d');
+        for (var dy = -grow; dy <= grow; dy++) {
+          for (var dx = -grow; dx <= grow; dx++) {
+            if (dx * dx + dy * dy > grow * grow) continue;
+            gx.drawImage(cv, dx, dy);
+          }
+        }
+        out = g;
+      } catch (e) {
+        console.warn('[옷분할] 실패 — 얼굴 기준 네모로 대체:', e.message);
+        return null;
+      }
+      if (cacheKey) clothesMaskCache = { key: cacheKey, canvas: out };
+      return out;
     }
 
     // 손 검출. 옷 마스크에서 손을 빼기 위해서만 쓴다.
@@ -5377,35 +5479,49 @@
     // fal은 그 안을 "주변과 자연스럽게" 채우려 하므로 원래 옷 색에 끌려가고,
     // 색을 바꿔도 차이가 8~11(255 기준)밖에 안 났다. 옷만 정확히 짚어주면
     // 바꿀 자리가 분명해져서 지시를 훨씬 잘 따른다.
-    function buildClothingMask(faceBoxes, imgW, imgH, personMask, handBoxes) {
+    function buildClothingMask(faceBoxes, imgW, imgH, personMask, handBoxes, clothesMask) {
       var c = document.createElement('canvas');
       c.width = imgW; c.height = imgH;
       var x = c.getContext('2d');
       x.fillStyle = '#000000';
       x.fillRect(0, 0, imgW, imgH);
 
-      // 옷 영역을 따로 그린 뒤 사람 모양과 겹친다
-      var t = document.createElement('canvas');
-      t.width = imgW; t.height = imgH;
-      var tx = t.getContext('2d');
-      tx.fillStyle = '#ffffff';
-      (faceBoxes || []).forEach(function (f) {
-        var r = computeClothingRegion(f, imgW, imgH);
-        if (r.x1 > r.x0 && r.y1 > r.y0) tx.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
-      });
-      if (personMask) {
-        // destination-in — 사람 바깥은 지운다
-        tx.globalCompositeOperation = 'destination-in';
-        tx.drawImage(personMask, 0, 0, imgW, imgH);
-        tx.globalCompositeOperation = 'source-over';
+      if (clothesMask) {
+        // 옷을 직접 갈라낸 마스크가 있으면 그대로 쓴다. 짐작한 네모보다 정확하다 —
+        // 깃·어깨·소매까지 들어가서 "원래 옷 위에 덧입힌 것처럼" 보이지 않고,
+        // 벽 무늬를 사람으로 오인한 자리에도 천이 칠해지지 않는다.
+        x.drawImage(clothesMask, 0, 0, imgW, imgH);
+      } else {
+        // 대체 경로 — 얼굴 기준 네모를 사람 모양으로 잘라낸다.
+        var t = document.createElement('canvas');
+        t.width = imgW; t.height = imgH;
+        var tx = t.getContext('2d');
+        tx.fillStyle = '#ffffff';
+        (faceBoxes || []).forEach(function (f) {
+          var r = computeClothingRegion(f, imgW, imgH);
+          if (r.x1 > r.x0 && r.y1 > r.y0) tx.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+        });
+        if (personMask) {
+          // destination-in — 사람 바깥은 지운다
+          tx.globalCompositeOperation = 'destination-in';
+          tx.drawImage(personMask, 0, 0, imgW, imgH);
+          tx.globalCompositeOperation = 'source-over';
+        }
+        x.drawImage(t, 0, 0);
       }
-      x.drawImage(t, 0, 0);
 
       // 얼굴·머리카락·목을 마지막에 검게 덮는다. 얼굴이 흰색이면 AI가 아이 얼굴을
       // 다시 그린다 — 이 앱에서 가장 위험한 실패라 순서를 바꾸면 안 된다.
+      //
+      // 아래쪽 여백은 목 피부를 지키기 위한 것이다. 옷 분할을 쓰면 목 피부는 애초에
+      // 옷 분류가 아니어서 마스크에 없으므로, 경계를 넓힌 몫만큼만 남긴다. 여백을
+      // 그대로 두면 셔츠 깃과 나비넥타이까지 덮여 원본으로 남고, 그러면 새 옷 위에
+      // 흰 깃이 얹힌 모습이 되어 고치려던 증상이 그대로다(마스크를 눈으로 확인함).
+      var padBottomRatio = clothesMask ? 0.06 : 0.28;
       x.fillStyle = '#000000';
       (faceBoxes || []).forEach(function (f) {
-        var padX = f.width * 0.35, padTop = f.height * 0.55, padBottom = f.height * 0.28;
+        var padX = f.width * 0.35, padTop = f.height * 0.55;
+        var padBottom = f.height * padBottomRatio;
         x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop + padBottom);
       });
       // 손도 같이 덮는다. 손이 가슴 앞에 있으면 AI가 손과 옷을 같이 새로 그리면서
@@ -8405,6 +8521,7 @@
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
       getPersonMask: getPersonMask,
+      getClothesMask: getClothesMask,
       clearPersonMaskCache: clearPersonMaskCache,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
