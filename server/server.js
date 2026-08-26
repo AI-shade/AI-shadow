@@ -980,13 +980,12 @@ app.post('/api/inpaint-regions', async (req, res) => {
     ]);
 
     const result = await fal.subscribe('fal-ai/flux-pro/v1/fill', {
-      // enhance_prompt: false — 기본값이 켜져 있으면 fal이 우리 프롬프트를 자기 나름대로
-      // 다시 써서 보낸다. 옷 색을 정확한 헥스값까지 지정해도 색이 원본 쪽으로 끌려가는
-      // 문제(실사용 제보)가 있었는데, 우리가 이미 정확한 색·질감을 문장으로 다 짜둔
-      // 프롬프트를 모델이 "개선"한답시고 흐리는 것도 원인 중 하나일 수 있어 꺼둔다.
+      // enhance_prompt는 fal 기본값(켜짐)을 그대로 쓴다. 옷 색이 약하다는 제보에
+      // 이걸 꺼봤지만, 같은 사진으로 A/B를 돌려보니 끈 쪽이 가슴에 없던 마크를
+      // 만들어내는 등 결과가 더 나빠졌다 — 되돌렸다.
       input: {
         prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl,
-        enhance_prompt: false, sync_mode: FAL_SYNC_MODE,
+        sync_mode: FAL_SYNC_MODE,
       },
     });
 
