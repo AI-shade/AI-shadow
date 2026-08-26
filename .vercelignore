@@ -1,14 +1,42 @@
-# 배포에 올라갈 것만 남긴다. 저장소가 1.6GB(영상·백업·검증 이미지)라
-# 그대로 올리면 배포가 느려지고, 올릴 이유도 없다.
-/*
-!/index.html
-!/package.json
-!/vercel.json
-!/api
-!/server
-!/public
+# 배포에 필요 없는 것을 직접 나열한다.
+#
+# 예전에는 "/* 로 전부 빼고 !/index.html 처럼 되살리기"를 썼는데, 되살리기가
+# 먹지 않아 배포에 서버리스 함수 하나만 올라갔다 — index.html과 /public이
+# 통째로 빠져서 사이트 루트가 Vercel 404가 됐다(실측: vercel inspect 결과
+# Builds에 λ api/[...path] 하나뿐). 그래서 "뺄 것만 나열"하는 방식으로 바꿨다.
+# 배포에 꼭 필요한 것: index.html · package.json · vercel.json · api/ · server/ · public/
+
+# 저장소를 1.6GB로 불린 주범 — 데모 녹화 영상
+*.mp4
+*.mov
+*.clipchamp
+
+# 검증용 사진·스크린샷 (수십 MB, 배포엔 필요 없다)
+/test
+flux검증_*.png
+
+# 실제 아이 얼굴이 담긴 로컬 검증 사진 — 배포에 올릴 이유가 없다
+childphoto.jpeg
+wed.jpg
+아이사진*.jpg
+아이.png
+
+# 문서·기획서·인계 노트 (배포와 무관)
+/docs
+/files
+/Note
+/portfolio
+/scripts
+
+# 옛 단계별 백업 HTML
+backup-*.html
+
+# 참고용 이미지
+꽃집간판.jpg
+web color.jpg
 
 # server 안에서도 배포에 필요 없는 것
 /server/backup-*.js
 /server/*.log
 /server/node_modules
+/node_modules
