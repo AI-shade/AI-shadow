@@ -3316,6 +3316,14 @@
       });
     }
 
+    // fal 결과를 data URL로 감쌀 때 쓰는 헬퍼. 예전에는 무조건 image/png로 적었는데
+    // fal은 JPEG를 돌려준다 — 브라우저가 내용을 보고 알아서 처리해줘서 문제가
+    // 드러나지 않았을 뿐이다. 서버가 실제 형식(mediaType)을 함께 주므로 그걸 쓴다.
+    function falImageDataUrl(data) {
+      var mt = (data && data.mediaType) || 'image/png';
+      return 'data:' + mt + ';base64,' + (data && data.imageBase64);
+    }
+
     // 흑백 변환 + 대비 강화(min-max 정규화). source는 Image 또는 Canvas 모두 가능.
     // width/height를 원본과 다르게 주면 이 함수가 곧 리사이즈(확대) 역할도 겸함.
     //
@@ -4694,7 +4702,7 @@
         locationEvidence: riskResult && riskResult.locationEvidence,
       });
 
-      var outImg = await loadImage('data:image/png;base64,' + data.imageBase64);
+      var outImg = await loadImage(falImageDataUrl(data));
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
       console.log('[옷교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (마스크 안쪽만 합성)', data);
@@ -4728,7 +4736,7 @@
         locationEvidence: riskResult && riskResult.locationEvidence,
       });
 
-      var outImg = await loadImage('data:image/png;base64,' + data.imageBase64);
+      var outImg = await loadImage(falImageDataUrl(data));
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
       console.log('[인페인팅] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (마스크 안쪽만 합성)', data);
@@ -7886,7 +7894,7 @@
         currentCorrectionCanvas = null;
         try {
           var fluxData = await runFluxBackgroundReplace(correctionBaseUrl, lastRiskResult, lastOcrResult);
-          var outImg = await loadImage('data:image/png;base64,' + fluxData.imageBase64);
+          var outImg = await loadImage(falImageDataUrl(fluxData));
           // 비율 가드: kontext는 출력 해상도를 모델이 정하므로 원본과 달라질 수 있다.
           // "처리 후에도 사진 비율은 원본과 같아야 한다"를 지키려고 원본 크기로 되돌린다.
           var srcImg = await loadImage(correctionBaseUrl);

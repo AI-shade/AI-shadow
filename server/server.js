@@ -62,7 +62,56 @@ function falErrorText(err) {
 }
 
 const FAL_INPUT_LIFECYCLE = { expiresIn: 600 };
-const FAL_OUTPUT_STORAGE = { expiresIn: 'immediate' };
+// 결과 이미지를 fal 저장소에 남기지 않으려고 expiresIn:'immediate'를 썼는데, 그게
+// 만료 경쟁을 만들었다 — 서버가 URL을 받아오기 전에 만료돼서 fal이 이미지 대신
+// "Object Lifecycle Expired"라는 72바이트 텍스트를 돌려줬고, 아래 fetch가 상태를
+// 확인하지 않아 그 텍스트를 이미지인 척 200으로 내보냈다. 클라이언트에서는
+// "이미지를 불러오지 못했어요"로만 보이고 서버 로그에는 아무것도 안 남았다.
+// (배포판에서 더 자주 터졌다 — fal 저장소까지 왕복이 길어 경쟁에서 더 자주 짐.)
+//
+// sync_mode:true면 fal이 URL 대신 이미지를 응답에 직접 담아준다. 경쟁이 사라지고,
+// 저장소에 아예 올라가지 않으니 "사진을 남기지 않는다"는 원래 의도도 더 잘 지킨다.
+const FAL_SYNC_MODE = true;
+
+// 결과 이미지를 실제 바이트로 가져온다. sync_mode면 data: URI로 오므로 그대로 디코딩하고,
+// 아니면 내려받는다(브라우저가 외부 CDN을 직접 fetch하면 CORS에 막히므로 서버가 대신 받는다).
+// 여기서 반드시 검증한다 — 위 사고처럼 오류 텍스트가 이미지로 위장해 나가면
+// 화면에는 정체불명의 실패로 보이고 원인을 추적할 수 없다.
+const IMAGE_MAGIC = [
+  { name: 'png', bytes: [0x89, 0x50, 0x4e, 0x47] },
+  { name: 'jpeg', bytes: [0xff, 0xd8, 0xff] },
+  { name: 'webp', bytes: [0x52, 0x49, 0x46, 0x46] },
+  { name: 'gif', bytes: [0x47, 0x49, 0x46, 0x38] },
+];
+function sniffImageType(buf) {
+  for (const m of IMAGE_MAGIC) {
+    if (m.bytes.every((b, i) => buf[i] === b)) return m.name;
+  }
+  return null;
+}
+async function fetchResultImage(outputImage, label) {
+  const url = String(outputImage.url || '');
+  let buf;
+  if (url.startsWith('data:')) {
+    const comma = url.indexOf(',');
+    if (comma < 0) throw new Error(label + ' 결과가 잘못된 data URI입니다.');
+    buf = Buffer.from(url.slice(comma + 1), 'base64');
+  } else {
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      // 이게 원래 조용히 넘어가던 자리다. 상태를 남겨야 다음에 원인을 알 수 있다.
+      throw new Error(label + ' 결과 이미지를 받지 못했습니다 (HTTP ' + resp.status + ').');
+    }
+    buf = Buffer.from(await resp.arrayBuffer());
+  }
+  const kind = sniffImageType(buf);
+  if (!kind) {
+    // fal이 오류 문구를 본문에 담아 200으로 주는 경우가 있다(만료 등).
+    const peek = buf.slice(0, 80).toString('utf8').replace(/\s+/g, ' ').trim();
+    throw new Error(label + ' 결과가 이미지가 아닙니다: "' + peek + '"');
+  }
+  return { base64: buf.toString('base64'), mediaType: 'image/' + kind };
+}
 
 if (!process.env.FAL_KEY) {
   console.warn('[server] ⚠ FAL_KEY가 설정되지 않았습니다 — AI 배경교체(/api/replace-background)는 준비 중 상태로 동작합니다.');
@@ -761,23 +810,18 @@ app.post('/api/replace-background', async (req, res) => {
     const uploadedUrl = await fal.storage.upload(file, { lifecycle: FAL_INPUT_LIFECYCLE });
 
     const result = await fal.subscribe('fal-ai/flux-pro/kontext', {
-      input: { prompt: editPrompt, image_url: uploadedUrl },
-      storageSettings: FAL_OUTPUT_STORAGE,
+      input: { prompt: editPrompt, image_url: uploadedUrl, sync_mode: FAL_SYNC_MODE },
     });
 
     const output = result.data || result;
     const outputImage = output.images && output.images[0];
     if (!outputImage) throw new Error('flux-kontext-pro 응답에 이미지가 없습니다.');
 
-    // 프론트의 기존 다운로드 로직(canvas 기반)과 통일하기 위해 결과 이미지를 서버에서
-    // 대신 내려받아 base64로 변환해서 돌려줌 (외부 CDN URL을 브라우저에서 직접 fetch하면
-    // CORS에 막힐 수 있어서 회피).
-    const imgResp = await fetch(outputImage.url);
-    const imgArrayBuffer = await imgResp.arrayBuffer();
-    const outputBase64 = Buffer.from(imgArrayBuffer).toString('base64');
+    const fetched = await fetchResultImage(outputImage, 'AI 배경교체');
 
     res.json({
-      imageBase64: outputBase64,
+      imageBase64: fetched.base64,
+      mediaType: fetched.mediaType,
       width: outputImage.width,
       height: outputImage.height,
       editPrompt: editPrompt,
@@ -940,20 +984,21 @@ app.post('/api/inpaint-regions', async (req, res) => {
       // 다시 써서 보낸다. 옷 색을 정확한 헥스값까지 지정해도 색이 원본 쪽으로 끌려가는
       // 문제(실사용 제보)가 있었는데, 우리가 이미 정확한 색·질감을 문장으로 다 짜둔
       // 프롬프트를 모델이 "개선"한답시고 흐리는 것도 원인 중 하나일 수 있어 꺼둔다.
-      input: { prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl, enhance_prompt: false },
-      storageSettings: FAL_OUTPUT_STORAGE,
+      input: {
+        prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl,
+        enhance_prompt: false, sync_mode: FAL_SYNC_MODE,
+      },
     });
 
     const output = result.data || result;
     const outputImage = output.images && output.images[0];
     if (!outputImage) throw new Error('flux-fill 응답에 이미지가 없습니다.');
 
-    // replace-background와 같은 이유로 서버가 대신 내려받아 base64로 돌려줌 (CORS 회피)
-    const imgResp = await fetch(outputImage.url);
-    const outputBase64 = Buffer.from(await imgResp.arrayBuffer()).toString('base64');
+    const fetched = await fetchResultImage(outputImage, 'AI 옷 바꾸기');
 
     res.json({
-      imageBase64: outputBase64,
+      imageBase64: fetched.base64,
+      mediaType: fetched.mediaType,
       width: outputImage.width,
       height: outputImage.height,
       editPrompt: editPrompt,
