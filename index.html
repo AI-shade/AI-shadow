@@ -4689,8 +4689,16 @@
       } catch (e) {
         console.warn('[옷교체] 인물 분리 실패 — 네모 마스크로 진행:', e.message);
       }
-      var mask = buildClothingMask(scaledFaces, sw, sh, personMask);
-      console.log('[옷교체] 마스크 — 인물 분리 ' + (personMask ? '사용' : '없음(네모)'));
+      // 손은 원본 좌표로 나오므로 전송 크기에 맞춰 같이 늘려준다(얼굴과 같은 이유).
+      var handBoxes = (await detectHandBoxes(img)).map(function (hb) {
+        return {
+          x: hb.x * sw / ow, y: hb.y * sh / oh,
+          width: hb.width * sw / ow, height: hb.height * sh / oh,
+        };
+      });
+      var mask = buildClothingMask(scaledFaces, sw, sh, personMask, handBoxes);
+      console.log('[옷교체] 마스크 — 인물 분리 ' + (personMask ? '사용' : '없음(네모)')
+        + ', 손 ' + handBoxes.length + '개 제외');
 
       var data = await postJson(INPAINT_BACKEND_URL, {
         imageBase64: ic.toDataURL('image/png').split(',')[1],
@@ -4886,6 +4894,64 @@
         return null;
       });
       return segmenterPromise;
+    }
+
+    // 손 검출. 옷 마스크에서 손을 빼기 위해서만 쓴다.
+    //
+    // 왜 필요한가: 마스크는 얼굴·머리·목만 검게 덮고 손은 흰색으로 남겼다. 그래서
+    // 손이 가슴 앞에 있는 사진(가방끈 잡기·손 모으기)에서 FLUX가 손과 옷을 같이
+    // 새로 그리고, 손 모양을 보고 "옷을 들고 있는 자세"로 만들어버렸다(실사용 제보 —
+    // 결과가 앞치마를 든 모습으로 나왔다).
+    //
+    // 인물 분할과 같은 CDN·같은 버전을 쓴다. 못 받아오면 null을 돌려주고 예전처럼
+    // 손을 포함한 채 진행한다 — 손 때문에 기능 자체가 멈추는 것이 더 나쁘다.
+    var handLandmarkerPromise = null;
+    function getHandLandmarker() {
+      if (handLandmarkerPromise) return handLandmarkerPromise;
+      handLandmarkerPromise = (async function () {
+        var vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+        var fileset = await vision.FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+        );
+        return vision.HandLandmarker.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+            delegate: 'CPU',
+          },
+          runningMode: 'IMAGE',
+          // 아이 둘이 각각 두 손이면 넷이다. 넉넉히 잡는다 — 놓친 손은 AI가 다시 그린다.
+          numHands: 6,
+        });
+      })().catch(function (e) {
+        console.warn('[손검출] 모델을 못 받았습니다 — 손을 포함한 채 진행합니다:', e.message);
+        handLandmarkerPromise = null; // 다음에 다시 시도할 수 있게
+        return null;
+      });
+      return handLandmarkerPromise;
+    }
+
+    // 손을 감싸는 사각형들을 원본 픽셀 좌표로 돌려준다. 실패하면 빈 배열.
+    // 랜드마크는 0~1 비율로 오므로 이미지 크기를 곱한다.
+    async function detectHandBoxes(img) {
+      var hl = await getHandLandmarker();
+      if (!hl) return [];
+      try {
+        var res = hl.detect(img);
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        return (res.landmarks || []).map(function (pts) {
+          var xs = pts.map(function (p) { return p.x * w; });
+          var ys = pts.map(function (p) { return p.y * h; });
+          var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+          var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+          // 랜드마크는 손가락 뼈대만 잡아서 살집·소매가 삐져나온다. 손 크기에 비례해
+          // 넉넉히 넓힌다 — 조금 넓게 지키는 쪽이 손이 다시 그려지는 것보다 낫다.
+          var padX = (x1 - x0) * 0.35, padY = (y1 - y0) * 0.35;
+          return { x: x0 - padX, y: y0 - padY, width: (x1 - x0) + padX * 2, height: (y1 - y0) + padY * 2 };
+        });
+      } catch (e) {
+        console.warn('[손검출] 실패 — 손을 포함한 채 진행합니다:', e.message);
+        return [];
+      }
     }
 
     // 사람이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하면 null.
@@ -5311,7 +5377,7 @@
     // fal은 그 안을 "주변과 자연스럽게" 채우려 하므로 원래 옷 색에 끌려가고,
     // 색을 바꿔도 차이가 8~11(255 기준)밖에 안 났다. 옷만 정확히 짚어주면
     // 바꿀 자리가 분명해져서 지시를 훨씬 잘 따른다.
-    function buildClothingMask(faceBoxes, imgW, imgH, personMask) {
+    function buildClothingMask(faceBoxes, imgW, imgH, personMask, handBoxes) {
       var c = document.createElement('canvas');
       c.width = imgW; c.height = imgH;
       var x = c.getContext('2d');
@@ -5341,6 +5407,12 @@
       (faceBoxes || []).forEach(function (f) {
         var padX = f.width * 0.35, padTop = f.height * 0.55, padBottom = f.height * 0.28;
         x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop + padBottom);
+      });
+      // 손도 같이 덮는다. 손이 가슴 앞에 있으면 AI가 손과 옷을 같이 새로 그리면서
+      // "옷을 들고 있는 자세"를 만들어냈다(실사용 제보). 손은 아이 신체이니 애초에
+      // AI가 손댈 이유가 없다 — 얼굴과 같은 이유로 마스크에서 뺀다.
+      (handBoxes || []).forEach(function (hb) {
+        x.fillRect(hb.x, hb.y, hb.width, hb.height);
       });
       return c;
     }
@@ -8315,6 +8387,7 @@
       buildInpaintMask: buildInpaintMask,
       computeClothingRegion: computeClothingRegion,
       buildClothingMask: buildClothingMask,
+      detectHandBoxes: detectHandBoxes,
       buildOutfitFillPrompt: buildOutfitFillPrompt,
       falSendSizeForTest: falSendSize,
       maskToAlphaForTest: maskToAlpha,
