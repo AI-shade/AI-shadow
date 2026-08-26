@@ -39,7 +39,10 @@
     --page: #ffffff;         /* 가장 바깥 바닥 */
     --surface: #ffffff;      /* 앱 본체 */
     --card: #ffffff;         /* 카드 */
-    --card-dark: #1c1c1c;    /* 강조 카드 — 화면당 하나 */
+    /* 강조 카드 — 화면당 하나. 초록을 여기 통째로 넣어봤다가 "너무 초록"이라는
+       피드백을 받고 원래 무채색 검정으로 되돌림 — 그린은 골드 버튼 옆 포인트로만
+       충분하다고 판단. */
+    --card-dark: #1c1c1c;
     --card-tan: #f5f6f8;     /* 보조 카드 */
     --soft: #f5f6f8;         /* 흰 면 위 옅은 면 (입력·트랙·리스트 행) */
     --soft-hover: #edeff2;
@@ -49,8 +52,10 @@
     --on-chip: #f7f8fa;      /* 어두운 배지 위 글씨 */
     --line: #e8eaee;
     --line-strong: #d6dae0;
-    --accent: #ffd84d;       /* 노랑 — 위에 얹는 글씨는 먹색 12.58:1 */
-    --accent-hover: #f7cb2e;
+    /* 사용자가 준 색상 가이드(UNC Charlotte 스타일)의 골드로 교체. 실측 대비:
+       위에 얹는 먹색 글씨 10.98:1(AA 통과, 기존 12.58:1과 큰 차 없음). */
+    --accent: #f0cb00;
+    --accent-hover: #d9b600;
     --accent-2: #ff7a6b;     /* 코랄 — 위에 얹는 글씨는 먹색 6.84:1 */
 
     /* 구 토큰: 마크업 인라인 스타일이 var(--gold) 등으로 참조 — 이름 유지, 값만 v2 */
@@ -131,6 +136,14 @@
   .glow-track > span {
     position: absolute; display: block;
     opacity: calc(0.45 + 0.55 * var(--pulse, 1));
+    /* 두 빛이 겹치는 자리에서 실제로 색이 섞여 새 색이 나오게 한다(요청).
+       그냥 쌓기만 하면 위에 있는 덩어리가 아래를 덮을 뿐 새 색이 안 생긴다.
+       multiply를 쓰는 이유: 바탕이 흰색이라 흰색 × 무엇 = 그대로라서 덩어리
+       자체의 색은 안 죽고, 골드 × 연두가 겹친 자리에서만 짙은 올리브가 된다.
+       (screen은 흰 바탕에서 전부 하얗게 날아가 이 배경에는 못 쓴다.)
+       부모 .page-glow가 opacity:0.92라 이미 독립 레이어라서, 블렌드가 페이지
+       본문까지 번지지 않고 덩어리들끼리만 섞인다. */
+    mix-blend-mode: multiply;
   }
 
   /* 두 덩어리 모두 가운데가 확실히 진하고 바깥으로 빠르게 옅어진다.
@@ -138,32 +151,36 @@
      정지점을 앞쪽(0~20%)에 몰아 두면 중심이 뭉치고, 뒤쪽은 길게 끌어 가장자리가
      선으로 보이지 않게 한다. */
 
-  /* 오른쪽 위 — 주황 */
+  /* 오른쪽 위 — 골드. 처음엔 완전히 오른쪽 위 구석에서 작게 시작하고(사용자 피드백),
+     스크롤을 내리면 아래 스크립트(ScrollTrigger)가 왼쪽 아래 연두 조명 쪽으로
+     옮겨서 겹치게 만든다. 크기는 예전 780px짜리보다 작게 줄였다. */
   .gb-core {
-    width: 780px; height: 780px; right: -170px; top: -240px;
+    width: 420px; height: 420px; right: -120px; top: -160px;
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(255, 110, 0, 0.72) 0%,
-      rgba(255, 138, 8, 0.52) 17%,
-      rgba(255, 168, 32, 0.30) 38%,
-      rgba(255, 198, 66, 0.13) 64%,
-      rgba(255, 214, 92, 0) 100%);
+      rgba(240, 180, 0, 0.72) 0%,
+      rgba(240, 195, 10, 0.52) 17%,
+      rgba(230, 205, 40, 0.30) 38%,
+      rgba(210, 210, 90, 0.13) 64%,
+      rgba(195, 213, 120, 0) 100%);
   }
-  /* 그 둘레의 넓고 옅은 온기 */
+  /* 그 둘레의 넓고 옅은 온기 — 바깥쪽은 연두 쪽으로 더 기울인다 */
   .gb-warm {
-    width: 1180px; height: 900px; right: -330px; top: -400px;
+    width: 620px; height: 500px; right: -200px; top: -260px;
     background: radial-gradient(ellipse closest-side at 50% 50%,
-      rgba(255, 186, 0, 0.30) 0%, rgba(255, 200, 40, 0.14) 45%,
-      rgba(255, 214, 92, 0) 100%);
+      rgba(240, 203, 0, 0.30) 0%, rgba(220, 210, 70, 0.14) 45%,
+      rgba(195, 213, 120, 0) 100%);
   }
-  /* 왼쪽 아래 — 분홍 */
+  /* 왼쪽 아래 — 진한 브랜드 그린 대신 "덜 진한 연두"로(사용자 피드백: 너무 초록,
+     그렇다고 골드 주변의 연두처럼 밝지도 않게). 가장자리는 골드·노랑 쪽으로 번져
+     오른쪽 조명과 같은 색 가족처럼 보이게 한다. */
   .gb-aurora {
     width: 900px; height: 820px; left: -250px; bottom: -300px;
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(255, 74, 126, 0.52) 0%,
-      rgba(255, 102, 146, 0.36) 18%,
-      rgba(255, 137, 172, 0.20) 40%,
-      rgba(255, 176, 199, 0.08) 66%,
-      rgba(255, 196, 214, 0) 100%);
+      rgba(95, 158, 55, 0.52) 0%,
+      rgba(130, 172, 65, 0.36) 18%,
+      rgba(170, 188, 90, 0.20) 40%,
+      rgba(205, 200, 120, 0.08) 66%,
+      rgba(225, 208, 150, 0) 100%);
   }
   /* 덩어리 한가운데의 심지. 스크롤에 따라 이것만 진해졌다 흐려진다.
      덩어리 전체를 껐다 켜면 화면 전체가 깜빡이는 것처럼 보이므로,
@@ -177,18 +194,47 @@
   }
   .gb-core > i {
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(255, 96, 0, 0.50) 0%, rgba(255, 124, 6, 0.26) 42%, rgba(255, 150, 20, 0) 100%);
+      rgba(240, 180, 0, 0.50) 0%, rgba(230, 200, 30, 0.26) 42%, rgba(210, 210, 90, 0) 100%);
   }
   .gb-aurora > i {
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(255, 56, 114, 0.40) 0%, rgba(255, 86, 136, 0.20) 42%, rgba(255, 120, 160, 0) 100%);
+      rgba(95, 158, 55, 0.40) 0%, rgba(140, 175, 70, 0.20) 42%, rgba(195, 195, 110, 0) 100%);
   }
   /* 모션을 줄이는 설정이면 숨쉬기를 멈추고 중간값에 고정한다 */
   @media (prefers-reduced-motion: reduce) { .glow-track { --pulse: 0.7; } }
 
+  /* ===== 네잎클로버(팀 이름 네잎클로드) — 잎 하나가 떨어져 페이지를 따라 내려간다 =====
+     장식이므로 클릭·읽기를 절대 방해하지 않는다(pointer-events:none, aria-hidden).
+     카드보다 뒤 레이어라 지나갈 때 카드 뒤로 자연스럽게 가려진다. */
+  .clover { position: absolute; pointer-events: none; overflow: visible; }
+  .cl-leaf { fill: #6aa84f; }
+  .cl-stem { fill: none; stroke: #6aa84f; stroke-width: 2.6; stroke-linecap: round; }
+  .clover-hero {
+    width: 76px; height: 76px; right: 5%; top: 6%; z-index: 0;
+    opacity: 0.9;
+  }
+  /* CTA 띠는 어두운 배경이라 같은 초록이면 묻힌다 — 밝은 잎으로 */
+  .clover-cta {
+    position: static; width: 62px; height: 62px; margin: 0 auto 0.9rem; display: block;
+  }
+  .clover-cta .cl-leaf { fill: #8fd46a; }
+  .clover-cta .cl-stem { stroke: #8fd46a; }
+  /* 떠다니는 잎 — 화면에 고정해두고 스크롤에 따라 내려보낸다(스크립트가 y를 준다) */
+  .clover-fly {
+    position: fixed; right: 6%; top: 12vh; width: 30px; height: 26px;
+    pointer-events: none; overflow: visible; z-index: 0; opacity: 0;
+  }
+  .clover-fly .cl-leaf { fill: #6aa84f; }
+  /* 여백이 없는 좁은 화면에선 떠다니는 잎이 글자를 덮는다 — 아예 숨기고
+     클로버는 온전한 네잎으로 둔다(스크립트도 같은 기준으로 건너뛴다). */
   @media (max-width: 900px) {
-    .gb-core   { width: 520px; height: 520px; right: -190px; top: -210px; }
-    .gb-warm   { width: 760px; height: 620px; right: -220px; top: -260px; }
+    .clover-fly { display: none; }
+    .clover-hero { width: 56px; height: 56px; right: 4%; top: 4%; }
+  }
+
+  @media (max-width: 900px) {
+    .gb-core   { width: 300px; height: 300px; right: -100px; top: -110px; }
+    .gb-warm   { width: 420px; height: 340px; right: -160px; top: -170px; }
     .gb-aurora { width: 620px; height: 580px; left: -180px; bottom: -210px; }
   }
 
@@ -616,6 +662,19 @@
   .loc-chain li.off .lc-what { color: var(--muted); font-weight: 600; }
   .loc-chain li.off .lc-tag { background: var(--soft); color: var(--muted); }
 
+  .loc-web-check { margin-top: 1rem; border-top: 1px dashed var(--line-strong); padding-top: 0.9rem; }
+  .loc-web-check .ghost-link { font-size: 0.86rem; }
+  .loc-web-hint { margin: 0.35rem 0 0; font-size: 0.74rem; color: var(--muted); line-height: 1.6; word-break: keep-all; }
+  .loc-web-result { margin-top: 0.7rem; font-size: 0.84rem; line-height: 1.65; }
+  .loc-web-result .lwr-flag {
+    display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 700;
+    padding: 0.2rem 0.65rem; border-radius: 999px; margin-bottom: 0.5rem;
+  }
+  .loc-web-result .lwr-flag.on { background: var(--risk-mid-soft); color: var(--risk-mid); }
+  .loc-web-result .lwr-flag.off { background: var(--risk-low-soft); color: var(--risk-low); }
+  .loc-web-result ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+  .loc-web-result a { color: var(--ink); }
+
   .score-breakdown { margin-top: 1.2rem; border-top: 1px dashed var(--line-strong); padding-top: 0.9rem; }
   .sb-head { font-size: 0.8rem; font-weight: 700; margin: 0 0 0.6rem; color: var(--ink); }
   .sb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.42rem; }
@@ -666,16 +725,15 @@
   }
   .gauge-ring svg { width: 100%; height: 100%; display: block; overflow: visible; }
   @media (max-width: 460px) { .gauge-ring { max-width: 300px; } }
-  /* 낮은 점수일 때 오각형이 중앙(바닥값 RADAR_FLOOR)까지 오그라들어 오각형 선·꼭짓점이
-     점수 숫자 위를 그대로 지나갔다(사용자 제보). 바닥값을 올리면 "낮은 점수"라는 의미
-     자체가 왜곡되므로, 대신 숫자 뒤에 카드색 배경을 깔아 어떤 점수에서도 선이 숫자를
-     가리지 않게 한다. inset:0으로 전체를 덮던 방식에서 내용 크기만큼만 덮는 방식으로 바꿨다 —
-     숫자 자릿수가 바뀌어도(1~3자리) 배경이 항상 딱 맞게 따라간다. */
+  /* 점수 숫자가 앉는 자리. 예전엔 오각형 선이 숫자와 겹치는 걸 막으려고 여러 방식을
+     시도했다(단색 알약 → 테두리로 보임, 그라데이션 → 뿌옇게 보임, SVG 마스크로
+     구멍 뚫기 → 흰 동그라미로 보임 · 전부 사용자 제보). 결국 "색칠된 오각형이 숫자
+     바로 뒤에 그대로 보이는 게 낫다"는 결론이라, 아무것도 안 깔고 글자만 가운데
+     앉힌다 — 낮은 점수에서 선이 살짝 겹치는 건 감수한다. */
   .gauge-center {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 0.1rem; pointer-events: none;
-    background: var(--card); border-radius: 999px; padding: 0.5rem 1rem;
   }
   /* 굴러가는 동안 자릿수가 바뀌어도 숫자 폭이 흔들리지 않도록 */
   .gauge-score-label, .sub-score-line strong { font-variant-numeric: tabular-nums; }
@@ -1049,6 +1107,38 @@
     background: var(--soft); border-radius: 999px; padding: 0.28rem 0.9rem; text-align: center;
   }
   .preview-label.is-after { background: var(--accent); color: #1a1a1a; }
+
+  /* 전후 비교 슬라이더 — 좌우로 나눠 보여주던 것과 별개로, 겹쳐놓고 손잡이를
+     끌어서 비교하는 방식도 원하는 사용자가 있어 옵션으로 추가함(토글로 전환).
+     브러시·덮개 손잡이 같은 편집 도구는 여전히 좌우 비교 쪽(.compare-grid)에서만
+     동작한다 — 슬라이더는 "보기 전용"이라 편집 중엔 좌우 비교로 자동전환한다.
+     원본 비율을 지켜야 하므로(가이드라인) object-fit이나 고정 비율을 쓰지 않고,
+     원본 이미지의 자연스러운 크기를 그대로 기준 삼는다. */
+  .compare-toggle { margin: 0 0 0.7rem; font-size: 0.82rem; }
+  .compare-slider {
+    position: relative; overflow: hidden; border-radius: 18px; background: var(--soft);
+    margin-bottom: 0.9rem; user-select: none; touch-action: pan-y; line-height: 0;
+  }
+  .compare-slider img { display: block; width: 100%; height: auto; max-height: 60vh; object-fit: contain; }
+  .cs-after-wrap { position: absolute; top: 0; left: 0; height: 100%; overflow: hidden; width: 50%; }
+  .cs-after-wrap img { position: absolute; top: 0; left: 0; max-height: none; }
+  .cs-tag {
+    position: absolute; top: 0.7rem; font-size: 0.78rem; font-weight: 700;
+    background: rgba(26, 26, 26, 0.65); color: #fff; padding: 0.25rem 0.7rem; border-radius: 999px;
+    pointer-events: none;
+  }
+  .cs-tag-before { left: 0.7rem; }
+  .cs-tag-after { right: 0.7rem; }
+  .cs-handle {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: #fff;
+    transform: translateX(-50%); cursor: ew-resize; box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+  }
+  .cs-handle-grip {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 38px; height: 38px; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    box-shadow: var(--shadow-lift); cursor: ew-resize;
+  }
   .edit-instruction {
     background: var(--soft); border: none; border-radius: 14px;
     padding: 0.85rem 1rem; font-size: 0.82rem; line-height: 1.7;
@@ -1231,16 +1321,43 @@
      .sc-card는 가운데 정렬 캐러셀 카드 스타일이라 그대로 쓰되, 폼 내용(드롭존·버튼)은
      가운데 정렬이면 오히려 읣기 어려워서 왼쪽 정렬로 되돌린다. */
   .pattern-entry { padding: 1rem 0 3.4rem; }
-  .pe-card { text-align: left; }
-  .pe-card .sc-eyebrow, .pe-card .sc-title { text-align: center; display: block; }
-  .pe-card .sc-eyebrow { display: inline-block; }
+  /* .sc-card는 캐러셀용으로 1020px에 갇혀 있는데, 바로 위 사진 진단 카드(#tool 안의
+     .card)는 --page-max(1480px)까지 넓게 퍼진다. 나란히 두니 폭이 갑자기 좁아져
+     어색했다(사용자 제보) — 위 카드와 같은 폭으로 맞춘다. */
+  /* .sc-card 클래스도 같이 붙어 있어서(캐러셀 카드 재사용) 단일 클래스 선택자로는
+     이 규칙이 나중에 나오는 .sc-card{max-width:1020px}에 밀렸다(실제로 안 먹힘,
+     사용자 재확인). 클래스 두 개를 같이 건 선택자로 우선순위를 올린다. */
+  /* 폭을 위 카드와 맞추고 나니(--page-max) 가운데 정렬 내용 양옆에 빈 여백만 남았다
+     (사용자 제보) — 좌우 두 칸으로 나눠 왼쪽엔 설명, 오른쪽엔 실제 조작(업로드·버튼)을
+     둬서 넓어진 폭을 내용으로 채운다. */
+  .sc-card.pe-card {
+    text-align: left; max-width: var(--page-max);
+    display: flex; align-items: center; gap: 3rem; flex-wrap: wrap;
+  }
+  .pe-text { flex: 1 1 320px; min-width: 0; }
+  .pe-text .sc-eyebrow, .pe-text .sc-title { text-align: left; }
   .pe-desc {
-    max-width: 46ch; margin: 0 auto 1.6rem; text-align: center;
-    color: var(--muted); line-height: 1.6; font-size: 0.94rem;
+    margin: 0 0 1rem; color: var(--muted); line-height: 1.7; font-size: 0.94rem;
     word-break: keep-all; /* "예측되는지" 같은 한 어절이 줄 끝에서 잘리지 않게 */
   }
-  .pe-field { max-width: 420px; margin: 0 auto 1.4rem; }
-  .pe-card > button.primary { display: block; margin: 0 auto; }
+  .pe-points {
+    margin: 0; padding: 0; list-style: none; display: grid; gap: 0.5rem;
+    font-size: 0.85rem; color: var(--muted);
+  }
+  .pe-points li { padding-left: 1.3rem; position: relative; word-break: keep-all; }
+  .pe-points li::before {
+    content: '✓'; position: absolute; left: 0; color: var(--accent-2); font-weight: 700;
+  }
+  .pe-action { flex: 1 1 320px; min-width: 0; max-width: 420px; }
+  .pe-field { margin: 0 0 1.4rem; }
+  .pe-action > button.primary { display: block; width: 100%; }
+  @media (max-width: 760px) {
+    .sc-card.pe-card { flex-direction: column; text-align: center; }
+    .pe-text { text-align: center; }
+    .pe-text .sc-eyebrow, .pe-text .sc-title { text-align: center; }
+    .pe-points { justify-content: center; text-align: left; max-width: 320px; margin: 0 auto; }
+    .pe-action { width: 100%; }
+  }
 
   /* ===== 올리기 전에 잠깐 — 인스타 피드 예시 캐러셀 =====
      사진을 달라고 하기 전에 "무엇이 위험한지"를 먼저 눈으로 보여주는 자리.
@@ -1249,7 +1366,9 @@
   .sc-card {
     background: var(--soft); border-radius: 28px;
     padding: 2.6rem 1.6rem 2.4rem; text-align: center;
-    max-width: 1020px; margin: 0 auto;
+    /* 1020px로 좁게 갇혀 있어서 바로 아래 사진 진단 카드(최대 --page-max)와 폭이
+       안 맞았다(사용자 제보) — 같은 폭으로 맞춘다. */
+    max-width: var(--page-max); margin: 0 auto;
   }
   .sc-eyebrow {
     display: inline-block; font-size: 0.82rem; font-weight: 700;
@@ -1707,7 +1826,7 @@
   .cta-band::before {
     content: ''; position: absolute; pointer-events: none;
     width: 520px; height: 520px; right: -160px; top: -220px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 216, 77, 0.20), rgba(255, 216, 77, 0) 70%);
+    background: radial-gradient(circle, rgba(240, 203, 0, 0.20), rgba(240, 203, 0, 0) 70%);
     filter: blur(50px);
   }
   .cta-band .section-inner { position: relative; z-index: 1; }
@@ -1726,13 +1845,17 @@
   .foot-brand { display: flex; gap: 0.7rem; align-items: flex-start; }
   .foot-brand strong { font-size: 1rem; }
   .foot-brand p { margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--muted); }
-  .foot-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
+  .foot-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6rem; }
   .foot-cols h4 {
     margin: 0 0 0.7rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em;
     text-transform: uppercase; color: var(--muted);
   }
   .foot-cols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.42rem; }
   .foot-cols li, .foot-cols a { font-size: 0.86rem; color: var(--muted); text-decoration: none; }
+  /* 팀 이름이 곧 네잎클로버라 이름 옆에 작게 붙여 둔다. 글자 크기(1em)에 맞추고
+     베이스라인에 앉힌다. 잎만 넉 장 그리고 줄기는 뺐다 — 1em까지 줄이면 줄기가
+     머리카락처럼 얇아져 오히려 지저분해 보인다. */
+  .clover-inline { width: 1em; height: 1em; vertical-align: -0.16em; margin-left: 0.3rem; }
   .foot-cols a:hover { color: var(--ink); }
   .foot-note {
     max-width: var(--page-max); margin: 2.2rem auto 0; padding: 1.2rem 1.4rem 0;
@@ -1860,7 +1983,26 @@
       <div class="hv-card hv-3"><span class="hv-tag">3단계 재검증</span><span class="hv-line short"></span></div>
     </div>
   </div>
+  <!-- 팀 이름(네잎클로드)에서 온 장식. 스크롤을 내리면 잎 하나가 떨어져 나가 페이지를
+       따라 내려가고, 맨 아래 CTA에서 다시 붙어 네잎이 완성된다.
+       잎 넉 장을 각각 따로 된 <path>로 그려야 하나만 떼어낼 수 있다. -->
+  <svg class="clover clover-hero" viewBox="0 0 100 100" aria-hidden="true">
+    <path class="cl-stem" d="M50,42 C50,58 48,70 43,80" />
+    <g transform="translate(50,42)">
+      <path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+      <path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+      <path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+      <!-- 떨어져 나가는 잎(오른쪽 위) — 오른쪽 가장자리로 흘러내리므로 그쪽 잎을 쓴다 -->
+      <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+    </g>
+  </svg>
 </header>
+
+<!-- 떨어진 잎. .hero가 overflow:hidden이라 그 안에 두면 히어로 밖으로 못 나간다 —
+     화면에 고정(fixed)해두고 스크롤 진행도에 따라 내려보낸다. -->
+<svg class="clover-fly" id="cloverFlyLeaf" viewBox="-20 -32 40 34" aria-hidden="true">
+  <path class="cl-leaf" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+</svg>
 
 
 <!-- 올리기 전에 잠깐 — 무엇이 위험한지 먼저 눈으로 보여준다.
@@ -1955,32 +2097,6 @@
       <p class="sc-credit">사진: Wikimedia Commons (CC BY / CC BY-SA / CC0) · 계정명·게시물은 예시입니다</p>
       <p class="sc-foot">눈으로 다 확인하기 어렵다면, 사진 한 장이면 저희가 대신 확인해드려요.</p>
       <a class="primary sc-cta" href="#tool">사진으로 확인하기</a>
-    </div>
-  </div>
-</section>
-
-<!-- 과거 게시물 패턴만 보고 싶은 사람을 위한 별도 입구 (사용자 요청 — 예전에는 이 기능이
-     사진 진단 폼 안 "과거 게시물 스크린샷" 칸 하나로만 곁다리로 붙어 있어서, 사진 없이
-     패턴만 보고 싶은 사람도 "사진", "캡션", "공개 범위" 같은 안 맞는 질문칸을 다 지나쳐야
-     했다. 결과 화면(#screen-pattern)과 분석 함수(runPatternOnly)는 이미 사진 없이도
-     동작하도록 돼 있었으니, 입구만 따로 만들면 된다. -->
-<section class="site-section pattern-entry" id="pattern-check">
-  <div class="section-inner">
-    <div class="sc-card pe-card">
-      <span class="sc-eyebrow">사진 없이도 확인 가능</span>
-      <h2 class="sc-title">과거 게시물 패턴만 따로 확인하기</h2>
-      <p class="pe-desc">사진을 올릴 필요 없어요. 지금까지 올린 게시물 스크린샷만 있으면
-        같은 요일·시간·장소가 반복되는지, 그래서 다음 게시물 시점이 예측되는지 짚어드려요.</p>
-      <div class="field pe-field">
-        <label for="patternOnlyInput">과거 게시물 스크린샷 <span class="hint">여러 장</span></label>
-        <div class="drop-zone" id="patternOnlyDrop">
-          <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
-          <span id="patternOnlyDropLabel">스크린샷을 선택하면 반복 패턴을 짚어드려요</span>
-          <input type="file" id="patternOnlyInput" accept="image/*" multiple />
-        </div>
-        <p class="file-count" id="patternOnlyCount" style="display:none;"></p>
-      </div>
-      <button class="primary" id="patternOnlySubmitBtn">패턴만 확인하기</button>
     </div>
   </div>
 </section>
@@ -2108,6 +2224,9 @@
         <div class="gauge-ring">
           <svg viewBox="0 0 240 230" class="sb-radar" id="sbRadar" role="img" aria-labelledby="radarTitle">
             <title id="radarTitle">항목별 위험도 오각형</title>
+            <!-- 숫자 자리를 감추지 않는다 — 색칠된 오각형이 숫자 바로 뒤에 그대로
+                 보이는 쪽을 원한다는 요청(도넛형으로 구멍을 뚫으니 오히려 어색하다는
+                 피드백). 낮은 점수에서 선이 숫자와 겹치는 정도는 감수한다. -->
             <g id="radarGrid"></g>
             <polygon id="radarShape" class="radar-shape" points="" />
             <g id="radarDots"></g>
@@ -2152,6 +2271,16 @@
            이미 감지한 것들로 좁혀지는 순서를 보여준다. 새로 호출하지 않는다. -->
       <p class="chain-head">이렇게 좁혀집니다</p>
       <ol class="loc-chain" id="locChain"></ol>
+
+      <!-- 위 사슬은 Claude가 사진 속 "글자"를 읽어서 판단한 것. 이건 결이 다르다 —
+           사진(배경) 자체가 인터넷에 이미 있는 이미지와 일치하는지 역방향 이미지
+           검색으로 본다. 자동으로 돌지 않는다 — 버튼을 눌러야만 호출(비용·무료
+           한도 때문에 사용자가 원할 때만). -->
+      <div class="loc-web-check" id="locWebCheck">
+        <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진, 인터넷에서 찾을 수 있는지 확인하기</button>
+        <p class="loc-web-hint">Google Vision으로 역방향 이미지 검색을 해요. 얼굴을 가린 사진만 보내고, 월 1,000건까지 무료예요.</p>
+        <div class="loc-web-result" id="locWebResult" style="display:none;"></div>
+      </div>
     </section>
 
     <section class="result-section" id="scheduleCard">
@@ -2273,6 +2402,13 @@
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><circle cx="16" cy="16" r="10" stroke-dasharray="3 4.5"/><circle cx="16" cy="16" r="14.5" stroke-dasharray="2 6"/></svg> 배경 흐림 <span class="m-badge" id="badge-blur" style="display:none;">1순위</span></div>
         <div class="m-reason" id="reason-blur">인물모드 스타일로, 아이는 선명하게 유지돼요. 얼굴을 못 찾은 사진에서는 전체가 흐려져요.</div>
       </button>
+      <button class="method-card" data-method="sticker">
+        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="10" rx="2"/><path d="M4 6 h24 M4 26 h24"/></svg> 자연스럽게 덮기 <span class="m-badge" id="badge-sticker" style="display:none;">1순위</span></div>
+        <div class="m-reason" id="reason-sticker">글자 자리를 주변 배경색으로 칠해요. 평평한 간판에서는 불이 꺼진 것처럼 보여 거의 티가 나지 않아요. 배경에 무늬가 있으면 모자이크로 처리해요.</div>
+      </button>
+      <!-- 원본을 외부로 보내는 두 방식(AI 옷 바꾸기·AI 배경 교체)을 나란히 묶는다.
+           사용자 피드백: 예전엔 격자에서 대각선으로 떨어져 있어 같은 종류(⚠ 원본 전송)라는
+           게 한눈에 안 들어왔다. -->
       <button class="method-card" data-method="outfit">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 4 L16 7 L20 4 L27 8 L24 13 L26 28 L6 28 L8 13 L5 8 Z"/></svg> AI 옷 바꾸기
           <span class="m-badge" id="badge-outfit-status" style="background:var(--muted);">확인 중</span>
@@ -2291,10 +2427,6 @@
           다른 방식과 달리 원본 사진이 외부(fal.ai)로 전송돼요.
         </div>
       </button>
-      <button class="method-card" data-method="sticker">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="10" rx="2"/><path d="M4 6 h24 M4 26 h24"/></svg> 자연스럽게 덮기 <span class="m-badge" id="badge-sticker" style="display:none;">1순위</span></div>
-        <div class="m-reason" id="reason-sticker">글자 자리를 주변 배경색으로 칠해요. 평평한 간판에서는 불이 꺼진 것처럼 보여 거의 티가 나지 않아요. 배경에 무늬가 있으면 모자이크로 처리해요.</div>
-      </button>
     </div>
 
     <p class="evidence note-bar" id="recommendFlow" style="display:none; margin-bottom:1.3rem;"></p>
@@ -2304,7 +2436,8 @@
     </div><!-- /.correct-left -->
 
     <div class="correct-right">
-    <div class="compare-grid">
+    <button type="button" class="ghost-link compare-toggle" id="compareSliderToggle">↔ 겹쳐서 비교하기</button>
+    <div class="compare-grid" id="compareGrid">
       <div>
         <p class="preview-label">원본</p>
         <div class="preview-frame">
@@ -2321,6 +2454,17 @@
           </div>
         </div>
       </div>
+    </div>
+    <!-- 편집 도구(브러시·덮개 손잡이)는 좌우 비교 쪽에만 있다 — 여긴 보기 전용이라
+         편집을 시작하면(방식·모드 변경) 자동으로 좌우 비교로 되돌아간다. -->
+    <div class="compare-slider" id="compareSlider" style="display:none;">
+      <img id="csBefore" alt="원본" />
+      <div class="cs-after-wrap" id="csAfterWrap">
+        <img id="csAfter" alt="처리 결과" />
+      </div>
+      <span class="cs-tag cs-tag-before">원본</span>
+      <span class="cs-tag cs-tag-after">처리 후</span>
+      <div class="cs-handle" id="csHandle"><span class="cs-handle-grip">↔</span></div>
     </div>
     <p class="preview-caption" id="previewCaption">점선 안쪽만 남기고 자연스럽게 잘라내요.</p>
 
@@ -2435,6 +2579,42 @@
     <p id="debugTiming" style="font-size:0.76rem; color:var(--muted); margin:0.8rem 0 0; white-space:pre-line;"></p>
   </div>
 </main>
+
+<!-- 과거 게시물 패턴만 보고 싶은 사람을 위한 별도 입구 (사용자 요청 — 예전에는 이 기능이
+     사진 진단 폼 안 "과거 게시물 스크린샷" 칸 하나로만 곁다리로 붙어 있어서, 사진 없이
+     패턴만 보고 싶은 사람도 "사진", "캡션", "공개 범위" 같은 안 맞는 질문칸을 다 지나쳐야
+     했다. 결과 화면(#screen-pattern)과 분석 함수(runPatternOnly)는 이미 사진 없이도
+     동작하도록 돼 있었으니, 입구만 따로 만들면 된다.
+     사진 진단 도구(#tool) 바로 다음 자리에 둔다 — 사용자 피드백: 처음엔 예시 캐러셀과
+     본 도구 사이에 있어서 본 진단으로 가는 흐름을 가로막는 느낌이었다. -->
+<section class="site-section pattern-entry" id="pattern-check">
+  <div class="section-inner">
+    <div class="sc-card pe-card">
+      <div class="pe-text">
+        <span class="sc-eyebrow">사진 없이도 확인 가능</span>
+        <h2 class="sc-title">과거 게시물 패턴만 따로 확인하기</h2>
+        <p class="pe-desc">사진을 올릴 필요 없어요. 지금까지 올린 게시물 스크린샷만 있으면
+          같은 요일·시간·장소가 반복되는지, 그래서 다음 게시물 시점이 예측되는지 짚어드려요.</p>
+        <ul class="pe-points">
+          <li>계정 연동·비밀번호 없이, 직접 캡처한 화면만으로</li>
+          <li>얼굴을 가린 뒤 판독에만 쓰고 따로 보관하지 않아요</li>
+        </ul>
+      </div>
+      <div class="pe-action">
+        <div class="field pe-field">
+          <label for="patternOnlyInput">과거 게시물 스크린샷 <span class="hint">여러 장</span></label>
+          <div class="drop-zone" id="patternOnlyDrop">
+            <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
+            <span id="patternOnlyDropLabel">스크린샷을 선택하면 반복 패턴을 짚어드려요</span>
+            <input type="file" id="patternOnlyInput" accept="image/*" multiple />
+          </div>
+          <p class="file-count" id="patternOnlyCount" style="display:none;"></p>
+        </div>
+        <button class="primary" id="patternOnlySubmitBtn">패턴만 확인하기</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- 세 단계 소개.
      스크롤 트랙(steps-track)은 세 화면 높이고, 그 안의 무대(steps-stage)가
@@ -2583,6 +2763,7 @@
       <details class="pin-item"><summary>사진이 서버에 저장되나요?</summary><p>진단에 필요한 순간에만 전송하고 따로 보관하지 않습니다. 대부분의 처리(크롭·흐림·주변색 채우기)는 아예 브라우저 밖으로 나가지 않아요.</p></details>
       <details class="pin-item"><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없습니다. 과거 게시물 패턴을 보고 싶으실 때만 직접 캡처한 화면을 올려주시면 됩니다.</p></details>
       <details class="pin-item"><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않습니다. 얼굴·머리카락·목은 마스크에서 제외해 AI가 접근할 수 없게 만들어 두었고, 보정 후 다시 검사해 얼굴이 그대로인지 확인합니다.</p></details>
+      <details class="pin-item"><summary>AI 보정에 사진이 어떻게 전송되고 처리되나요?</summary><p><strong>배경 흐림·자연스럽게 덮기</strong>는 브라우저 안에서 끝나요 — 사진이 기기 밖으로 나가지 않습니다. <strong>AI 옷 바꾸기·AI 배경 교체</strong>만 명시적으로 동의했을 때 원본 사진(얼굴 포함)이 저희 서버를 거쳐 외부 AI 서비스 fal.ai(FLUX 모델)로 전송돼요. 이때도 아이 영역은 마스크로 모델이 접근조차 못 하게 막거나(옷 바꾸기), 결과에서 원본 아이 사진으로 다시 덮어써서(배경 교체) 보호합니다. fal.ai는 전송된 사진을 모델 학습에 쓰지 않지만, "처리 후 바로 삭제"는 약속하지 않고 계정을 닫으면 30일 안에·2년 미사용 시 삭제한다고 밝혀요(여기서 쓰는 건 저희 팀 계정입니다). 진단(위험도 분석) 자체는 얼굴을 가린 사진만 Claude Vision으로 보내요.</p></details>
       <details class="pin-item"><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔드립니다. 얼굴과 자세는 그대로예요.</p></details>
       <details class="pin-item"><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않습니다. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고르실 수 있게 해두었습니다. 최종 판단은 부모님 몫이에요.</p></details>
     </div>
@@ -2593,6 +2774,17 @@
 
 <section class="cta-band">
   <div class="section-inner narrow">
+    <!-- 히어로에서 떨어져 나온 잎이 여기서 다시 붙는다. 처음엔 세잎이고, 잎이
+         도착하는 순간 네 번째 잎(.cl-leaf-detach)이 채워진다. -->
+    <svg class="clover clover-cta" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="cl-stem" d="M50,42 C50,58 48,70 43,80" />
+      <g transform="translate(50,42)">
+        <path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+        <path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+        <path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+        <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+      </g>
+    </svg>
     <h2>올리기 전에 30초만 써보세요</h2>
     <p>사진 한 장이면 됩니다. 위험한 부분만 찾아서 알려드릴게요.</p>
     <a class="btn-primary" href="#tool">사진 진단하기</a>
@@ -2610,7 +2802,8 @@
     </div>
     <div class="foot-cols">
       <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#pattern-check">패턴만 검사</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
-      <div><h4>만든 곳</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
+      <div><h4>지원</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
+      <div><h4>제작·배포</h4><ul><li class="foot-team">Team 네잎클로드<svg class="clover-inline" viewBox="-32 -32 64 64" aria-hidden="true"><path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /></svg></li><li>김민석</li><li>남근오</li><li>김현미</li><li>최윤서</li><li>이영우</li></ul></div>
       <div><h4>사용 기술</h4><ul><li>Claude Vision</li><li>face-api.js</li><li>Tesseract.js</li><li>fal.ai FLUX</li></ul></div>
     </div>
   </div>
@@ -2699,6 +2892,129 @@
     measure();
     current = target;
     track.style.setProperty('--pulse', current.toFixed(3));
+  })();
+
+  // 시간 기반으로 임의의 자리를 오가는 "반딧불이" 움직임을 시도했는데, 뭉실한
+  // 빛 덩어리라 자리가 바뀌는 게 눈에 잘 안 들어온다는 제보를 받았다(움직임 자체는
+  // transform 값으로 실측 확인됨 — 그저 체감이 안 됨). 시간에 맡기는 대신 "스크롤을
+  // 내리면 골드 조명이 왼쪽 아래 연두 조명 쪽으로 옮겨간다"는 훨씬 뚜렷한 동작으로
+  // 바꿨다 — 사용자가 직접 스크롤을 움직이는 동안 눈으로 원인과 결과를 바로
+  // 연결할 수 있다. ScrollTrigger의 scrub로 스크롤 위치에 정확히 붙인다(시간 애니메이션이
+  // 아니라 스크롤 자체가 진행률이라 되감기도 그대로 된다).
+  // 연두 조명(.gb-aurora)은 그 자리에서 숨쉬듯 계속 흔들리게 남겨둔다.
+  (function () {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    var hero = document.querySelector('.hero');
+    var core = document.querySelector('.gb-core');
+    var warm = document.querySelector('.gb-warm');
+    if (!hero || !core || !warm) return;
+
+    // 연두 조명(.gb-aurora) 쪽으로 옮겨가는 이동량. 두 조명의 자리(CSS의 left/bottom)
+    // 차이로 대략 잡았다 — 정확히 겹치지 않아도 된다, 겹치는 느낌만 내면 충분하다.
+    // 이제 오른쪽 위 구석에서 시작하므로(사용자 피드백) 왼쪽 아래까지 가로질러야 한다 —
+    // 화면 폭에 따라 정확한 값은 다르지만(고정 px라 완벽히 일치하진 않는다), 장식용
+    // 배경이라 대략 겹치는 느낌만 내면 충분하다. 화면이 넓을수록 갈 길이 머니 살짝
+    // 더 옮기게 폭에 비례한 값을 더한다.
+    // 가장자리만 스치게 두면 겹친 자리의 새 색(mix-blend-mode: multiply)이 거의 안
+    // 보인다(실측 확인). 골드가 연두 덩어리 "중심 가까이"까지 들어와야 두 빛이 다
+    // 진한 지점에서 만나 색이 확실히 섞인다.
+    var travelX = -Math.min(1250, Math.max(850, window.innerWidth * 0.75));
+    gsap.to([core, warm], {
+      x: travelX, y: 700, ease: 'none',
+      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
+    });
+
+    gsap.to('.gb-aurora', {
+      x: 60, y: -40, duration: 10, ease: 'sine.inOut', yoyo: true, repeat: -1,
+    });
+  })();
+
+  /* 네잎클로버 — 잎 하나가 떨어져 페이지를 따라 내려가고, 맨 아래 CTA에서 다시 붙는다.
+     (팀 이름 "네잎클로드"에서 온 장식. 꽃말로 네잎=행운, 세잎=행복이라 잎이 하나
+     빠졌다가 마지막에 되돌아오는 흐름이 이 앱 메시지와도 맞는다.)
+
+     3막 구성:
+       1막 히어로 — 스크롤을 시작하면 히어로 클로버의 잎 하나가 떨어져 나가고
+                    떠다니는 잎이 나타난다
+       2막 중간   — 떠다니는 잎이 문서 전체 스크롤에 맞춰 화면 오른쪽을 따라 내려간다
+       3막 CTA    — CTA 띠가 보이면 잎이 사라지고 CTA 클로버의 네 번째 잎이 채워진다 */
+  (function () {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    var heroLeaf = document.querySelector('.clover-hero .cl-leaf-detach');
+    var ctaLeaf = document.querySelector('.clover-cta .cl-leaf-detach');
+    var flyLeaf = document.getElementById('cloverFlyLeaf');
+    var ctaBand = document.querySelector('.cta-band');
+    var hero = document.querySelector('.hero');
+    if (!heroLeaf || !ctaLeaf || !flyLeaf || !ctaBand || !hero) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    // 모션을 줄이는 설정이거나 여백이 없는 좁은 화면에서는 움직이지 않는다 —
+    // 양쪽 클로버 모두 온전한 네잎으로 두고 떠다니는 잎만 감춘다(CSS와 같은 기준 900px).
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || window.innerWidth <= 900) {
+      gsap.set(ctaLeaf, { opacity: 1 });
+      gsap.set(flyLeaf, { display: 'none' });
+      return;
+    }
+
+    gsap.set(ctaLeaf, { opacity: 0, transformOrigin: '50% 100%' });
+    gsap.set(heroLeaf, { transformOrigin: '50% 100%' });
+
+    // 1막 — 히어로를 지나는 동안 잎이 떨어져 나간다
+    gsap.timeline({
+      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
+    })
+      .to(heroLeaf, { opacity: 0, rotate: 55, x: 10, y: 8, ease: 'none' }, 0)
+      .to(flyLeaf, { opacity: 1, ease: 'none' }, 0);
+
+    // 2막 — 문서 전체를 따라 내려간다. 세로는 일정한 속도로 내려가고(ease:'none'),
+    // 가로 흔들림은 아래 타임라인이 따로 맡는다. 화면 높이 기준이라 창 크기가 바뀌면
+    // ScrollTrigger가 새로고침하며 다시 계산한다(함수형 값).
+    gsap.to(flyLeaf, {
+      y: function () { return window.innerHeight * 0.62; },
+      ease: 'none',
+      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 },
+    });
+
+    // 바람에 날리듯 좌우로 살랑이며 떨어진다.
+    // 한 방향으로 쭉 미끄러지게 두면 "일자로 떨어진다"로 보이고(사용자 제보),
+    // 흔들림 폭이 좁으면 살랑이는 게 눈에 안 들어온다(재제보) — 화면 오른쪽 끝에서
+    // 왼쪽 끝까지 크게 왕복시킨다. 마지막 구간만 가운데로 모아, 화면 가운데 있는
+    // CTA 클로버로 잎이 돌아가 붙는 흐름이 자연스럽게 이어지게 한다.
+    // 기울기도 흔들림과 같은 리듬으로 번갈아 눕혀야 나뭇잎이 뒤집히며 떨어지는 것처럼 보인다.
+    // 가로 이동량은 창 폭 비율이라 좁은 화면에서도 화면 밖으로 날아가지 않는다.
+    // 화면을 두 번 가로지른 뒤 가운데로 모인다(오른쪽→왼쪽 끝, 왼쪽→오른쪽 끝, 가운데).
+    // 네 번 왕복시켜 봤더니 움직임이 너무 부산했다(사용자 제보).
+    var swayFrac = [-0.88, -0.04, -0.45];
+    var swayTilt = [-38, 32, -12];
+    var swayTl = gsap.timeline({
+      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1.4 },
+    });
+    swayFrac.forEach(function (frac, i) {
+      swayTl.to(flyLeaf, {
+        x: function () { return window.innerWidth * frac; },
+        rotate: swayTilt[i],
+        ease: 'sine.inOut', duration: 1,
+      });
+    });
+
+    // 3막 — CTA에 닿으면 잎이 사라지고 CTA 클로버가 네잎이 된다.
+    // 스크럽이 아니라 한 번의 연출이라, 되돌아 올라가면 원래대로 돌린다(onLeaveBack).
+    ScrollTrigger.create({
+      trigger: ctaBand,
+      start: 'top 78%',
+      onEnter: function () {
+        gsap.to(flyLeaf, { opacity: 0, scale: 0.55, duration: 0.4, ease: 'power2.in' });
+        gsap.to(ctaLeaf, { opacity: 1, duration: 0.5, ease: 'back.out(2.2)', delay: 0.18 });
+      },
+      onLeaveBack: function () {
+        gsap.to(flyLeaf, { opacity: 1, scale: 1, duration: 0.3 });
+        gsap.to(ctaLeaf, { opacity: 0, duration: 0.25 });
+      },
+    });
   })();
 
   /* 히어로가 첫 화면을 정확히 채우려면 네비 높이를 알아야 한다.
@@ -4120,6 +4436,27 @@
       return data;
     }
 
+    // ===== Google Vision 위치노출 확인(역방향 이미지 검색) =====
+    // Claude Vision(위 "이렇게 좁혀집니다")은 사진 속 글자를 읽어서 장소를 좁힌다.
+    // 이건 결이 다르다 — 사진(배경)이 인터넷에 이미 있는 이미지와 일치하는지를 본다.
+    // 글자가 하나도 없어도 배경이 이미 인덱싱된 곳(가게 홈페이지·지도 사진 등)이면
+    // 여기서 잡힌다. 자동으로 돌지 않고 버튼을 눌러야만 호출한다 — 무료 한도(월
+    // 1,000건)를 모르고 계속 눌러 넘기지 않게, 그리고 굳이 필요 없을 때도 비용이
+    // 나가지 않게.
+    //
+    // 프라이버시: 다른 진단과 같은 방식으로 얼굴을 가린 사진만 보낸다(runClaudeVisionPipeline과
+    // 동일한 maskFaces). 원본을 그대로 보내는 예외는 AI 보정(옷 바꾸기·배경 교체)뿐이다.
+    var LOCATION_CHECK_BACKEND_URL = '/api/location-check';
+
+    async function runLocationCheckPipeline(imgUrl, faces) {
+      var img = await loadImage(imgUrl);
+      var maskedCanvas = fitForVision(maskFaces(img, faces));
+      var base64 = maskedCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+      var data = await postJson(LOCATION_CHECK_BACKEND_URL, { imageBase64: base64 });
+      console.log('[위치확인] 완료 — ' + Math.round(data.timingMs) + 'ms', data);
+      return data;
+    }
+
     // ===== AI 배경교체 (fal.ai flux-kontext-pro) =====
     // 프라이버시 예외: 여기서만 마스킹 없는 원본 이미지를 그대로 보낸다 — 기획서 0번 원칙에
     // 명시된 대로, 사용자가 "AI 배경 교체"를 명시적으로 선택하고 동의했을 때만 호출됨.
@@ -4619,13 +4956,55 @@
       return aArea > 0 ? interArea / aArea : 0;
     }
 
+    // 원본 얼굴 목록과 결과 얼굴 목록을 짝짓는다. 실사용 제보: kontext가 아이를 원본과
+    // 거의 안 겹칠 만큼 크게 옮겨 그린 적이 있는데, 그때 겹침 비율만으로 "같은 아이인지"
+    // 판단하면 진짜 아이를 "원본에 없던 인물"로 오판해 흐려버린다(실제로 발생 확인).
+    // 그래서 두 단계로 짝짓는다: ① 겹치는 정도가 큰 쌍부터 그리디하게 잇고,
+    // ② 그래도 남은 원본은(겹침이 0이라도) 가장 가까운 결과와 잇는다 — 개수가 맞는
+    // 이상 "새로 생긴 사람"이 아니라 "같이 옮겨간 사람"으로 보는 게 안전하다.
+    // 끝까지 못 이어진 결과 쪽 얼굴만 진짜 "원본에 없던 인물"이다.
+    function matchFaces(originalFaces, resultFaces) {
+      var origs = (originalFaces || []).slice();
+      var results = (resultFaces || []).slice();
+      var pairs = [];
+      while (origs.length && results.length) {
+        var bestOverlap = 0, bestOi = -1, bestRi = -1;
+        for (var oi = 0; oi < origs.length; oi++) {
+          for (var ri = 0; ri < results.length; ri++) {
+            var r = faceBoxOverlapRatio(results[ri].box, origs[oi].box);
+            if (r > bestOverlap) { bestOverlap = r; bestOi = oi; bestRi = ri; }
+          }
+        }
+        if (bestOverlap <= 0) break;
+        pairs.push({ of: origs[bestOi], rf: results[bestRi] });
+        origs.splice(bestOi, 1); results.splice(bestRi, 1);
+      }
+      while (origs.length && results.length) {
+        var bestDist = Infinity, bOi = -1, bRi = -1;
+        for (var oi2 = 0; oi2 < origs.length; oi2++) {
+          var ocx = origs[oi2].box.x + origs[oi2].box.width / 2, ocy = origs[oi2].box.y + origs[oi2].box.height / 2;
+          for (var ri2 = 0; ri2 < results.length; ri2++) {
+            var rcx = results[ri2].box.x + results[ri2].box.width / 2, rcy = results[ri2].box.y + results[ri2].box.height / 2;
+            var d = Math.hypot(rcx - ocx, rcy - ocy);
+            if (d < bestDist) { bestDist = d; bOi = oi2; bRi = ri2; }
+          }
+        }
+        pairs.push({ of: origs[bOi], rf: results[bRi] });
+        origs.splice(bOi, 1); results.splice(bRi, 1);
+      }
+      // 결과가 원본보다 많을 때만 남는다 — 이게 진짜 "새로 생긴 인물"이다.
+      // (원본이 남는 경우도 있을 수 있다 — 결과에서 사람이 하나 사라진 경우이며,
+      // 지울 대상은 아니므로 그냥 버린다.)
+      return { pairs: pairs, extras: results };
+    }
+
     async function removeHallucinatedPeople(outCanvas, originalFaces, imgW, imgH) {
       var detected;
       try {
         detected = await runFaceDetectionPipeline(outCanvas.toDataURL('image/jpeg', 0.9));
       } catch (e) {
         console.warn('[AI배경교체] 결과 재검출 실패 — 중복 인물 확인을 건너뜁니다', e);
-        return outCanvas;
+        return { canvas: outCanvas, resultFaces: [] };
       }
       // 옷의 체크무늬·허리에 얹은 손처럼 얼굴이 아닌 패턴을 낮은 신뢰도로 "얼굴"이라고
       // 잘못 검출하는 경우가 실측으로 확인됐다(childphoto.jpeg 실호출: 진짜 얼굴 신뢰도
@@ -4637,15 +5016,10 @@
       var HALLUCINATION_MIN_CONFIDENCE = 0.6;
       var resultFaces = ((detected && detected.faces) || [])
         .filter(function (f) { return f.confidence >= HALLUCINATION_MIN_CONFIDENCE; });
-      // 얼굴 상자의 20% 이상이 원본 얼굴과 겹치면 "같은 아이"로 본다 — kontext는 원본과
-      // 완전히 같은 좌표에 다시 그리지 않으므로, 살짝 밀린 정도까지는 같은 아이로 봐야
-      // 원본 자리를 "가짜 인물"로 오판해 불필요하게 흐리지 않는다.
-      var extras = resultFaces.filter(function (rf) {
-        return !(originalFaces || []).some(function (of) {
-          return faceBoxOverlapRatio(rf.box, of.box) > 0.2;
-        });
-      });
-      if (extras.length === 0) return outCanvas;
+      // matchFaces가 원본 개수만큼은 최대한 짝지어주므로, 그러고도 남는 결과 얼굴만
+      // "원본에 없던 인물"이다 — 겹침이 0이어도 개수가 맞으면 짝이 지어져 안전하다.
+      var extras = matchFaces(originalFaces, resultFaces).extras;
+      if (extras.length === 0) return { canvas: outCanvas, resultFaces: resultFaces };
 
       console.warn('[AI배경교체] 원본에 없던 인물 ' + extras.length + '명을 결과에서 발견 — 흐려서 지웁니다');
       var blurred = document.createElement('canvas');
@@ -4668,7 +5042,32 @@
         outCtx.drawImage(blurred, 0, 0, imgW, imgH);
         outCtx.restore();
       });
-      return outCanvas;
+      return { canvas: outCanvas, resultFaces: resultFaces };
+    }
+
+    // kontext는 이미지 전체를 다시 그리므로, 같은 아이라도 원본과 픽셀 단위로 같은
+    // 자리에 그려주지 않는다(실사용 제보 — 인물이 옆으로 살짝 밀려 그려짐). 그 상태로
+    // restorePersonFromOriginal이 "원본 자리"에 원본 아이를 되돌리면, 원본 자리엔 진짜
+    // 아이가, AI가 그린 자리엔 AI가 그린 아이가 따로 남아 이중 인화(고스트)처럼 보인다.
+    // 원본 얼굴과 결과 얼굴을 매칭해 평균 이동량을 구한다. 아이가 하나뿐이면 이 평균이
+    // 곧 그 아이의 어긋남이라 정확하지만, 둘 이상이면 각자 다른 방향으로 밀렸을 때
+    // 평균이 둘 다 못 맞추는 절충값이 된다(실사용 확인 — 두 아이 사진에서 한 명만
+    // 맞고 한 명은 계속 이중 인화). 그래서 실제 배경교체 흐름에서는 이 함수 대신
+    // matchFaces의 짝을 얼굴별로 따로 써서 사람마다 다른 어긋남을 적용한다 — 이
+    // 함수는 "평균 하나로 충분한" 단일 인물 상황과 테스트용으로 남겨둔다.
+    function computeAlignmentOffset(originalFaces, resultFaces) {
+      // removeHallucinatedPeople과 같은 매칭 규칙을 쓴다 — 겹침이 0이어도 개수가
+      // 맞으면 짝을 짓는다(matchFaces 참고). 다르게 매칭하면 한쪽은 "옮겨간 아이"로
+      // 보고 다른 쪽은 "가려야 할 가짜"로 보는 자기모순이 생긴다.
+      var pairs = matchFaces(originalFaces, resultFaces).pairs;
+      if (pairs.length === 0) return { dx: 0, dy: 0 };
+      var sumDx = 0, sumDy = 0;
+      pairs.forEach(function (p) {
+        var ocx = p.of.box.x + p.of.box.width / 2, ocy = p.of.box.y + p.of.box.height / 2;
+        var rcx = p.rf.box.x + p.rf.box.width / 2, rcy = p.rf.box.y + p.rf.box.height / 2;
+        sumDx += rcx - ocx; sumDy += rcy - ocy;
+      });
+      return { dx: sumDx / pairs.length, dy: sumDy / pairs.length };
     }
 
     // AI 배경 교체 결과 위에 원본 인물을 다시 덮는다.
@@ -4714,13 +5113,77 @@
       mctx.fill();
     }
 
-    function restorePersonFromOriginal(resultCanvas, originalImg, faces, imgW, imgH, personMask) {
+    // offsets: computeAlignmentOffset류가 구한 어긋남. 배열이면 faces와 순서를 맞춰
+    // "이 사람은 이만큼" 개별로 적용하고, 단일 {dx,dy} 객체면 전원에게 같이 적용한다
+    // (기존 호출부와 호환). 이 자리에 원본을 그대로(0,0) 덮으면 AI가 그린 아이는 그
+    // 자리에 남고 원본 아이만 따로 더 생겨 이중 인화처럼 보인다(실사용 제보) —
+    // 원본을 어긋난 만큼 옮겨서 덮으면 AI가 그린 자리와 겹쳐 가려진다.
+    //
+    // 아이가 둘 이상이면 서로 다른 방향·크기로 밀려 그려질 수 있다(실사용 확인 —
+    // 두 아이 사진에서 한 명만 맞추면 다른 한 명은 계속 이중 인화로 남았다).
+    // 하나의 마스크를 통째로 한 방향으로만 옮기면 그중 한 명만 맞는다 — 사람마다
+    // 자기 몸통 범위(computeSubjectRegion)로 마스크를 잘라 각자의 어긋남으로 옮긴다.
+    function restorePersonFromOriginal(resultCanvas, originalImg, faces, imgW, imgH, personMask, offsets) {
       if (!personMask && (!faces || faces.length === 0)) return resultCanvas;
+      var outCtx = resultCanvas.getContext('2d');
+      var offsetFor = function (i) {
+        if (Array.isArray(offsets)) return offsets[i] || { dx: 0, dy: 0 };
+        return offsets || { dx: 0, dy: 0 };
+      };
 
-      var personLayer = document.createElement('canvas');
-      personLayer.width = imgW; personLayer.height = imgH;
-      personLayer.getContext('2d').drawImage(originalImg, 0, 0, imgW, imgH);
+      if (!faces || faces.length <= 1) {
+        var off = offsetFor(0);
+        var personLayer = document.createElement('canvas');
+        personLayer.width = imgW; personLayer.height = imgH;
+        personLayer.getContext('2d').drawImage(originalImg, 0, 0, imgW, imgH);
+        var mask = buildFullPersonMask(personMask, faces, imgW, imgH);
+        var pctx = personLayer.getContext('2d');
+        pctx.globalCompositeOperation = 'destination-in';
+        pctx.drawImage(mask, 0, 0);
+        outCtx.drawImage(personLayer, off.dx || 0, off.dy || 0);
+        return resultCanvas;
+      }
 
+      faces.forEach(function (f, i) {
+        var off = offsetFor(i);
+        var region = computeSubjectRegion(f.box, imgW, imgH);
+
+        // 공용 마스크(또는 도형)에서 이 사람 범위만 잘라낸다 — 안 그러면 다른 사람의
+        // 몸까지 같이 이 사람의 어긋남으로 옮겨가 버린다.
+        var thisMask = document.createElement('canvas');
+        thisMask.width = imgW; thisMask.height = imgH;
+        var tmctx = thisMask.getContext('2d');
+        tmctx.save();
+        tmctx.beginPath();
+        tmctx.rect(region.x0, region.y0, region.x1 - region.x0, region.y1 - region.y0);
+        tmctx.clip();
+        if (personMask) {
+          var edge2 = Math.max(2, Math.min(8, Math.min(imgW, imgH) * 0.005));
+          tmctx.filter = 'blur(' + edge2 + 'px)';
+          tmctx.drawImage(personMask, 0, 0, imgW, imgH);
+          tmctx.filter = 'none';
+        } else {
+          var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.025));
+          tmctx.filter = 'blur(' + feather + 'px)';
+          tmctx.fillStyle = '#ffffff';
+          drawPersonSilhouette(tmctx, f.box, imgW, imgH);
+          tmctx.filter = 'none';
+        }
+        tmctx.restore();
+
+        var thisLayer = document.createElement('canvas');
+        thisLayer.width = imgW; thisLayer.height = imgH;
+        var tlctx = thisLayer.getContext('2d');
+        tlctx.drawImage(originalImg, 0, 0, imgW, imgH);
+        tlctx.globalCompositeOperation = 'destination-in';
+        tlctx.drawImage(thisMask, 0, 0);
+
+        outCtx.drawImage(thisLayer, off.dx || 0, off.dy || 0);
+      });
+      return resultCanvas;
+    }
+
+    function buildFullPersonMask(personMask, faces, imgW, imgH) {
       var mask = document.createElement('canvas');
       mask.width = imgW; mask.height = imgH;
       var mctx = mask.getContext('2d');
@@ -4735,16 +5198,10 @@
         var feather = Math.max(8, Math.round(Math.min(imgW, imgH) * 0.025));
         mctx.filter = 'blur(' + feather + 'px)';
         mctx.fillStyle = '#ffffff';
-        faces.forEach(function (f) { drawPersonSilhouette(mctx, f.box, imgW, imgH); });
+        (faces || []).forEach(function (f) { drawPersonSilhouette(mctx, f.box, imgW, imgH); });
         mctx.filter = 'none';
       }
-
-      var pctx = personLayer.getContext('2d');
-      pctx.globalCompositeOperation = 'destination-in';
-      pctx.drawImage(mask, 0, 0);
-
-      resultCanvas.getContext('2d').drawImage(personLayer, 0, 0);
-      return resultCanvas;
+      return mask;
     }
 
     // 배경 흐림. blurPx로 강도를 받는다 (사용자가 화면에서 고른다).
@@ -5927,7 +6384,7 @@
         },
         {
           on: shownWords.length > 0,
-          what: '글자로 장소가 적혀 있다',
+          what: '장소가 적혀있다',
           tag: shownWords.length > 0 ? shownWords.length + '곳' : '없음',
           why: shownWords.length === 0
             ? '간판·주소·전화번호 같은 글자가 없어 건물까지는 좁혀지지 않아요.'
@@ -6864,6 +7321,63 @@
       // 스크린샷은 그대로 두고 사진만 고르면 되도록 파일 선택창을 바로 연다
       photoInput.click();
     });
+    document.getElementById('locWebCheckBtn').addEventListener('click', async function () {
+      var btn = this;
+      var resultEl = document.getElementById('locWebResult');
+      if (!uploadedPhotoUrl) return;
+      btn.disabled = true;
+      var prevText = btn.textContent;
+      btn.textContent = '확인하는 중…';
+      resultEl.style.display = 'none';
+      try {
+        var faces = (lastFaceResult && lastFaceResult.faces) || [];
+        var data = await runLocationCheckPipeline(uploadedPhotoUrl, faces);
+        resultEl.innerHTML = '';
+        var flag = document.createElement('span');
+        flag.className = 'lwr-flag ' + (data.hasMatches ? 'on' : 'off');
+        flag.textContent = data.hasMatches ? '⚠ 비슷한 이미지 발견' : '● 발견 안 됨';
+        resultEl.appendChild(flag);
+        var p = document.createElement('p');
+        p.style.margin = '0';
+        if (data.hasMatches) {
+          p.textContent = '이 사진(또는 배경)과 비슷한 이미지가 인터넷에서 이미 검색됩니다 — 이미 어딘가(가게 홈페이지·지도 등)에 등록된 장소일 수 있어요.';
+        } else {
+          p.textContent = '인터넷에서 일치하는 이미지를 찾지 못했어요. (역방향 이미지 검색 특성상 없다고 100% 안전하다는 뜻은 아니에요.)';
+        }
+        resultEl.appendChild(p);
+        if (data.bestGuessLabels && data.bestGuessLabels.length > 0) {
+          var g = document.createElement('p');
+          g.style.margin = '0.4rem 0 0';
+          g.style.color = 'var(--muted)';
+          g.textContent = '짐작한 내용: ' + data.bestGuessLabels.join(', ');
+          resultEl.appendChild(g);
+        }
+        if (data.matchingPages && data.matchingPages.length > 0) {
+          var ul = document.createElement('ul');
+          data.matchingPages.forEach(function (pg) {
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.href = pg.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+            a.textContent = pg.title || pg.url;
+            li.appendChild(a);
+            ul.appendChild(li);
+          });
+          resultEl.appendChild(ul);
+        }
+        resultEl.style.display = 'block';
+      } catch (e) {
+        resultEl.innerHTML = '';
+        var err = document.createElement('p');
+        err.style.margin = '0';
+        err.style.color = 'var(--risk-high)';
+        err.textContent = '확인하지 못했어요 (' + e.message + ').';
+        resultEl.appendChild(err);
+        resultEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prevText;
+      }
+    });
     document.getElementById('schedIncludeBtn').addEventListener('click', async function () {
       if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 Claude Vision으로 보냅니다. 계속할까요?')) return;
       var btn = this;
@@ -6931,6 +7445,90 @@
       document.getElementById('previewFrame').classList.remove('is-busy');
     }
 
+    // ===== 전후 비교 슬라이더(겹쳐서 손잡이로 비교) =====
+    // 기존 좌우 비교(.compare-grid)와 별개로 "겹쳐놓고 끌어서 비교"하는 방식도
+    // 원하는 사용자가 있어 토글로 추가했다. 편집 도구(브러시·덮개 손잡이)는
+    // 좌우 비교 쪽 DOM(#previewFrame)에만 있으므로, 이쪽은 순수하게 보기 전용이다.
+    var compareSliderOn = false;
+    var csHandle = document.getElementById('csHandle');
+    var csAfterWrap = document.getElementById('csAfterWrap');
+    var csBefore = document.getElementById('csBefore');
+    var csAfter = document.getElementById('csAfter');
+
+    // "처리 후" 이미지는 wrap이 잘라내는 폭과 무관하게 항상 원본 전체 크기로
+    // 그려져야 한다 — wrap 폭에 맞춰 이미지 자체가 줄어들면 확대되어 보인다.
+    // csBefore(안 잘리는 쪽)의 실제 렌더 크기를 기준으로 csAfter의 크기를 못박는다.
+    function syncCompareSliderSize() {
+      if (!csBefore.naturalWidth) return;
+      var w = csBefore.clientWidth || csBefore.getBoundingClientRect().width;
+      var h = csBefore.clientHeight || csBefore.getBoundingClientRect().height;
+      if (!w || !h) return;
+      csAfter.style.width = w + 'px';
+      csAfter.style.height = h + 'px';
+    }
+
+    function syncCompareSliderImages() {
+      var beforeSrc = document.getElementById('previewBeforeThumb').src;
+      var afterSrc = document.getElementById('previewAfter').src;
+      if (beforeSrc) csBefore.src = beforeSrc;
+      if (afterSrc) csAfter.src = afterSrc;
+    }
+
+    function setComparePct(pct) {
+      pct = Math.max(0, Math.min(100, pct));
+      csAfterWrap.style.width = pct + '%';
+      csHandle.style.left = pct + '%';
+    }
+
+    document.getElementById('compareSliderToggle').addEventListener('click', function () {
+      compareSliderOn = !compareSliderOn;
+      this.textContent = compareSliderOn ? '← 따로 보기' : '↔ 겹쳐서 비교하기';
+      document.getElementById('compareGrid').style.display = compareSliderOn ? 'none' : '';
+      document.getElementById('compareSlider').style.display = compareSliderOn ? 'block' : 'none';
+      if (compareSliderOn) {
+        syncCompareSliderImages();
+        setComparePct(50);
+        csBefore.onload = function () { syncCompareSliderSize(); };
+        if (csBefore.complete) syncCompareSliderSize();
+      }
+    });
+
+    // 보정 방식·모드를 바꾸는 동안 슬라이더가 열려 있으면 결과 이미지가 바뀔 때마다
+    // 새로 맞춰준다 — 여러 방식(blur/sticker/outfit/ai)이 저마다 다른 코드 경로에서
+    // previewAfter.src를 바꾸는데, 그걸 하나하나 찾아 고치는 대신 src 자체를 지켜본다.
+    new MutationObserver(function () {
+      if (!compareSliderOn) return;
+      syncCompareSliderImages();
+      syncCompareSliderSize();
+    }).observe(document.getElementById('previewAfter'), { attributes: true, attributeFilter: ['src'] });
+    window.addEventListener('resize', function () { if (compareSliderOn) syncCompareSliderSize(); });
+
+    (function () {
+      var dragging = false;
+      function pctFromEvent(ev) {
+        var rect = document.getElementById('compareSlider').getBoundingClientRect();
+        var x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+        return (x / rect.width) * 100;
+      }
+      csHandle.addEventListener('pointerdown', function (ev) {
+        dragging = true;
+        csHandle.setPointerCapture(ev.pointerId);
+      });
+      csHandle.addEventListener('pointermove', function (ev) {
+        if (!dragging) return;
+        setComparePct(pctFromEvent(ev));
+      });
+      csHandle.addEventListener('pointerup', function (ev) {
+        dragging = false;
+        if (csHandle.releasePointerCapture) csHandle.releasePointerCapture(ev.pointerId);
+      });
+      // 손잡이 자체를 안 잡아도 사진 아무 데나 눌러서 그 자리로 바로 옮길 수 있게
+      document.getElementById('compareSlider').addEventListener('pointerdown', function (ev) {
+        if (ev.target === csHandle || csHandle.contains(ev.target)) return;
+        setComparePct(pctFromEvent(ev));
+      });
+    })();
+
     // 미리보기 위에 덮개 핸들을 얹어 사용자가 위치를 끌어 맞추게 한다.
     // 자동으로 잡은 위치(특히 Claude 근사 위치)가 빗나가는 경우가 있어서 필요하다.
     function renderCoverHandles() {
@@ -6944,7 +7542,11 @@
       var hasTargets = (correctionTextWords || []).length > 0;
       var brushable = currentMethod === 'sticker';
       var tools = document.getElementById('coverTools');
-      tools.style.display = hasTargets ? 'block' : 'none';
+      // 예전엔 자동으로 찾은 글자가 하나도 없으면 도구 전체(브러시 포함)를 숨겼다.
+      // 그런데 브러시는 자동 감지와 무관하게 손으로 직접 칠하는 도구라, 감지가
+      // 비었다고 브러시까지 못 쓰게 막을 이유가 없다(사용자 제보) — 자동 감지 결과가
+      // 있을 때(hasTargets) 또는 브러시를 쓸 수 있는 방식일 때(brushable) 보여준다.
+      tools.style.display = (hasTargets || brushable) ? 'block' : 'none';
       tools.classList.toggle('no-brush', !brushable);
       // 브러시는 덮기 계열에서만 결과에 반영된다 — 다른 방식으로 옮기면 도형으로 되돌린다
       if (!brushable && coverEditMode === 'brush') {
@@ -6955,7 +7557,10 @@
       }
       tools.classList.toggle('is-brush', coverEditMode === 'brush');
       frame.querySelectorAll('.brush-layer').forEach(function (b) { b.remove(); });
-      if (!hasTargets) return;
+      // 아래는 두 갈래로 나뉜다 — 브러시 층 생성(coverEditMode==='brush')과 자동 감지
+      // 상자 생성(그 아래, texts.forEach). 감지 결과가 없어도 브러시 모드라면 칠하는
+      // 층은 그려야 하므로 여기서 막지 않는다 — 상자 쪽은 이후 texts.length===0 검사가 막는다.
+      if (!hasTargets && !(brushable && coverEditMode === 'brush')) return;
 
       var img = document.getElementById('previewAfter');
       if (!img.naturalWidth) return;
@@ -7193,7 +7798,10 @@
       var previousMethod = currentMethod;
       currentMethod = method;
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
-      editInstruction.style.display = method === 'ai' ? 'block' : 'none';
+      // 실제로 fal에 보낸 편집 지시(영문)를 화면에 그대로 노출했었는데, 사용자에겐
+      // 굳이 볼 필요 없는 디버그 정보라 껐다. editPrompt 자체는 여전히 응답에 있고
+      // console.log로는 남는다(검증 필요할 때 개발자도구로 확인 가능).
+      editInstruction.style.display = 'none';
       document.getElementById('blurStrength').style.display = method === 'blur' ? 'flex' : 'none';
       document.getElementById('fillStyle').style.display = method === 'sticker' ? 'flex' : 'none';
       document.getElementById('outfitStyle').style.display = method === 'outfit' ? 'flex' : 'none';
@@ -7289,14 +7897,32 @@
           // kontext가 원본에 없던 아이를 다른 자리에 하나 더 그려내는 경우가 있다 —
           // 원본 아이를 다시 덮어쓰기 전, AI가 만든 순수한 결과만 있는 지금 검출해야
           // "어디가 새로 생긴 자리인지"가 깨끗하게 보인다.
-          await removeHallucinatedPeople(outCanvas, (lastFaceResult && lastFaceResult.faces) || [],
+          var origFaces = (lastFaceResult && lastFaceResult.faces) || [];
+          var hallucCheck = await removeHallucinatedPeople(outCanvas, origFaces,
             outCanvas.width, outCanvas.height);
+          // kontext는 같은 아이도 원본과 완전히 같은 자리에 그려주지 않는다(실사용 제보 —
+          // 인물이 살짝 옆으로 밀려 그려짐). 아이가 둘 이상이면 서로 다른 방향으로 밀릴
+          // 수 있어서(실사용 확인 — 한 명만 맞추면 다른 한 명은 계속 이중 인화로 남음),
+          // 평균 하나로 뭉치지 않고 얼굴마다 자기 짝의 어긋남을 따로 잰다.
+          var facePairs = matchFaces(origFaces, hallucCheck.resultFaces).pairs;
+          var alignOffsets = origFaces.map(function (of) {
+            var pair = facePairs.filter(function (p) { return p.of === of; })[0];
+            if (!pair) return { dx: 0, dy: 0 };
+            var ocx = of.box.x + of.box.width / 2, ocy = of.box.y + of.box.height / 2;
+            var rcx = pair.rf.box.x + pair.rf.box.width / 2, rcy = pair.rf.box.y + pair.rf.box.height / 2;
+            return { dx: rcx - ocx, dy: rcy - ocy };
+          });
+          if (alignOffsets.some(function (o) { return Math.abs(o.dx) > 1 || Math.abs(o.dy) > 1; })) {
+            console.log('[AI배경교체] 인물 위치 어긋남 보정 — ' + alignOffsets.map(function (o, i) {
+              return (i + 1) + '번: dx=' + Math.round(o.dx) + ' dy=' + Math.round(o.dy);
+            }).join(', '));
+          }
           // 프롬프트로 부탁하는 것과 별개로, 인물 영역은 원본으로 되돌려 확실히 막는다.
           // 픽셀 단위 마스크를 쓰면 사람만 정확히 되돌아온다 — 도형으로 덮던 때는
           // 사진의 57%가 원본이 되어 AI가 한 일이 거의 안 보였다.
           var aiMask = await getPersonMask(srcImg, correctionBaseUrl);
-          restorePersonFromOriginal(outCanvas, srcImg, (lastFaceResult && lastFaceResult.faces) || [],
-            outCanvas.width, outCanvas.height, aiMask);
+          restorePersonFromOriginal(outCanvas, srcImg, origFaces,
+            outCanvas.width, outCanvas.height, aiMask, alignOffsets);
           if (outImg.naturalWidth !== srcImg.naturalWidth || outImg.naturalHeight !== srcImg.naturalHeight) {
             console.log('[AI배경교체] 크기 보정 — ' + outImg.naturalWidth + 'x' + outImg.naturalHeight
               + ' -> ' + outCanvas.width + 'x' + outCanvas.height);
@@ -7689,7 +8315,10 @@
       restorePersonFromOriginal: restorePersonFromOriginal,
       removeHallucinatedPeople: removeHallucinatedPeople,
       faceBoxOverlapRatioForTest: faceBoxOverlapRatio,
+      computeAlignmentOffset: computeAlignmentOffset,
+      matchFacesForTest: matchFaces,
       runFluxBackgroundReplace: runFluxBackgroundReplace, // 실제 fal 호출 검증용 (비용 발생)
+      runLocationCheckPipeline: runLocationCheckPipeline, // 실제 Google Vision 호출 검증용 (무료 한도 내)
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
       getPersonMask: getPersonMask,

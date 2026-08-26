@@ -96,6 +96,24 @@ async function main() {
     await T.removeHallucinatedPeople(lowConfCanvas, [real], lowConfCanvas.width, lowConfCanvas.height);
     const lowConfPixelAfter = pixelAt(lowConfCanvas, dupCenter[0], dupCenter[1]);
 
+    // 실사용 제보: kontext가 같은 아이를 원본과 전혀 안 겹칠 만큼 크게 옮겨 그린 적이
+    // 있다. 그때 겹침 비율만으로 "같은 아이인지" 판단하면 진짜 아이를 "원본에 없던
+    // 인물"로 오판해 흐려버린다 — 사진 위에 회색 얼룩이 생기는 버그였다. 원본 사진을
+    // 통째로 40% 옆으로 옮겨 그려서(원본과 겹침 0%) 이 상황을 흉내낸다.
+    const shiftX = Math.round(img.naturalWidth * 0.4);
+    const shiftCanvas = document.createElement('canvas');
+    shiftCanvas.width = img.naturalWidth; shiftCanvas.height = img.naturalHeight;
+    const sctx = shiftCanvas.getContext('2d');
+    sctx.fillStyle = '#777777'; sctx.fillRect(0, 0, shiftCanvas.width, shiftCanvas.height);
+    sctx.drawImage(img, shiftX, 0);
+    const beforeShiftUrl = shiftCanvas.toDataURL('image/png');
+    const shiftedDetected = await T.runFaceDetectionPipeline(beforeShiftUrl);
+    const overlapAfterShift = shiftedDetected.faces.length
+      ? T.faceBoxOverlapRatioForTest(shiftedDetected.faces[0].box, real.box) : null;
+    const shiftCheck = await T.removeHallucinatedPeople(shiftCanvas, [real], shiftCanvas.width, shiftCanvas.height);
+    const afterShiftUrl = shiftCanvas.toDataURL('image/png');
+    const shiftOffset = T.computeAlignmentOffset([real], shiftCheck.resultFaces);
+
     return {
       beforeCount: before.faces.length,
       withDupCount: withDup.faces.length,
@@ -105,6 +123,10 @@ async function main() {
       dupAreaChanged: diff(dupPixelBefore, dupPixelAfter),
       lowConfExtraConfidence: lowConfExtra ? lowConfExtra.confidence : null,
       lowConfAreaChanged: diff(lowConfPixelBefore, lowConfPixelAfter),
+      shiftX: shiftX,
+      overlapAfterShift: overlapAfterShift,
+      shiftUnchanged: beforeShiftUrl === afterShiftUrl,
+      shiftOffsetDx: shiftOffset.dx,
     };
   }, dataUrl);
 
@@ -126,6 +148,12 @@ async function main() {
     check('신뢰도가 낮으면 그 자리를 건드리지 않는다', out.lowConfAreaChanged === 0,
       '변화량 ' + out.lowConfAreaChanged);
   }
+
+  console.log('\n[크게 밀려 그려진 같은 아이 — 겹침이 0이어도 가짜 인물로 오판하면 안 됨]');
+  check('밀린 뒤에는 원본과 안 겹친다(테스트 준비 확인)', out.overlapAfterShift === 0, String(out.overlapAfterShift));
+  check('개수가 같으면(1명↔1명) 흐리지 않는다', out.shiftUnchanged === true, 'unchanged=' + out.shiftUnchanged);
+  check('옮겨간 만큼 어긋남을 정확히 잰다', Math.abs(out.shiftOffsetDx - out.shiftX) < 5,
+    'dx=' + out.shiftOffsetDx.toFixed(1) + ' vs 실제 ' + out.shiftX);
 
   if (errors.length) {
     console.log('\n  페이지 에러: ' + errors.join(' | '));

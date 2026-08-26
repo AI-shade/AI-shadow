@@ -684,6 +684,12 @@ app.post('/api/recommend-correction', async (req, res) => {
 });
 
 // ===== 4. flux-kontext-pro용 편집 지시문 동적 생성 (아이사진_SNS위험진단_프롬프트.md 4번) =====
+// 배경 종류: 예전엔 항상 "a neutral, generic outdoor setting"으로 뭉뚱그려 지시했는데,
+// 옷은 여름 반팔인데 배경이 겨울 풍경으로 나오는 식으로 안 어울리는 경우가 있었다
+// (사용자 제보). 이 Claude 호출은 텍스트만 보고 사진 자체(옷차림)는 못 보므로,
+// "무엇으로 바꿔라"를 직접 정하는 대신 flux-kontext-pro(이미지를 실제로 보는 모델)에게
+// "지금 입은 옷에 어울리는 배경을 스스로 골라 채워라"를 지시하도록 시켰다 — 인물·옷을
+// 건드리지 않는 절대 규칙은 그대로 유지된다.
 const FLUX_PROMPT_SYSTEM = `당신은 flux-kontext-pro 이미지 편집 API에 보낼 영어 프롬프트를 작성하는
 어시스턴트입니다. 이 편집은 **배경만** 바꾸는 기능입니다.
 
@@ -696,6 +702,13 @@ const FLUX_PROMPT_SYSTEM = `당신은 flux-kontext-pro 이미지 편집 API에 �
 - 배경에 있는 것(간판, 표지판, 건물 이름, 차량번호판, 주소 표기 등)만 다루세요.
 - 인물은 그대로 두라고 강하게 명시하세요
   ("do not modify the person in any way", "preserve the person with pixel-level accuracy").
+
+배경을 무엇으로 채울지는 당신이 정하지 마세요(사진을 못 보니까요). 대신 flux-kontext-pro가
+"지금 사진에 보이는 옷차림·계절감에 자연스럽게 어울리는 배경"을 스스로 고르도록 프롬프트에
+명시하세요 — 예: "Replace the identifying background with a setting that naturally suits
+and matches the person's current outfit and the season it suggests (e.g. indoor vs outdoor,
+warm vs cold), while removing anything that reveals a specific location."
+
 - 간결하고 명확한 영어 문장 1~3개로 작성
 - 다른 설명 없이 영어 프롬프트 텍스트 자체만 응답 (JSON 아님, 따옴표도 없이)`;
 
@@ -774,6 +787,75 @@ app.post('/api/replace-background', async (req, res) => {
   } catch (err) {
     console.error('[server] flux-kontext-pro 호출 실패:', err.message);
     res.status(500).json({ error: 'AI 배경교체 실패: ' + falErrorText(err) });
+  }
+});
+
+// ===== Google Cloud Vision — 위치노출 위험 확인 (Web Detection) =====
+// Claude Vision(위 진단)은 사진 속 "글자"를 읽어서 위치를 좁힌다. 이 기능은 결이
+// 다르다 — 사진 자체(또는 그 배경)가 인터넷에 이미 돌고 있는 이미지와 일치하는지
+// 역방향 이미지 검색으로 찾는다. 간판 글자가 없어도, 배경이 이미 인터넷에 인덱싱된
+// 장소(가게 홈페이지·지도 등록 사진 등)라면 여기서 잡힐 수 있다.
+//
+// 프라이버시: 이 기능도 얼굴을 가린 사진만 받는다 — 클라이언트가 진단용과 같은
+// 방식(얼굴 검게 덮기)으로 마스킹한 뒤 보낸다. 원본을 그대로 보내는 예외는
+// AI 보정(옷 바꾸기·배경 교체)에만 있다(기획서 0번 원칙).
+//
+// 비용: Web Detection은 월 1,000건까지 무료, 그 이후 1,000건당 $3.50(실측 확인,
+// 2026-08-26 — 다른 Vision 기능보다 비싼 편이지만 fal.ai보다는 훨씬 싸다).
+app.post('/api/location-check', async (req, res) => {
+  if (!process.env.GOOGLE_VISION_API_KEY) {
+    return res.status(501).json({ error: '준비 중입니다. Google Vision API 키 연동 후 지원 예정이에요.', ready: false });
+  }
+  const { imageBase64 } = req.body || {};
+  if (!imageBase64) {
+    return res.status(400).json({ error: '이미지(imageBase64)가 없습니다.' });
+  }
+
+  const t0 = Date.now();
+  try {
+    const visionRes = await fetch(
+      'https://vision.googleapis.com/v1/images:annotate?key=' + process.env.GOOGLE_VISION_API_KEY,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requests: [{
+            image: { content: imageBase64 },
+            features: [{ type: 'WEB_DETECTION', maxResults: 8 }],
+          }],
+        }),
+      }
+    );
+    const data = await visionRes.json();
+    const apiError = data.responses && data.responses[0] && data.responses[0].error;
+    if (apiError) throw new Error(apiError.message || 'Vision API 오류');
+    if (data.error) throw new Error(data.error.message || 'Vision API 오류');
+
+    const web = (data.responses && data.responses[0] && data.responses[0].webDetection) || {};
+    const matchingPages = (web.pagesWithMatchingImages || []).slice(0, 5).map((p) => ({
+      url: p.url, title: p.pageTitle || '',
+    }));
+    // webEntities는 신뢰도(score)가 없는 것도 섞여 나온다 — 너무 약한 추정까지
+    // "발견"이라고 보고하면 놓치는 것보다 더 나쁜 오탐이 된다.
+    const entities = (web.webEntities || [])
+      .filter((e) => e.description && e.score >= 0.5)
+      .map((e) => ({ description: e.description, score: e.score }));
+    const bestGuessLabels = (web.bestGuessLabels || []).map((l) => l.label).filter(Boolean);
+    const fullMatchCount = (web.fullMatchingImages || []).length;
+    const partialMatchCount = (web.partialMatchingImages || []).length;
+
+    res.json({
+      hasMatches: matchingPages.length > 0 || fullMatchCount > 0,
+      matchingPages,
+      entities,
+      bestGuessLabels,
+      fullMatchCount,
+      partialMatchCount,
+      timingMs: Date.now() - t0,
+    });
+  } catch (err) {
+    console.error('[server] Google Vision 위치확인 실패:', err.message);
+    res.status(500).json({ error: '위치 확인 실패: ' + err.message });
   }
 });
 
