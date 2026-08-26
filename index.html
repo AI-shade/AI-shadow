@@ -4135,6 +4135,182 @@
       return canvas;
     }
 
+    // ===== 사진 파일에 박힌 좌표 (EXIF GPS) =====
+    //
+    // 이 앱의 다른 위치 판단은 전부 추론이다 — "간판이 읽히니 좁혀질 수 있어요".
+    // 이것만 다르다. 파일 안에 위도·경도가 적혀 있으면 그건 추론이 아니라 좌표다.
+    // 이 앱에서 유일하게 100% 확실한 위치 노출이고, 부모가 가장 모르는 것이다.
+    //
+    // 휴대전화는 기본으로 위치를 기록한다. SNS는 올릴 때 지우는 경우가 많지만
+    // 카톡·메일·에어드롭으로 원본을 보내거나 클라우드 링크로 공유하면 그대로 간다.
+    //
+    // 파일 바이트를 브라우저에서 직접 읽는다 — 사진이 밖으로 나가지 않고 비용도 0이다.
+    // 그래서 위치 확인 단계에서 맨 앞에 둔다(좌표가 있으면 구글에 보낼 이유가 없다).
+    //
+    // 라이브러리를 쓰지 않는 이유: 빌드 도구가 없는 단일 HTML이라 CDN을 하나 더
+    // 매달기 부담스럽고, 직접 해석하면 무엇을 읽고 못 읽는지 시험으로 고정할 수 있다.
+
+    // TIFF 자료형 크기 (EXIF는 TIFF 구조를 그대로 쓴다)
+    var TIFF_TYPE_SIZE = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 };
+
+    // JPEG 마커를 훑어 APP1 안의 Exif 블록(TIFF 시작 위치와 길이)을 찾는다.
+    // APP1은 XMP로도 쓰이므로 "Exif\0\0"으로 시작하는 것만 받는다.
+    function findExifTiff(view) {
+      if (view.byteLength < 4) return null;
+      if (view.getUint16(0) !== 0xFFD8) return null; // JPEG가 아니면 EXIF도 없다
+      var i = 2;
+      while (i + 4 <= view.byteLength) {
+        if (view.getUint8(i) !== 0xFF) return null; // 마커가 아니면 더 볼 것이 없다
+        var marker = view.getUint8(i + 1);
+        // SOI/EOI와 RSTn은 길이가 없다
+        if (marker === 0xD8 || marker === 0xD9 || (marker >= 0xD0 && marker <= 0xD7)) { i += 2; continue; }
+        if (marker === 0xDA) return null; // 압축 데이터 시작 — 여기까지 없으면 없다
+        var len = view.getUint16(i + 2);
+        if (len < 2 || i + 2 + len > view.byteLength) return null; // 깨진 파일
+        if (marker === 0xE1) { // APP1
+          var isExif = view.byteLength >= i + 10
+            && view.getUint32(i + 4) === 0x45786966 // 'Exif'
+            && view.getUint16(i + 8) === 0x0000;
+          if (isExif) return { start: i + 10, end: i + 2 + len };
+        }
+        i += 2 + len;
+      }
+      return null;
+    }
+
+    // 하나의 IFD를 태그 -> {type, count, valueOffset} 로 읽는다.
+    // 값이 4바이트를 넘으면 항목 자리에 오프셋이 들어 있다 — 그 경우를 여기서 흡수한다.
+    function readIfd(view, tiffStart, ifdOffset, little) {
+      var base = tiffStart + ifdOffset;
+      if (base + 2 > view.byteLength) return null;
+      var count = view.getUint16(base, little);
+      // 항목 수가 터무니없으면 깨진 파일이다. 무한정 읽지 않는다.
+      if (count > 512 || base + 2 + count * 12 > view.byteLength) return null;
+      var out = {};
+      for (var k = 0; k < count; k++) {
+        var e = base + 2 + k * 12;
+        var tag = view.getUint16(e, little);
+        var type = view.getUint16(e + 2, little);
+        var num = view.getUint32(e + 4, little);
+        var size = (TIFF_TYPE_SIZE[type] || 0) * num;
+        var valueOffset = size > 4 ? tiffStart + view.getUint32(e + 8, little) : e + 8;
+        out[tag] = { type: type, count: num, offset: valueOffset };
+      }
+      return out;
+    }
+
+    function ifdAscii(view, entry) {
+      if (!entry || entry.type !== 2) return '';
+      var s = '';
+      for (var k = 0; k < entry.count; k++) {
+        var p = entry.offset + k;
+        if (p >= view.byteLength) break;
+        var c = view.getUint8(p);
+        if (c === 0) break; // 문자열 끝
+        s += String.fromCharCode(c);
+      }
+      return s;
+    }
+
+    // 유리수 하나. 분모가 0인 파일이 실제로 있다 — 나눗셈에서 죽으면 안 된다.
+    function ifdRational(view, offset, little) {
+      if (offset + 8 > view.byteLength) return 0;
+      var a = view.getUint32(offset, little);
+      var b = view.getUint32(offset + 4, little);
+      return b === 0 ? 0 : a / b;
+    }
+
+    // 도·분·초 세 개를 십진 도로. N/S, E/W를 반영해 부호를 붙인다 —
+    // 이걸 빼먹으면 남반구·서반구 사진이 지구 반대편을 가리킨다.
+    function dmsToDecimal(view, entry, ref, little) {
+      if (!entry || entry.type !== 5 || entry.count < 3) return null;
+      var deg = ifdRational(view, entry.offset, little);
+      var min = ifdRational(view, entry.offset + 8, little);
+      var sec = ifdRational(view, entry.offset + 16, little);
+      var v = deg + min / 60 + sec / 3600;
+      if (!isFinite(v)) return null;
+      var r = String(ref || '').toUpperCase().charAt(0);
+      if (r === 'S' || r === 'W') v = -v;
+      return v;
+    }
+
+    // "2026:08:27 14:32:10" -> "2026-08-27 14:32"
+    function exifDateToText(s) {
+      var m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2})/.exec(String(s || ''));
+      return m ? m[1] + '-' + m[2] + '-' + m[3] + ' ' + m[4] + ':' + m[5] : '';
+    }
+
+    // 사진 파일에서 좌표·촬영시각·기기를 읽는다.
+    // 좌표가 없으면 hasGps: false로 돌려준다 — 그것도 알려줄 정보다("좌표는 없어요").
+    // 깨진 파일에서도 던지지 않는다. 프라이버시 도구가 이상한 파일 하나에 멈추면 안 된다.
+    function parseExifBuffer(buffer) {
+      var empty = { hasGps: false, lat: null, lng: null, altM: null, takenAt: '', make: '', model: '' };
+      try {
+        var view = new DataView(buffer);
+        var tiff = findExifTiff(view);
+        if (!tiff) return empty;
+        var start = tiff.start;
+        if (start + 8 > view.byteLength) return empty;
+        var order = view.getUint16(start);
+        if (order !== 0x4949 && order !== 0x4D4D) return empty; // 'II'(리틀) 또는 'MM'(빅)
+        var little = order === 0x4949;
+        if (view.getUint16(start + 2, little) !== 42) return empty; // TIFF 표식
+        var ifd0 = readIfd(view, start, view.getUint32(start + 4, little), little);
+        if (!ifd0) return empty;
+
+        var out = {
+          hasGps: false, lat: null, lng: null, altM: null, takenAt: '',
+          make: ifdAscii(view, ifd0[0x010F]).trim(),
+          model: ifdAscii(view, ifd0[0x0110]).trim(),
+        };
+
+        // 촬영 시각은 Exif IFD 안에 있다(IFD0이 아니다)
+        if (ifd0[0x8769]) {
+          var exifIfd = readIfd(view, start, view.getUint32(ifd0[0x8769].offset, little), little);
+          if (exifIfd) out.takenAt = exifDateToText(ifdAscii(view, exifIfd[0x9003]));
+        }
+
+        if (!ifd0[0x8825]) return out; // GPS IFD가 없다 = 좌표 없음
+        var gps = readIfd(view, start, view.getUint32(ifd0[0x8825].offset, little), little);
+        if (!gps) return out;
+
+        var lat = dmsToDecimal(view, gps[0x0002], ifdAscii(view, gps[0x0001]), little);
+        var lng = dmsToDecimal(view, gps[0x0004], ifdAscii(view, gps[0x0003]), little);
+        // 범위를 벗어난 값은 깨진 것으로 보고 버린다. 엉뚱한 좌표로 겁주는 것은
+        // 놓치는 것과 다른 종류로 나쁘다.
+        if (lat === null || lng === null || Math.abs(lat) > 90 || Math.abs(lng) > 180) return out;
+        // (0, 0)은 기기가 위치를 못 잡았을 때 넣는 값인 경우가 많다 — 좌표로 치지 않는다.
+        if (lat === 0 && lng === 0) return out;
+
+        out.hasGps = true;
+        out.lat = lat;
+        out.lng = lng;
+        if (gps[0x0006]) {
+          var alt = ifdRational(view, gps[0x0006].offset, little);
+          var below = gps[0x0005] && gps[0x0005].offset < view.byteLength
+            && view.getUint8(gps[0x0005].offset) === 1;
+          out.altM = below ? -alt : alt;
+        }
+        return out;
+      } catch (e) {
+        console.warn('[좌표] EXIF를 읽지 못했습니다 — 좌표 없음으로 진행합니다:', e.message);
+        return empty;
+      }
+    }
+
+    // blob/data URL에서 원본 바이트를 받아 해석한다.
+    // 캔버스를 거치면 EXIF가 사라지므로 반드시 원본 URL을 넘겨야 한다.
+    async function readExifGps(url) {
+      try {
+        var res = await fetch(url);
+        var buf = await res.arrayBuffer();
+        return parseExifBuffer(buf);
+      } catch (e) {
+        console.warn('[좌표] 사진 바이트를 읽지 못했습니다:', e.message);
+        return { hasGps: false, lat: null, lng: null, altM: null, takenAt: '', make: '', model: '' };
+      }
+    }
+
     // ===== 얼굴 검출 실패 시 안전장치 =====
     // face-api가 얼굴을 0개 찾으면 maskFaces()는 아무 것도 가리지 않고 원본을 그대로 반환한다.
     // 실측 결과(README 13번 참고) 거울 반사·작은 얼굴·기울어짐·눈 가림 등 흔한 조건에서
@@ -6003,6 +6179,8 @@
     var lastFaceResult = null;
     var lastOcrResult = null;
     var lastRiskResult = null;
+    // 사진 파일에서 읽은 좌표·촬영시각. 진단할 때 자동으로 채운다(로컬·비용 0).
+    var lastExifResult = null;
     var currentCorrectionCanvas = null; // 다운로드 버튼용 — 현재 미리보기에 표시 중인 처리 결과
     // 보정을 겹쳐 쌓기 위한 상태.
     // 방식마다 원본에서 새로 시작하면 흐림과 글자 덮기를 같이 쓸 수 없다.
@@ -6778,9 +6956,11 @@
       숫자굴리기(document.getElementById('riskScore'), r.score);
       setGauge(r.score);
 
-      숫자굴리기(document.getElementById('locationScore'), r.locationScore);
-      document.getElementById('locationBar').style.width = r.locationScore + '%';
-      document.getElementById('locationEvidence').textContent = r.locationEvidence;
+      // 좌표가 박혀 있으면 추론보다 사실이 앞선다 — 덮어쓰지 않고 처음부터 그 값을 그린다
+      var locVals = locationCardValues(r);
+      숫자굴리기(document.getElementById('locationScore'), locVals.score);
+      document.getElementById('locationBar').style.width = locVals.score + '%';
+      document.getElementById('locationEvidence').textContent = locVals.evidence;
 
       // 왜 이 점수인지 — 항목을 그대로 보여주고 합계를 적는다.
       // 종합 점수를 모델이 통째로 내놓게 두면 근거를 댈 수 없어서, 항목별로 받아 서버가 더한다.
@@ -6916,6 +7096,11 @@
       renderPhotoAndPins(faceResult, ocrResult);
       renderRiskFields(r);
       renderLocationChain(r, faceResult, ocrResult);
+      // renderResult는 테스트·재렌더용 동기 경로다. 좌표는 여기서 기다릴 수 없으니
+      // 읽은 뒤 장소 카드만 다시 그린다(사슬 포함).
+      ensureExifRead().then(function (exif) {
+        if (exif && exif.hasGps) { renderRiskFields(r); renderLocationChain(r, faceResult, ocrResult); }
+      });
     }
 
     // 점수만 보여주면 "그래서 어떻게 알아낸다는 건데"가 남는다.
@@ -6932,6 +7117,38 @@
     var PLACE_TEXT_RE = /학교|유치원|어린이집|초등|중학|고등|학원|교습소|아파트|빌라|번지|\d+동|\d+호|\d{2,4}-\d{3,4}|[가-힣]{2,}(로|길)\s*\d|[가-힣]{2,}(시|군|구|읍|면|동)(?![가-힣])/;
     function isPlaceWord(w) {
       return PLACE_TYPE_RE.test(String(w.type || '')) || PLACE_TEXT_RE.test(String(w.text || ''));
+    }
+
+    // 그리기 전에 좌표를 확보한다. 나중에 덮으면 숫자 굴리기 애니메이션과 싸우고
+    // (실측: 점수 65에 막대 100%로 어긋났다) 사슬도 다시 그려야 한다.
+    // 로컬 파일 몇 밀리초라 기다려도 체감되지 않는다.
+    async function ensureExifRead() {
+      if (lastExifResult || !uploadedPhotoUrl) return lastExifResult;
+      lastExifResult = await readExifGps(uploadedPhotoUrl);
+      if (lastExifResult && lastExifResult.hasGps) {
+        console.log('[좌표] 사진에 좌표가 박혀 있습니다 —',
+          lastExifResult.lat.toFixed(6) + ', ' + lastExifResult.lng.toFixed(6),
+          lastExifResult.takenAt || '');
+      }
+      return lastExifResult;
+    }
+
+    // 좌표가 있으면 장소 특정 가능성은 100이다 — 좌표가 박혀 있는데 65점이라고
+    // 말하는 것은 틀린 것이다. 서버가 얼굴 개수 불일치를 모델 판단과 무관하게
+    // 덮어쓰는 것과 같은 안전장치다(추론이 아니라 사실이라 모델에 맡기지 않는다).
+    // 덮어쓰지 않고, 그릴 값 자체를 여기서 정한다.
+    function locationCardValues(r) {
+      var exif = lastExifResult;
+      if (exif && exif.hasGps) {
+        return {
+          score: 100,
+          evidence: '이 사진 파일에 촬영 장소의 좌표가 그대로 적혀 있어요 ('
+            + exif.lat.toFixed(6) + ', ' + exif.lng.toFixed(6) + ')'
+            + (exif.takenAt ? ' · 촬영 ' + exif.takenAt : '')
+            + '. 간판을 가려도 이 좌표는 남습니다 — 파일 자체를 손봐야 해요.',
+        };
+      }
+      return { score: r.locationScore, evidence: r.locationEvidence };
     }
 
     function renderLocationChain(r, faceResult, ocrResult) {
@@ -6953,7 +7170,23 @@
       var realtime = r.uploadTiming === '실시간 업로드';
       var openToAll = r.privacySetting === '전체공개';
 
+      // 좌표 칸은 맨 앞이다. 다른 칸은 "좁혀질 수 있어요"라는 추론인데 이 칸만
+      // "적혀 있어요"라는 사실이다 — 문장을 다르게 써서 성질 차이를 드러낸다.
+      var exif = lastExifResult;
+      var hasGps = !!(exif && exif.hasGps);
       var steps = [
+        {
+          on: hasGps,
+          what: '사진 파일에 좌표가 적혀있다',
+          tag: hasGps ? '좌표 있음' : (exif ? '없음' : '확인 중'),
+          why: hasGps
+            ? exif.lat.toFixed(6) + ', ' + exif.lng.toFixed(6)
+              + (exif.takenAt ? ' · 촬영 ' + exif.takenAt : '')
+              + ' — 추측이 아니라 파일에 적힌 좌표예요. 간판을 가려도 남습니다.'
+            : (exif
+              ? '사진 파일에 위치 좌표가 없어요. (올리는 곳에서 지워졌거나, 위치 기록을 꺼두셨어요)'
+              : '사진 파일을 읽는 중이에요.'),
+        },
         {
           on: belong.length > 0,
           what: '소속이 보인다',
@@ -7443,6 +7676,9 @@
           // #3 단계별 표시: 위험도 판단을 기다리지 않고 여기서 바로 결과 화면으로 전환.
           // 사진·핀(얼굴/텍스트)은 이미 실제 값이고, 점수/조치/설명 자리는 스켈레톤으로 채워둠.
           var toResultMs = performance.now() - tStart;
+          // 좌표는 그리기 전에 확보한다 — 나중에 덮으면 숫자 굴리기와 싸우고 사슬도
+          // 다시 그려야 한다(실측으로 확인). 로컬 파일이라 몇 밀리초다.
+          await ensureExifRead();
           renderPhotoAndPins(faceResult, ocrResult);
           // 장소 사슬은 이미 가진 것(교복 감지·사진 속 글자·체크리스트 답)으로만 만든다.
           // 점수를 기다릴 이유가 없는데 뼈대를 깔아두는 바람에 "살펴보는 중…"이 떠서
@@ -7912,18 +8148,35 @@
         var faces = (lastFaceResult && lastFaceResult.faces) || [];
         var data = await runLocationCheckPipeline(uploadedPhotoUrl, faces);
         resultEl.innerHTML = '';
+        // 완전 일치와 부분 일치를 같은 말로 뭉개지 않는다. 우리가 보내는 사진은
+        // 얼굴을 검게 덮고 축소·재압축한 것이라 부분 일치로 잡히는 쪽이 자연스럽다 —
+        // 예전에는 그 경우를 "발견 안 됨"으로 보고했다(실사용 제보).
         var flag = document.createElement('span');
         flag.className = 'lwr-flag ' + (data.hasMatches ? 'on' : 'off');
-        flag.textContent = data.hasMatches ? '⚠ 비슷한 이미지 발견' : '● 발견 안 됨';
+        flag.textContent = data.hasExact ? '⚠ 같은 이미지 발견'
+          : (data.hasPartial ? '⚠ 일부 겹치는 이미지 발견' : '● 발견 안 됨');
         resultEl.appendChild(flag);
         var p = document.createElement('p');
         p.style.margin = '0';
-        if (data.hasMatches) {
-          p.textContent = '이 사진(또는 배경)과 비슷한 이미지가 인터넷에서 이미 검색됩니다 — 이미 어딘가(가게 홈페이지·지도 등)에 등록된 장소일 수 있어요.';
+        if (data.hasExact) {
+          p.textContent = '이 사진과 같은 이미지가 인터넷에서 검색됩니다 — 이미 어딘가(가게 홈페이지·지도 등)에 올라가 있는 사진일 수 있어요.';
+        } else if (data.hasPartial) {
+          p.textContent = '이 사진의 일부(주로 배경)와 겹치는 이미지가 인터넷에서 검색됩니다. '
+            + '같은 사진은 아니지만 같은 장소일 수 있어요 — 배경만으로도 장소가 좁혀진다는 뜻이에요.';
         } else {
-          p.textContent = '인터넷에서 일치하는 이미지를 찾지 못했어요. (역방향 이미지 검색 특성상 없다고 100% 안전하다는 뜻은 아니에요.)';
+          p.textContent = '인터넷에서 일치하는 이미지를 찾지 못했어요. (얼굴을 가려서 보내기 때문에 '
+            + '원본이라면 찾았을 것도 놓칠 수 있어요. 못 찾았다고 안전하다는 뜻은 아니에요.)';
         }
         resultEl.appendChild(p);
+        // 무엇을 근거로 그렇게 말하는지 밝힌다 — 다음에 이상한 결과가 나오면 이 숫자가
+        // 원인을 찾는 첫 단서가 된다.
+        var cnt = document.createElement('p');
+        cnt.style.margin = '0.4rem 0 0';
+        cnt.style.color = 'var(--muted)';
+        cnt.textContent = '검색 결과 — 같은 이미지 ' + (data.fullMatchCount || 0) + '건, '
+          + '일부 겹치는 이미지 ' + (data.partialMatchCount || 0) + '건, '
+          + '이 사진이 실린 페이지 ' + ((data.matchingPages || []).length) + '건';
+        resultEl.appendChild(cnt);
         if (data.bestGuessLabels && data.bestGuessLabels.length > 0) {
           var g = document.createElement('p');
           g.style.margin = '0.4rem 0 0';
@@ -8902,6 +9155,10 @@
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
       getPersonMask: getPersonMask,
+      readExifGps: readExifGps,
+      locationCardValuesForTest: locationCardValues,
+      setExifForTest: function (v) { lastExifResult = v; },
+      parseExifBuffer: parseExifBuffer,
       getClothesMask: getClothesMask,
       factorRegions: factorRegions,
       ensureClothesRegion: ensureClothesRegion,

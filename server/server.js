@@ -888,8 +888,17 @@ app.post('/api/location-check', async (req, res) => {
     const fullMatchCount = (web.fullMatchingImages || []).length;
     const partialMatchCount = (web.partialMatchingImages || []).length;
 
+    // 부분 일치를 따로 알린다. 우리가 보내는 것은 원본이 아니라 얼굴을 검게 덮고
+    // (실측 8~9%) 축소·재압축한 사진이라, 지문이 달라져 완전 일치보다 부분 일치로
+    // 잡히는 쪽이 자연스럽다. 예전에는 그 경우가 전부 "발견 안 됨"으로 떨어졌다
+    // (실사용 제보 — 인터넷에서 퍼온 사진인데 못 찾았다). 프라이버시 도구에서
+    // 놓침은 오탐보다 나쁘다.
+    const hasExact = matchingPages.length > 0 || fullMatchCount > 0;
+    const hasPartial = partialMatchCount > 0;
     res.json({
-      hasMatches: matchingPages.length > 0 || fullMatchCount > 0,
+      hasMatches: hasExact || hasPartial,
+      hasExact,
+      hasPartial,
       matchingPages,
       entities,
       bestGuessLabels,

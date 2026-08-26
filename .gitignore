@@ -51,3 +51,4 @@ backup-*.html
 server/backup-*.js
 
 .vercel
+__pycache__/
