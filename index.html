@@ -558,6 +558,84 @@
   .pin-legend .num.face { background: var(--ink); color: var(--card); }
   .pin-note { text-align: left; font-size: 0.75rem; line-height: 1.65; color: var(--muted); margin: 0 0 1.5rem; max-width: 64ch; word-break: keep-all; }
 
+  /* ===== 위험 요소 지도 =====
+     점수 항목과 사진의 자리를 잇는다. 색은 테마 변수를 쓰지 않는다 — 사진 위에
+     얹히므로 밝은/어두운 배경 어느 쪽에서도 같게 읽혀야 한다. */
+  .rgn-layer {
+    position: absolute; inset: 0; border-radius: 18px; overflow: hidden;
+    pointer-events: none;
+  }
+  .rgn {
+    position: absolute; border-radius: 7px;
+    border: 2.5px solid var(--rgn-color, #d93b30);
+    /* 사진이 어두우면 색 테두리만으로는 안 보인다 — 안쪽에 흰 선을 하나 더 둔다 */
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.8);
+    transition: opacity 0.22s ease;
+  }
+  /* 근사 위치(Claude가 9분할 위치만 준 것)는 상자 크기가 실측이 아니다.
+     점선으로 구분해서 "이 자리쯤"이라는 뜻을 모양으로도 밝힌다. */
+  .rgn.rough { border-style: dashed; }
+  /* 캔버스 안에 이미 옅은 안쪽과 진한 테두리가 그려져 있다 — 여기서 또 반투명하게
+     만들면 테두리까지 흐려진다. */
+  .rgn-fill {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    transition: opacity 0.22s ease;
+  }
+  /* 이름표는 그 항목을 골랐을 때만 띄운다. 사진이 최대 300px인데 상자마다 이름표가
+     항상 붙으면 사진이 이름표에 덮인다. 어느 항목인지는 상자 색과 목록의 색점이
+     같아서 이름표 없이도 읽힌다. */
+  .rgn-tag {
+    position: absolute; left: -2.5px; top: -2.5px; transform: translateY(-100%);
+    font-size: 0.6rem; font-weight: 700; line-height: 1; white-space: nowrap;
+    padding: 0.24rem 0.4rem; border-radius: 6px 6px 6px 0;
+    background: var(--rgn-color, #d93b30); color: #fff;
+    opacity: 0; transition: opacity 0.22s ease;
+  }
+  .rgn.on .rgn-tag { opacity: 1; }
+  /* 상자가 사진 맨 위에 붙으면 이름표가 사진 밖으로 나간다 — 그때는 상자 안쪽에 붙인다 */
+  .rgn.tag-inside .rgn-tag { top: -2.5px; transform: none; border-radius: 6px 0 6px 0; }
+  /* 한 항목을 고르면 그 자리만 밝히고 나머지는 죽인다 */
+  .rgn-layer.focusing .rgn, .rgn-layer.focusing .rgn-fill { opacity: 0.12; }
+  .rgn-layer.focusing .rgn.on { opacity: 1; }
+  .rgn-layer.focusing .rgn-fill.on { opacity: 1; }
+  .rgn-outside {
+    position: absolute; inset: auto 8% 8%; margin: 0; display: none;
+    font-size: 0.76rem; font-weight: 600; line-height: 1.5; text-align: center;
+    padding: 0.5rem 0.7rem; border-radius: 12px; word-break: keep-all;
+    background: rgba(23, 25, 28, 0.86); color: #fff;
+  }
+  .rgn-layer.showing-outside .rgn-outside { display: block; }
+  /* 항목을 고른 동안에는 번호 핀이 물러난다. 핀은 감지 목록을 잇는 번호표이고,
+     지금 보려는 것은 고른 항목의 자리다 — 검은 핀이 그대로 진하면 그쪽으로 시선이 간다. */
+  .risk-photo-wrap:has(.rgn-layer.focusing) .pin { opacity: 0.22; transition: opacity 0.22s ease; }
+
+  .factor-map { margin: 0.9rem 0 0; }
+  .fm-head { font-size: 0.82rem; font-weight: 700; margin: 0 0 0.5rem; }
+  .fm-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.35rem; }
+  .fm-row {
+    width: 100%; display: flex; align-items: center; gap: 0.55rem; text-align: left;
+    font: inherit; font-size: 0.82rem; color: inherit; cursor: pointer;
+    background: var(--soft); border: 1px solid transparent; border-radius: 12px;
+    padding: 0.5rem 0.65rem;
+  }
+  .fm-row:hover, .fm-row:focus-visible { border-color: var(--ink); outline: none; }
+  .fm-row[aria-pressed="true"] { border-color: var(--ink); background: var(--card); box-shadow: var(--shadow-soft); }
+  .fm-swatch { flex-shrink: 0; width: 12px; height: 12px; border-radius: 4px; background: var(--rgn-color, #8a8f98); }
+  .fm-name { font-weight: 600; }
+  .fm-score { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); }
+  /* 점수만 아직 모른다 — 숫자 자리 폭(두 자리)만큼 막대를 둔다 */
+  .fm-skel { display: inline-block; width: 1.5em; height: 0.8em; vertical-align: -0.05em; border-radius: 4px; }
+  .fm-where {
+    flex-shrink: 0; font-size: 0.66rem; font-weight: 600; padding: 0.16rem 0.45rem;
+    border-radius: 999px; background: var(--card); color: var(--muted); box-shadow: var(--shadow-soft);
+  }
+  .fm-row.outside .fm-swatch { background: repeating-linear-gradient(45deg, #b9bec6 0 3px, transparent 3px 6px); }
+  .fm-row.none { opacity: 0.55; }
+  .fm-note { font-size: 0.72rem; line-height: 1.65; color: var(--muted); margin: 0.55rem 0 0; max-width: 64ch; word-break: keep-all; }
+  @media (prefers-reduced-motion: reduce) {
+    .rgn, .rgn-fill, .rgn-tag { transition: none; }
+  }
+
   /* 위험도 판단 대기 중 스켈레톤 + 진행 표시 */
   .risk-pending {
     display: none; align-items: center; justify-content: flex-start; gap: 0.55rem;
@@ -801,6 +879,7 @@
     .rcard-detect > .risk-photo-wrap { grid-column: 1; grid-row: 2 / span 2; margin-bottom: 0; }
     .rcard-detect > .pin-legend { grid-column: 2; grid-row: 2; }
     .rcard-detect > .pin-note { grid-column: 2; grid-row: 3; margin-bottom: 0; }
+    .rcard-detect > .factor-map { grid-column: 1 / -1; grid-row: 4; margin-top: 1.1rem; }
   }
   .sub-score-line { display: flex; justify-content: flex-start; margin-bottom: 0.5rem; }
   .sub-score-line strong { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
@@ -2255,9 +2334,21 @@
       <h3 class="rcard-title">사진에서 감지한 항목</h3>
       <div class="risk-photo-wrap" id="riskPhotoWrap">
         <img id="resultThumb" alt="분석한 사진" />
+        <!-- 점수 항목별 영역. aria-hidden — 같은 내용을 아래 목록이 글로 말한다. -->
+        <div class="rgn-layer" id="riskRegions" aria-hidden="true">
+          <p class="rgn-outside" id="rgnOutside"></p>
+        </div>
       </div>
       <ul class="pin-legend" id="pinLegend"></ul>
       <p class="pin-note">* 검게 채운 핀은 face-api.js로 감지한 얼굴, 테두리만 있는 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
+      <!-- 점수가 사진의 어디를 보고 매겨졌는지 잇는다. 숫자만 보여주면 "왜 이 점수인지"가
+           납득되지 않는다는 피드백을 받아 더했다. -->
+      <div class="factor-map" id="factorMap" hidden>
+        <p class="fm-head">점수는 사진의 여기를 보고 매겨졌어요</p>
+        <ul class="fm-list" id="fmList"></ul>
+        <p class="fm-note">항목을 누르거나 손을 올리면 사진에서 그 자리만 밝아져요.
+          캡션·게시 습관은 사진이 아니라 적어주신 글과 설정에서 나온 점수예요.</p>
+      </div>
     </div>
 
     <section class="result-section rcard-location">
@@ -3838,6 +3929,9 @@
           box: box,
           xPct: (box.x + box.width / 2) / img.naturalWidth * 100,
           yPct: (box.y + box.height / 2) / img.naturalHeight * 100,
+          // 상자를 사진 위에 그리려면 중심만으로는 부족하다(위험 요소 지도에서 쓴다)
+          wPct: box.width / img.naturalWidth * 100,
+          hPct: box.height / img.naturalHeight * 100,
           areaRatioPct: (box.width * box.height) / imgArea * 100,
           rollDeg: rollDeg,
           yawDeg: yawDeg,
@@ -4910,6 +5004,11 @@
     //   0 배경 73.1 / 1 머리카락 2.8 / 2 몸 피부 6.1 / 3 얼굴 피부 2.0 / 4 옷 15.9 / 5 그 외 0.1
     // 4번을 꺼내 눈으로 확인했더니 깃·어깨·소매·셔츠·치마·반바지가 두 아이 모두
     // 정확히 들어가고 얼굴·머리·맨팔·벽은 들어가지 않았다. 짐작할 것이 없어진다.
+    //
+    // 대신 무겁다 — 실측 16,371,837바이트다(float16 판은 없다). 인물 분할이 249,537
+    // 바이트인 것과 자릿수가 다르다. 그래서 옷을 실제로 바꿀 때, 또는 위험 요소
+    // 지도에서 옷 자리를 눌러 볼 때만 받아온다. 진단만 하고 마는 사람에게 16MB를
+    // 쓰게 하지 않는다.
     var CLOTHES_CATEGORY = 4;
     var clothesSegmenterPromise = null;
     var clothesMaskCache = { key: null, canvas: null };
@@ -4937,6 +5036,9 @@
       });
       return clothesSegmenterPromise;
     }
+
+    // 모델을 이미 받아뒀는지. 위험 요소 지도가 "지금 바로 칠해도 공짜인가"를 판단한다.
+    function clothesModelReady() { return !!clothesSegmenterPromise; }
 
     // 옷이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하거나 미더우면 null.
     async function getClothesMask(img, cacheKey) {
@@ -6176,6 +6278,282 @@
       legend.appendChild(li);
     }
 
+    // ===== 위험 요소 지도 =====
+    // 어느 항목이 사진의 어느 자리를 보고 매겨진 점수인지 잇는다.
+    //
+    // 항목 이름은 서버(server.js의 RISK_FACTORS)에서 오는 문자열 그대로 맞춘다.
+    // 이름이 어긋나면 자리를 못 찾으므로, 못 찾은 항목은 "사진 밖"이 아니라
+    // 그냥 자리 표시 없이 둔다 — 없는 위험을 사진에 그리는 것보다 낫다.
+    var FACTOR_SOURCES = [
+      { 항목: '간판·주소 노출', kind: 'text', color: '#d93b30' },
+      { 항목: '소속 노출', kind: 'clothes', color: '#1f6feb' },
+      { 항목: '인물 식별성', kind: 'face', color: '#8a4fd3' },
+      { 항목: '캡션 노출', kind: 'outside', color: '#8a8f98',
+        note: '캡션은 사진이 아니라 적어주신 글에서 나온 점수예요.' },
+      { 항목: '게시 습관', kind: 'outside', color: '#8a8f98',
+        note: '게시 습관은 사진이 아니라 공개 범위·업로드 시점 설정에서 나온 점수예요.' },
+    ];
+
+    // 점수를 매길 때 쓰는 것과 같은 유형 판정이다. 여기서만 다르게 고르면
+    // "22점의 근거"라고 표시한 자리가 실제 근거와 어긋난다.
+    var PLACE_WORD_RE = /상호명|간판|주소|지번|전화번호/;
+
+    // 항목 하나가 가리키는 사진 속 상자들. 없으면 빈 배열.
+    function factorRegions(kind, faceResult, ocrResult) {
+      if (kind === 'face') {
+        return ((faceResult && faceResult.faces) || []).map(function (f, i) {
+          return {
+            xPct: f.xPct, yPct: f.yPct,
+            wPct: f.wPct || 14, hPct: f.hPct || 14,
+            tag: '얼굴 ' + (i + 1), rough: false,
+          };
+        });
+      }
+      if (kind === 'text') {
+        var words = (ocrResult && ocrResult.words) || [];
+        // 장소로 분류된 글자가 점수의 근거다. 하나도 없으면 읽힌 글자 전체를
+        // 보여준다 — 그때도 점수가 조금 붙기 때문이다(채점 규칙과 같다).
+        var place = words.filter(function (w) { return PLACE_WORD_RE.test(String(w.type || '')); });
+        var use = place.length > 0 ? place : words;
+        return use.map(function (w) {
+          return {
+            xPct: w.xPct, yPct: w.yPct,
+            wPct: w.wPct || 22, hPct: w.hPct || 6,
+            tag: '"' + String(w.text || '').slice(0, 12) + '"',
+            rough: !!w.approximate,
+          };
+        });
+      }
+      return [];
+    }
+
+    // 소속(교복·명찰·로고)은 옷에 있다. 옷 분할 마스크를 그대로 칠하면 네모보다
+    // 정확하고, 옷 교체에 쓰는 것과 같은 마스크라 따로 계산할 것도 없다.
+    // 다만 그 모델이 16MB라서 진단할 때마다 받지는 않는다 — 이미 받아둔 상태이거나
+    // 사용자가 그 줄을 눌렀을 때만 받는다(clothesModelReady / ensureClothesRegion).
+    async function paintClothesRegion(layer, color) {
+      // 표시는 화면에 걸린 사진 위에 얹히므로, 계산도 같은 사진으로 해야 자리가 맞는다
+      var thumb = document.getElementById('resultThumb');
+      var url = (thumb && thumb.src) || uploadedPhotoUrl;
+      if (!url) return false;
+      try {
+        var img = await loadImage(url);
+        var mask = await getClothesMask(img, 'risk:' + url.slice(0, 96));
+        if (!mask) return false;
+        var w = mask.width, h = mask.height;
+
+        // 옷 실루엣을 색으로 채운 판
+        var solid = document.createElement('canvas');
+        solid.width = w; solid.height = h;
+        var sc = solid.getContext('2d');
+        sc.drawImage(mask, 0, 0);
+        sc.globalCompositeOperation = 'source-in';
+        sc.fillStyle = color;
+        sc.fillRect(0, 0, w, h);
+
+        // 테두리 = 넓힌 마스크 − 원래 마스크. 안쪽을 파내서 윤곽만 남긴다.
+        var rimW = Math.max(2, Math.round(Math.min(w, h) * 0.008));
+        var rim = document.createElement('canvas');
+        rim.width = w; rim.height = h;
+        var rc = rim.getContext('2d');
+        for (var dy = -rimW; dy <= rimW; dy++) {
+          for (var dx = -rimW; dx <= rimW; dx++) {
+            if (dx * dx + dy * dy > rimW * rimW) continue;
+            rc.drawImage(solid, dx, dy);
+          }
+        }
+        rc.globalCompositeOperation = 'destination-out';
+        rc.drawImage(mask, 0, 0);
+
+        // 안쪽은 아주 옅게, 테두리는 진하게. 옷을 단색으로 덮으면 정작 점수의
+        // 원인인 가슴 마크·명찰이 안 보인다 — 표시가 근거를 가리면 안 된다.
+        var tint = document.createElement('canvas');
+        tint.width = w; tint.height = h;
+        var tc = tint.getContext('2d');
+        tc.globalAlpha = 0.16;
+        tc.drawImage(solid, 0, 0);
+        tc.globalAlpha = 1;
+        tc.drawImage(rim, 0, 0);
+        tint.className = 'rgn-fill';
+        tint.dataset.factor = '소속 노출';
+        // 사진 아래, 다른 상자 위가 아니라 맨 뒤에 깔아야 상자 테두리가 가려지지 않는다
+        layer.insertBefore(tint, layer.firstChild);
+        return true;
+      } catch (e) {
+        console.warn('[위험지도] 옷 자리를 표시하지 못했습니다:', e.message);
+        return false;
+      }
+    }
+
+    function addRegionBox(layer, r, def) {
+      var el = document.createElement('div');
+      el.className = 'rgn' + (r.rough ? ' rough' : '');
+      el.style.setProperty('--rgn-color', def.color);
+      el.style.left = Math.max(0, r.xPct - r.wPct / 2) + '%';
+      el.style.top = Math.max(0, r.yPct - r.hPct / 2) + '%';
+      el.style.width = Math.min(100, r.wPct) + '%';
+      el.style.height = Math.min(100, r.hPct) + '%';
+      el.dataset.factor = def.항목;
+      // 상자가 사진 위쪽에 붙으면 이름표가 사진 밖으로 잘린다
+      if (r.yPct - r.hPct / 2 < 9) el.classList.add('tag-inside');
+      var tag = document.createElement('span');
+      tag.className = 'rgn-tag';
+      tag.textContent = r.tag;
+      el.appendChild(tag);
+      layer.appendChild(el);
+      return el;
+    }
+
+    // 한 항목만 밝히고 나머지를 죽인다. name이 null이면 원래대로 되돌린다.
+    function focusFactor(name) {
+      var layer = document.getElementById('riskRegions');
+      var outside = document.getElementById('rgnOutside');
+      if (!layer) return;
+      var def = null;
+      FACTOR_SOURCES.forEach(function (d) { if (d.항목 === name) def = d; });
+      layer.classList.toggle('focusing', !!name);
+      layer.classList.toggle('showing-outside', !!(def && def.kind === 'outside'));
+      if (def && def.kind === 'outside' && outside) outside.textContent = def.note;
+      Array.prototype.forEach.call(layer.querySelectorAll('.rgn, .rgn-fill'), function (el) {
+        el.classList.toggle('on', !!name && el.dataset.factor === name);
+      });
+    }
+
+    // 옷 자리를 한 번만 칠한다. 여러 번 눌러도 모델을 다시 받거나 두 번 칠하지 않는다.
+    var clothesRegionState = 'skip'; // skip | idle | loading | done | failed
+    function setBelongWhere(text) {
+      var list = document.getElementById('fmList');
+      if (!list) return;
+      Array.prototype.forEach.call(list.querySelectorAll('.fm-row'), function (b) {
+        var n = b.querySelector('.fm-name');
+        if (n && n.textContent === '소속 노출') {
+          var w = b.querySelector('.fm-where');
+          if (w) w.textContent = text;
+        }
+      });
+    }
+    function ensureClothesRegion() {
+      if (clothesRegionState !== 'idle') return;
+      clothesRegionState = 'loading';
+      setBelongWhere('확인 중…');
+      var layer = document.getElementById('riskRegions');
+      var def = null;
+      FACTOR_SOURCES.forEach(function (d) { if (d.항목 === '소속 노출') def = d; });
+      paintClothesRegion(layer, def.color).then(function (ok) {
+        clothesRegionState = ok ? 'done' : 'failed';
+        // 못 잡았으면 표시를 지어내지 않는다 — 표기만 사실에 맞게 바꾼다.
+        setBelongWhere(ok ? '사진에서 옷 전체' : '자리 미확인');
+        // 칠하는 동안 이미 이 항목을 고른 상태였다면 새로 깐 것도 같이 밝혀야 한다
+        if (ok && layer && layer.classList.contains('focusing')) {
+          var el = layer.querySelector('.rgn-fill[data-factor="소속 노출"]');
+          var already = layer.querySelector('.rgn.on');
+          if (el && (!already || already.dataset.factor === '소속 노출')) el.classList.add('on');
+        }
+      });
+    }
+
+    // pending이면 점수 자리에만 뼈대 막대를 둔다. 줄 구조가 같아서 결과가 와도
+    // 카드 높이가 그대로다(test/settle.js가 지킨다).
+    function renderFactorMap(factors, faceResult, ocrResult, pending) {
+      var box = document.getElementById('factorMap');
+      var list = document.getElementById('fmList');
+      var layer = document.getElementById('riskRegions');
+      if (!box || !list || !layer) return;
+
+      Array.prototype.forEach.call(layer.querySelectorAll('.rgn, .rgn-fill'), function (el) { el.remove(); });
+      layer.classList.remove('focusing', 'showing-outside');
+      list.innerHTML = '';
+      if (!factors || factors.length === 0) { box.hidden = true; return; }
+
+      var pinnedName = null;
+      factors.forEach(function (f) {
+        var def = null;
+        FACTOR_SOURCES.forEach(function (d) { if (d.항목 === f.항목) def = d; });
+        if (!def) return;
+        var pt = Number(f.점수) || 0;
+        var regions = def.kind === 'outside' ? [] : factorRegions(def.kind, faceResult, ocrResult);
+
+        // 점수가 0이면 사진에 그리지 않는다. 위험하지 않다고 판단한 자리에 상자를
+        // 두르면 "여기가 위험하다"는 뜻으로 읽힌다. 점수를 아직 모를 때도 마찬가지다 —
+        // 감지된 것 자체는 이미 핀이 보여주고 있다.
+        if (!pending && pt > 0) regions.forEach(function (r) { addRegionBox(layer, r, def); });
+
+        var li = document.createElement('li');
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'fm-row' + (def.kind === 'outside' ? ' outside' : '') + (pt === 0 ? ' none' : '');
+        row.style.setProperty('--rgn-color', def.color);
+        row.setAttribute('aria-pressed', 'false');
+        if (pending) row.disabled = true;
+
+        var sw = document.createElement('span');
+        sw.className = 'fm-swatch';
+        var nm = document.createElement('span');
+        nm.className = 'fm-name';
+        nm.textContent = f.항목;
+        var sc = document.createElement('span');
+        sc.className = 'fm-score';
+        if (pending) {
+          var skel = document.createElement('span');
+          skel.className = 'skel fm-skel';
+          sc.appendChild(skel);
+          sc.appendChild(document.createTextNode(' / ' + (Number(f.상한) || 0) + '점'));
+        } else {
+          sc.textContent = pt + ' / ' + (Number(f.상한) || 0) + '점';
+        }
+        var wh = document.createElement('span');
+        wh.className = 'fm-where';
+        wh.textContent = def.kind === 'outside'
+          ? '사진 밖'
+          // 점수를 아직 모르는 동안은 "해당 없음"이 아니다 — 자리만 사실대로 적는다
+          : (pending
+            ? (def.kind === 'clothes' ? '누르면 표시'
+              : (regions.length > 0 ? '사진에서 ' + regions.length + '곳' : '자리 미확인'))
+          : (pt === 0 ? '해당 없음'
+            // 소속은 16MB짜리 옷 분할 모델을 받아온 뒤에 정해진다. 이미 받아뒀으면
+            // 바로 칠하고, 아니면 누를 때까지 기다린다 — 그 사실을 표기로 밝힌다.
+            : (def.kind === 'clothes' ? (clothesModelReady() ? '확인 중…' : '누르면 표시')
+              : (regions.length > 0 ? '사진에서 ' + regions.length + '곳' : '자리 미확인'))));
+
+        row.appendChild(sw); row.appendChild(nm); row.appendChild(sc); row.appendChild(wh);
+        li.appendChild(row);
+        list.appendChild(li);
+
+        // 손을 올리면 미리 보고, 누르면 고정한다 — 화면을 만지는 기기에서는
+        // 올려두는 동작이 없기 때문이다.
+        row.addEventListener('mouseenter', function () {
+          if (def.kind === 'clothes') ensureClothesRegion();
+          if (!pinnedName) focusFactor(f.항목);
+        });
+        row.addEventListener('mouseleave', function () { if (!pinnedName) focusFactor(null); });
+        row.addEventListener('focus', function () { if (!pinnedName) focusFactor(f.항목); });
+        row.addEventListener('blur', function () { if (!pinnedName) focusFactor(null); });
+        row.addEventListener('click', function () {
+          if (def.kind === 'clothes') ensureClothesRegion();
+          var on = pinnedName !== f.항목;
+          pinnedName = on ? f.항목 : null;
+          Array.prototype.forEach.call(list.querySelectorAll('.fm-row'), function (b) {
+            b.setAttribute('aria-pressed', 'false');
+          });
+          row.setAttribute('aria-pressed', on ? 'true' : 'false');
+          focusFactor(pinnedName);
+        });
+      });
+
+      box.hidden = false;
+
+      // 소속에 점수가 붙었으면 옷 자리를 칠할 수 있다. 모델이 16MB라서, 이미 받아둔
+      // 상태일 때만 바로 칠하고 아니면 사용자가 그 줄을 건드릴 때 받는다.
+      var belong = null;
+      factors.forEach(function (f) { if (f.항목 === '소속 노출') belong = f; });
+      if (!pending && belong && (Number(belong.점수) || 0) > 0) {
+        clothesRegionState = 'idle';
+        if (clothesModelReady()) ensureClothesRegion();
+      } else {
+        clothesRegionState = 'skip';
+      }
+    }
+
     function renderPins(faceResult, ocrResult) {
       var wrap = document.getElementById('riskPhotoWrap');
       var legend = document.getElementById('pinLegend');
@@ -6335,6 +6713,9 @@
     function renderPhotoAndPins(faceResult, ocrResult) {
       document.getElementById('resultThumb').src = uploadedPhotoUrl;
       renderPins(faceResult, ocrResult);
+      // 위험 요소 지도의 자리를 미리 잡는다. 항목 이름·상한은 고정이고(SB_CAPS)
+      // 얼굴·글자 자리도 이미 나왔으니, 모르는 것은 점수뿐이다.
+      renderFactorMap(SB_CAPS, faceResult, ocrResult, true);
     }
 
     // 위험도 진단이 끝난 뒤에 채우는 부분(점수/근거/조치/설명/캡션). 스켈레톤 상태를 실제 값으로 교체함.
@@ -6439,6 +6820,7 @@
           sbList.appendChild(li);
         });
         renderRadar(factors);
+        renderFactorMap(factors, lastFaceResult, lastOcrResult);
         document.getElementById('sbTotal').textContent =
           '합계 ' + factors.map(function (f) { return Number(f.점수) || 0; }).join(' + ') + ' = ' + sum + '점';
         sb.style.display = 'block';
@@ -7116,14 +7498,13 @@
           }
           if (myGeneration !== diagnosisGeneration) return; // 그 사이 새 진단이 시작됐으면 화면을 덮어쓰지 않음
           stopRiskPending();
-          renderRiskFields(result);
-          var skeletonFillMs = performance.now() - tRiskStart;
-          console.log('[성능] 스켈레톤이 채워지기까지: ' + Math.round(skeletonFillMs) + 'ms, 전체 소요: ' + Math.round(performance.now() - tStart) + 'ms');
-
-          // 2단계 보정 화면에서 얼굴/텍스트 위치를 그대로 재사용하기 위해 저장
+          // 위험 요소 지도가 얼굴·글자 자리를 쓰므로 먼저 담아둔다
           lastFaceResult = faceResult;
           lastOcrResult = ocrResult;
           lastRiskResult = result;
+          renderRiskFields(result);
+          var skeletonFillMs = performance.now() - tRiskStart;
+          console.log('[성능] 스켈레톤이 채워지기까지: ' + Math.round(skeletonFillMs) + 'ms, 전체 소요: ' + Math.round(performance.now() - tStart) + 'ms');
 
           if (OCR_DEBUG) renderDebugPanel(faceResult, textResult);
         } catch (err) {
@@ -8522,6 +8903,10 @@
       applyBackgroundBlur: applyBackgroundBlur,
       getPersonMask: getPersonMask,
       getClothesMask: getClothesMask,
+      factorRegions: factorRegions,
+      ensureClothesRegion: ensureClothesRegion,
+      renderFactorMap: renderFactorMap,
+      focusFactor: focusFactor,
       clearPersonMaskCache: clearPersonMaskCache,
       applyPatchFill: applyPatchFill,
       sampleBoxSurround: sampleBoxSurround,
