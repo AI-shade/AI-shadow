@@ -834,11 +834,20 @@ app.post('/api/replace-background', async (req, res) => {
   }
 });
 
-// ===== Google Cloud Vision — 위치노출 위험 확인 (Web Detection) =====
-// Claude Vision(위 진단)은 사진 속 "글자"를 읽어서 위치를 좁힌다. 이 기능은 결이
-// 다르다 — 사진 자체(또는 그 배경)가 인터넷에 이미 돌고 있는 이미지와 일치하는지
-// 역방향 이미지 검색으로 찾는다. 간판 글자가 없어도, 배경이 이미 인터넷에 인덱싱된
-// 장소(가게 홈페이지·지도 등록 사진 등)라면 여기서 잡힐 수 있다.
+// ===== Google Cloud Vision — 위치 특정 확인 (랜드마크 + 역방향 이미지 검색) =====
+// 위치 확인 2단계 중 1단계다(0단계는 브라우저에서 읽는 EXIF 좌표, 2단계는 학교 LLM 추론).
+//
+// 두 기능을 한 요청에 함께 넣는다 — 사용자는 버튼을 한 번 누른다.
+//   LANDMARK_DETECTION  사진 속 장소를 알아보면 위도·경도까지 준다. "사진으로 위치를
+//                       특정할 수 있나"라는 물음에 가장 곧바로 답하는 기능이다.
+//   WEB_DETECTION       사진(또는 배경)이 인터넷에 이미 돌고 있는지 역방향으로 찾는다.
+//                       간판 글자가 없어도 이미 인덱싱된 장소라면 여기서 잡히고, 그
+//                       페이지가 장소 이름을 알려주는 경우가 많다.
+// 예전에는 역방향 검색이 이 기능의 전부였다. 방향을 "인터넷에 있나"에서 "위치를
+// 특정할 수 있나"로 바꾸면서 근거 하나로 내려왔다 — 지우지는 않았다.
+//
+// Claude Vision(위 진단)은 사진 속 "글자"를 읽어 위치를 좁힌다. 여기는 글자가 없어도
+// 되는 경로라 서로를 대신하지 않는다.
 //
 // 프라이버시: 이 기능도 얼굴을 가린 사진만 받는다 — 클라이언트가 진단용과 같은
 // 방식(얼굴 검게 덮기)으로 마스킹한 뒤 보낸다. 원본을 그대로 보내는 예외는
@@ -865,7 +874,11 @@ app.post('/api/location-check', async (req, res) => {
         body: JSON.stringify({
           requests: [{
             image: { content: imageBase64 },
-            features: [{ type: 'WEB_DETECTION', maxResults: 8 }],
+            // 한 요청에 둘 다 — 사용자는 버튼을 한 번 누르고 서버도 한 번만 부른다
+            features: [
+              { type: 'LANDMARK_DETECTION', maxResults: 5 },
+              { type: 'WEB_DETECTION', maxResults: 8 },
+            ],
           }],
         }),
       }
@@ -875,7 +888,27 @@ app.post('/api/location-check', async (req, res) => {
     if (apiError) throw new Error(apiError.message || 'Vision API 오류');
     if (data.error) throw new Error(data.error.message || 'Vision API 오류');
 
-    const web = (data.responses && data.responses[0] && data.responses[0].webDetection) || {};
+    const first = (data.responses && data.responses[0]) || {};
+
+    // 랜드마크 — 알아본 장소와 좌표. score가 낮은 것까지 "찾았다"고 하면 엉뚱한 곳을
+    // 알려주는 셈이라 webEntities와 같은 0.5를 문턱으로 쓴다. 버려진 개수는 따로
+    // 알려준다 — 왜 못 찾았는지 화면에서 보이는 편이 다음에 원인을 찾기 쉽다.
+    const LANDMARK_MIN_SCORE = 0.5;
+    const rawLandmarks = first.landmarkAnnotations || [];
+    const landmarks = rawLandmarks
+      .filter((l) => l && l.description && (l.score || 0) >= LANDMARK_MIN_SCORE)
+      .map((l) => {
+        const loc = (l.locations && l.locations[0] && l.locations[0].latLng) || null;
+        return {
+          description: l.description,
+          score: l.score || 0,
+          lat: loc ? loc.latitude : null,
+          lng: loc ? loc.longitude : null,
+        };
+      });
+    const weakLandmarkCount = rawLandmarks.length - landmarks.length;
+
+    const web = first.webDetection || {};
     const matchingPages = (web.pagesWithMatchingImages || []).slice(0, 5).map((p) => ({
       url: p.url, title: p.pageTitle || '',
     }));
@@ -895,7 +928,14 @@ app.post('/api/location-check', async (req, res) => {
     // 놓침은 오탐보다 나쁘다.
     const hasExact = matchingPages.length > 0 || fullMatchCount > 0;
     const hasPartial = partialMatchCount > 0;
+    const hasLandmark = landmarks.length > 0;
     res.json({
+      // 1단계가 위치를 특정했는가 — 다음 단계로 내려갈지 판단하는 값이다.
+      // 랜드마크는 좌표를 주므로 가장 강하고, 그 다음이 같은 이미지, 그 다음이 부분 일치다.
+      found: hasLandmark || hasExact || hasPartial,
+      hasLandmark,
+      landmarks,
+      weakLandmarkCount,
       hasMatches: hasExact || hasPartial,
       hasExact,
       hasPartial,
@@ -909,6 +949,167 @@ app.post('/api/location-check', async (req, res) => {
   } catch (err) {
     console.error('[server] Google Vision 위치확인 실패:', err.message);
     res.status(500).json({ error: '위치 확인 실패: ' + err.message });
+  }
+});
+
+// ===== 위치 확인 2단계 — 학교(충남대) LLM 게이트웨이로 추론 =====
+// 0단계(브라우저에서 읽는 EXIF 좌표)와 1단계(구글 비전)에서 아무것도 안 나왔을 때만
+// 온다. 사용자는 버튼을 한 번 누르고 서버가 단계를 내려간다.
+//
+// 성질이 앞 단계와 다르다 — 좌표도 아니고 색인 조회도 아니라 **추측**이다. 그래서
+// 구체성 등급을 함께 받아 화면이 다르게 표시하게 한다. 추측을 좌표처럼 보여주면
+// 오탐이고 그 반대는 놓침이다. "한국의 아파트 단지 앞"과 "○○초등학교 앞"은 위험의
+// 크기가 다르므로 한 덩어리로 뭉개지 않는다.
+//
+// API 형태는 실측으로 확인했다(2026-08-27). OpenAI 호환이라 요청 모양이 표준이다.
+// 이미지 입력도 직접 찔러서 확정했다 — 위/아래가 빨강·파랑인 64x64 PNG를 보내고
+// 색을 물었더니 gemini-3.5-flash / gpt-5.5 / gpt-5.6-luna / grok-4-1-fast는 맞혔고
+// solar-pro4는 "Image input is not allowed for this model"로 거절했다.
+//
+// gemini-3.5-flash를 기본으로 쓴다 — Claude(진단)와 제공자가 달라 같은 방식으로
+// 틀리지 않고, 이미지를 보며, flash 계열이라 빠르고 크레딧을 덜 쓴다.
+const CNU_LLM_BASE = process.env.CNU_LLM_BASE_URL
+  || 'https://factchat-cloud.mindlogic.ai/v1/gateway';
+const CNU_LLM_MODEL = process.env.CNU_LLM_MODEL || 'gemini-3.5-flash';
+// 추론 모델(gpt-5.5 등)은 내부 추론에 토큰을 먼저 쓴다. 60으로 줬을 때 60을 전부
+// 추론에 쓰고 답이 비어서 왔다(실측) — 모델을 바꿔도 답이 나오도록 넉넉히 둔다.
+const CNU_LLM_MAX_TOKENS = Number(process.env.CNU_LLM_MAX_TOKENS || 2400);
+
+const LOCATION_GUESS_PROMPT = `당신은 아이 사진의 배경만 보고 "이 사진으로 촬영 장소를
+얼마나 좁힐 수 있는지" 판단하는 검토자입니다. 부모가 SNS에 올리기 전에 확인하려고
+물어보는 것입니다.
+
+사진에는 아이 얼굴이 검게 가려져 있습니다. 그건 위험요소가 아니니 언급하지 마세요.
+당신이 볼 것은 **배경**입니다.
+
+이런 것들을 찾으세요 — 글자가 아니어도 장소를 좁힙니다:
+- 아파트 동 번호, 우편함, 현관 호수, 계단 번호
+- 차량 번호판, 버스 정류장 이름, 도로 표지, 지하철 출구 번호
+- 특징적인 건물 외벽·간판 모양·놀이터 기구·조형물
+- 산 능선, 강, 바다, 특징적인 지형
+- 지역을 알려주는 것들 (표지판 언어, 건축 양식, 식생, 차종)
+
+**중요 — 확실하지 않은 것을 확실한 것처럼 말하지 마세요.** 이건 추측이고, 화면에도
+추측이라고 표시됩니다. 근거 없이 특정 지명을 지어내면 사용자가 엉뚱한 곳을 걱정하게
+됩니다. 근거를 댈 수 없으면 "광범위"로 답하세요.
+
+구체성은 이 넷 중 하나로만 답하세요:
+- "특정불가"  배경으로 아무것도 좁혀지지 않음 (실내 흰 벽 등)
+- "광범위"    나라·기후·도시 유형 정도 (예: 한국의 아파트 단지)
+- "동네"      동네·단지·역세권 정도까지
+- "건물"      특정 건물·기관까지 (동 번호·기관명·간판 등 근거가 있을 때만)
+
+JSON으로만 응답하세요 (다른 설명 없이). **각 문장은 짧게 — "추측"과 "근거"는 각각
+80자 이내로 쓰세요.** 길게 쓰면 응답이 잘려서 아무 답도 전달되지 않습니다.
+{
+  "구체성": "특정불가/광범위/동네/건물",
+  "추측": "어디로 보이는지 (80자 이내)",
+  "근거": "사진에서 무엇을 보고 그렇게 판단했는지 (80자 이내)",
+  "확신": "낮음/보통/높음"
+}`;
+
+// OpenAI 호환 게이트웨이로 이미지 한 장 + 지시문을 보낸다.
+async function callCnuLlmVision(systemPrompt, userText, imageBase64, mediaType) {
+  const t0 = Date.now();
+  const resp = await fetch(CNU_LLM_BASE + '/chat/completions/', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + process.env.CNU_LLM_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: CNU_LLM_MODEL,
+      max_tokens: CNU_LLM_MAX_TOKENS,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: [
+          { type: 'text', text: userText },
+          { type: 'image_url', image_url: { url: 'data:' + (mediaType || 'image/jpeg') + ';base64,' + imageBase64 } },
+        ] },
+      ],
+    }),
+  });
+  const text = await resp.text();
+  if (!resp.ok) {
+    // 게이트웨이 오류 본문을 그대로 붙인다 — "이미지를 못 받는다"류의 원인이
+    // 여기에 문장으로 온다(실측: "Image input is not allowed for this model").
+    throw new Error('학교 LLM 호출 실패 (HTTP ' + resp.status + '): ' + text.slice(0, 300));
+  }
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    throw new Error('학교 LLM 응답이 JSON이 아닙니다: ' + text.slice(0, 200));
+  }
+  const choice = (data.choices && data.choices[0]) || {};
+  const content = (choice.message && choice.message.content) || '';
+  if (!content) {
+    // 추론 모델이 max_tokens를 내부 추론에 다 쓰면 여기로 온다(실측: gpt-5.5).
+    // 원인이 화면에 드러나야 "모델이 고장났다"로 오진하지 않는다.
+    throw new Error('학교 LLM이 빈 응답을 돌려줬어요 (끝난 이유: '
+      + (choice.finish_reason || '알 수 없음') + '). 추론 모델이면 CNU_LLM_MAX_TOKENS를 늘려보세요.');
+  }
+  // 한도에 걸려 잘리면 JSON 닫는 괄호가 없어서 extractJson이 "JSON을 찾을 수 없음"으로
+  // 던진다 — 그러면 진짜 원인(잘림)이 가려진다. 실제로 그렇게 한 번 헛디뎠다.
+  if (choice.finish_reason === 'length') {
+    var e2 = new Error('학교 LLM 응답이 토큰 한도에서 잘렸어요 (' + CNU_LLM_MAX_TOKENS
+      + '). CNU_LLM_MAX_TOKENS를 늘리거나 더 짧게 답하도록 해야 해요.');
+    e2.isParseError = true;
+    throw e2;
+  }
+  return {
+    parsed: extractJson(content),
+    timingMs: Date.now() - t0,
+    model: data.model || CNU_LLM_MODEL,
+    usage: data.usage,
+  };
+}
+
+app.post('/api/location-guess', async (req, res) => {
+  if (!process.env.CNU_LLM_API_KEY) {
+    return res.status(501).json({
+      error: '준비 중입니다. 학교 LLM API 키 연동 후 지원 예정이에요.',
+      ready: false,
+    });
+  }
+  const { imageBase64, mediaType, hints } = req.body || {};
+  if (!imageBase64) {
+    return res.status(400).json({ error: '이미지(imageBase64)가 없습니다.' });
+  }
+
+  try {
+    // 이미 찾아둔 단서를 같이 준다 — 같은 것을 두 번 찾게 만들 이유가 없고,
+    // 앞 단계에서 아무것도 안 나왔다는 사실 자체가 판단에 쓸모 있는 정보다.
+    const userText = [
+      '이 사진의 배경으로 촬영 장소를 얼마나 좁힐 수 있는지 판단해주세요.',
+      hints && hints.texts && hints.texts.length > 0
+        ? '- 이미 읽어낸 글자: ' + hints.texts.slice(0, 8).join(', ')
+        : '- 사진에서 읽어낸 글자는 없습니다.',
+      hints && hints.clues && hints.clues.length > 0
+        ? '- 이미 찾은 시각 단서: ' + hints.clues.slice(0, 6).join(', ')
+        : null,
+      '- 사진 파일에 좌표(EXIF GPS)는 없었고, 구글 장소 인식·역방향 이미지 검색에서도 나오지 않았습니다.',
+    ].filter(Boolean).join('\n');
+
+    const result = await callCnuLlmVision(LOCATION_GUESS_PROMPT, userText, imageBase64, mediaType);
+    const p = result.parsed || {};
+    const 구체성 = ['특정불가', '광범위', '동네', '건물'].indexOf(String(p.구체성)) >= 0
+      ? p.구체성 : '광범위';
+    res.json({
+      ready: true,
+      // 추측임을 응답에 박아 둔다 — 화면이 앞 단계와 같은 말로 표시하지 않게.
+      kind: 'guess',
+      구체성: 구체성,
+      추측: p.추측 || '',
+      근거: p.근거 || '',
+      확신: p.확신 || '보통',
+      timingMs: result.timingMs,
+      model: result.model,
+      usage: result.usage,
+    });
+  } catch (err) {
+    console.error('[server] 위치 추측(학교 LLM) 실패:', err.message);
+    res.status(err.isParseError ? 422 : 500).json({ error: err.message });
   }
 });
 

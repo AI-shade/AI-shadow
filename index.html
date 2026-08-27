@@ -2368,8 +2368,10 @@
            검색으로 본다. 자동으로 돌지 않는다 — 버튼을 눌러야만 호출(비용·무료
            한도 때문에 사용자가 원할 때만). -->
       <div class="loc-web-check" id="locWebCheck">
-        <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진, 인터넷에서 찾을 수 있는지 확인하기</button>
-        <p class="loc-web-hint">Google Vision으로 역방향 이미지 검색을 해요. 얼굴을 가린 사진만 보내고, 월 1,000건까지 무료예요.</p>
+        <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
+        <p class="loc-web-hint">한 번 누르면 확실한 것부터 차례로 봐요 — ① 사진 파일에 박힌 좌표(브라우저 안에서만 확인)
+          ② Google Vision으로 장소 인식·역방향 이미지 검색 ③ 그래도 안 나오면 AI 추측.
+          앞에서 나오면 뒤는 부르지 않아요. 밖으로 보낼 때는 얼굴을 가린 사진만 보내요.</p>
         <div class="loc-web-result" id="locWebResult" style="display:none;"></div>
       </div>
     </section>
@@ -4726,13 +4728,71 @@
     // 동일한 maskFaces). 원본을 그대로 보내는 예외는 AI 보정(옷 바꾸기·배경 교체)뿐이다.
     var LOCATION_CHECK_BACKEND_URL = '/api/location-check';
 
+    var LOCATION_GUESS_BACKEND_URL = '/api/location-guess';
+
     async function runLocationCheckPipeline(imgUrl, faces) {
       var img = await loadImage(imgUrl);
       var maskedCanvas = fitForVision(maskFaces(img, faces));
       var base64 = maskedCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
       var data = await postJson(LOCATION_CHECK_BACKEND_URL, { imageBase64: base64 });
-      console.log('[위치확인] 완료 — ' + Math.round(data.timingMs) + 'ms', data);
+      console.log('[위치확인] 1단계(구글 비전) — ' + Math.round(data.timingMs) + 'ms', data);
       return data;
+    }
+
+    // 사용자는 버튼을 한 번 누른다. 확실한 것부터 싸게 보고, 안 나올 때만 내려간다.
+    //   0단계 사진 파일의 좌표 — 결정적, 비용 0, 사진이 밖으로 안 나감
+    //   1단계 구글 비전 — 알아본 장소(좌표)와 인터넷에 있는 같은/비슷한 이미지
+    //   2단계 학교 LLM — 추측. 앞에서 아무것도 안 나왔을 때만.
+    // 앞 단계에서 나오면 뒤는 부르지 않는다 — 좌표가 있는데 구글에 보낼 이유가 없다.
+    async function runLocationCascade(imgUrl, faces, onStage) {
+      // 0단계
+      if (onStage) onStage('exif');
+      var exif = await ensureExifRead();
+      if (exif && exif.hasGps) {
+        return { stage: 'exif', kind: 'coords', exif: exif };
+      }
+
+      // 1단계
+      if (onStage) onStage('vision');
+      var vision = null;
+      try {
+        vision = await runLocationCheckPipeline(imgUrl, faces);
+      } catch (e) {
+        // 1단계가 안 되면 2단계로 내려간다 — 여기서 멈추면 사용자는 아무 답도 못 받는다.
+        console.warn('[위치확인] 1단계 실패 — 2단계로 내려갑니다:', e.message);
+        vision = { error: e.message };
+      }
+      if (vision && vision.found) {
+        return { stage: 'vision', kind: vision.hasLandmark ? 'place' : 'image', vision: vision };
+      }
+
+      // 2단계 — 얼굴을 가린 사진을 학교 LLM에 보낸다(1단계와 같은 마스킹).
+      // 이미 찾아둔 글자·단서도 같이 준다 — 같은 것을 두 번 찾게 할 이유가 없다.
+      if (onStage) onStage('guess');
+      try {
+        var img2 = await loadImage(imgUrl);
+        var masked2 = fitForVision(maskFaces(img2, faces));
+        var b64 = masked2.toDataURL('image/jpeg', 0.85).split(',')[1];
+        var words = (lastOcrResult && lastOcrResult.words) || [];
+        var clues = (lastOcrResult && lastOcrResult.visualClues) || [];
+        var guess = await postJson(LOCATION_GUESS_BACKEND_URL, {
+          imageBase64: b64,
+          mediaType: 'image/jpeg',
+          hints: {
+            texts: words.map(function (w) { return String(w.text || ''); }).filter(Boolean),
+            clues: clues.map(function (c) { return String(c.종류 || ''); }).filter(Boolean),
+          },
+        });
+        console.log('[위치확인] 2단계(학교 LLM) — ' + Math.round(guess.timingMs || 0) + 'ms', guess);
+        // 배경으로 아무것도 안 좁혀지면 "추측했다"고 하지 않는다 — 못 찾은 것이다.
+        if (guess.구체성 === '특정불가') {
+          return { stage: 'guess', kind: 'notfound', guess: guess, vision: vision };
+        }
+        return { stage: 'guess', kind: 'guess', guess: guess, vision: vision };
+      } catch (e) {
+        // 준비 중(501)도 여기로 온다 — 못 찾은 것과 아직 못 하는 것을 구분해서 알린다
+        return { stage: 'guess', kind: 'unavailable', reason: e.message, vision: vision };
+      }
     }
 
     // ===== AI 배경교체 (fal.ai flux-kontext-pro) =====
@@ -8142,59 +8202,130 @@
       if (!uploadedPhotoUrl) return;
       btn.disabled = true;
       var prevText = btn.textContent;
-      btn.textContent = '확인하는 중…';
       resultEl.style.display = 'none';
+
+      // 단계마다 버튼 글씨를 바꿔서 지금 무엇을 하는 중인지 알린다. 최대 세 번
+      // 호출하므로 "확인하는 중…"만 띄우면 왜 오래 걸리는지 알 수 없다.
+      var stageText = {
+        exif: '① 사진 파일의 좌표 확인 중…',
+        vision: '② 구글로 장소 확인 중…',
+        guess: '③ AI 추측 확인 중…',
+      };
+
+      function line(text, muted) {
+        var p = document.createElement('p');
+        p.style.margin = muted ? '0.4rem 0 0' : '0';
+        if (muted) p.style.color = 'var(--muted)';
+        p.textContent = text;
+        resultEl.appendChild(p);
+      }
+
       try {
         var faces = (lastFaceResult && lastFaceResult.faces) || [];
-        var data = await runLocationCheckPipeline(uploadedPhotoUrl, faces);
+        var out = await runLocationCascade(uploadedPhotoUrl, faces, function (stage) {
+          btn.textContent = stageText[stage] || prevText;
+        });
         resultEl.innerHTML = '';
-        // 완전 일치와 부분 일치를 같은 말로 뭉개지 않는다. 우리가 보내는 사진은
-        // 얼굴을 검게 덮고 축소·재압축한 것이라 부분 일치로 잡히는 쪽이 자연스럽다 —
-        // 예전에는 그 경우를 "발견 안 됨"으로 보고했다(실사용 제보).
+
         var flag = document.createElement('span');
-        flag.className = 'lwr-flag ' + (data.hasMatches ? 'on' : 'off');
-        flag.textContent = data.hasExact ? '⚠ 같은 이미지 발견'
-          : (data.hasPartial ? '⚠ 일부 겹치는 이미지 발견' : '● 발견 안 됨');
-        resultEl.appendChild(flag);
-        var p = document.createElement('p');
-        p.style.margin = '0';
-        if (data.hasExact) {
-          p.textContent = '이 사진과 같은 이미지가 인터넷에서 검색됩니다 — 이미 어딘가(가게 홈페이지·지도 등)에 올라가 있는 사진일 수 있어요.';
-        } else if (data.hasPartial) {
-          p.textContent = '이 사진의 일부(주로 배경)와 겹치는 이미지가 인터넷에서 검색됩니다. '
-            + '같은 사진은 아니지만 같은 장소일 수 있어요 — 배경만으로도 장소가 좁혀진다는 뜻이에요.';
-        } else {
-          p.textContent = '인터넷에서 일치하는 이미지를 찾지 못했어요. (얼굴을 가려서 보내기 때문에 '
-            + '원본이라면 찾았을 것도 놓칠 수 있어요. 못 찾았다고 안전하다는 뜻은 아니에요.)';
-        }
-        resultEl.appendChild(p);
-        // 무엇을 근거로 그렇게 말하는지 밝힌다 — 다음에 이상한 결과가 나오면 이 숫자가
-        // 원인을 찾는 첫 단서가 된다.
-        var cnt = document.createElement('p');
-        cnt.style.margin = '0.4rem 0 0';
-        cnt.style.color = 'var(--muted)';
-        cnt.textContent = '검색 결과 — 같은 이미지 ' + (data.fullMatchCount || 0) + '건, '
-          + '일부 겹치는 이미지 ' + (data.partialMatchCount || 0) + '건, '
-          + '이 사진이 실린 페이지 ' + ((data.matchingPages || []).length) + '건';
-        resultEl.appendChild(cnt);
-        if (data.bestGuessLabels && data.bestGuessLabels.length > 0) {
-          var g = document.createElement('p');
-          g.style.margin = '0.4rem 0 0';
-          g.style.color = 'var(--muted)';
-          g.textContent = '짐작한 내용: ' + data.bestGuessLabels.join(', ');
-          resultEl.appendChild(g);
-        }
-        if (data.matchingPages && data.matchingPages.length > 0) {
-          var ul = document.createElement('ul');
-          data.matchingPages.forEach(function (pg) {
-            var li = document.createElement('li');
-            var a = document.createElement('a');
-            a.href = pg.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-            a.textContent = pg.title || pg.url;
-            li.appendChild(a);
-            ul.appendChild(li);
-          });
-          resultEl.appendChild(ul);
+        var on = out.kind === 'coords' || out.kind === 'place' || out.kind === 'image';
+        flag.className = 'lwr-flag ' + (on ? 'on' : 'off');
+
+        if (out.kind === 'coords') {
+          // 0단계 — 추측이 아니라 파일에 적힌 값이다. 가장 강하게 말한다.
+          flag.textContent = '⚠ 좌표가 그대로 있음';
+          resultEl.appendChild(flag);
+          line('사진 파일에 촬영 장소의 좌표가 적혀 있어요 — '
+            + out.exif.lat.toFixed(6) + ', ' + out.exif.lng.toFixed(6)
+            + (out.exif.takenAt ? ' (촬영 ' + out.exif.takenAt + ')' : '') + '.');
+          line('추측이 아니라 파일에 적힌 값이에요. 간판을 가려도 이건 남으니 파일 자체를 손봐야 해요.', true);
+          line('① 사진 파일 확인에서 나왔어요. 이 사진은 밖으로 보내지 않았어요.', true);
+
+        } else if (out.kind === 'place') {
+          // 1단계 — 구글이 알아본 장소. 좌표까지 주지만 "알아봤다"는 조회 결과다.
+          var top = out.vision.landmarks[0];
+          flag.textContent = '⚠ 장소를 알아봄';
+          resultEl.appendChild(flag);
+          line('구글이 이 사진의 장소를 "' + top.description + '"로 알아봤어요 (신뢰도 '
+            + Math.round(top.score * 100) + '%'
+            + (top.lat != null ? ', 좌표 ' + top.lat.toFixed(5) + ', ' + top.lng.toFixed(5) : '') + ').');
+          if (out.vision.landmarks.length > 1) {
+            line('다른 후보: ' + out.vision.landmarks.slice(1).map(function (l) {
+              return l.description + '(' + Math.round(l.score * 100) + '%)';
+            }).join(', '), true);
+          }
+          line('② 구글 장소 인식에서 나왔어요. 얼굴을 가린 사진만 보냈어요.', true);
+
+        } else if (out.kind === 'image') {
+          // 1단계 — 같은/비슷한 이미지. 장소 이름을 직접 주지는 않지만 페이지가 알려준다.
+          var v = out.vision;
+          flag.textContent = v.hasExact ? '⚠ 같은 이미지 발견' : '⚠ 일부 겹치는 이미지 발견';
+          resultEl.appendChild(flag);
+          if (v.hasExact) {
+            line('이 사진과 같은 이미지가 인터넷에서 검색돼요 — 이미 어딘가(가게 홈페이지·지도 등)에 '
+              + '올라가 있는 사진일 수 있어요. 그 페이지가 장소를 알려줍니다.');
+          } else {
+            line('이 사진의 일부(주로 배경)와 겹치는 이미지가 인터넷에서 검색돼요. '
+              + '같은 사진은 아니지만 같은 장소일 수 있어요 — 배경만으로도 장소가 좁혀진다는 뜻이에요.');
+          }
+          if (v.bestGuessLabels && v.bestGuessLabels.length > 0) {
+            line('구글이 짐작한 내용: ' + v.bestGuessLabels.join(', '), true);
+          }
+          line('검색 결과 — 같은 이미지 ' + (v.fullMatchCount || 0) + '건, 일부 겹치는 이미지 '
+            + (v.partialMatchCount || 0) + '건, 이 사진이 실린 페이지 '
+            + ((v.matchingPages || []).length) + '건', true);
+          if (v.matchingPages && v.matchingPages.length > 0) {
+            var ul = document.createElement('ul');
+            v.matchingPages.forEach(function (pg) {
+              var li = document.createElement('li');
+              var a = document.createElement('a');
+              a.href = pg.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+              a.textContent = pg.title || pg.url;
+              li.appendChild(a);
+              ul.appendChild(li);
+            });
+            resultEl.appendChild(ul);
+          }
+          line('② 구글 역방향 이미지 검색에서 나왔어요. 얼굴을 가린 사진만 보냈어요.', true);
+
+        } else if (out.kind === 'guess') {
+          // 2단계 — 추측이다. 앞 단계와 같은 말을 쓰지 않는다.
+          flag.className = 'lwr-flag on';
+          var g = out.guess || {};
+          // 구체성으로 위험의 크기를 구분한다. "한국의 아파트 단지"와 "○○초등학교 앞"을
+          // 같은 말로 뭉개면, 넓은 추측에 겁먹거나 좁은 추측을 흘려보낸다.
+          var 등급 = { 건물: '건물까지', 동네: '동네까지', 광범위: '넓은 범위만' };
+          flag.textContent = '△ AI 추측 — ' + (등급[g.구체성] || '범위 불명');
+          resultEl.appendChild(flag);
+          line(g.추측 || 'AI가 장소를 추측했어요.');
+          if (g.근거) line('그렇게 본 이유: ' + g.근거, true);
+          line('③ AI 추측이에요 (확신 ' + (g.확신 || '보통') + ') — 좌표나 검색 결과가 아니라 '
+            + '사진을 보고 짐작한 것이니 틀릴 수 있어요. 얼굴을 가린 사진만 보냈어요.', true);
+
+        } else if (out.kind === 'notfound') {
+          // AI가 봤지만 배경으로 아무것도 안 좁혀졌다. "추측했다"고 하면 없는 위험이 생긴다.
+          flag.className = 'lwr-flag off';
+          flag.textContent = '● 못 찾음';
+          resultEl.appendChild(flag);
+          line('세 단계를 모두 봤지만 위치가 나오지 않았어요 — 사진 파일의 좌표도, '
+            + '구글 장소 인식·이미지 검색도, AI가 배경을 본 것도요.');
+          if (out.guess && out.guess.근거) line('AI가 본 것: ' + out.guess.근거, true);
+          line('얼굴을 가려서 보내기 때문에 원본이라면 찾았을 것도 놓칠 수 있어요 — '
+            + '못 찾았다고 안전하다는 뜻은 아니에요.', true);
+
+        } else if (out.kind === 'unavailable') {
+          // 못 찾은 것과 아직 못 하는 것을 구분한다. 뭉개면 "안전하다"로 읽힌다.
+          flag.className = 'lwr-flag off';
+          flag.textContent = '● 못 찾음';
+          resultEl.appendChild(flag);
+          line('사진 파일의 좌표도, 구글 장소 인식·이미지 검색에서도 위치가 나오지 않았어요.');
+          line('얼굴을 가려서 보내기 때문에 원본이라면 찾았을 것도 놓칠 수 있어요 — '
+            + '못 찾았다고 안전하다는 뜻은 아니에요.', true);
+          if (out.vision && (out.vision.weakLandmarkCount || 0) > 0) {
+            line('참고 — 구글이 장소 후보 ' + out.vision.weakLandmarkCount
+              + '개를 봤지만 신뢰도가 낮아 알려드리지 않았어요.', true);
+          }
+          line('③ AI 추측은 아직 준비 중이에요 (' + (out.reason || '연동 전') + ').', true);
         }
         resultEl.style.display = 'block';
       } catch (e) {
