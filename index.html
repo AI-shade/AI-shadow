@@ -2564,6 +2564,26 @@
           교복·원복을 평범한 옷으로 바꿔요. 어느 기관도 알아볼 수 없게 되지만 아이 얼굴과 자세는 그대로예요. 손이 옷 위에 겹쳐 있으면 어색해질 수 있어요.
         </div>
       </button>
+      <!-- 옷 관련 방식 두 개를 AI 옷 바꾸기 옆에 둔다. 같은 대상(옷)을 다루면서
+           바꾸는 정도만 다르므로 나란히 있어야 고르기 쉽다. -->
+      <button class="method-card" data-method="emblem">
+        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 L26 8 V17 C26 23 21 26.5 16 28 C11 26.5 6 23 6 17 V8 Z"/><path d="M11 16 l10 0"/></svg> 마크만 지우기
+          <span class="m-badge" id="badge-emblem-status" style="background:var(--muted);">확인 중</span>
+        </div>
+        <div class="m-reason">
+          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.3rem 0.3rem 0; display:inline-block;">⚠ 원본 전송</span>
+          가슴의 마크·명찰만 지우고 <strong>옷은 그대로 둬요</strong>. 옷 모양·색·무늬가 원본과 같아서 어색함이 가장 적어요. 마크가 소매나 모자에 있으면 놓칠 수 있어요.
+        </div>
+      </button>
+      <button class="method-card" data-method="recolor">
+        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 4 L16 7 L20 4 L27 8 L24 13 L26 28 L6 28 L8 13 L5 8 Z"/><circle cx="16" cy="19" r="4"/></svg> 옷 색만 바꾸기
+          <span class="m-badge" style="background:var(--risk-low);">전송 없음</span>
+        </div>
+        <div class="m-reason">
+          옷의 <strong>색만</strong> 바꿔요. 주름·단추·무늬가 그대로 남고, 브라우저 안에서 끝나서 사진이 밖으로 나가지 않고 즉시 끝나요.
+          <strong>마크는 모양이 남습니다</strong> — 마크가 있으면 "마크만 지우기"를 함께 쓰세요.
+        </div>
+      </button>
       <button class="method-card" data-method="ai">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19 13 L29.5 16 L19 19 L16 29.5 L13 19 L2.5 16 L13 13 Z"/></svg> AI 배경 교체
           <span class="m-badge" id="badge-ai-status" style="background:var(--muted);">확인 중</span>
@@ -5005,21 +5025,25 @@
       // 사진 분위기를 그대로 두고 싶을 때가 있어서 열어둔다.
       keep: { label: '색 안 바꾸기', keepColors: true, sample: null },
       brown: { label: '오트밀 & 브라운',
+        hex: '#CCB490',  // 로컬 색 변경(AI 없이)이 쓰는 실제 색값
         top: 'oatmeal beige (#CCB490)', trim: 'dark chocolate brown (#483018)',
         bottomSolid: 'solid dark chocolate brown (#483018)',
         bottomPlaid: 'a brown-and-beige plaid with stronger contrast than the original',
         sample: 'brown' },
       navy: { label: '스카이 & 네이비',
+        hex: '#C6D4E4',  // 로컬 색 변경(AI 없이)이 쓰는 실제 색값
         top: 'light sky blue (#C6D4E4)', trim: 'deep navy (#26304A)',
         bottomSolid: 'solid deep navy (#181824)',
         bottomPlaid: 'a navy-and-white plaid',
         sample: 'navy' },
       gray: { label: '그레이 & 차콜',
+        hex: '#D5D5D0',  // 로컬 색 변경(AI 없이)이 쓰는 실제 색값
         top: 'soft warm gray (#D5D5D0)', trim: 'charcoal (#3A3A3E)',
         bottomSolid: 'solid charcoal (#3A3A3E)',
         bottomPlaid: 'a gray-and-charcoal plaid',
         sample: null },
       green: { label: '크림 & 포레스트',
+        hex: '#EFE9DA',  // 로컬 색 변경(AI 없이)이 쓰는 실제 색값
         top: 'off-white cream (#EFE9DA)', trim: 'forest green (#2F4A34)',
         bottomSolid: 'solid forest green (#2F4A34)',
         bottomPlaid: 'a green-and-cream plaid',
@@ -5185,6 +5209,176 @@
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
       console.log('[옷교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (마스크 안쪽만 합성)', data);
+      return { canvas: out, data: data };
+    }
+
+    // ===== 옷 색만 바꾸기 (AI 없이) =====
+    // 옷 분할 마스크 안쪽의 색조·채도만 목표색으로 옮기고 밝기는 원본을 그대로 둔다.
+    // 캔버스의 'color' 합성이 정확히 그 일을 한다(CSS mix-blend-mode: color와 같은 규칙) —
+    // 주름·그림자·단추·무늬가 밝기 정보에 담겨 있어서 전부 살아남는다.
+    //
+    // AI를 부르지 않으므로 즉시 끝나고 비용이 0이고 사진이 기기 밖으로 나가지 않는다.
+    // 한계: 마크는 모양이 그대로 남는다(색만 바뀐다). 그래서 화면에 그 사실을 적는다.
+    async function runOutfitRecolor(img, targetHex) {
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var clothes = await getClothesMask(img, imageCacheKey('recolor', img.src));
+      if (!clothes) {
+        var e = new Error('옷 영역을 찾지 못했어요.');
+        e.noClothes = true;
+        throw e;
+      }
+      // 옷만 잘라낸 판에 목표색을 'color'로 얹는다
+      var layer = document.createElement('canvas');
+      layer.width = w; layer.height = h;
+      var lx = layer.getContext('2d');
+      lx.drawImage(img, 0, 0);
+      lx.globalCompositeOperation = 'color';
+      lx.fillStyle = targetHex;
+      lx.fillRect(0, 0, w, h);
+      lx.globalCompositeOperation = 'destination-in';
+      lx.drawImage(clothes, 0, 0, w, h);
+
+      var out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      var ox = out.getContext('2d');
+      ox.drawImage(img, 0, 0);
+      ox.drawImage(layer, 0, 0);
+      console.log('[옷색변경] 완료 — 옷 분할 마스크로 색조만 이동, 비용 0');
+      return out;
+    }
+
+    // ===== 마크만 지우기 =====
+    // 가슴 영역만 마스크로 열어 그 자리를 "주변과 같은 천"으로 채운다.
+    // 옷 전체를 열면 FLUX가 옷을 통째로 새로 그린다 — 그게 "옷이 다른 옷으로 바뀐다"는
+    // 제보의 원인이었다. 좁히면 구조적으로 나머지를 못 건드린다(부탁이 아니라 차단).
+    var EMBLEM_BAND = {
+      // 어깨선을 찾을 때만 넓게 본다(소매 포함) — 옷의 맨 위가 어깨다
+      findWidthRatio: 1.7,
+      // 실제로 여는 자리는 몸통만. 소매는 마크가 없으므로 뺀다.
+      widthRatio: 1.15,
+      // 어깨선에서 얼굴 높이의 몇 배까지가 가슴인가 (마스크를 얹어 눈으로 맞춘 값)
+      heightRatio: 1.4,
+    };
+
+    // 옷 마스크에서 이 사람의 어깨선(옷의 맨 위 픽셀)을 찾는다.
+    // 얼굴 상자에서 유도하면 사진마다 얼굴/몸 비율이 달라 허리에 걸린다(실측).
+    function findShoulderY(clothesData, imgW, imgH, x0, x1) {
+      for (var y = 0; y < imgH; y++) {
+        for (var x = x0; x < x1; x++) {
+          if (clothesData[(y * imgW + x) * 4 + 3] > 128) return y;
+        }
+      }
+      return -1;
+    }
+
+    // 흰색 = 새로 그릴 자리. 얼굴·손은 마지막에 검게 덮는다(옷 마스크와 같은 순서).
+    function buildEmblemMask(faceBoxes, imgW, imgH, clothesMask, handBoxes) {
+      var c = document.createElement('canvas');
+      c.width = imgW; c.height = imgH;
+      var x = c.getContext('2d');
+      x.fillStyle = '#000000';
+      x.fillRect(0, 0, imgW, imgH);
+      if (!clothesMask) return c; // 옷을 못 찾으면 아무것도 열지 않는다
+
+      var cm = document.createElement('canvas');
+      cm.width = imgW; cm.height = imgH;
+      var cmx = cm.getContext('2d');
+      cmx.drawImage(clothesMask, 0, 0, imgW, imgH);
+      var cd = cmx.getImageData(0, 0, imgW, imgH).data;
+
+      var band = document.createElement('canvas');
+      band.width = imgW; band.height = imgH;
+      var bx = band.getContext('2d');
+      bx.fillStyle = '#ffffff';
+      (faceBoxes || []).forEach(function (f) {
+        var cx = f.x + f.width / 2;
+        var sx0 = Math.max(0, Math.round(cx - f.width * EMBLEM_BAND.findWidthRatio));
+        var sx1 = Math.min(imgW, Math.round(cx + f.width * EMBLEM_BAND.findWidthRatio));
+        var shoulder = findShoulderY(cd, imgW, imgH, sx0, sx1);
+        if (shoulder < 0) return;
+        var bx0 = Math.max(0, Math.round(cx - f.width * EMBLEM_BAND.widthRatio));
+        var bx1 = Math.min(imgW, Math.round(cx + f.width * EMBLEM_BAND.widthRatio));
+        var by1 = Math.min(imgH, shoulder + Math.round(f.height * EMBLEM_BAND.heightRatio));
+        if (bx1 > bx0 && by1 > shoulder) bx.fillRect(bx0, shoulder, bx1 - bx0, by1 - shoulder);
+      });
+      // 옷이 아닌 곳(맨살·배경·머리)은 빼낸다
+      bx.globalCompositeOperation = 'destination-in';
+      bx.drawImage(cm, 0, 0);
+      bx.globalCompositeOperation = 'source-over';
+      x.drawImage(band, 0, 0);
+
+      // 얼굴·손은 마지막에 검게. 옷 마스크와 같은 이유·같은 순서다.
+      x.fillStyle = '#000000';
+      (faceBoxes || []).forEach(function (f) {
+        var padX = f.width * 0.35, padTop = f.height * 0.55, padBottom = f.height * 0.06;
+        x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop + padBottom);
+      });
+      (handBoxes || []).forEach(function (hb) { x.fillRect(hb.x, hb.y, hb.width, hb.height); });
+      return c;
+    }
+
+    // 지우는 자리를 "무엇으로 채울지" 말한다. 색·질감을 주변에 맞추라고 해야 이음선이
+    // 안 생긴다(실측: 이 문구로 두 사진 모두 이음선이 보이지 않았다).
+    var EMBLEM_FILL_PROMPT = 'plain fabric with no emblem, no badge, no crest, no logo and no '
+      + 'lettering, exactly the same fabric colour and texture as the surrounding garment, '
+      + 'natural folds matching the pose, photorealistic, not an illustration';
+
+    async function runEmblemRemoval(img, faces, riskResult) {
+      var ow = img.naturalWidth, oh = img.naturalHeight;
+      var send = falSendSize(ow, oh);
+      var sw = send.w, sh = send.h;
+
+      var ic = document.createElement('canvas');
+      ic.width = sw; ic.height = sh;
+      ic.getContext('2d').drawImage(img, 0, 0, sw, sh);
+
+      var scaledFaces = (faces || []).map(function (f) {
+        return {
+          x: f.box.x * sw / ow, y: f.box.y * sh / oh,
+          width: f.box.width * sw / ow, height: f.box.height * sh / oh,
+        };
+      });
+      var handBoxes = (await detectHandBoxes(img)).map(function (hb) {
+        return {
+          x: hb.x * sw / ow, y: hb.y * sh / oh,
+          width: hb.width * sw / ow, height: hb.height * sh / oh,
+        };
+      });
+      var clothesMask = await getClothesMask(img, imageCacheKey('emblem', img.src));
+      if (!clothesMask) {
+        var e = new Error('옷 영역을 찾지 못해서 가슴 자리를 잡을 수 없어요.');
+        e.noClothes = true;
+        throw e;
+      }
+      var mask = buildEmblemMask(scaledFaces, sw, sh, clothesMask, handBoxes);
+
+      var white = (function () {
+        var d = mask.getContext('2d').getImageData(0, 0, sw, sh).data;
+        var n = 0;
+        for (var i = 0; i < d.length; i += 4) if (d[i] > 128) n++;
+        return n;
+      })();
+      console.log('[마크지우기] 마스크 — 가슴만 ' + (white / (sw * sh) * 100).toFixed(1)
+        + '% (손 ' + handBoxes.length + '개 제외)');
+      if (white === 0) {
+        var e2 = new Error('가슴 자리를 찾지 못했어요.');
+        e2.noClothes = true;
+        throw e2;
+      }
+
+      var data = await postJson(INPAINT_BACKEND_URL, {
+        imageBase64: ic.toDataURL('image/png').split(',')[1],
+        maskBase64: mask.toDataURL('image/png').split(',')[1],
+        mediaType: 'image/png',
+        promptOverride: EMBLEM_FILL_PROMPT,
+        grade: riskResult && riskResult.grade,
+        locationEvidence: riskResult && riskResult.locationEvidence,
+      });
+
+      var outImg = await loadImage(falImageDataUrl(data));
+      var out = compositeThroughMask(img, outImg, mask, ow, oh);
+      console.log('[마크지우기] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $'
+        + data.estimatedCostUsd + ' (마스크 안쪽만 합성)', data);
       return { canvas: out, data: data };
     }
 
@@ -8218,7 +8412,8 @@
     }
 
     // 원본 전송 동의가 필요한 방식들 — 취소했을 때 여기로 되돌리면 안 된다
-    var CONSENT_METHODS = ['ai', 'outfit'];
+    // 원본을 외부로 보내는 방식 — 고를 때마다 동의를 받는다
+    var CONSENT_METHODS = ['ai', 'outfit', 'emblem'];
     var NO_CONSENT_FALLBACK = 'blur';
 
     var currentMethod = 'blur';
@@ -8247,8 +8442,12 @@
       var outfitStatusBadge = document.getElementById('badge-outfit-status');
       outfitStatusBadge.textContent = '확인 중';
       outfitStatusBadge.style.background = 'var(--muted)';
+      // 마크만 지우기도 fal을 쓰므로 같은 상태를 따른다
+      var emblemStatusBadge = document.getElementById('badge-emblem-status');
+      emblemStatusBadge.textContent = '확인 중';
+      emblemStatusBadge.style.background = 'var(--muted)';
       checkFluxStatus().then(function (ready) {
-        [aiStatusBadge, outfitStatusBadge].forEach(function (b) {
+        [aiStatusBadge, outfitStatusBadge, emblemStatusBadge].forEach(function (b) {
           b.textContent = ready ? '사용 가능' : '준비 중';
           b.style.background = ready ? 'var(--risk-low)' : 'var(--muted)';
         });
@@ -8930,7 +9129,9 @@
       editInstruction.style.display = 'none';
       document.getElementById('blurStrength').style.display = method === 'blur' ? 'flex' : 'none';
       document.getElementById('fillStyle').style.display = method === 'sticker' ? 'flex' : 'none';
-      document.getElementById('outfitStyle').style.display = method === 'outfit' ? 'flex' : 'none';
+      // 색 고르기 줄은 옷 색을 쓰는 방식에서만 보인다(마크만 지우기는 색을 안 바꾼다)
+      document.getElementById('outfitStyle').style.display =
+        (method === 'outfit' || method === 'recolor') ? 'flex' : 'none';
 
       clearPreviewBusy();
       var previewAfter = document.getElementById('previewAfter');
@@ -8983,6 +9184,90 @@
           console.error('[옷교체] 실패:', err);
           previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '⚠ AI 옷 바꾸기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+        }
+        return;
+      }
+
+      // ── 마크만 지우기 — 가슴만 열어 마크·명찰을 지운다. 옷은 그대로 남는다.
+      if (method === 'emblem') {
+        if (!(await checkFluxStatus())) {
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = '마크만 지우기는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+          return;
+        }
+        if (!(await askFluxConsent())) { selectMethod(NO_CONSENT_FALLBACK); return; }
+        if (!correctionBaseUrl || !lastFaceResult) {
+          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
+          return;
+        }
+        var emFaces = (lastFaceResult && lastFaceResult.faces) || [];
+        if (emFaces.length === 0) {
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = '얼굴을 찾지 못해서 가슴 자리를 알 수 없어요 — 이 방식은 쓸 수 없습니다. 다른 방식을 이용해주세요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+          return;
+        }
+        currentCorrectionCanvas = null;
+        try {
+          setPreviewBusy('가슴의 마크만 지우는 중이에요\
+옷은 그대로 두고 그 자리만 바꿔요\
+10~20초 정도 걸려요');
+          var emImg = await loadImage(correctionBaseUrl);
+          var em = await runEmblemRemoval(emImg, emFaces, lastRiskResult);
+          clearPreviewBusy();
+          currentCorrectionCanvas = em.canvas;
+          previewAfter.src = em.canvas.toDataURL('image/png');
+          previewCaption.textContent = '✨ 가슴의 마크 자리를 주변과 같은 천으로 채웠어요. 옷 모양·색·무늬는 그대로예요. '
+            + '마크가 소매나 모자에 있었다면 남아 있을 수 있으니 꼭 눈으로 확인해주세요. (약 $'
+            + Number(em.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(em.data.timingMs / 1000) + '초)';
+          lastCorrectionMeta = { method: 'emblem', detail: '마크 지우기 — 가슴 영역만 주변 천으로 채움(옷 보존)' };
+        } catch (err) {
+          clearPreviewBusy();
+          console.error('[마크지우기] 실패:', err);
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = err.noClothes
+            ? '⚠ 옷 영역을 찾지 못해서 가슴 자리를 잡을 수 없어요. 다른 방식을 이용해주세요.'
+            : '⚠ 마크 지우기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+        }
+        return;
+      }
+
+      // ── 옷 색만 바꾸기 — 브라우저 안에서 끝난다. 동의도 준비 상태 확인도 필요 없다.
+      if (method === 'recolor') {
+        if (!correctionBaseUrl) {
+          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
+          return;
+        }
+        var cwRe = COLORWAYS[outfitColorway] || COLORWAYS.brown;
+        if (cwRe.keepColors || !cwRe.hex) {
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = '색을 바꾸지 않는 선택이라 바뀌는 게 없어요. 위에서 다른 색을 골라주세요.';
+          currentCorrectionCanvas = null; lastCorrectionMeta = null;
+          return;
+        }
+        currentCorrectionCanvas = null;
+        try {
+          setPreviewBusy('옷 색을 ' + cwRe.label + '으로 바꾸는 중이에요\
+브라우저 안에서 처리해요');
+          var reImg = await loadImage(correctionBaseUrl);
+          var reOut = await runOutfitRecolor(reImg, cwRe.hex);
+          clearPreviewBusy();
+          currentCorrectionCanvas = reOut;
+          previewAfter.src = reOut.toDataURL('image/png');
+          previewCaption.textContent = '✨ 옷 색만 ' + cwRe.label + '으로 바꿨어요. 주름·단추·무늬는 그대로예요. '
+            + '사진은 기기 밖으로 나가지 않았고 비용도 없어요. '
+            + '가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, "마크만 지우기"를 이어서 써주세요.';
+          lastCorrectionMeta = { method: 'recolor', detail: '옷 색 변경 — ' + cwRe.label + ' (브라우저 안 처리, 옷 모양 보존)' };
+        } catch (err) {
+          clearPreviewBusy();
+          console.error('[옷색변경] 실패:', err);
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = err.noClothes
+            ? '⚠ 옷 영역을 찾지 못했어요. 다른 방식을 이용해주세요.'
+            : '⚠ 옷 색 바꾸기에 실패했어요 (' + err.message + ').';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
         }
         return;
@@ -9205,7 +9490,8 @@
           var cwd = COLORWAYS[outfitColorway];
           cwTag.textContent = '';
         }
-        if (currentMethod === 'outfit') selectMethod('outfit');
+        // 옷 색을 쓰는 두 방식 모두 색이 바뀌면 다시 그려야 한다
+        if (currentMethod === 'outfit' || currentMethod === 'recolor') selectMethod(currentMethod);
       });
     });
     document.querySelectorAll('.em-btn').forEach(function (btn) {
@@ -9464,6 +9750,10 @@
       labelBrushBlobs: labelBrushBlobs,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
       runOutfitSwap: runOutfitSwap, // 옷 교체 실호출 검증용 (비용 발생)
+      runOutfitRecolor: runOutfitRecolor, // 옷 색만 바꾸기 (비용 0)
+      consentMethodsForTest: CONSENT_METHODS,
+      buildEmblemMask: buildEmblemMask,   // 가슴 마스크 검증용 (비용 0)
+      runEmblemRemoval: runEmblemRemoval, // 마크 지우기 실호출 검증용 (비용 발생)
       runFaceDetectionPipeline: runFaceDetectionPipeline, // 얼굴 검출 단독 검증용 (로컬 실행이라 비용 없음)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
       // 생활패턴 감지 검증용 — 스크린샷 판독(Claude Vision)과 패턴 분석(Claude) 둘 다 비용 발생
