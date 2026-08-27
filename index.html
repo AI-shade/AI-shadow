@@ -190,6 +190,46 @@
       rgba(228, 234, 216, 0.12) 66%,
       rgba(240, 242, 232, 0) 100%);
   }
+  /* 두 빛이 합쳐지는 자리의 실루엣 — 네잎클로버 (요청).
+     골드가 스크롤을 따라 연두 쪽으로 내려와 겹치는 순간 드러난다. 평소에는 안 보인다.
+
+     왜 두 겹인가: 바깥(span)에 blur, 안쪽(b)에 mask를 나눠 건다. 한 요소에 둘 다 걸면
+     CSS는 filter를 mask보다 먼저 적용해서 "흐려진 것을 잎 모양으로 자르는" 셈이 되고,
+     가장자리가 칼같이 떨어져 빛이 아니라 스티커처럼 보인다. 나누면 잎 모양으로 자른
+     뒤 흐려지므로 윤곽이 부드럽게 번진다.
+
+     색은 골드×연두가 겹친 자리의 색(올리브 쪽)에 맞췄다 — 새로 튀는 색이 아니라
+     "두 빛이 만나서 생긴 색"으로 읽혀야 한다. mix-blend-mode: multiply는 부모의
+     .glow-track > span 규칙에서 이미 걸린다. */
+  /* 자리: 왼쪽 아래 구석이 아니라 화면 가운데 왼쪽이다. 구석에 두면 두 빛이 합쳐질
+     때쯤 그 자리가 이미 본문 카드에 덮여서 안 보인다(실측: 흰 카드가 y590부터 시작).
+     스크롤 35~45% 지점에서 배경이 실제로 보이는 띠가 y350~580이라 그 안에 앉힌다. */
+  .gb-clover {
+    width: 390px; height: 390px; left: 56px; top: 20%;
+    opacity: 0;                  /* 스크롤이 열어준다 */
+    /* 블러는 빛처럼 보이게 하는 최소한만. 세게 걸면 잎 네 개가 한 덩어리로 뭉쳐서
+       클로버로 안 읽힌다(실측으로 18px -> 11px). */
+    filter: blur(11px);
+    /* 부모 규칙의 --pulse 기반 opacity를 쓰지 않는다. 이 덩어리는 숨쉬는 대신
+       스크롤에만 반응해야 한다 — 둘이 겹치면 나타나는 타이밍이 흐려진다. */
+  }
+  .gb-clover > b {
+    position: absolute; inset: 0; display: block;
+    /* 가운데로 몰리는 그라디언트를 쓰면 잎 끝이 사라져서 모양이 안 읽힌다.
+       안쪽을 넓게 고르게 채우고(58%까지 평평하게) 바깥에서만 떨어뜨린다. */
+    background: radial-gradient(circle closest-side at 50% 45%,
+      rgba(148, 154, 76, 0.90) 0%,
+      rgba(154, 160, 84, 0.86) 40%,
+      rgba(166, 171, 98, 0.74) 58%,
+      rgba(190, 192, 132, 0.38) 82%,
+      rgba(214, 211, 172, 0) 100%);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23fff'%3E%3Cpath d='M50,42 C50,58 48,70 43,80' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3Cg transform='translate(50,42)'%3E%3Cpath transform='rotate(-45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(-135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23fff'%3E%3Cpath d='M50,42 C50,58 48,70 43,80' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3Cg transform='translate(50,42)'%3E%3Cpath transform='rotate(-45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(-135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
+
   /* 덩어리 한가운데의 심지. 스크롤에 따라 이것만 진해졌다 흐려진다.
      덩어리 전체를 껐다 켜면 화면 전체가 깜빡이는 것처럼 보이므로,
      바깥 번짐은 그대로 두고 가운데만 숨을 쉬게 한다.
@@ -243,6 +283,7 @@
   @media (max-width: 900px) {
     .gb-core   { width: 300px; height: 300px; right: -100px; top: -110px; }
     .gb-warm   { width: 420px; height: 340px; right: -160px; top: -170px; }
+    .gb-clover { width: 210px; height: 210px; left: 6px; top: 34%; filter: blur(14px); }
     .gb-aurora { width: 620px; height: 580px; left: -180px; bottom: -210px; }
   }
 
@@ -2003,6 +2044,8 @@
   <div class="glow-track">
     <span class="gb-warm"></span>
     <span class="gb-core"><i></i></span>
+    <!-- 두 빛이 합쳐지는 자리의 클로버 실루엣. 스크롤이 열어준다(아래 스크립트). -->
+    <span class="gb-clover"><b></b></span>
     <span class="gb-aurora"><i></i></span>
   </div>
 </div>
@@ -3046,14 +3089,32 @@
     // 보인다(실측 확인). 골드가 연두 덩어리 "중심 가까이"까지 들어와야 두 빛이 다
     // 진한 지점에서 만나 색이 확실히 섞인다.
     var travelX = -Math.min(1250, Math.max(850, window.innerWidth * 0.75));
+    // y를 700에서 430으로 줄였다. 끝까지 내려가면 두 빛이 겹치는 자리가 화면 아래
+    // 구석(y 750 근처)이 되는데, 그때쯤 그 자리는 본문 카드에 덮여서 합쳐지는 것이
+    // 보이지 않는다(실측: 흰 카드가 y590부터 시작). 겹침을 화면 가운데로 끌어올린다.
     gsap.to([core, warm], {
-      x: travelX, y: 700, ease: 'none',
+      x: travelX, y: 430, ease: 'none',
       scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
     });
 
     gsap.to('.gb-aurora', {
       x: 60, y: -40, duration: 10, ease: 'sine.inOut', yoyo: true, repeat: -1,
     });
+
+    // 두 빛이 합쳐지는 자리의 클로버 실루엣(요청). 골드가 내려오는 것과 같은 구간에
+    // 붙이되 뒤쪽 절반에서만 열린다 — 아직 멀리 있을 때 떠 있으면 "합쳐져서 생긴 것"으로
+    // 안 읽힌다. 그래서 시작을 'top top'이 아니라 히어로 중간으로 잡는다.
+    var clover = document.querySelector('.gb-clover');
+    if (clover) {
+      // 골드가 내려오는 것과 같은 구간에 걸치되, 후반에서 진해지게 한다(power2.in).
+      // 'center top'에서 시작하게 해봤더니 히어로가 다 지나간 뒤에 열려서 배경이 이미
+      // 본문에 덮여 안 보였다 — 합쳐지는 과정이 보여야 "합쳐져서 생긴 것"으로 읽힌다.
+      gsap.fromTo(clover, { opacity: 0, scale: 0.8 }, {
+        opacity: 1, scale: 1, ease: 'power2.in', transformOrigin: '50% 45%',
+        // 히어로 절반에서 완성된다. 끝까지 끌면 그때는 배경이 본문에 덮여 안 보인다.
+        scrollTrigger: { trigger: hero, start: 'top top', end: 'center top', scrub: true },
+      });
+    }
   })();
 
   /* 네잎클로버 — 잎 하나가 떨어져 페이지를 따라 내려가고, 맨 아래 CTA에서 다시 붙는다.
@@ -5092,7 +5153,7 @@
       // null이 와서 예전처럼 네모로 진행한다 — 없다고 멈추지는 않는다.
       var personMask = null;
       try {
-        personMask = await getPersonMask(img, 'outfit:' + (img.src || '').slice(-40));
+        personMask = await getPersonMask(img, imageCacheKey('outfit', img.src));
       } catch (e) {
         console.warn('[옷교체] 인물 분리 실패 — 네모 마스크로 진행:', e.message);
       }
@@ -5103,7 +5164,7 @@
           width: hb.width * sw / ow, height: hb.height * sh / oh,
         };
       });
-      var clothesMask = await getClothesMask(img, 'outfit:' + (img.src || '').slice(0, 96));
+      var clothesMask = await getClothesMask(img, imageCacheKey('outfit', img.src));
       var mask = buildClothingMask(scaledFaces, sw, sh, personMask, handBoxes, clothesMask);
       console.log('[옷교체] 마스크 — ' + (clothesMask ? '옷 분할 사용' : (personMask ? '인물 분리 + 네모' : '네모만'))
         + ', 손 ' + handBoxes.length + '개 제외');
@@ -5348,6 +5409,17 @@
         return null;
       });
       return clothesSegmenterPromise;
+    }
+
+    // 사진 단위 캐시 키. 데이터 URL의 앞부분을 자르면 안 된다 — 모든 JPEG가
+    // "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ..."로 시작해서 서로 다른 사진이 같은
+    // 키를 갖는다(실측: 사진 4장이 전부 같은 마스크를 돌려받았다). 보정을 한 번
+    // 적용한 뒤 다시 옷을 바꾸면 img.src가 캔버스 PNG 데이터 URL이 되는데, 크기가 같은
+    // 두 이미지는 앞부분이 같아서 이전 사진의 마스크가 그대로 쓰인다.
+    // 길이 + 앞 24자 + 뒤 40자를 쓴다. 뒤쪽은 실제 그림 데이터라 사진마다 다르다.
+    function imageCacheKey(prefix, url) {
+      var u = String(url || '');
+      return prefix + ':' + u.length + ':' + u.slice(0, 24) + ':' + u.slice(-40);
     }
 
     // 옷이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하거나 미더우면 null.
@@ -6651,7 +6723,7 @@
       if (!url) return false;
       try {
         var img = await loadImage(url);
-        var mask = await getClothesMask(img, 'risk:' + url.slice(0, 96));
+        var mask = await getClothesMask(img, imageCacheKey('risk', url));
         if (!mask) return false;
         var w = mask.width, h = mask.height;
 
