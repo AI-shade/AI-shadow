@@ -909,9 +909,19 @@ app.post('/api/location-check', async (req, res) => {
     const weakLandmarkCount = rawLandmarks.length - landmarks.length;
 
     const web = first.webDetection || {};
-    const matchingPages = (web.pagesWithMatchingImages || []).slice(0, 5).map((p) => ({
-      url: p.url, title: p.pageTitle || '',
-    }));
+    // 페이지 목록은 **완전 일치 이미지를 가진 페이지만** 올린다.
+    // pagesWithMatchingImages는 일부만 겹친 페이지까지 포함하는데, 아이 사진은 세상에
+    // 비슷한 것이 무수히 많아서 관련 없는 블로그·스톡 페이지가 쏟아진다(실사용 제보:
+    // "내거는 링크들이 다 너무 터무니없는 것들이야"). 관련 없는 링크를 나열하면 화면
+    // 전체의 신뢰가 깨져서, 정작 진짜 위험을 알릴 때도 안 믿게 된다.
+    const allPages = web.pagesWithMatchingImages || [];
+    const matchingPages = allPages
+      .filter((p) => (p.fullMatchingImages || []).length > 0)
+      .slice(0, 5)
+      .map((p) => ({ url: p.url, title: p.pageTitle || '' }));
+    // 부분 일치만 있는 페이지는 링크로 내걸지 않고 건수만 알린다 — 그것도 정보이지만
+    // "이 페이지에 당신 사진이 있다"는 뜻은 아니다.
+    const partialOnlyPageCount = allPages.length - matchingPages.length;
     // webEntities는 신뢰도(score)가 없는 것도 섞여 나온다 — 너무 약한 추정까지
     // "발견"이라고 보고하면 놓치는 것보다 더 나쁜 오탐이 된다.
     const entities = (web.webEntities || [])
@@ -926,6 +936,8 @@ app.post('/api/location-check', async (req, res) => {
     // 잡히는 쪽이 자연스럽다. 예전에는 그 경우가 전부 "발견 안 됨"으로 떨어졌다
     // (실사용 제보 — 인터넷에서 퍼온 사진인데 못 찾았다). 프라이버시 도구에서
     // 놓침은 오탐보다 나쁘다.
+    // 완전 일치가 있을 때만 "같은 이미지"라고 말한다. 예전에는 부분 일치로 잡힌
+    // 페이지가 목록에 있으면 그것만으로 "같은 이미지 발견"이 됐다.
     const hasExact = matchingPages.length > 0 || fullMatchCount > 0;
     const hasPartial = partialMatchCount > 0;
     const hasLandmark = landmarks.length > 0;
@@ -940,6 +952,7 @@ app.post('/api/location-check', async (req, res) => {
       hasExact,
       hasPartial,
       matchingPages,
+      partialOnlyPageCount,
       entities,
       bestGuessLabels,
       fullMatchCount,
