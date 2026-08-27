@@ -9566,6 +9566,8 @@
       var pass = faceOk && (textResolved || textReduced);
       return {
         검증결과: pass ? '통과' : '재검토필요',
+        합의: '한쪽만',
+        합의설명: '두 모델 모두 부르지 못해 규칙만으로 판단했어요.',
         위험요소해결: textResolved ? '해결됨' : (textReduced ? '부분해결' : '미해결'),
         신규위험: '알수없음(규칙기반 폴백이라 판단 불가)',
         인물보존: faceOk ? '정상' : '변형의심(얼굴 개수가 ' + beforeStats.count + '개→' + afterStats.count + '개로 바뀜)',
@@ -9577,10 +9579,15 @@
 
     function renderVerifyResult(result) {
       var pass = result.검증결과 === '통과';
+      // 두 모델이 갈렸으면 "재검토"와 다르게 표시한다. 한쪽을 골라 감추면 검증을 두 번
+      // 한 의미가 없고, "검증완료" 도장이 실제보다 많은 것을 보장하는 것처럼 보인다.
+      var split = result.합의 === '갈림';
+      var oneOnly = result.합의 === '한쪽만';
       var stampEl = document.getElementById('verifyStamp');
       stampEl.classList.toggle('warn', !pass);
-      stampEl.querySelector('.s-icon').textContent = pass ? '✓' : '⚠';
-      stampEl.querySelector('.s-text').textContent = pass ? '검증완료' : '재검토 필요';
+      stampEl.querySelector('.s-icon').textContent = split ? '⚖' : (pass ? '✓' : '⚠');
+      stampEl.querySelector('.s-text').textContent = split ? '판단이 갈렸어요'
+        : (pass ? (oneOnly ? '검증 통과' : '검증완료 (모델 2개 일치)') : '재검토 필요');
 
       var tagsEl = document.getElementById('verifyTags');
       tagsEl.innerHTML = '';
@@ -9594,9 +9601,31 @@
       addTag('신규위험 ' + (result.신규위험 === '없음' ? '없음' : (result.신규위험 || '알수없음')), result.신규위험 === '없음');
       addTag('인물보존 ' + (result.인물보존 || '알수없음'), /^정상/.test(result.인물보존 || ''));
 
+      // 누가 어떻게 판단했는지 밝힌다. 다음에 이상한 결과가 나오면 첫 단서가 된다.
+      var who = result.검증자 || {};
+      if (who.설명읽기) {
+        addTag('설명 읽기 ' + who.설명읽기.판단, who.설명읽기.판단 === '통과');
+      }
+      if (who.사진보기) {
+        addTag('사진 보기 ' + who.사진보기.판단, who.사진보기.판단 === '통과');
+      } else if (result.합의 === '한쪽만') {
+        addTag('사진 보기 없음', false);
+      }
+
       var detailEl = document.getElementById('verifyDetail');
       detailEl.classList.toggle('warn', !pass);
-      var text = (pass ? '✅ ' : '⚠️ ') + (result.설명 || '');
+      var text = (split ? '⚖ ' : (pass ? '✅ ' : '⚠️ '));
+      if (result.합의설명) text += result.합의설명 + ' ';
+      text += (result.설명 || '');
+      // 사진을 본 쪽이 무엇을 봤는지도 적는다 — 설명 읽기로는 알 수 없는 정보다
+      var v = who.사진보기;
+      if (v) {
+        var seen = [];
+        if (v.남은단서 && v.남은단서 !== '없음') seen.push('남은 단서: ' + v.남은단서);
+        if (v.신규위험 && v.신규위험 !== '없음') seen.push('새로 생긴 것: ' + v.신규위험);
+        if (v.인물이상 && !/^정상/.test(v.인물이상)) seen.push('인물: ' + v.인물이상);
+        if (seen.length > 0) text += ' 사진에서 본 것 — ' + seen.join(' / ') + '.';
+      }
       if (result.추가조치필요시) text += ' 추가 조치: ' + result.추가조치필요시;
       detailEl.textContent = text;
     }
@@ -9616,9 +9645,24 @@
       var originalTexts = ((lastOcrResult && lastOcrResult.words) || []).map(function (w) { return w.text; });
       var newTexts = ((newOcrResult && newOcrResult.words) || []).map(function (w) { return w.text; });
 
+      // 2차 검증자(사진을 직접 보는 쪽)에게 보낼 결과 사진.
+      // 원본이 아니라 이미 보정이 끝난 사진이다 — 그걸 검증받는 것이 이 단계의 목적이다.
+      // 다만 아이 얼굴은 그대로 있으므로 1차 진단과 같은 방식으로 가려 보낸다.
+      // 2차가 볼 것은 "기관을 알려주는 표시가 남았는가"이지 아이 얼굴이 아니다.
+      var verifyImageB64 = null;
+      try {
+        var vImg = await loadImage(processedUrl);
+        var vMasked = fitForVision(maskFaces(vImg, newFaceResult.faces));
+        verifyImageB64 = vMasked.toDataURL('image/jpeg', 0.88).split(',')[1];
+      } catch (e) {
+        console.warn('[재검증] 결과 사진을 준비하지 못했습니다 — 설명 읽기 검증만 진행:', e.message);
+      }
+
       var result;
       try {
         result = await postJson(VERIFY_BACKEND_URL, {
+          결과이미지: verifyImageB64,
+          결과이미지형식: 'image/jpeg',
           원본진단: {
             grade: lastRiskResult && lastRiskResult.grade,
             score: lastRiskResult && lastRiskResult.score,

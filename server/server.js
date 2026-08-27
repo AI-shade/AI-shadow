@@ -1326,11 +1326,100 @@ JSON으로 응답 (다른 설명 없이):
 }`;
 }
 
+// ===== 2차 검증 — 결과 사진을 직접 보는 검증자 =====
+// 1차(Claude)는 처리 설명과 측정값을 읽고 판단한다. 이건 사진을 본다.
+// 제공자도 다르고 보는 대상도 다르므로, 같은 방식으로 틀릴 가능성이 낮다.
+const VERIFY_VISION_PROMPT = `당신은 아이 사진의 프라이버시 처리 결과를 **사진을 직접 보고**
+검증하는 검토자입니다. 이 사진은 이미 처리가 끝난 결과물입니다.
+
+**아이 얼굴이 보이는 것 자체는 위험요소가 아닙니다.** 부모가 아이 사진을 올리려는 것이고,
+얼굴을 가린 사진을 올릴 사람은 없습니다. 이 서비스가 다루는 위험은 **아이가 어디 있고
+어디를 다니는지 알려주는 단서**입니다.
+
+사진을 보고 다음만 확인하세요:
+1. 기관·장소를 알려주는 것이 아직 보이는가 — 간판 글자, 전화번호, 지번, 가슴 엠블럼,
+   명찰, 기관 로고, 학교명이 적힌 것
+2. 처리 과정에서 없던 것이 새로 생겼는가 — AI가 만들어낸 가짜 글씨, 가짜 마크, 가짜 배지
+3. 아이가 이상해졌는가 — 손가락이 늘거나, 얼굴이 뭉개지거나, 사람이 하나 더 생긴 것
+
+**교복처럼 생긴 평범한 옷은 위험요소가 아닙니다.** 어느 기관도 지목하지 않기 때문입니다.
+"교복을 입고 있어서 위험하다"고 판단하지 마세요 — 그 기관을 특정하는 표시(엠블럼·명찰·
+글자·고유한 색 조합)가 남아 있을 때만 문제입니다.
+
+확실하지 않으면 "통과"로 두세요. 사진에서 실제로 보이는 것만 근거로 대세요.
+
+JSON으로만 응답하세요. **각 문장은 80자 이내로 짧게** 쓰세요 — 길게 쓰면 응답이 잘려
+아무 답도 전달되지 않습니다.
+{
+  "검증결과": "통과/재검토필요",
+  "남은단서": "없음 또는 무엇이 어디에 보이는지 (80자 이내)",
+  "신규위험": "없음 또는 무엇이 새로 생겼는지 (80자 이내)",
+  "인물이상": "정상 또는 무엇이 이상한지 (80자 이내)"
+}`;
+
+// 결과 사진을 2차 검증자에게 보낸다. 키가 없거나 실패하면 null — 그때는 1차만 쓴다.
+async function runVisionVerify(imageBase64, mediaType, appliedText) {
+  if (!process.env.CNU_LLM_API_KEY || !imageBase64) return null;
+  try {
+    const userText = [
+      '이 사진은 프라이버시 처리가 끝난 결과물입니다. 사진을 보고 검증해주세요.',
+      appliedText ? '- 적용한 처리: ' + appliedText : null,
+    ].filter(Boolean).join('\n');
+    const r = await callCnuLlmVision(VERIFY_VISION_PROMPT, userText, imageBase64, mediaType);
+    const p = r.parsed || {};
+    return {
+      검증결과: p.검증결과 === '재검토필요' ? '재검토필요' : '통과',
+      남은단서: p.남은단서 || '없음',
+      신규위험: p.신규위험 || '없음',
+      인물이상: p.인물이상 || '정상',
+      model: r.model,
+      timingMs: r.timingMs,
+    };
+  } catch (err) {
+    // 2차가 없다고 검증을 멈추지 않는다 — 두 번째 의견이 없는 것이 아무 답도 없는 것보다 낫다
+    console.warn('[server] 2차 검증(사진) 실패 — 1차만 사용:', err.message);
+    return null;
+  }
+}
+
+// 두 판단을 합친다. 갈릴 때 한쪽을 골라 감추지 않는다 — 갈렸다는 사실이 사용자에게
+// 가장 쓸모 있는 정보다. 감추면 검증을 두 번 한 의미가 없다.
+function mergeVerdicts(claudeVerdict, visionVerdict) {
+  if (!visionVerdict) {
+    return {
+      합의: '한쪽만',
+      검증결과: claudeVerdict,
+      설명: '처리 내용을 읽는 검증만 했어요. 사진을 직접 보는 두 번째 검증은 하지 못했어요.',
+    };
+  }
+  if (claudeVerdict === visionVerdict) {
+    return {
+      합의: '일치',
+      검증결과: claudeVerdict,
+      설명: claudeVerdict === '통과'
+        ? '서로 다른 회사의 모델 두 개가 모두 통과로 봤어요.'
+        : '두 모델이 모두 재검토가 필요하다고 봤어요.',
+    };
+  }
+  // 갈렸다. 보수적으로 재검토 쪽으로 두되, 갈렸다는 사실을 반드시 드러낸다.
+  return {
+    합의: '갈림',
+    검증결과: '재검토필요',
+    설명: '두 모델의 판단이 갈렸어요 — 처리 내용을 읽은 쪽은 "' + claudeVerdict
+      + '", 사진을 직접 본 쪽은 "' + visionVerdict + '"로 봤어요. 눈으로 확인해주세요.',
+  };
+}
+
 app.post('/api/verify-correction', async (req, res) => {
   try {
     const body = req.body || {};
     const userPrompt = buildVerifyUserPrompt(body);
-    const result = await callClaudeText(VERIFY_SYSTEM_PROMPT, userPrompt);
+    // 두 검증을 동시에 돌린다 — 하나가 끝나기를 기다릴 이유가 없다.
+    // 1차는 실패하면 던져서 클라이언트의 규칙 기반 폴백으로 가고, 2차는 실패해도 null이다.
+    const [result, vision] = await Promise.all([
+      callClaudeText(VERIFY_SYSTEM_PROMPT, userPrompt),
+      runVisionVerify(body.결과이미지, body.결과이미지형식, body.처리설명),
+    ]);
     const parsed = result.parsed || {};
 
     // 얼굴 개수 불일치는 가장 명확한 신호라 Claude 판단과 무관하게 강제로 덮어씀
@@ -1342,13 +1431,31 @@ app.post('/api/verify-correction', async (req, res) => {
       인물보존 = `변형의심(얼굴 개수가 ${before.count}개에서 ${after.count}개로 바뀜 — 자동 판정)`;
     }
 
+    // 얼굴 개수 불일치는 어느 모델의 판단보다 앞선다 — 그건 측정값이다
+    const forcedPersonIssue = /변형의심/.test(인물보존);
+    const claudeVerdict = forcedPersonIssue ? '재검토필요' : (parsed.검증결과 || '알수없음');
+    const merged = mergeVerdicts(claudeVerdict, vision && vision.검증결과);
+
     res.json({
-      검증결과: parsed.검증결과 || '알수없음',
+      // 합친 결과가 화면이 쓰는 값이다
+      검증결과: merged.검증결과,
+      합의: merged.합의,          // 일치 / 갈림 / 한쪽만
+      합의설명: merged.설명,
       위험요소해결: parsed.위험요소해결 || '알수없음',
       신규위험: parsed.신규위험 || '알수없음',
       인물보존: 인물보존,
       설명: parsed.설명 || '',
       추가조치필요시: parsed.추가조치필요시 || '',
+      // 두 검증자의 판단을 따로 남긴다 — 왜 그렇게 합쳐졌는지 화면에서 보여야 한다
+      검증자: {
+        설명읽기: { 판단: claudeVerdict, model: result.model, timingMs: result.timingMs },
+        사진보기: vision
+          ? {
+            판단: vision.검증결과, model: vision.model, timingMs: vision.timingMs,
+            남은단서: vision.남은단서, 신규위험: vision.신규위험, 인물이상: vision.인물이상,
+          }
+          : null,
+      },
       timingMs: result.timingMs,
       usage: result.usage,
       model: result.model,
