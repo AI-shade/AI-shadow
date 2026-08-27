@@ -170,17 +170,17 @@
       rgba(240, 203, 0, 0.30) 0%, rgba(220, 210, 70, 0.14) 45%,
       rgba(195, 213, 120, 0) 100%);
   }
-  /* 왼쪽 아래 — 진한 브랜드 그린 대신 "덜 진한 연두"로(사용자 피드백: 너무 초록,
-     그렇다고 골드 주변의 연두처럼 밝지도 않게). 가장자리는 골드·노랑 쪽으로 번져
-     오른쪽 조명과 같은 색 가족처럼 보이게 한다. */
+  /* 왼쪽 아래 — 연한 연두. "너무 초록"이라는 피드백으로 한 번 낮췄고, 다시 "조금 더
+     연한 연두"라는 피드백으로 채도와 불투명도를 한 번 더 내렸다(0.52 -> 0.36).
+     가장자리는 골드·노랑 쪽으로 번져 오른쪽 조명과 같은 색 가족처럼 보이게 한다. */
   .gb-aurora {
     width: 900px; height: 820px; left: -250px; bottom: -300px;
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(95, 158, 55, 0.52) 0%,
-      rgba(130, 172, 65, 0.36) 18%,
-      rgba(170, 188, 90, 0.20) 40%,
-      rgba(205, 200, 120, 0.08) 66%,
-      rgba(225, 208, 150, 0) 100%);
+      rgba(150, 195, 105, 0.36) 0%,
+      rgba(175, 205, 120, 0.24) 18%,
+      rgba(198, 212, 140, 0.13) 40%,
+      rgba(218, 214, 160, 0.05) 66%,
+      rgba(232, 220, 180, 0) 100%);
   }
   /* 덩어리 한가운데의 심지. 스크롤에 따라 이것만 진해졌다 흐려진다.
      덩어리 전체를 껐다 켜면 화면 전체가 깜빡이는 것처럼 보이므로,
@@ -198,7 +198,7 @@
   }
   .gb-aurora > i {
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(95, 158, 55, 0.40) 0%, rgba(140, 175, 70, 0.20) 42%, rgba(195, 195, 110, 0) 100%);
+      rgba(150, 195, 105, 0.26) 0%, rgba(180, 205, 125, 0.13) 42%, rgba(210, 210, 150, 0) 100%);
   }
   /* 모션을 줄이는 설정이면 숨쉬기를 멈추고 중간값에 고정한다 */
   @media (prefers-reduced-motion: reduce) { .glow-track { --pulse: 0.7; } }
@@ -2054,7 +2054,8 @@
         <a class="btn-primary" href="#tool">지금 진단하기</a>
         <a class="btn-ghost" href="#features">기능 살펴보기</a>
       </div>
-      <p class="hero-note">계정 연동도, 비밀번호도 필요 없어요. 얼굴은 분석 전에 가려서 보냅니다.</p>
+      <p class="hero-note">계정 연동도, 비밀번호도 필요 없어요. 진단할 때는 얼굴을 가려서 보내고,
+        원본이 필요한 기능(AI 보정 · 인터넷 이미지 검색)은 누를 때마다 먼저 물어봅니다.</p>
     </div>
     <div class="hero-visual" aria-hidden="true">
       <div class="hv-card hv-1"><span class="hv-tag risk">위치노출 82점</span><span class="hv-line"></span><span class="hv-line short"></span></div>
@@ -2371,7 +2372,8 @@
         <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
         <p class="loc-web-hint">한 번 누르면 확실한 것부터 차례로 봐요 — ① 사진 파일에 박힌 좌표(브라우저 안에서만 확인)
           ② Google Vision으로 장소 인식·역방향 이미지 검색 ③ 그래도 안 나오면 AI 추측.
-          앞에서 나오면 뒤는 부르지 않아요. 밖으로 보낼 때는 얼굴을 가린 사진만 보내요.</p>
+          앞에서 나오면 뒤는 부르지 않아요. ②는 같은 사진을 찾아야 해서 원본을 보내고 —
+          누르면 먼저 물어봐요 — ③에는 얼굴을 가린 사진만 보내요.</p>
         <div class="loc-web-result" id="locWebResult" style="display:none;"></div>
       </div>
     </section>
@@ -2826,7 +2828,7 @@
     <div class="why-grid">
       <article class="why-card pin-item">
         <h3>얼굴은 가려서 보냅니다</h3>
-        <p>분석을 위해 외부로 보낼 때 얼굴을 먼저 검게 덮습니다. AI 보정처럼 원본이 필요한 방식은 따로 동의를 받아요.</p>
+        <p>진단을 위해 외부로 보낼 때 얼굴을 먼저 검게 덮습니다. 원본이 필요한 기능(AI 보정 · 인터넷 이미지 검색)은 누를 때마다 따로 동의를 받아요.</p>
       </article>
       <article class="why-card pin-item">
         <h3>부탁이 아니라 차단</h3>
@@ -2856,7 +2858,7 @@
       <details class="pin-item"><summary>사진이 서버에 저장되나요?</summary><p>진단에 필요한 순간에만 전송하고 따로 보관하지 않습니다. 대부분의 처리(크롭·흐림·주변색 채우기)는 아예 브라우저 밖으로 나가지 않아요.</p></details>
       <details class="pin-item"><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없습니다. 과거 게시물 패턴을 보고 싶으실 때만 직접 캡처한 화면을 올려주시면 됩니다.</p></details>
       <details class="pin-item"><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않습니다. 얼굴·머리카락·목은 마스크에서 제외해 AI가 접근할 수 없게 만들어 두었고, 보정 후 다시 검사해 얼굴이 그대로인지 확인합니다.</p></details>
-      <details class="pin-item"><summary>AI 보정에 사진이 어떻게 전송되고 처리되나요?</summary><p><strong>배경 흐림·자연스럽게 덮기</strong>는 브라우저 안에서 끝나요 — 사진이 기기 밖으로 나가지 않습니다. <strong>AI 옷 바꾸기·AI 배경 교체</strong>만 명시적으로 동의했을 때 원본 사진(얼굴 포함)이 저희 서버를 거쳐 외부 AI 서비스 fal.ai(FLUX 모델)로 전송돼요. 이때도 아이 영역은 마스크로 모델이 접근조차 못 하게 막거나(옷 바꾸기), 결과에서 원본 아이 사진으로 다시 덮어써서(배경 교체) 보호합니다. fal.ai는 전송된 사진을 모델 학습에 쓰지 않지만, "처리 후 바로 삭제"는 약속하지 않고 계정을 닫으면 30일 안에·2년 미사용 시 삭제한다고 밝혀요(여기서 쓰는 건 저희 팀 계정입니다). 진단(위험도 분석) 자체는 얼굴을 가린 사진만 Claude Vision으로 보내요.</p></details>
+      <details class="pin-item"><summary>AI 보정에 사진이 어떻게 전송되고 처리되나요?</summary><p><strong>배경 흐림·자연스럽게 덮기</strong>는 브라우저 안에서 끝나요 — 사진이 기기 밖으로 나가지 않습니다. <strong>AI 옷 바꾸기·AI 배경 교체</strong>만 명시적으로 동의했을 때 원본 사진(얼굴 포함)이 저희 서버를 거쳐 외부 AI 서비스 fal.ai(FLUX 모델)로 전송돼요. 이때도 아이 영역은 마스크로 모델이 접근조차 못 하게 막거나(옷 바꾸기), 결과에서 원본 아이 사진으로 다시 덮어써서(배경 교체) 보호합니다. fal.ai는 전송된 사진을 모델 학습에 쓰지 않지만, "처리 후 바로 삭제"는 약속하지 않고 계정을 닫으면 30일 안에·2년 미사용 시 삭제한다고 밝혀요(여기서 쓰는 건 저희 팀 계정입니다). 진단(위험도 분석) 자체는 얼굴을 가린 사진만 Claude Vision으로 보내요. <strong>장소 찾기</strong>의 인터넷 이미지 검색(Google Cloud Vision)은 같은 사진을 찾아내야 해서 원본을 보내며, 누를 때마다 먼저 동의를 받아요 — 구글은 즉시 응답 방식에서 사진을 디스크에 남기지 않고, 학습에 쓰지 않고, 검색 색인에도 넣지 않는다고 문서로 밝힙니다. 같은 기능의 AI 추측 단계에는 얼굴을 가린 사진만 보내요.</p></details>
       <details class="pin-item"><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔드립니다. 얼굴과 자세는 그대로예요.</p></details>
       <details class="pin-item"><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않습니다. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고르실 수 있게 해두었습니다. 최종 판단은 부모님 몫이에요.</p></details>
     </div>
@@ -2917,6 +2919,27 @@
     <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
     <button class="primary" id="fluxConsentAgree">동의하고 진행</button>
     <button class="secondary" id="fluxConsentCancel">취소</button>
+  </div>
+</div>
+
+<!-- 역방향 이미지 검색 원본 전송 동의 모달.
+     역방향 검색은 이미지 지문을 맞추는 기능이라 얼굴을 덮으면(실측 8~9%) 못 찾는다.
+     그래서 원본을 보내야 하는데, 이 저장소의 규칙은 "동의 없이 원본을 보내는 경로를
+     만들지 말라"이므로 AI 보정과 같은 방식으로 먼저 물어본다. -->
+<div id="locOrigConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
+    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의 (장소 찾기)</h3>
+    <p class="evidence">인터넷에 같은 사진이 있는지 찾으려면 <strong>원본 사진(얼굴 포함)</strong>이 Google Cloud Vision으로 전송됩니다. 얼굴을 가려 보내면 이미지 지문이 달라져서 실제로 인터넷에 있는 사진도 못 찾습니다(사진의 8~9%가 검게 덮여요).</p>
+    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">구글이 문서로 밝힌 사진 처리 방침</p>
+    <ul class="action-list" style="margin-bottom:0.8rem;">
+      <li>즉시 응답 방식(여기서 쓰는 방식)은 <strong>메모리에서만 처리하고 디스크에 남기지 않아요</strong></li>
+      <li><strong>Cloud Vision 기능 학습·개선에 쓰지 않아요</strong></li>
+      <li>공개하지 않고 <strong>제3자에게 공유하지 않아요</strong></li>
+      <li>보낸 사진이 <strong>구글 검색 색인에 들어가지 않아요</strong></li>
+    </ul>
+    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">이건 구글의 약관상 약속이에요 — 기술적으로 막혀 있다는 뜻은 아니에요. 동의하지 않으셔도 AI 추측 단계는 그대로 진행되고, 그쪽에는 얼굴을 가린 사진만 보내요. 방침 원문: <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">Cloud Vision 데이터 사용 안내</a></p>
+    <button class="primary" id="locOrigConsentAgree">동의하고 원본으로 찾기</button>
+    <button class="secondary" id="locOrigConsentCancel">보내지 않기</button>
   </div>
 </div>
 
@@ -4724,19 +4747,54 @@
     // 1,000건)를 모르고 계속 눌러 넘기지 않게, 그리고 굳이 필요 없을 때도 비용이
     // 나가지 않게.
     //
-    // 프라이버시: 다른 진단과 같은 방식으로 얼굴을 가린 사진만 보낸다(runClaudeVisionPipeline과
+    // 프라이버시: 예전에는 다른 진단과 같이 얼굴을 가려 보냈다(runClaudeVisionPipeline과
     // 동일한 maskFaces). 원본을 그대로 보내는 예외는 AI 보정(옷 바꾸기·배경 교체)뿐이다.
     var LOCATION_CHECK_BACKEND_URL = '/api/location-check';
 
     var LOCATION_GUESS_BACKEND_URL = '/api/location-guess';
 
+    // 역방향 검색에 원본을 보내기 전에 매번 물어본다(AI 보정과 같은 방식).
+    // 한 번 동의하면 이 사진을 보는 동안 다시 묻지 않는다.
+    var locOrigConsentGiven = false;
+
+    function askLocationOriginalConsent() {
+      if (locOrigConsentGiven) return Promise.resolve(true);
+      return new Promise(function (resolve) {
+        var modal = document.getElementById('locOrigConsentModal');
+        var agreeBtn = document.getElementById('locOrigConsentAgree');
+        var cancelBtn = document.getElementById('locOrigConsentCancel');
+        modal.style.display = 'flex';
+        function cleanup(result) {
+          modal.style.display = 'none';
+          agreeBtn.removeEventListener('click', onAgree);
+          cancelBtn.removeEventListener('click', onCancel);
+          resolve(result);
+        }
+        function onAgree() { locOrigConsentGiven = true; cleanup(true); }
+        function onCancel() { cleanup(false); }
+        agreeBtn.addEventListener('click', onAgree);
+        cancelBtn.addEventListener('click', onCancel);
+      });
+    }
+
+    // 원본을 그대로 보낸다. 얼굴을 덮으면 이미지 지문이 달라져서 실제로 인터넷에 있는
+    // 사진도 못 찾는다(실측: 얼굴 상자가 사진의 8~9%를 덮는다) — 제보의 원인이었다.
+    // 크기만 줄인다. 역방향 검색은 축소에는 견디지만 지워진 영역에는 견디지 못한다.
     async function runLocationCheckPipeline(imgUrl, faces) {
       var img = await loadImage(imgUrl);
-      var maskedCanvas = fitForVision(maskFaces(img, faces));
-      var base64 = maskedCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+      var canvas = fitForVision(canvasFromImage(img));
+      var base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
       var data = await postJson(LOCATION_CHECK_BACKEND_URL, { imageBase64: base64 });
-      console.log('[위치확인] 1단계(구글 비전) — ' + Math.round(data.timingMs) + 'ms', data);
+      console.log('[위치확인] 1단계(구글 비전, 원본 전송) — ' + Math.round(data.timingMs) + 'ms', data);
       return data;
+    }
+
+    // maskFaces와 같은 캔버스를 만들되 아무것도 덮지 않는다
+    function canvasFromImage(img) {
+      var c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      return c;
     }
 
     // 사용자는 버튼을 한 번 누른다. 확실한 것부터 싸게 보고, 안 나올 때만 내려간다.
@@ -4752,15 +4810,23 @@
         return { stage: 'exif', kind: 'coords', exif: exif };
       }
 
-      // 1단계
-      if (onStage) onStage('vision');
+      // 1단계 — 원본을 보내므로 먼저 동의를 받는다. 거절하면 건너뛰고 2단계로 간다
+      // (거기는 얼굴을 가려 보낸다). 아무 답도 못 받는 것보다 낫다.
+      if (onStage) onStage('consent');
+      var agreed = await askLocationOriginalConsent();
       var vision = null;
+      if (!agreed) {
+        console.log('[위치확인] 1단계 건너뜀 — 원본 전송에 동의하지 않음');
+        vision = { skipped: true };
+      } else {
+      if (onStage) onStage('vision');
       try {
         vision = await runLocationCheckPipeline(imgUrl, faces);
       } catch (e) {
         // 1단계가 안 되면 2단계로 내려간다 — 여기서 멈추면 사용자는 아무 답도 못 받는다.
         console.warn('[위치확인] 1단계 실패 — 2단계로 내려갑니다:', e.message);
         vision = { error: e.message };
+      }
       }
       if (vision && vision.found) {
         return { stage: 'vision', kind: vision.hasLandmark ? 'place' : 'image', vision: vision };
@@ -4994,7 +5060,10 @@
       return out;
     }
 
-    async function runOutfitSwap(img, faces, riskResult, colorway, emblemMode) {
+    // promptOverrideForTest — 같은 사진·같은 마스크에 프롬프트만 바꿔 A/B로 비교할 때 쓴다.
+    // 프롬프트로 결과를 조종하려 한 적이 두 번 있었고 두 번 다 실측으로 뒤집혔다
+    // (강하게 밀어붙이니 없던 마크를 만들어냈다). 그래서 비교 경로를 열어둔다.
+    async function runOutfitSwap(img, faces, riskResult, colorway, emblemMode, promptOverrideForTest) {
 
       var ow = img.naturalWidth, oh = img.naturalHeight;
       var send = falSendSize(ow, oh);
@@ -5038,7 +5107,7 @@
         // 프롬프트를 직접 지정한다 — 서버는 마스크가 '글자'인지 '옷'인지 모른다.
         // 로고·엠블럼·무늬가 다시 생기지 않도록 명시하는 것이 핵심.
         // 컬러체인지/엠블럼 선택에 따라 문구만 바뀐다 — 마스크(위 buildClothingMask)는 그대로.
-        promptOverride: buildOutfitFillPrompt(colorway, emblemMode),
+        promptOverride: promptOverrideForTest || buildOutfitFillPrompt(colorway, emblemMode),
         grade: riskResult && riskResult.grade,
         locationEvidence: riskResult && riskResult.locationEvidence,
       });
@@ -8214,6 +8283,7 @@
       // 호출하므로 "확인하는 중…"만 띄우면 왜 오래 걸리는지 알 수 없다.
       var stageText = {
         exif: '① 사진 파일의 좌표 확인 중…',
+        consent: '② 원본 전송 동의를 기다리는 중…',
         vision: '② 구글로 장소 확인 중…',
         guess: '③ AI 추측 확인 중…',
       };
@@ -8260,7 +8330,7 @@
               return l.description + '(' + Math.round(l.score * 100) + '%)';
             }).join(', '), true);
           }
-          line('② 구글 장소 인식에서 나왔어요. 얼굴을 가린 사진만 보냈어요.', true);
+          line('② 구글 장소 인식에서 나왔어요. 동의하신 대로 원본을 보냈어요.', true);
 
         } else if (out.kind === 'image') {
           // 1단계 — 같은/비슷한 이미지. 장소 이름을 직접 주지는 않지만 페이지가 알려준다.
@@ -8292,7 +8362,7 @@
             });
             resultEl.appendChild(ul);
           }
-          line('② 구글 역방향 이미지 검색에서 나왔어요. 얼굴을 가린 사진만 보냈어요.', true);
+          line('② 구글 역방향 이미지 검색에서 나왔어요. 동의하신 대로 원본을 보냈어요.', true);
 
         } else if (out.kind === 'guess') {
           // 2단계 — 추측이다. 앞 단계와 같은 말을 쓰지 않는다.
@@ -8313,20 +8383,27 @@
           flag.className = 'lwr-flag off';
           flag.textContent = '● 못 찾음';
           resultEl.appendChild(flag);
-          line('세 단계를 모두 봤지만 위치가 나오지 않았어요 — 사진 파일의 좌표도, '
-            + '구글 장소 인식·이미지 검색도, AI가 배경을 본 것도요.');
+          line((out.vision && out.vision.skipped)
+            ? '사진 파일의 좌표도, AI가 배경을 본 것도 위치를 알려주지 않았어요. '
+              + '인터넷 이미지 검색은 보내지 않기로 하셔서 건너뛰었어요.'
+            : '세 단계를 모두 봤지만 위치가 나오지 않았어요 — 사진 파일의 좌표도, '
+              + '구글 장소 인식·이미지 검색도, AI가 배경을 본 것도요.');
           if (out.guess && out.guess.근거) line('AI가 본 것: ' + out.guess.근거, true);
-          line('얼굴을 가려서 보내기 때문에 원본이라면 찾았을 것도 놓칠 수 있어요 — '
-            + '못 찾았다고 안전하다는 뜻은 아니에요.', true);
+          line((out.vision && out.vision.skipped)
+            ? '원본을 보내지 않기로 하셔서 인터넷 이미지 검색은 건너뛰었어요 — 그쪽에서 나왔을 수도 있어요.'
+            : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
 
         } else if (out.kind === 'unavailable') {
           // 못 찾은 것과 아직 못 하는 것을 구분한다. 뭉개면 "안전하다"로 읽힌다.
           flag.className = 'lwr-flag off';
           flag.textContent = '● 못 찾음';
           resultEl.appendChild(flag);
-          line('사진 파일의 좌표도, 구글 장소 인식·이미지 검색에서도 위치가 나오지 않았어요.');
-          line('얼굴을 가려서 보내기 때문에 원본이라면 찾았을 것도 놓칠 수 있어요 — '
-            + '못 찾았다고 안전하다는 뜻은 아니에요.', true);
+          line((out.vision && out.vision.skipped)
+            ? '사진 파일에는 좌표가 없었어요. 인터넷 이미지 검색은 보내지 않기로 하셔서 건너뛰었어요.'
+            : '사진 파일의 좌표도, 구글 장소 인식·이미지 검색에서도 위치가 나오지 않았어요.');
+          line((out.vision && out.vision.skipped)
+            ? '원본을 보내지 않기로 하셔서 인터넷 이미지 검색은 건너뛰었어요.'
+            : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
           if (out.vision && (out.vision.weakLandmarkCount || 0) > 0) {
             line('참고 — 구글이 장소 후보 ' + out.vision.weakLandmarkCount
               + '개를 봤지만 신뢰도가 낮아 알려드리지 않았어요.', true);
