@@ -5242,9 +5242,9 @@
     // 정확히 들어가고 얼굴·머리·맨팔·벽은 들어가지 않았다. 짐작할 것이 없어진다.
     //
     // 대신 무겁다 — 실측 16,371,837바이트다(float16 판은 없다). 인물 분할이 249,537
-    // 바이트인 것과 자릿수가 다르다. 그래서 옷을 실제로 바꿀 때, 또는 위험 요소
-    // 지도에서 옷 자리를 눌러 볼 때만 받아온다. 진단만 하고 마는 사람에게 16MB를
-    // 쓰게 하지 않는다.
+    // 바이트인 것과 자릿수가 다르다. 옷을 바꿀 때와, 위험 요소 지도에서 소속에 점수가
+    // 붙었을 때 받아온다 — 옷을 바꾸려면 어차피 필요한 모델이라 대부분은 받는 시점이
+    // 앞당겨지는 것이다.
     var CLOTHES_CATEGORY = 4;
     var clothesSegmenterPromise = null;
     var clothesMaskCache = { key: null, canvas: null };
@@ -5272,9 +5272,6 @@
       });
       return clothesSegmenterPromise;
     }
-
-    // 모델을 이미 받아뒀는지. 위험 요소 지도가 "지금 바로 칠해도 공짜인가"를 판단한다.
-    function clothesModelReady() { return !!clothesSegmenterPromise; }
 
     // 옷이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하거나 미더우면 null.
     async function getClothesMask(img, cacheKey) {
@@ -6567,8 +6564,9 @@
 
     // 소속(교복·명찰·로고)은 옷에 있다. 옷 분할 마스크를 그대로 칠하면 네모보다
     // 정확하고, 옷 교체에 쓰는 것과 같은 마스크라 따로 계산할 것도 없다.
-    // 다만 그 모델이 16MB라서 진단할 때마다 받지는 않는다 — 이미 받아둔 상태이거나
-    // 사용자가 그 줄을 눌렀을 때만 받는다(clothesModelReady / ensureClothesRegion).
+    // 모델이 16MB라서 한때 누를 때만 받게 해뒀는데, 그러면 상한 22점인 항목이 사진에
+    // 아무 표시도 없는 상태가 된다 — 이 화면이 답하려는 물음이 무너진다. 그래서 점수가
+    // 붙으면 바로 받는다. 화면을 막지 않고 다 그린 뒤 따로 받아서 얹는다.
     async function paintClothesRegion(layer, color) {
       // 표시는 화면에 걸린 사진 위에 얹히므로, 계산도 같은 사진으로 해야 자리가 맞는다
       var thumb = document.getElementById('resultThumb');
@@ -6745,12 +6743,12 @@
           ? '사진 밖'
           // 점수를 아직 모르는 동안은 "해당 없음"이 아니다 — 자리만 사실대로 적는다
           : (pending
-            ? (def.kind === 'clothes' ? '누르면 표시'
+            ? (def.kind === 'clothes' ? '점수 기다리는 중'
               : (regions.length > 0 ? '사진에서 ' + regions.length + '곳' : '자리 미확인'))
           : (pt === 0 ? '해당 없음'
-            // 소속은 16MB짜리 옷 분할 모델을 받아온 뒤에 정해진다. 이미 받아뒀으면
-            // 바로 칠하고, 아니면 누를 때까지 기다린다 — 그 사실을 표기로 밝힌다.
-            : (def.kind === 'clothes' ? (clothesModelReady() ? '확인 중…' : '누르면 표시')
+            // 소속은 16MB짜리 옷 분할 모델을 받아온 뒤에 정해진다. 받는 동안에는
+            // 확인 중으로 두고, 끝나면 "사진에서 옷 전체"로 갈아 끼운다.
+            : (def.kind === 'clothes' ? '확인 중…'
               : (regions.length > 0 ? '사진에서 ' + regions.length + '곳' : '자리 미확인'))));
 
         row.appendChild(sw); row.appendChild(nm); row.appendChild(sc); row.appendChild(wh);
@@ -6786,7 +6784,15 @@
       factors.forEach(function (f) { if (f.항목 === '소속 노출') belong = f; });
       if (!pending && belong && (Number(belong.점수) || 0) > 0) {
         clothesRegionState = 'idle';
-        if (clothesModelReady()) ensureClothesRegion();
+        // 누를 때까지 기다리지 않고 바로 받아온다. 소속은 상한이 22점으로 두 번째로
+        // 큰 항목인데, 눌러야 보이면 "점수는 높은데 사진에는 아무 표시가 없는" 상태가
+        // 된다 — 이 화면이 답하려는 물음("어디를 보고 매긴 점수인가")이 무너진다.
+        //
+        // 모델이 16MB인 것은 그대로다(실측 16,371,837바이트). 다만 옷을 바꾸려면
+        // 어차피 받아야 하는 모델이라, 대부분의 경우 받는 시점이 앞당겨지는 것이다.
+        // 화면을 막지 않는다 — 다 그린 뒤 따로 받아서 얹고, 그동안 줄에는 "확인 중"으로
+        // 표시된다.
+        ensureClothesRegion();
       } else {
         clothesRegionState = 'skip';
       }
