@@ -46,16 +46,20 @@ function check(label, ok, detail) {
   await page.goto(BASE_URL + '/index.html', { waitUntil: 'load' });
   await page.waitForFunction(() => !!(window.__anshimTest && window.__anshimTest.buildEmblemMask));
 
-  console.log('\n방식 카드');
-  const methods = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('.method-card')).map((c) => c.dataset.method));
-  check('마크만 지우기 카드가 있다', methods.indexOf('emblem') >= 0, methods.join(', '));
-  check('옷 색만 바꾸기 카드가 있다', methods.indexOf('recolor') >= 0);
-  const consent = await page.evaluate(() => window.__anshimTest.consentMethodsForTest || null);
-  if (consent) {
-    check('마크만 지우기는 동의를 받는다', consent.indexOf('emblem') >= 0, consent.join(', '));
-    check('색만 바꾸기는 동의가 필요 없다', consent.indexOf('recolor') === -1);
-  }
+  console.log('\n합쳐진 카드와 선택지');
+  const ui = await page.evaluate(() => ({
+    methods: Array.from(document.querySelectorAll('.method-card')).map((c) => c.dataset.method),
+    colors: Array.from(document.querySelectorAll('.cw-btn')).map((b) => b.dataset.cw),
+    emblems: Array.from(document.querySelectorAll('.em-btn')).map((b) => b.dataset.em),
+    emblemDefault: (document.querySelector('.em-btn.selected') || { dataset: {} }).dataset.em,
+  }));
+  check('옷 카드는 하나다', ui.methods.filter((m) => m === 'outfit').length === 1, ui.methods.join(', '));
+  check('없어진 카드가 되살아나지 않았다',
+    ui.methods.indexOf('emblem') === -1 && ui.methods.indexOf('recolor') === -1);
+  check('교복 티 지우기 선택지 4개', ui.emblems.join(',') === 'keep,pocket,none,all', ui.emblems.join(','));
+  check('색 선택지에 "안 바꾸기"가 있다', ui.colors.indexOf('keep') >= 0, ui.colors.join(','));
+  // 기본값이 "그대로 두기"여야 카드를 고르는 것만으로 사진이 나가지 않는다
+  check('기본 마크 처리는 "그대로 두기"', ui.emblemDefault === 'keep', ui.emblemDefault);
 
   for (const rel of PHOTOS) {
     const file = path.join(__dirname, '..', rel);
@@ -148,6 +152,35 @@ function check(label, ok, detail) {
     // 완전히 0은 아니다(감마·반올림) 지만 평균 8 이하면 눈에는 밝기가 그대로다.
     check('밝기가 보존된다 (주름·단추가 남는다)', Number(r.avgLumaDiff) <= 8,
       '평균 밝기 차 ' + r.avgLumaDiff + '/255');
+  }
+
+  // ── 색만 고르면 사진이 밖으로 나가지 않는가 ───────────────────────────────
+  // 카드를 셋에서 하나로 합치면서 얻은 것이 이것이다. 예전에는 옷 카드를 고르는 순간
+  // 무조건 동의를 물었다 — 보내지도 않을 사진에 동의를 받고 있었다.
+  console.log('\n색만 고를 때 (전송 없음)');
+  const noSend = await page.evaluate(async () => {
+    const T = window.__anshimTest;
+    if (!T.selectMethodForTest) return { skip: true };
+    // 진단 없이도 흐름을 타보려고 상태만 세워둔다
+    T.showScreenForTest('correct');
+    let apiCalls = 0;
+    const realFetch = window.fetch;
+    window.fetch = function (u) {
+      if (String(u).indexOf('/api/') >= 0) apiCalls++;
+      return realFetch.apply(this, arguments);
+    };
+    T.setOutfitStyleForTest('brown', 'keep');   // 색만, 마크는 그대로
+    await T.selectMethodForTest('outfit');
+    const modal = document.getElementById('fluxConsentModal');
+    const shown = modal && getComputedStyle(modal).display !== 'none';
+    window.fetch = realFetch;
+    return { apiCalls, consentShown: !!shown };
+  });
+  if (noSend.skip) {
+    check('selectMethod가 노출돼 있다', false, '노출 필요');
+  } else {
+    check('동의창이 뜨지 않는다', noSend.consentShown === false);
+    check('API를 부르지 않는다', noSend.apiCalls === 0, noSend.apiCalls + '회');
   }
 
   check('콘솔 에러가 없다', errs.length === 0, errs.join(' | '));
