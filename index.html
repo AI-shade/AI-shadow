@@ -3034,9 +3034,6 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"
   integrity="sha384-P8VzCVnT9NBUkMrpcIZrJbA7EBjJvh/fJS6PmP+4nLIM284DtsImIv8D0fFjIkeh"
   crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"
-  integrity="sha384-xb96EMJeax+NLXMC88ZBa1xAeAW+kn+horHh/zFlbMLG2UPWhMJJSlv7fi57hS+Q"
-  crossorigin="anonymous"></script>
 
 <script>
   /* 스크롤에 따라 빛의 심지가 흐려졌다 진해졌다 한다.
@@ -3293,28 +3290,18 @@
     );
   })();
 
-  /* 히어로 제목이 글자 단위로 올라온다.
-     .reveal 그룹에는 히어로가 없어서(사이트 섹션만 등록된다) 서로 겹칠 일이 없다.
-     SplitText의 aria 기본값이 'auto'라 원문이 aria-label로 남는다 — 읽어주는 도구에는 그대로다.
-     플러그인을 못 불러오거나 모션 축소면 제목은 그냥 처음부터 보인다. */
-  (function () {
-    var title = document.querySelector('.hero-title');
-    if (!title || !window.gsap || !window.SplitText) return;
-    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    gsap.registerPlugin(SplitText);
+  /* 히어로 제목 등장 애니메이션은 여기 없다.
+     이 파일 위쪽의 `.hero-copy > *` 에 걸린 fadeInUp(CSS)이 이미 그 일을 한다 —
+     첫 페인트에 시작하고 CDN도 글꼴도 기다리지 않는다.
 
-    function play() {
-      var split = new SplitText(title, { type: 'chars, lines', linesClass: 'hero-line' });
-      gsap.from(split.chars, {
-        yPercent: 110, opacity: 0, duration: 0.7, ease: "power3.out",
-        stagger: 0.018,
-        onComplete: function () { split.revert(); }   // 원래 글자로 되돌려 둔다
-      });
-    }
-    // 글꼴이 바뀌면 줄이 다시 나뉜다 — 다 놓인 뒤에 쪼갠다.
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(play);
-    else window.addEventListener("load", play, { once: true });
-  })();
+     예전에는 그 위에 GSAP SplitText로 글자 단위 스태거를 **덧씌웠다.** 그것이
+     "새로고침하면 한 템포 늦게 버벅이다 올라온다"는 제보의 원인이었다:
+       0.04초  CSS fadeInUp이 제목을 부드럽게 올려놓는다
+       0.6초+  GSAP·글꼴이 CDN에서 도착한다
+               -> SplitText가 쪼개고 gsap.from이 글자를 아래로 치운 뒤 다시 올린다
+     같은 글씨가 두 번 등장한 셈이다. 덧씌운 쪽을 지웠다.
+     (감춰두고 기다리는 방법도 실측해봤지만 느린 회선에서 제목이 2.2초간 안 보이는
+      문제로 바뀔 뿐이었다 — 기다리는 구조 자체가 원인이다.) */
 
   /* 핀 고정 섹션 공통 드라이버.
      무대를 화면에 붙이는 일은 CSS(position: sticky)가 하고, 여기서는
@@ -4627,6 +4614,96 @@
         console.warn('[TEXT] Claude Vision 실패 — Tesseract로 자동 전환:', e.message);
         var fallback = await runOcrPipeline(imgUrl);
         return { primary: fallback, source: 'tesseract-fallback', claudeError: e };
+      }
+    }
+
+    // ===== 소속 단서를 못 찾았을 때 가슴을 잘라 확대해 다시 묻기 =====
+    //
+    // 전신 사진에서 가슴 마크는 사진의 1%도 안 된다. 긴 변을 1568px로 줄여 보내니 더
+    // 작아지고, 그래서 놓친다(실사용 제보: 유치원복인데 소속 0점).
+    //
+    // 통제 실험 — childphoto를 35%로 축소해 "멀리 있는 전신 사진"을 흉내낸 뒤 판독:
+    //     축소본 189x291      교복(높음) / 명찰(추정)          -> 엠블럼으로 못 잡음
+    //     가슴 확대 1002x573  교복(확실) / 스쿨 엠블럼(확실)
+    // 같은 모델인데 크게 보여주면 확신이 올라가고 이름도 정확해진다.
+    var BELONG_CLUE_RE = /교복|원복|명찰|로고|엠블럼|배지|기관|학교|유치원|어린이집/;
+
+    function hasBelongClue(clues) {
+      return (clues || []).some(function (c) {
+        return BELONG_CLUE_RE.test(String(c.종류 || '') + String(c.근거 || ''));
+      });
+    }
+
+    // 옷 마스크에서 어깨선을 찾아 가슴만 잘라 확대한다(마크 지우기와 같은 방식).
+    // 짐작한 네모가 아니라 실제 옷 위치라서, 사진마다 몸 비율이 달라도 맞는다.
+    // 확대 배수는 짧은 변이 최소 420px은 되게 잡는다 — 실험에서 그 정도면 확실로 올라갔다.
+    var ZOOM_MIN_SHORT_SIDE = 420;
+    var ZOOM_MAX_SCALE = 4;
+
+    async function cropChestZoomed(img, faces) {
+      var W = img.naturalWidth, H = img.naturalHeight;
+      var clothes = await getClothesMask(img, imageCacheKey('clue', img.src));
+      if (!clothes || !faces || faces.length === 0) return null;
+      var cc = document.createElement('canvas');
+      cc.width = W; cc.height = H;
+      cc.getContext('2d').drawImage(clothes, 0, 0, W, H);
+      var cd = cc.getContext('2d').getImageData(0, 0, W, H).data;
+
+      var f = faces[0].box;
+      var cx = f.x + f.width / 2;
+      var sx0 = Math.max(0, Math.round(cx - f.width * EMBLEM_BAND.findWidthRatio));
+      var sx1 = Math.min(W, Math.round(cx + f.width * EMBLEM_BAND.findWidthRatio));
+      var shoulder = findShoulderY(cd, W, H, sx0, sx1);
+      if (shoulder < 0) return null;
+
+      var x0 = Math.max(0, Math.round(cx - f.width * EMBLEM_BAND.widthRatio));
+      var x1 = Math.min(W, Math.round(cx + f.width * EMBLEM_BAND.widthRatio));
+      var y1 = Math.min(H, shoulder + Math.round(f.height * EMBLEM_BAND.heightRatio));
+      var cw = x1 - x0, ch = y1 - shoulder;
+      if (cw < 20 || ch < 20) return null;
+
+      var k = Math.min(ZOOM_MAX_SCALE, Math.max(1, ZOOM_MIN_SHORT_SIDE / Math.min(cw, ch)));
+      var out = document.createElement('canvas');
+      out.width = Math.round(cw * k); out.height = Math.round(ch * k);
+      var ox = out.getContext('2d');
+      ox.imageSmoothingQuality = 'high';
+      ox.drawImage(img, x0, shoulder, cw, ch, 0, 0, out.width, out.height);
+      return { canvas: out, from: cw + 'x' + ch, to: out.width + 'x' + out.height, scale: k };
+    }
+
+    // 1차에서 소속을 못 찾았을 때만 부른다. 찾은 단서를 ocrResult에 합쳐 넣는다 —
+    // 이 값이 그대로 진단(diagnose-risk)으로 넘어가야 점수에 반영된다.
+    async function addBelongClueByZoom(imgUrl, faces, ocrResult) {
+      if (!ocrResult) return ocrResult;
+      if (hasBelongClue(ocrResult.visualClues)) return ocrResult; // 이미 찾았다
+      try {
+        var img = await loadImage(imgUrl);
+        var crop = await cropChestZoomed(img, faces);
+        if (!crop) {
+          console.log('[소속 재확인] 가슴 자리를 잡지 못해 건너뜁니다.');
+          return ocrResult;
+        }
+        var base64 = crop.canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+        var data = await postJson(CLAUDE_BACKEND_URL, { imageBase64: base64, mediaType: 'image/jpeg' });
+        var found = (data.시각단서 || []).filter(function (c) {
+          return BELONG_CLUE_RE.test(String(c.종류 || '') + String(c.근거 || ''));
+        });
+        console.log('[소속 재확인] 가슴 ' + crop.from + ' -> ' + crop.to
+          + ' (x' + crop.scale.toFixed(1) + ') — 단서 ' + found.length + '개', found);
+        if (found.length === 0) return ocrResult;
+        // 어디서 나온 단서인지 표시해 둔다. 확대해서 본 것이라 위치는 가슴이다.
+        var tagged = found.map(function (c) {
+          return {
+            종류: c.종류, 근거: c.근거, 확신: c.확신 || '추정',
+            위치: '중앙', 확대재확인: true,
+          };
+        });
+        ocrResult.visualClues = (ocrResult.visualClues || []).concat(tagged);
+        return ocrResult;
+      } catch (e) {
+        // 놓침을 줄이려는 보조 단계다. 실패해도 원래 결과로 그냥 간다.
+        console.warn('[소속 재확인] 실패 — 1차 결과로 진행합니다:', e.message);
+        return ocrResult;
       }
     }
 
@@ -7180,7 +7257,9 @@
       var clues = (ocrResult && ocrResult.visualClues) || [];
       clues.forEach(function (c) {
         var label = (c.종류 || '단서') + ' 감지: ' + (c.근거 || '') +
-          (c.확신 ? ' · 확신 ' + c.확신 : '');
+          (c.확신 ? ' · 확신 ' + c.확신 : '')
+          // 1차에서 놓쳐 가슴을 확대해 다시 본 단서는 그 사실을 밝힌다
+          + (c.확대재확인 ? ' · 가슴을 확대해 다시 확인' : '');
         addNoPinNote(legend, num++, label, 'clue');
       });
     }
@@ -8083,6 +8162,13 @@
 
           activateStep(1); // 텍스트 감지 — Claude Vision 우선, 실패 시 Tesseract로 자동 전환
           var textResult = await runTextDetectionPipeline(uploadedPhotoUrl, faceResult.faces);
+          // 소속(교복·명찰·마크)을 하나도 못 찾았으면 가슴을 잘라 확대해 한 번 더 묻는다.
+          // 전신 사진에서 마크가 너무 작아 놓치는 것을 실험으로 확인했다 — 크게 보여주면
+          // 같은 모델도 확신이 "추정"에서 "확실"로 올라간다.
+          // 이 결과가 진단(diagnose-risk)으로 넘어가야 점수에 반영되므로 여기서 해야 한다.
+          if (textResult && textResult.primary) {
+            await addBelongClueByZoom(uploadedPhotoUrl, faceResult.faces, textResult.primary);
+          }
           var ocrResult = textResult.primary;
 
           if (myGeneration !== diagnosisGeneration) return; // 그 사이 새 진단이 시작됐으면 여기서 중단
@@ -9815,6 +9901,9 @@
       runOutfitRecolor: runOutfitRecolor, // 옷 색만 바꾸기 (비용 0)
       consentMethodsForTest: CONSENT_METHODS,
       buildEmblemMask: buildEmblemMask,   // 가슴 마스크 검증용 (비용 0)
+      cropChestZoomed: cropChestZoomed,   // 가슴 확대 조각 (비용 0)
+      hasBelongClue: hasBelongClue,
+      addBelongClueByZoom: addBelongClueByZoom, // 소속 재확인 (Claude 호출 1회)
       runEmblemRemoval: runEmblemRemoval, // 마크 지우기 실호출 검증용 (비용 발생)
       runFaceDetectionPipeline: runFaceDetectionPipeline, // 얼굴 검출 단독 검증용 (로컬 실행이라 비용 없음)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
