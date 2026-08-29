@@ -94,6 +94,50 @@ const 폭들 = [390, 430, 560];
     ok(잰값.액션바, '하단 액션 바가 화면에 붙어 있다', 잰값.위치);
     ok(잰값.내용 <= 잰값.자리, '액션 바가 글자를 덮지 않는다',
       '내용 ' + 잰값.내용 + 'px / 바 위 자리 ' + 잰값.자리 + 'px');
+
+    // ── 보정 화면 ──────────────────────────────────────────────────────
+    // 고치기 전 실측(390x844): 517자 / 1658px / 폰 화면 2.0개분.
+    // 방식 카드가 335px씩 쌓여서 화면을 다 먹었다.
+    await page.evaluate(() => {
+      window.__anshimTest.showScreenForTest('correct');
+      document.getElementById('screen-correct').scrollIntoView({ block: 'start' });
+    });
+    await page.waitForTimeout(300);
+
+    const 보정 = await page.evaluate(() => {
+      const el = document.getElementById('screen-correct');
+      const cards = [...document.querySelectorAll('.method-card')]
+        .filter((c) => getComputedStyle(c).display !== 'none');
+      const grid = document.querySelector('.method-grid');
+      const bar = el.querySelector('.app-actionbar');
+      const tab = document.querySelector('.app-tabbar');
+      const 아래여백 = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+      const 바높이 = bar ? bar.getBoundingClientRect().height : 0;
+      const 탭높이 = tab ? tab.getBoundingClientRect().height : 0;
+      const preview = document.getElementById('compareGrid');
+      return {
+        높이: Math.round(el.getBoundingClientRect().height),
+        가장큰카드: cards.length ? Math.max(...cards.map(
+          (c) => Math.round(c.getBoundingClientRect().height))) : 0,
+        두열: grid
+          ? getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length === 2
+          : false,
+        // 미리보기가 방식 목록보다 위에 있는가. DOM은 안 옮기고 order로만 바꾸므로
+        // 실제로 그려진 자리를 잰다.
+        미리보기가위: !!preview && !!grid
+          && preview.getBoundingClientRect().top < grid.getBoundingClientRect().top,
+        내용: Math.round(el.getBoundingClientRect().height - 아래여백),
+        자리: Math.round(window.innerHeight - 탭높이 - 바높이),
+        바있음: !!bar,
+      };
+    });
+    ok(보정.높이 <= 844, '보정 화면이 한 화면에 들어간다', 보정.높이 + 'px');
+    ok(보정.가장큰카드 <= 150, '방식 카드가 150px를 넘지 않는다', 보정.가장큰카드 + 'px');
+    ok(보정.두열, '방식이 2열 타일이다');
+    ok(보정.미리보기가위, '원본/처리 후가 방식 목록보다 위에 있다');
+    ok(보정.바있음 && 보정.내용 <= 보정.자리, '액션 바가 글자를 덮지 않는다',
+      '내용 ' + 보정.내용 + 'px / 바 위 자리 ' + 보정.자리 + 'px');
+
     await ctx.close();
   }
   await browser.close();
