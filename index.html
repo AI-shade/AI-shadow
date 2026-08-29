@@ -2036,7 +2036,19 @@
      display:revert로 되살리면 다른 규칙이 준 flex/grid가 날아간다. */
   .app-tabbar { display: none; }
 
-  @media (max-width: 560px) {
+  /* 어플 배치가 뜨는 조건은 둘이다.
+       ① 폭이 좁다                        — 세로로 든 폰
+       ② 손가락으로 쓰는데 화면이 납작하다  — 가로로 돌린 폰
+     ②가 없으면 **폰을 가로로 돌리는 순간 데스크톱 배치가 뜬다.** 실측:
+         iPhone 15 세로  393x852 -> 어플 배치
+         iPhone 15 가로  852x393 -> 데스크톱   (높이가 393px인데!)
+     ②에 coarse와 hover:none을 같이 거는 이유: 하나만으로는 부족하다.
+     터치스크린 노트북은 coarse일 수 있고 일부 스타일러스 기기는 hover를 흉내낸다.
+     둘 다여야 "손가락으로만 쓰는 기기"다.
+     태블릿(744px 이상)은 일부러 뺀다 — 웹 배치가 편하게 들어간다.
+     test/device-switch.js가 기기 11종으로 이 경계를 지킨다. */
+  @media (max-width: 560px),
+         (pointer: coarse) and (hover: none) and (max-height: 560px) {
     .app-tabbar {
       display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 600;
@@ -2049,7 +2061,11 @@
     }
     .app-tab[aria-current="true"] { color: var(--ink); }
     .app-tab-ic { display: block; }
-    .app-tab-ic .mono-icon { width: 1.15rem; height: 1.15rem; }
+    /* margin auto가 없으면 아이콘이 칸 왼쪽에 붙는다. .mono-icon이 display:block이라
+       부모의 text-align:center가 안 먹기 때문이다 — 글자만 가운데 오고 아이콘은
+       왼쪽에 남는다. 실측: 칸 중심에서 29px 왼쪽. 세로에서는 칸이 좁아(78px)
+       티가 덜 났고 가로로 돌리면(칸 170px) 확연히 어긋났다. */
+    .app-tab-ic .mono-icon { width: 1.15rem; height: 1.15rem; margin-inline: auto; }
     .app-fab {
       width: 3.1rem; height: 3.1rem; border-radius: 50%; border: 0; margin: -1rem auto 0;
       background: var(--accent-bar); color: var(--ink); font-size: 1.45rem; font-weight: 800;
