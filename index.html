@@ -831,6 +831,24 @@
   /* 0점 항목은 흐리게 — 위험이 없다는 것도 정보다 */
   .sb-list li.zero .sb-name, .sb-list li.zero .sb-num { color: var(--muted); font-weight: 600; }
   .sb-list li.zero .sb-bar span { background: var(--line-strong); }
+  .sb-bar > span.max { background: var(--risk-high); }
+
+  /* 근거는 지우지 않고 접는다 — 항목 이름·점수·막대는 언제나 보인다. 접힌 상태가
+     "결과를 기다리는 중"으로 읽히면 안 된다(실사용 제보 이력). 폰·PC 모두 대상이라
+     max-width 미디어쿼리 밖(전역)에 둔다. */
+  .sb-top { grid-column: 1 / -1; display: flex; align-items: center; gap: 0.5rem; }
+  .sb-score { margin-left: auto; }
+  .why-btn {
+    font-size: 0.68rem; font-weight: 600; color: var(--muted); font-family: inherit;
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.1rem 0.5rem; cursor: pointer; flex: none;
+  }
+  /* 브라우저 기본 스타일시트가 [hidden]을 무조건 display:none으로 만든다. 그래서
+     fold-on이 없을 때도 hidden 속성만으로 근거가 숨어버릴 수 있어, 먼저 그걸
+     무력화한 뒤(display:block) fold-on이 있을 때만 다시 숨긴다 — 이 순서가 바뀌면
+     "JS가 죽어도 근거는 남는다"는 안전선이 깨진다. */
+  .why-body[hidden] { display: block; }
+  :root.fold-on .why-body[hidden] { display: none; }
   /* 오각형 — 값이 도착하면 형태가 부드럽게 자란다 */
   .radar-ring { fill: none; stroke: var(--line); stroke-width: 1; }
   .radar-spoke { stroke: var(--line); stroke-width: 1; }
@@ -7598,8 +7616,9 @@
       var sb = document.getElementById('scoreBreakdown');
       var factors = r.riskFactors || [];
       if (factors.length > 0) {
-        // 목록을 다시 그린다. 뼈대와 실제 줄의 규격이 같아서 다시 그려도 높이는 그대로다
-        // (test/settle.js가 종합 점수 카드 530 → 530px로 확인한다).
+        // 목록을 다시 그린다. 근거 산문은 기본적으로 접혀 있다(아래 fold-on) —
+        // 카드 전체 높이는 라디어·합계 등 다른 요소가 있어 test/settle.js가 재는
+        // 카드 단위로는 여전히 안 튄다(직접 확인함).
         var sbList = document.getElementById('sbList');
         sbList.innerHTML = '';
         var sum = 0;
@@ -7608,28 +7627,53 @@
           var cap = Number(f.상한) || 0;
           sum += pt;
           var li = document.createElement('li');
-          if (pt === 0) li.className = 'zero';
+          // sb-row는 기존 점수 내역 스타일이 잡는 이름이고, foldable은 접기 장치가
+          // 공용으로 찾는 껍데기 이름이다 — 나중에 FAQ 항목도 foldable만 붙여
+          // 같은 클릭 핸들러를 그대로 재사용한다(항목 행 구조와 무관하게 동작해야 함).
+          li.className = 'sb-row foldable' + (pt === 0 ? ' zero' : '');
+
+          var top = document.createElement('div');
+          top.className = 'sb-top';
           var name = document.createElement('span');
           name.className = 'sb-name';
           name.textContent = f.항목;
+          var whyBtn = document.createElement('button');
+          whyBtn.type = 'button';
+          whyBtn.className = 'why-btn';
+          whyBtn.setAttribute('aria-expanded', 'false');
+          whyBtn.textContent = '왜?';
           var num = document.createElement('span');
-          num.className = 'sb-num';
+          num.className = 'sb-num sb-score'; // sb-num은 기존 스타일, sb-score는 접기 테스트가 찾는 이름
           num.appendChild(document.createTextNode(String(pt)));
           var capEl = document.createElement('span');
           capEl.className = 'cap';
           capEl.textContent = ' / ' + cap + '점';
           num.appendChild(capEl);
+          top.appendChild(name); top.appendChild(whyBtn); top.appendChild(num);
+
           var bar = document.createElement('span');
           bar.className = 'sb-bar';
           var fill = document.createElement('span');
-          fill.style.width = (cap ? Math.round(pt / cap * 100) : 0) + '%';
+          // 0점을 폭 0%로 그리면 "검사를 안 했다"로 읽힌다 — 최소 2%는 채운다.
+          fill.style.width = (pt === 0 ? 2 : (cap ? Math.round(pt / cap * 100) : 0)) + '%';
+          if (pt === 0) fill.className = 'zero';
+          else if (cap && pt === cap) fill.className = 'max';
           bar.appendChild(fill);
+
           var why = document.createElement('p');
-          why.className = 'sb-why';
+          // sb-why는 기존 스타일·a11y 검사가 찾는 이름, why-body는 접기 장치가 찾는
+          // 이름이다 — 근거 산문 하나에 둘 다 붙여 두 쪽 다 만족시킨다.
+          why.className = 'sb-why why-body';
           why.textContent = f.근거 || '';
-          li.appendChild(name); li.appendChild(num); li.appendChild(bar); li.appendChild(why);
+
+          li.appendChild(top); li.appendChild(bar); li.appendChild(why);
           sbList.appendChild(li);
         });
+        // 접기는 JS가 <html>에 fold-on을 붙여야 시작된다. 렌더 직후 근거를 접어 둔다 —
+        // fold-on이 없으면(스크립트가 죽었으면) 접지 않고 펼쳐진 채로 남겨 글을 지키지 않는다.
+        if (document.documentElement.classList.contains('fold-on')) {
+          sbList.querySelectorAll('.why-body').forEach(function (p) { p.hidden = true; });
+        }
         renderRadar(factors);
         renderFactorMap(factors, lastFaceResult, lastOcrResult);
         document.getElementById('sbTotal').textContent =
@@ -10064,6 +10108,20 @@
       탭세우기((주인 && 주인.closest('[data-tab-of]') &&
                 주인.closest('[data-tab-of]').getAttribute('data-tab-of')) || '진단');
     }
+
+    /* 근거 접기 — 접기를 켜는 것은 JS다. 이 줄이 안 돌면 근거는 그냥 다 보인다
+       (위 CSS의 :root.fold-on 규칙이 안 걸린다).
+       클릭 핸들러는 .sb-row가 아니라 공용 껍데기 .foldable로 몸통을 찾는다 —
+       FAQ 항목(Task 5)에는 .sb-row가 없어서 .sb-row 기준이면 그때 null 참조로 터진다. */
+    document.documentElement.classList.add('fold-on');
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.why-btn');
+      if (!btn) return;
+      var 몸 = btn.closest('.foldable').querySelector('.why-body');
+      var 열림 = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', 열림 ? 'false' : 'true');
+      몸.hidden = 열림;
+    });
 
     // 테스트 전용 접근점 — 앱 전체가 IIFE라 밖에서 순수 함수를 검증할 수 없어서 열어둠.
     // 앱 코드는 이 객체를 쓰지 않는다 (test/text-routing.js에서만 사용).
