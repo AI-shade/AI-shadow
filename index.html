@@ -6791,7 +6791,8 @@
 
       // ① 간판·주소 노출 (상한 26) — 사진에서 읽힌 글자 종류로 매긴다
       var placeWords = meaningful.filter(function (w) {
-        return /상호명|간판|주소|지번|전화번호/.test(String(w.type || ''));
+        // 판정은 isPlaceWord 한 곳에만 둔다(위 PLACE_TYPE_RE 주석 참고).
+        return isPlaceWord(w);
       });
       var f1 = Math.min(26, placeWords.length * 11 + (hasOcrText ? 5 : 0) + (hasNotes ? 4 : 0));
       var f1why = placeWords.length > 0
@@ -6961,7 +6962,8 @@
 
     // 점수를 매길 때 쓰는 것과 같은 유형 판정이다. 여기서만 다르게 고르면
     // "22점의 근거"라고 표시한 자리가 실제 근거와 어긋난다.
-    var PLACE_WORD_RE = /상호명|간판|주소|지번|전화번호/;
+    // 실제로 어긋났었다 — 여기와 채점이 각자 좁은 목록을 갖고 있어서 사진 103장
+    // 측정에서 표지판·아파트명·차량번호판을 통째로 놓쳤다. 이제 isPlaceWord 하나만 쓴다.
 
     // 항목 하나가 가리키는 사진 속 상자들. 없으면 빈 배열.
     function factorRegions(kind, faceResult, ocrResult) {
@@ -6978,7 +6980,7 @@
         var words = (ocrResult && ocrResult.words) || [];
         // 장소로 분류된 글자가 점수의 근거다. 하나도 없으면 읽힌 글자 전체를
         // 보여준다 — 그때도 점수가 조금 붙기 때문이다(채점 규칙과 같다).
-        var place = words.filter(function (w) { return PLACE_WORD_RE.test(String(w.type || '')); });
+        var place = words.filter(isPlaceWord);
         var use = place.length > 0 ? place : words;
         return use.map(function (w) {
           return {
@@ -7611,7 +7613,15 @@
     // 학교명·현수막·행사명·기관명처럼 얼마든지 다른 말이 온다. 예전에는 다섯 낱말만
     // 통과시켜서, 사진에 "○○중학교"가 대문짝만하게 찍혀 있어도 사슬에서는 "없음"이
     // 떴다(실사용 제보). 유형과 내용을 같이 본다.
-    var PLACE_TYPE_RE = /상호|간판|표지|현수막|배너|플래카드|주소|지번|번지|도로|전화|번호판|학교|유치원|어린이집|학원|기관|장소|건물|매장|점포|시설|지명|동네|행사/;
+    // 장소를 가리키는 글자인가 — **이 파일에서 유일한 판정 자리다.**
+    // 예전에는 점수 매기는 쪽과 위험 요소 지도가 각자 좁은 목록(상호명·간판·주소·
+    // 지번·전화번호 다섯 개뿐)을 따로 갖고 있어서, 사진 103장 측정에서
+    // 놓친 13장 중 6장이 여기서 샜다 — Claude는 "푸른곡 가족 공원[표지판]",
+    // "햇살마을 아파트[아파트명]", "34가 1862[차량번호판]"을 제대로 읽었는데
+    // 그 유형들이 좁은 목록에 없었다. 어휘를 늘리는 것보다 판정을 하나로 만드는 것이
+    // 진짜 고침이다 — 그래야 다음에 또 갈라지지 않는다.
+    // 뒤쪽 넷(호수·동번호·단지·안내)이 측정에서 새로 관찰된 유형이다.
+    var PLACE_TYPE_RE = /상호|간판|표지|현수막|배너|플래카드|주소|지번|번지|도로|전화|번호판|학교|유치원|어린이집|학원|기관|장소|건물|매장|점포|시설|지명|동네|행사|호수|동번호|단지|안내|아파트|빌라|연립|주택/;
     var PLACE_TEXT_RE = /학교|유치원|어린이집|초등|중학|고등|학원|교습소|아파트|빌라|번지|\d+동|\d+호|\d{2,4}-\d{3,4}|[가-힣]{2,}(로|길)\s*\d|[가-힣]{2,}(시|군|구|읍|면|동)(?![가-힣])/;
     function isPlaceWord(w) {
       return PLACE_TYPE_RE.test(String(w.type || '')) || PLACE_TEXT_RE.test(String(w.text || ''));
@@ -9857,6 +9867,7 @@
       setExifForTest: function (v) { lastExifResult = v; },
       parseExifBuffer: parseExifBuffer,
       getClothesMask: getClothesMask,
+      isPlaceWord: isPlaceWord,  // 장소 글자 판정 — 세 곳이 공유하는 단일 자리
       factorRegions: factorRegions,
       ensureClothesRegion: ensureClothesRegion,
       renderFactorMap: renderFactorMap,
@@ -9875,6 +9886,7 @@
       addBelongClueByZoom: addBelongClueByZoom, // 소속 재확인 (Claude 호출 1회)
       runEmblemRemoval: runEmblemRemoval, // 마크 지우기 실호출 검증용 (비용 발생)
       runFaceDetectionPipeline: runFaceDetectionPipeline, // 얼굴 검출 단독 검증용 (로컬 실행이라 비용 없음)
+      runClaudeVisionPipeline: runClaudeVisionPipeline,   // 정확도 측정용 (Claude Vision 호출 1회, 비용 발생)
       runOcrPipeline: runOcrPipeline, // Tesseract 단독 진단용 (로컬 실행이라 비용 없음)
       // 생활패턴 감지 검증용 — 스크린샷 판독(Claude Vision)과 패턴 분석(Claude) 둘 다 비용 발생
       runScreenshotExtractionPipeline: runScreenshotExtractionPipeline,
