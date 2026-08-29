@@ -1,0 +1,680 @@
+<title>아이SHADOW 강점과 급소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;500;600;700&family=Gothic+A1:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ─────────────────────────────────────────────────────────────────────
+     방어 준비 문서. 「아이SHADOW 심사 문답」의 자매 문서다 —
+     숫자는 같은 목소리(IBM Plex Mono)를 쓰되, 본문은 다른 서체를 써서
+     "같은 팀의 다른 문서"로 읽히게 한다.
+
+     바탕색은 앱 자신의 연두(HSL 92°)에서 가져왔다. 중립 회색을 그냥 쓰지 않고
+     제품의 색으로 기울인 것이다.
+     ───────────────────────────────────────────────────────────────────── */
+  :root {
+    /* 바탕과 중립색 전부를 노랑연두(색상각 72°) 쪽으로 기울였다.
+       회색을 그냥 쓰지 않고 제품의 색으로 물들인 것이다. */
+    --paper: #F8FAEA;
+    --card: #FFFFFF;
+    --card-2: #EEF3D8;
+    --ink: #1B1E11;
+    --ink-mid: #4C5236;
+    --ink-soft: #7D8463;
+    --rule: #E1E8C4;
+    --rule-strong: #C5D09D;
+
+    /* 도움이 되는 쪽 / 방해가 되는 쪽 — 의미색이지 강조색이 아니다.
+       강조색이 노랑연두라 '도움'은 색상각을 충분히 벌린 초록으로 잡는다. */
+    --solid: #2C7150;
+    --solid-bg: #DDEDE2;
+    --flag: #A2482C;
+    --flag-bg: #F8E3D9;
+
+    /* 강조색: 앱 히어로의 연두를 글자가 읽히는 진하기까지 내린 것 */
+    --clover: #5E7D13;
+    --clover-bg: #E9F1CB;
+
+    --shadow: 0 1px 2px rgba(27, 30, 17, .05), 0 10px 28px -14px rgba(27, 30, 17, .16);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #15180C;
+      --card: #1E2213;
+      --card-2: #2A3019;
+      --ink: #F0F4DE;
+      --ink-mid: #C6CDAD;
+      --ink-soft: #929A78;
+      --rule: #323722;
+      --rule-strong: #4A5133;
+      --solid: #77C79C;
+      --solid-bg: #16301F;
+      --flag: #EDA083;
+      --flag-bg: #38211A;
+      --clover: #C4DC69;
+      --clover-bg: #262D11;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 10px 28px -14px rgba(0, 0, 0, .6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #15180C;
+    --card: #1E2213;
+    --card-2: #2A3019;
+    --ink: #F0F4DE;
+    --ink-mid: #C6CDAD;
+    --ink-soft: #929A78;
+    --rule: #323722;
+    --rule-strong: #4A5133;
+    --solid: #77C79C;
+    --solid-bg: #16301F;
+    --flag: #EDA083;
+    --flag-bg: #38211A;
+    --clover: #C4DC69;
+    --clover-bg: #262D11;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 10px 28px -14px rgba(0, 0, 0, .6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Gothic A1', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.76;
+    font-weight: 400;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 44px 22px 92px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  /* ── 머리 ─────────────────────────────────────────────────────── */
+  .head { display: flex; flex-direction: column; gap: 14px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--clover); margin: 0;
+  }
+  h1 {
+    font-family: 'Hahmlet', 'Gothic A1', serif;
+    font-size: clamp(30px, 5vw, 46px); line-height: 1.16; font-weight: 600;
+    letter-spacing: -.02em; margin: 0; text-wrap: balance;
+  }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-mid); font-size: 15.5px; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  /* ── SWOT 격자 ────────────────────────────────────────────────
+     진짜 2×2다. 축이 뜻을 갖는다: 세로는 내부/외부, 가로는 도움/방해.
+     장식이 아니라 정보라서 격자로 그린다. ───────────────────────── */
+  .matrix { display: flex; flex-direction: column; gap: 10px; }
+  .axis-top {
+    display: none;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  @media (min-width: 800px) {
+    .axis-top { display: grid; grid-template-columns: 26px 1fr 1fr; gap: 12px; padding-left: 0; }
+    .axis-top span:nth-child(2) { color: var(--solid); }
+    .axis-top span:nth-child(3) { color: var(--flag); }
+  }
+  .quads { display: flex; flex-direction: column; gap: 12px; }
+  @media (min-width: 800px) {
+    .quads { display: grid; grid-template-columns: 26px 1fr 1fr; gap: 12px; }
+    .axis-side {
+      writing-mode: vertical-rl; transform: rotate(180deg);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink-soft); grid-row: span 1;
+    }
+  }
+  .axis-side { display: none; }
+  @media (min-width: 800px) { .axis-side { display: flex; } }
+
+  .quad {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 18px 20px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .quad.help { border-top: 3px solid var(--solid); }
+  .quad.harm { border-top: 3px solid var(--flag); }
+  .quad h2 {
+    font-family: 'Hahmlet', serif;
+    font-size: 17px; font-weight: 600; margin: 0; letter-spacing: -.01em;
+    display: flex; align-items: baseline; gap: 9px;
+  }
+  .quad h2 .letter {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; font-weight: 600; letter-spacing: .04em;
+    padding: 2px 7px; border-radius: 5px; line-height: 1.6;
+  }
+  .quad.help h2 .letter { background: var(--solid-bg); color: var(--solid); }
+  .quad.harm h2 .letter { background: var(--flag-bg); color: var(--flag); }
+  .quad ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .quad li { font-size: 14px; line-height: 1.66; color: var(--ink-mid); padding-left: 15px; position: relative; }
+  .quad li::before {
+    content: ''; position: absolute; left: 0; top: .62em;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--rule-strong);
+  }
+  .quad.help li::before { background: var(--solid); }
+  .quad.harm li::before { background: var(--flag); }
+  /* 기회(O)는 강점(S)과 같은 '도움' 쪽이지만 내부가 아니라 외부다.
+     문답의 O 표식과 같은 노랑연두를 써서 둘이 섞이지 않게 한다. */
+  .quad.opp { border-top-color: var(--clover); }
+  .quad.opp h2 .letter { background: var(--clover-bg); color: var(--clover); }
+  .quad.opp li::before { background: var(--clover); }
+  .quad li b { color: var(--ink); font-weight: 600; }
+  .quad li .num {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600;
+  }
+
+  /* ── 급소 셋 ──────────────────────────────────────────────────── */
+  .danger {
+    background: var(--card); border: 1px solid var(--flag);
+    border-left: 5px solid var(--flag);
+    border-radius: 12px; padding: 22px 24px; box-shadow: var(--shadow);
+  }
+  .danger h2 {
+    font-family: 'Hahmlet', serif; font-size: 19px; font-weight: 600;
+    margin: 0 0 6px; letter-spacing: -.012em;
+  }
+  .danger .sub { margin: 0 0 16px; font-size: 14px; color: var(--ink-soft); }
+  .danger ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .danger li { color: var(--ink-mid); font-size: 14.5px; }
+  .danger li b { color: var(--ink); font-weight: 600; }
+  .danger a { color: var(--clover); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+  /* ── 문답 ─────────────────────────────────────────────────────── */
+  .qgroup { display: flex; flex-direction: column; gap: 16px; }
+  .qgroup-head {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+    border-bottom: 1px solid var(--rule-strong); padding-bottom: 9px;
+  }
+  .qgroup-head h2 {
+    font-family: 'Hahmlet', serif; font-size: 20px; font-weight: 600;
+    margin: 0; letter-spacing: -.014em;
+  }
+  .qgroup-head .note { font-size: 13px; color: var(--ink-soft); }
+
+  article.qa {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 20px 22px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .qhead { display: flex; gap: 11px; align-items: baseline; }
+  .qhead .from {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: .05em;
+    padding: 2px 7px; border-radius: 5px; flex-shrink: 0; line-height: 1.7;
+  }
+  .from.S { background: var(--solid-bg); color: var(--solid); }
+  .from.O { background: var(--clover-bg); color: var(--clover); }
+  .from.W, .from.T { background: var(--flag-bg); color: var(--flag); }
+  .qhead h3 {
+    font-family: 'Hahmlet', serif;
+    font-size: 16.5px; font-weight: 500; line-height: 1.5; letter-spacing: -.01em;
+    margin: 0; text-wrap: balance;
+  }
+  .a { color: var(--ink-mid); display: flex; flex-direction: column; gap: 9px; }
+  .a p { margin: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+  .a em { font-style: normal; color: var(--ink); font-weight: 500; }
+  .say {
+    background: var(--card-2); border-radius: 9px; padding: 13px 15px;
+    font-size: 14.5px; line-height: 1.72; color: var(--ink);
+  }
+  .say .lbl {
+    display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .proof {
+    background: var(--card-2); border-radius: 9px; padding: 12px 15px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px; line-height: 1.85; font-variant-numeric: tabular-nums;
+    color: var(--ink-mid); overflow-x: auto;
+  }
+  .proof .lbl {
+    display: block; font-size: 10px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .proof b { color: var(--ink); font-weight: 600; }
+  .prow { display: flex; gap: 12px; }
+  .prow span:first-child { min-width: 12em; color: var(--ink-soft); flex-shrink: 0; }
+  .avoid {
+    background: var(--flag-bg); border-radius: 9px; padding: 12px 15px;
+    font-size: 14px; line-height: 1.7; color: var(--ink-mid);
+  }
+  .avoid .lbl {
+    display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--flag); margin-bottom: 5px;
+  }
+  .avoid b { color: var(--ink); font-weight: 600; }
+
+  /* ── 맺음 ─────────────────────────────────────────────────────── */
+  .closing {
+    background: var(--card); border: 1px solid var(--rule-strong);
+    border-radius: 12px; padding: 24px 26px; box-shadow: var(--shadow);
+  }
+  .closing h2 { font-family: 'Hahmlet', serif; font-size: 19px; font-weight: 600; margin: 0 0 14px; }
+  .closing ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .closing li { color: var(--ink-mid); }
+  .closing b { color: var(--ink); font-weight: 600; }
+  .closing .foot {
+    margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--rule);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11.5px; color: var(--ink-soft); line-height: 1.8;
+  }
+
+  a:focus-visible, li:focus-visible { outline: 2px solid var(--clover); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (max-width: 560px) { .wrap { padding: 32px 16px 72px; gap: 34px; } article.qa { padding: 17px 16px; } }
+</style>
+
+<div class="wrap">
+
+  <header class="head">
+    <p class="eyebrow">Campus AX-Ton · 네잎클로드 · 질의응답 준비</p>
+    <h1>아이SHADOW 강점과 급소</h1>
+    <p class="lede">SWOT을 먼저 놓고, <strong>거기서 나올 질문</strong>을 뽑았습니다.
+      심사에서 아픈 질문은 강점이 아니라 <strong>약점(W)과 위협(T)에서 옵니다.</strong>
+      그래서 이 문서의 무게도 그쪽에 실려 있습니다. 숫자는 전부 실제로 재본 값입니다.</p>
+  </header>
+
+  <!-- ══════════════════ SWOT 격자 ══════════════════ -->
+  <section class="matrix">
+    <div class="axis-top"><span></span><span>도움이 된다</span><span>방해가 된다</span></div>
+    <div class="quads">
+      <div class="axis-side">내부 · 우리가 만든 것</div>
+
+      <div class="quad help">
+        <h2><span class="letter">S</span>강점</h2>
+        <ul>
+          <li><b>고리가 닫혀 있다.</b> 진단 → 보정 → 재검증까지 한 흐름이다. 진단만 하는 도구는 "그래서 어쩌라고"로 끝난다.</li>
+          <li><b>부탁이 아니라 차단.</b> 얼굴·손을 프롬프트로 부탁하지 않고 마스크에서 아예 뺀다 — 실측 <span class="num">0픽셀</span>.</li>
+          <li><b>정확도를 실제로 쟀다.</b> 정답표 <span class="num">103장</span>. 해커톤에서 이걸 한 팀은 드물다.</li>
+          <li><b>총점을 모델에게 안 묻는다.</b> 항목별로 받아 서버가 더한다. 그래서 "왜 62점"에 항상 답할 수 있다.</li>
+          <li><b>두 회사 모델이 교차 검증한다.</b> Claude가 설명을 읽고, Gemini가 사진을 본다. 갈리면 감추지 않고 표시한다.</li>
+          <li><b>사실은 AI에게 안 묻는다.</b> EXIF 좌표·얼굴 수·옷 색 변경·점수 합산은 코드가 한다.</li>
+          <li><b>한계를 화면에 적는다.</b> "못 찾았다고 안전하다는 뜻은 아니에요", "약관상 약속이지 기술적 차단이 아니에요".</li>
+        </ul>
+      </div>
+
+      <div class="quad harm">
+        <h2><span class="letter">W</span>약점</h2>
+        <ul>
+          <li><b>오탐이 높다.</b> 안전한 사진 <span class="num">32장 중 19장</span>을 위험하다고 한다. 원인 셋을 고쳐 21→19로 내렸지만 아직 높다.</li>
+          <li><b>같은 사진이 매번 다르게 읽힌다.</b> 두 번 돌리면 <span class="num">7장</span>의 판정이 뒤집힌다 — 모든 숫자에 그만큼 흔들림이 있다.</li>
+          <li><b>글자가 없으면 못 잡는다.</b> 남산타워가 보이는 사진을 놓쳤다. 랜드마크 인식 기능은 있는데 진단에 안 붙어 있다.</li>
+          <li><b>명찰이 대개 안 읽힌다.</b> 103장 중 <span class="num">50장</span>에서 명찰·로고의 글자를 못 읽었다 — "달려 있다"만으로는 기관을 못 좁힌다.</li>
+          <li><b>배점 절대값에 실증 근거가 없다.</b> 26 대 22는 우리 판단이다.</li>
+          <li><b>구조가 거꾸로다.</b> 오탐을 뺄 길만 있고 <b>놓침을 알려줄 길이 없다</b> — 놓침이 더 나쁜 실패인데도.</li>
+          <li><b>실사용자가 없다.</b> 팀원 제보 말고는 밖에서 쓴 사람이 없다.</li>
+          <li><b>옷 마스크가 소매·모자·가방의 마크를 놓친다.</b> 가슴만 연다.</li>
+        </ul>
+      </div>
+
+      <div class="axis-side">외부 · 우리 밖의 것</div>
+
+      <div class="quad help opp">
+        <h2><span class="letter">O</span>기회</h2>
+        <ul>
+          <li><b>셰어런팅이 사회 문제로 올라왔다.</b> 부모가 대신 결정한 노출을 아이가 나중에 감당하는 구조가 알려지는 중이다.</li>
+          <li><b>기관 단위 수요.</b> 어린이집·유치원이 단체사진을 올리기 전에 한 번 거는 자리 — 개인보다 책임이 크고 예산이 있다.</li>
+          <li><b>설치가 필요 없다.</b> 브라우저에서 도니 앱스토어 심사도, 설치 설득도 없다.</li>
+          <li><b>로컬 비중을 더 늘릴 여지.</b> 지금도 세그멘테이션·좌표·옷 색은 기기 안에서 끝난다. 진단까지 내리면 "안 보낸다"가 원칙이 된다.</li>
+          <li><b>가르치는 효과.</b> 위험 요소 지도는 "무엇이 왜 위험한지"를 부모에게 알려준다 — 한 번 배우면 다음 사진부터 스스로 조심한다.</li>
+        </ul>
+      </div>
+
+      <div class="quad harm">
+        <h2><span class="letter">T</span>위협</h2>
+        <ul>
+          <li><b>플랫폼이 넣으면 끝난다.</b> 인스타그램·카카오가 업로드 직전에 같은 검사를 붙이면 별도 서비스가 설 자리가 없다.</li>
+          <li><b>역효과 위험.</b> "검사 통과"가 방심을 만들면 안 쓰느니만 못하다. 우리가 놓친 위험을 안심하고 올리게 된다.</li>
+          <li><b>경보 피로.</b> 오탐이 많으면 사용자가 경고를 안 읽게 된다 — 그 순간 서비스는 죽는다.</li>
+          <li><b>모델·가격에 매여 있다.</b> API 가격이 오르거나 모델이 사라지면 진단 품질이 통째로 흔들린다.</li>
+          <li><b>원본 전송 경로 자체가 위험이다.</b> 프라이버시를 지키려고 사진을 밖으로 보내는 모순이 남아 있다.</li>
+          <li><b>아동 이미지를 다룬다.</b> 잘못 판단했을 때의 법적·윤리적 책임이 일반 서비스보다 무겁다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 급소 ══════════════════ -->
+  <section class="danger">
+    <h2>이 세 질문에서 점수가 갈립니다</h2>
+    <p class="sub">14개를 다 외울 수 없다면 이것만. 셋 다 W·T에서 나옵니다.</p>
+    <ol>
+      <li><b>"정확도가 얼마입니까?"</b> — 이제 <em>숫자로 답할 수 있습니다.</em>
+        이번 라운드에서 가장 크게 달라진 지점이니 반드시 먼저 꺼내세요. (Q1)</li>
+      <li><b>"안전한 걸 위험하다고 하지 않습니까?"</b> — 가장 아픈 숫자입니다.
+        인정하고, <em>원인 세 가지를 이름으로 대고</em>, 고쳤다고 말하는 것이 유일한 좋은 답입니다. (Q2)</li>
+      <li><b>"인스타그램이 이 기능을 넣으면요?"</b> — 사업성 질문의 최종형입니다.
+        "그럴 리 없다"고 하면 집니다. <em>그게 우리 목표라고</em> 답하세요. (Q10)</li>
+    </ol>
+  </section>
+
+  <!-- ══════════════════ W에서 나오는 질문 ══════════════════ -->
+  <section class="qgroup">
+    <div class="qgroup-head">
+      <h2>약점을 찌르는 질문</h2>
+      <span class="note">가장 많이, 가장 날카롭게 나올 자리</span>
+    </div>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q1. 진단 정확도가 얼마나 됩니까?</h3></div>
+      <div class="a">
+        <p><strong>팀원이 사진 103장에 손으로 정답을 붙였고, 그걸로 실제로 쟀습니다.</strong>
+          정답표는 사진을 셋으로 나눕니다 — 위험한 사진 63장(A), 사람도 놓치기 쉬운 숨은 위험 8장(B),
+          안전한 사진 32장(C).</p>
+        <p>그리고 <em>B가 이 서비스의 존재 이유입니다.</em> A는 부모도 알아봅니다.
+          창밖 아파트 이름, 배경에 작게 걸린 학교 명판 — 그런 걸 잡아야 값어치가 있습니다.</p>
+      </div>
+      <div class="proof"><span class="lbl">실측 · 사진 103장</span>
+        <div class="prow"><span>A 위험한 사진 63장</span><span>찾음 <b>98%</b></span></div>
+        <div class="prow"><span>B 숨은 위험 8장</span><span>찾음 <b>63%</b> (5/8) ← 핵심</span></div>
+        <div class="prow"><span>C 안전한 사진 32장</span><span>찾음 59% (낮을수록 좋음)</span></div>
+        <div class="prow"><span>놓침</span><span><b>4장</b> / 71장</span></div>
+        <div class="prow"><span>놓친 4장</span><span>남산타워 1 · 배경에 작게 걸린 글자 3</span></div>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "정답을 붙인 사진 103장으로 쟀습니다. 놓쳐서는 안 되는 사진 71장 중 67장을 잡았고
+        <b>4장을 놓쳤습니다.</b> 놓친 4장이 무엇인지도 압니다 — 하나는 남산타워가 보이는 사진이라
+        글자가 없어서 지금 구조로는 못 잡고, 셋은 배경에 아주 작게 걸린 글자였습니다."</div>
+      <div class="avoid"><span class="lbl">하면 안 되는 말</span>
+        <b>"98% 정확합니다."</b> A만 98%이고 오탐은 따로입니다. 그리고 <b>B는 8장뿐이라
+        한 장이 12%p를 움직입니다</b> — 63%를 확정된 값처럼 말하면 안 됩니다.
+        <b>세 숫자를 나눠서</b> 말하고, B는 "8장 중 5장"이라고 장수로 말하세요.</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q2. 안전한 사진을 위험하다고 하지는 않습니까?</h3></div>
+      <div class="a">
+        <p><strong>합니다. 32장 중 19장입니다.</strong> 숨기지 말고 먼저 말하세요 —
+          어차피 물어봅니다. <em>이 서비스에서 가장 약한 숫자입니다.</em></p>
+        <p>중요한 건 다음입니다. <em>왜 그런지를 사진 한 장 단위까지 압니다.</em> 원인이 셋이었고,
+          셋 다 고쳐서 21장에서 19장으로 내렸습니다. 크게 안 줄어든 이유도 압니다 —
+          가장 큰 원인이던 <strong>명찰 50장은 여전히 "찾음"으로 세지되 점수만 22점에서 5점으로
+          내려갔기</strong> 때문입니다. 사용자가 보는 위험도는 크게 떨어졌지만
+          "찾았다/못 찾았다"라는 이분법은 그대로입니다.</p>
+      </div>
+      <div class="proof"><span class="lbl">원인 · 실제로 나온 출력</span>
+        <div class="prow"><span>① 부정문을 긍정으로</span><span>종류 "옷" / 근거 "일반 사복으로 보임,<br>&nbsp;&nbsp;특정 기관의 <b>교복·원복 특징 없음</b>" → 교복으로 채점</span></div>
+        <div class="prow"><span>② 못 읽는 명찰</span><span>21장 중 <b>9장</b>이 명찰. 이름을 못 읽는데 만점을 줬다<br>&nbsp;&nbsp;→ 이제 AI에게 판독 여부를 묻는다. <b>103장 중 50장이 "안읽힘"</b></span></div>
+        <div class="prow"><span>③ 못 읽은 글자</span><span>"한글 텍스트 (상호명으로 보임)" ×3 → <b>26점 만점</b></span></div>
+        <div class="prow"><span>고친 결과</span><span>오탐 21 → <b>19</b> · 놓침 8 → <b>4</b></span></div>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "네, 높습니다. 그런데 원인을 몰라서 높은 게 아니라 <b>알고 고치는 중</b>이라 아직 높습니다.
+        가장 어이없는 건 저희 버그였습니다 — AI가 <b>'교복 특징이 없다'</b>고 써준 문장에서
+        '교복'이라는 글자를 찾아 교복이 있다고 센 겁니다. 부정문을 긍정으로 읽고 있었습니다."</div>
+      <div class="avoid"><span class="lbl">하면 안 되는 말</span>
+        <b>"일부러 넉넉히 잡는 겁니다."</b> 절반은 맞는 말이지만 이것만 말하면
+        <b>변명</b>으로 들립니다. 버그였던 부분과 의도한 부분을 <b>갈라서</b> 말해야 합니다.</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q3. 같은 사진을 두 번 넣으면 같은 결과가 나옵니까?</h3></div>
+      <div class="a">
+        <p><strong>아닙니다. 이걸 저희가 직접 재서 알고 있습니다.</strong>
+          같은 103장을 코드 변경 없이 두 번 돌렸더니 7장의 판정이 뒤집혔습니다.</p>
+        <p>이 질문에 "네, 같습니다"라고 답하면 그 자리에서 반증당할 수 있습니다.
+          <em>모른다고 말하는 것보다 재봤다고 말하는 편이 훨씬 강합니다.</em></p>
+      </div>
+      <div class="proof"><span class="lbl">실측 · 같은 코드, 두 번 실행</span>
+        <div class="prow"><span>판정이 뒤집힌 사진</span><span><b>7장</b> / 103장 (6.8%)</span></div>
+        <div class="prow"><span>방향</span><span>못 찾다가 찾음 4장 · 찾다가 못 찾음 3장</span></div>
+        <div class="prow"><span>뜻</span><span>위의 모든 정확도 숫자에 <b>±7%p</b>의 흔들림이 있다</span></div>
+      </div>
+      <div class="a">
+        <p><strong>그래서 이 흔들림을 피해 재는 방법을 따로 만들었습니다.</strong>
+          같은 실행의 <em>같은 AI 판독</em>을 <strong>판정 규칙 두 개로 채점</strong>하는 것입니다.
+          읽기가 같으니 변동이 끼어들 자리가 없고, 순수하게 우리 코드가 좋아졌는지만 남습니다.</p>
+      </div>
+      <div class="proof"><span class="lbl">같은 실행 · 같은 판독 · 판정 규칙만 다르게</span>
+        <div class="prow"><span>고치기 전 판정</span><span>놓침 <b>8장</b> · 오탐 19장</span></div>
+        <div class="prow"><span>고친 뒤 판정</span><span>놓침 <b>4장</b> · 오탐 19장</span></div>
+        <div class="prow"><span>읽은 결과</span><span>놓침이 절반으로. <b>오탐은 안 늘었다</b></span></div>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "아니요, 다릅니다. 재봤더니 103장 중 7장이 실행마다 뒤집힙니다.
+        그래서 <b>흔들림이 안 끼는 재는 법</b>을 따로 만들었습니다 — 같은 판독을 옛 규칙과
+        새 규칙으로 각각 채점하는 겁니다. 그렇게 재니 <b>놓침이 8장에서 4장으로 줄고
+        오탐은 그대로</b>였습니다. 이건 흔들림으로 설명할 수 없는 차이입니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q4. 글자가 하나도 없는 사진은 어떻게 합니까?</h3></div>
+      <div class="a">
+        <p><strong>지금은 놓칩니다.</strong> 마지막까지 남은 놓침 4장 중 하나가 이것입니다 —
+          창밖으로 남산타워와 한강 다리가 보이는 사진입니다. 글자가 하나도 없으니
+          글자를 읽는 방식으로는 원리적으로 못 잡습니다.</p>
+        <p>부끄러운 건, <em>저희에게 이걸 잡을 기능이 이미 있다는 것</em>입니다.
+          구글 비전의 랜드마크 인식을 쓰고 있는데 <strong>"위치 찾기" 버튼 뒤에만</strong> 붙어 있고
+          자동 진단 경로에는 안 붙어 있습니다. 연결만 하면 되는 일이고, 다음 순서로 잡아뒀습니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "못 잡습니다. 남은 놓침 4장 중 하나가 남산타워가 보이는 사진입니다.
+        <b>기능은 이미 있는데 진단에 안 붙여둔 것</b>이라, 원인도 해법도 명확합니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q5. 26점·22점 같은 배점은 어디서 나온 숫자입니까?</h3></div>
+      <div class="a">
+        <p><strong>순서는 논리로 정했고, 절대값에는 실증 근거가 없습니다.</strong>
+          이건 그냥 인정하는 게 맞습니다.</p>
+        <p>순서의 논리는 <em>"장소를 얼마나 좁히는가"</em>입니다. 간판 글자 하나는 건물을 특정하고,
+          교복은 기관까지만 좁히고, 공개 범위는 다른 단서를 증폭할 뿐입니다.
+          그래서 26 &gt; 22 &gt; 16입니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "상대적 순서는 근거가 있지만 <b>26이라는 숫자 자체는 저희 판단</b>입니다.
+        데이터가 쌓이면 조정해야 할 값이고, 지금은 그렇게 표시해두는 것이 정직하다고 봤습니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q6. AI가 놓친 위험은 사용자가 어떻게 알려줍니까?</h3></div>
+      <div class="a">
+        <p><strong>못 알려줍니다. 이게 지금 구조의 가장 큰 구멍입니다.</strong></p>
+        <p>사용자는 <em>잘못 잡은 것을 뺄 수만</em> 있고 <em>놓친 것을 더할 수는</em> 없습니다.
+          그런데 이 서비스에서 더 나쁜 실패는 놓침입니다. <strong>구조가 거꾸로 되어 있습니다.</strong>
+          알고 있고, 인정하는 것 외에 지금 할 말이 없습니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "못 합니다. 그리고 이건 <b>방향이 거꾸로 된 설계</b>라고 저희도 보고 있습니다.
+        놓침이 오탐보다 나쁜 실패인데 오탐만 고칠 수 있게 만들어놨습니다.
+        다음 순서에서 가장 먼저 손볼 자리입니다."</div>
+      <div class="avoid"><span class="lbl">하면 안 되는 말</span>
+        <b>"넉넉히 잡으니까 놓치는 일은 거의 없습니다."</b> 방금 놓친 8장을 말했는데
+        이러면 앞말과 어긋납니다.</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from W">W</span><h3>Q7. 실제 사용자가 몇 명입니까?</h3></div>
+      <div class="a">
+        <p><strong>팀 밖에는 없습니다.</strong> 대신 <em>팀원 제보가 실제로 코드를 바꿨다</em>는 고리는
+          남아 있고, 그건 커밋 기록으로 증명됩니다.</p>
+        <p>"옷도 자꾸 위로 얹어져", "왜 들고 있지" 같은 문장이 커밋 메시지에 <strong>그대로 인용</strong>되어 있고,
+          그 아래에 원인과 실측값이 적혀 있습니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "밖에서 쓴 사람은 아직 없습니다. 다만 팀원 제보 하나하나가 코드를 바꿨고
+        <b>커밋에 제보 문장이 그대로 인용</b>되어 있습니다. 화면에서 바로 보여드릴 수 있습니다."</div>
+    </article>
+  </section>
+
+  <!-- ══════════════════ T에서 나오는 질문 ══════════════════ -->
+  <section class="qgroup">
+    <div class="qgroup-head">
+      <h2>위협에서 나오는 질문</h2>
+      <span class="note">사업성·지속성을 보는 심사위원의 자리</span>
+    </div>
+
+    <article class="qa">
+      <div class="qhead"><span class="from T">T</span><h3>Q8. 이 서비스 때문에 부모가 오히려 방심하지 않을까요?</h3></div>
+      <div class="a">
+        <p><strong>가장 무서운 질문이고, 저희도 같은 걱정을 했습니다.</strong>
+          "검사 통과"라는 도장이 안심을 만들면, 안 쓰느니만 못합니다.</p>
+        <p>그래서 <em>화면 문구를 그렇게 안 씁니다.</em> 위험을 못 찾았을 때도
+          <strong>"안전합니다"가 아니라 "못 찾았다고 안전하다는 뜻은 아니에요"</strong>라고 적습니다.
+          재검증에서 두 모델의 판단이 갈리면 한쪽을 골라 감추지 않고
+          <strong>"판단이 갈렸어요"</strong>라고 그대로 보여줍니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "그 위험이 제일 크다고 봤습니다. 그래서 <b>어디에도 '안전합니다'라고 쓰지 않았습니다.</b>
+        AI 둘의 판단이 갈릴 때도 한쪽을 골라 도장을 찍지 않고 갈렸다고 보여줍니다 —
+        그때는 사람이 봐야 하고, 그 사실이 사용자에게 가장 쓸모 있는 정보이기 때문입니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from T">T</span><h3>Q9. 오탐이 많으면 사용자가 경고를 무시하게 되지 않습니까?</h3></div>
+      <div class="a">
+        <p><strong>맞습니다. 그래서 오탐 줄이는 것이 지금 1순위입니다.</strong></p>
+        <p>다만 저희가 택한 방향을 같이 말해야 합니다 — 경고를 줄이는 게 아니라
+          <em>경고에 근거를 붙이는</em> 쪽입니다. 항목을 누르면 사진에서 그 자리가 밝아집니다.
+          <strong>"위험합니다"가 아니라 "여기 이 글자 때문입니다"</strong>라고 말하면
+          사용자가 스스로 판단할 수 있고, 틀렸을 때 바로 뺄 수 있습니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "네, 그게 이 서비스가 죽는 방식이라고 봅니다. 그래서 <b>경고마다 근거를 사진 위에 표시</b>합니다.
+        근거 없는 경고는 무시당하지만, <b>'이 간판 때문입니다'</b>는 무시하기 어렵습니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from T">T</span><h3>Q10. 인스타그램이나 카카오가 이 기능을 넣으면 어떻게 합니까?</h3></div>
+      <div class="a">
+        <p><strong>"그럴 리 없다"고 답하면 집니다.</strong> 오히려 <em>그게 저희가 원하는 결과</em>라고
+          말하는 편이 강하고, 실제로도 그렇습니다.</p>
+        <p>이 문제는 서비스 하나로 풀리지 않습니다. 사진이 올라가는 자리마다 붙어야 풀립니다.
+          플랫폼이 넣는다면 그건 <strong>문제가 해결되는 것</strong>이고, 저희는 그때까지
+          <em>그런 게 필요하다는 걸 증명하는 쪽</em>에 서 있습니다.</p>
+        <p>현실적인 답도 있습니다. 플랫폼은 <strong>진단은 넣어도 보정은 안 넣습니다</strong> —
+          자기 서비스에 올라올 사진을 자기가 고쳐주는 건 책임이 너무 큽니다.
+          저희의 무게중심은 <strong>보정과 재검증</strong>에 있습니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "넣으면 좋겠습니다. 저희가 풀려는 건 회사 문제가 아니라 아이 문제라서요.
+        다만 플랫폼은 <b>경고까지는 해도 사진을 고쳐주지는 않을 겁니다</b> — 책임이 너무 큽니다.
+        저희가 만든 건 경고가 아니라 <b>고치고 다시 확인하는 도구</b>입니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from T">T</span><h3>Q11. 프라이버시를 지킨다면서 사진을 외부 AI로 보내는 건 모순 아닙니까?</h3></div>
+      <div class="a">
+        <p><strong>모순이 맞습니다. 그래서 경로를 나눴고, 화면에 그대로 적었습니다.</strong></p>
+        <p><em>안 나가는 것</em> — 좌표 확인, 배경 흐림, 자연스럽게 덮기, 옷 색 바꾸기.
+          전부 브라우저 안에서 끝납니다.<br>
+          <em>얼굴을 가려서 나가는 것</em> — 위험도 진단.<br>
+          <em>원본이 나가는 것</em> — AI 보정과 이미지 검색. <strong>누를 때마다 동의를 받습니다.</strong></p>
+        <p>그리고 동의창에 <strong>"이건 약관상 약속이지 기술적 차단이 아니다"</strong>까지 적어뒀습니다.</p>
+      </div>
+      <div class="proof"><span class="lbl">저희가 지키는 규칙</span>
+        <div class="prow"><span>원칙</span><span>"원본을 절대 안 보낸다"가 아니라<br>&nbsp;&nbsp;<b>"동의 없이 원본을 보내는 경로를 만들지 않는다"</b></span></div>
+      </div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from T">T</span><h3>Q12. API 가격이 오르거나 모델이 없어지면요?</h3></div>
+      <div class="a">
+        <p>비용 구조부터 보여주는 게 빠릅니다. <strong>사진 한 장 진단에 5.6원</strong>입니다 —
+          실제로 12장을 돌려 토큰을 재본 값입니다.</p>
+        <p>그리고 <em>돈이 드는 건 일부뿐</em>입니다. 좌표 확인·옷 색 변경·배경 흐림은
+          브라우저 안에서 끝나서 <strong>0원</strong>이고, 모델이 사라져도 그대로 돕니다.</p>
+      </div>
+      <div class="proof"><span class="lbl">실측 · 사진 12장 토큰</span>
+        <div class="prow"><span>사진 1장 진단</span><span>입력 2,611 · 출력 274 토큰 → <b>약 5.6원</b></span></div>
+        <div class="prow"><span>0원인 기능</span><span>좌표 확인 · 옷 색 변경 · 배경 흐림 · 덮기</span></div>
+        <div class="prow"><span>AI 보정</span><span>약 $0.02 (fal.ai FLUX)</span></div>
+        <div class="prow"><span>모델 교체</span><span>이미 두 회사를 함께 쓴다 —<br>&nbsp;&nbsp;한쪽이 사라져도 다른 쪽으로 돈다</span></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ══════════════════ S·O에서 나오는 질문 ══════════════════ -->
+  <section class="qgroup">
+    <div class="qgroup-head">
+      <h2>강점과 기회를 확인하는 질문</h2>
+      <span class="note">S는 말하지 말고 화면을 누르세요</span>
+    </div>
+
+    <article class="qa">
+      <div class="qhead"><span class="from S">S</span><h3>Q13. 다른 팀도 다 AI를 씁니다. 무엇이 다릅니까?</h3></div>
+      <div class="a">
+        <p><strong>AI를 어디에 안 썼는지가 다릅니다.</strong></p>
+        <p>사실로 확인할 수 있는 것은 모델에게 묻지 않습니다. 사진 파일의 좌표는 직접 읽고,
+          얼굴 개수는 직접 세고, 옷 색은 브라우저가 바꾸고, <strong>점수는 서버가 더합니다.</strong></p>
+        <p>총점을 모델에게 물으면 편하지만 <em>근거를 댈 수 없고 같은 사진에 다른 점수가 나옵니다.</em>
+          그래서 항목별 점수와 근거만 받고 합산은 코드가 합니다.</p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "저희는 <b>AI에게 총점을 안 물어봅니다.</b> 항목별 근거만 받고 더하는 건 코드가 합니다.
+        그래서 '왜 62점이냐'에 언제나 답할 수 있습니다 — 화면에 더한 식이 그대로 나옵니다."</div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from S">S</span><h3>Q14. 아이 얼굴이 AI에게 안 넘어간다는 걸 어떻게 보장합니까?</h3></div>
+      <div class="a">
+        <p><strong>프롬프트로 부탁하지 않습니다. 마스크에서 아예 뺍니다.</strong>
+          모델은 마스크가 흰 곳만 다시 그립니다. 얼굴·머리카락·목·손을 검게 덮어 보내면
+          <em>그 픽셀에 접근할 방법 자체가 없습니다.</em></p>
+        <p>덮는 <strong>순서</strong>도 고정입니다 — 옷을 먼저 열고 <em>마지막에</em> 얼굴·손을 덮습니다.
+          순서가 바뀌면 얼굴이 열릴 수 있어서 테스트로 못 박아 뒀습니다.</p>
+      </div>
+      <div class="proof"><span class="lbl">테스트가 지키는 것</span>
+        <div class="prow"><span>얼굴이 열리는가</span><span><b>0픽셀</b></span></div>
+        <div class="prow"><span>손이 열리는가</span><span><b>0픽셀</b></span></div>
+        <div class="prow"><span>옷 바깥이 열리는가</span><span><b>0픽셀</b></span></div>
+        <div class="prow"><span>결과 얼굴 수가 다르면</span><span>모델 판단과 무관하게 <b>"변형의심" 강제 표기</b></span></div>
+      </div>
+    </article>
+
+    <article class="qa">
+      <div class="qhead"><span class="from O">O</span><h3>Q15. 해커톤이 끝나면 이걸로 뭘 하실 겁니까?</h3></div>
+      <div class="a">
+        <p>순서가 정해져 있고, <strong>그 순서를 데이터로 정했습니다.</strong>
+          "다음엔 이것도 하고 저것도 하고"가 아니라 <em>남은 실패 4장이 무엇이었는지</em>가
+          다음 할 일을 정했습니다.</p>
+        <p><strong>① 랜드마크를 진단에 붙인다</strong> — 남은 놓침 중 글자 없는 사진.<br>
+          <strong>② 놓침을 신고할 자리를 만든다</strong> — 지금 구조에서 거꾸로 된 부분.<br>
+          <strong>③ 같은 사진을 두 번 읽는다</strong> — 실행마다 뒤집히는 7장을 잡기 위해.
+          비용은 사진 1장에 5.6원에서 11원으로 오르고, 동시에 보내면 시간은 그대로입니다.</p>
+        <p>그 다음이 <em>기관 단위</em>입니다. 어린이집·유치원이 단체사진을 올리기 전에 한 번 거는 자리 —
+          개인보다 책임이 크고, 사진 한 장에 아이가 여럿이라 <strong>같은 비용으로 더 많은 아이를 지킵니다.</strong></p>
+      </div>
+      <div class="say"><span class="lbl">이렇게 말하세요</span>
+        "다음에 할 세 가지가 정해져 있는데, <b>저희가 하고 싶은 것이 아니라 놓친 4장이 정해준 것</b>입니다.
+        그리고 방향은 개인보다 <b>기관</b>입니다 — 단체사진 한 장에 아이가 스무 명이면
+        같은 비용으로 스무 명을 지킵니다."</div>
+    </article>
+  </section>
+
+  <section class="closing">
+    <h2>이 문서를 쓰는 법</h2>
+    <ul>
+      <li><b>먼저 인정하고 숫자를 대세요.</b> W 질문에서 방어하면 집니다.
+        "네, 그렇습니다. 32장 중 19장입니다"로 시작하면 상대가 더 캘 것이 없어집니다.</li>
+      <li><b>원인을 이름으로 대세요.</b> "개선 중입니다"는 아무 말입니다.
+        <b>"부정문을 긍정으로 읽는 버그였습니다"</b>는 반박할 수 없습니다.</li>
+      <li><b>모르는 건 모른다고 하세요.</b> 특히 배점 근거(Q5)와 사용자 수(Q7).
+        지어낸 숫자는 후속 질문 하나로 무너집니다.</li>
+      <li><b>S 질문은 말하지 말고 누르세요.</b> Q13·Q14는 화면에서 보여주는 것이
+        어떤 설명보다 강합니다.</li>
+    </ul>
+    <p class="foot">
+      숫자 출처 — 정확도: 정답표 103장(A 63 · B 8 · C 32)으로 실측.<br>
+      비용: 사진 12장의 실제 토큰 사용량. 마스크: Playwright로 픽셀 검사.<br>
+      정답표는 팀원이 사진을 보고 손으로 붙였고, 앱은 이 사진들을 보기 전에 만들어졌습니다.
+    </p>
+  </section>
+
+</div>

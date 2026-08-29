@@ -24,9 +24,12 @@
 //
 //   우리 앱은 A/B/C를 출력하지 않습니다. 그래서 억지로 대응시키지 않고, 앱이 실제로
 //   내리는 판단으로 잽니다 — **위치·소속 단서를 찾았는가, 못 찾았는가.**
-//     찾음  = 장소로 분류된 글자가 있거나(상호명·간판·주소·지번·전화번호)
-//             소속 단서가 있음(교복·원복·명찰·로고·엠블럼·기관)
+//     찾음  = 앱이 장소 글자로 본 것이 있거나(isPlaceWord)
+//             앱이 소속 단서로 본 것이 있음(isBelongClue)
 //     못 찾음 = 둘 다 없음
+//
+//   앱의 판정 함수를 그대로 부른다. 여기에 판정을 따로 적으면 앱과 어긋나고,
+//   그러면 앱이 아니라 이 파일을 재게 된다(실제로 그랬다 — 아래 '자를 두 개' 참고).
 //
 //   그러면 정답표의 A·B는 "찾아야 하는 사진", C는 "찾으면 안 되는 사진"이 됩니다.
 //
@@ -46,9 +49,18 @@ const LABELS = path.join(SET_DIR, '최종분류.json');
 const OUT = path.join(__dirname, 'photo-accuracy-result.json');
 const LIMIT = Number(process.env.LIMIT || 0);   // 0 = 전부
 
-// 채점 기준을 결과를 보기 전에 못박아 둔다
-const 장소단서_유형 = /상호명|간판|주소|지번|전화번호/;
-const 소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|학교|유치원|어린이집|태권도|학원/;
+// ── 자를 두 개 쓴다 ───────────────────────────────────────────────────────
+//
+// **앱자** — 앱이 실제로 내리는 판정(isPlaceWord / isBelongClue)을 그대로 부른다.
+//   사용자가 화면에서 보는 것이 이것이므로, 진짜 정확도는 이 숫자다.
+//
+// **옛자** — 아래 고정된 정규식. 앱이 바뀌어도 이 자는 안 바뀌므로 **실행끼리
+//   비교할 수 있다.** 앱자만 쓰면 "앱이 좋아졌나, 자가 느슨해졌나"를 못 가린다.
+//
+// 옛자는 앱이 예전에 쓰던 것보다도 넓다(배지·학교·유치원·태권도·학원이 더 있고
+// 근거까지 검사한다). 그래서 옛자의 오탐은 늘 부풀려져 있다 — 비교용으로만 쓴다.
+const 옛_장소유형 = /상호명|간판|주소|지번|전화번호/;
+const 옛_소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|학교|유치원|어린이집|태권도|학원/;
 
 (async () => {
   if (!fs.existsSync(LABELS)) {
@@ -89,9 +101,15 @@ const 소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|학교
         await T.addBelongClueByZoom(a.u, face.faces, claude);
         return {
           faces: face.faces.length,
-          words: (claude.words || []).map((w) => ({ text: w.text, type: w.type || '' })),
+          words: (claude.words || []).map((w) => ({
+            text: w.text, type: w.type || '',
+            앱장소: T.isPlaceWord(w),               // 앱이 실제로 내리는 판정
+          })),
           clues: (claude.visualClues || []).map((c) => ({
             종류: c.종류 || '', 근거: c.근거 || '', 확대재확인: !!c.확대재확인,
+            판독: c.판독 || '',
+            앱소속: T.isBelongClue(c),              // 앱이 실제로 내리는 판정
+            무게: T.belongClueWeight(c),
           })),
         };
       }, { u });
@@ -101,13 +119,22 @@ const 소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|학교
       continue;
     }
 
-    const 장소글자 = r.words.filter((w) => 장소단서_유형.test(w.type));
-    const 소속 = r.clues.filter((c) => 소속단서.test(c.종류 + c.근거));
+    // 앱자 — 사용자가 실제로 보는 판정
+    const 장소글자 = r.words.filter((w) => w.앱장소);
+    const 소속 = r.clues.filter((c) => c.앱소속);
     const 찾음 = 장소글자.length > 0 || 소속.length > 0;
 
+    // 옛자 — 실행끼리 비교하기 위한 고정된 자
+    const 옛장소 = r.words.filter((w) => 옛_장소유형.test(w.type));
+    const 옛소속 = r.clues.filter((c) => 옛_소속단서.test(c.종류 + c.근거));
+    const 옛찾음 = 옛장소.length > 0 || 옛소속.length > 0;
+
     results.push({
-      파일명: row.파일명, 정답: row.최종유형, 찾음,
+      파일명: row.파일명, 정답: row.최종유형, 찾음, 옛찾음,
       장소글자: 장소글자.map((w) => w.text), 소속: 소속.map((c) => c.종류),
+      못읽은소속: 소속.filter((c) => c.무게 < 12).map((c) => c.종류),
+      버려진글자: r.words.filter((w) => !w.앱장소 && 옛_장소유형.test(w.type)).map((w) => w.text),
+      버려진소속: r.clues.filter((c) => !c.앱소속 && 옛_소속단서.test(c.종류 + c.근거)).map((c) => c.종류),
       확대로찾음: 소속.some((c) => c.확대재확인),
       얼굴: r.faces, 근거: row.근거,
     });
@@ -137,6 +164,19 @@ const 소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|학교
   console.log('  오탐 (C인데 찾음)        ' + 오탐.length + '장 / ' + C.length + '장');
   const 확대 = ok.filter((r) => r.확대로찾음);
   console.log('  가슴 확대 재확인으로 찾은 것  ' + 확대.length + '장');
+
+  // 옛자로도 같이 낸다 — 앱이 좋아진 건지 자가 느슨해진 건지 가리기 위해서다
+  const 옛검출 = (arr) => (arr.length ? (arr.filter((r) => r.옛찾음).length / arr.length * 100).toFixed(0) : '—');
+  const 옛놓침 = [...A, ...B].filter((r) => !r.옛찾음);
+  const 옛오탐 = C.filter((r) => r.옛찾음);
+  console.log('  ' + '─'.repeat(52));
+  console.log('  [옛자·비교용]  A ' + 옛검출(A) + '%  B ' + 옛검출(B) + '%  C ' + 옛검출(C) + '%'
+    + '   놓침 ' + 옛놓침.length + '  오탐 ' + 옛오탐.length);
+  const 못읽음 = ok.filter((r) => (r.못읽은소속 || []).length > 0);
+  console.log('  이번에 낮춘 것: 못 읽은 명찰·로고 ' + 못읽음.length + '장');
+  console.log('  이번에 버린 것: 장소글자 '
+    + ok.reduce((s, r) => s + (r.버려진글자 || []).length, 0) + '개, 소속 '
+    + ok.reduce((s, r) => s + (r.버려진소속 || []).length, 0) + '개');
   const err = results.filter((r) => r.error);
   if (err.length) console.log('  오류 ' + err.length + '장');
 
@@ -155,6 +195,10 @@ const 소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|학교
       B: { 장수: B.length, 찾음: 검출률(B) },
       C: { 장수: C.length, 찾음: 검출률(C) },
       놓침: 놓침.length, 오탐: 오탐.length, 확대로찾음: 확대.length,
+      옛자: {
+        A: 옛검출(A), B: 옛검출(B), C: 옛검출(C),
+        놓침: 옛놓침.length, 오탐: 옛오탐.length,
+      },
     },
     사진별: results,
   }, null, 2), 'utf8');

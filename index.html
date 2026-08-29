@@ -4611,12 +4611,44 @@
     //     축소본 189x291      교복(높음) / 명찰(추정)          -> 엠블럼으로 못 잡음
     //     가슴 확대 1002x573  교복(확실) / 스쿨 엠블럼(확실)
     // 같은 모델인데 크게 보여주면 확신이 올라가고 이름도 정확해진다.
-    var BELONG_CLUE_RE = /교복|원복|명찰|로고|엠블럼|배지|기관|학교|유치원|어린이집/;
+    // 소속을 좁혀주는 단서인가 — **이 파일에서 유일한 판정 자리다.**
+    //
+    // 예전에는 재확인·채점·위험요소지도 세 곳에 따로 적혀 있었고 서로 달랐다.
+    // 게다가 셋 다 `종류 + 근거`를 이어붙여 검사했는데, 근거는 산문이라 부정문에
+    // 걸린다. 사진 103장 측정에서 실제로 이렇게 채점됐다:
+    //     사진101  종류 "옷"        근거 "일반 사복으로 보임, 특정 기관의 교복·원복 특징 없음"
+    //     사진86   종류 "파란색 외투" 근거 "일반 사복으로 판단되며 특정 기관 식별 불가"
+    // "교복이 아니다"에서 `교복`을 찾아 "교복이다"로 센 것이다. 그래서 종류만 본다.
+    // 옷에 붙은 로고는 프롬프트가 별도 항목으로 빼라고 시키므로 잃지 않는다.
+    var BELONG_TYPE_RE = /교복|원복|체육복|도복|가운|유니폼|단체복|기관복|명찰|이름표|로고|마크|엠블럼|배지|교표|학교|유치원|어린이집|학원|기관/;
+
+    // 종류에 이 말이 들어 있으면 소속 단서가 아니다. 가방·학용품·사복 자체는
+    // 기관을 좁혀주지 않는다 — 그 위에 로고가 있다면 별도 항목으로 올라온다.
+    // (프롬프트도 보고하지 말라고 적어두었지만 "학원/기관 가방" 같은 종류가 자주 온다)
+    var NOT_BELONG_TYPE_RE = /사복|평상복|일상복|캐주얼|가방|백팩|배낭|책가방|학용품|교재|필통|신발|양말|머리핀|장난감|인형/;
+
+    // 적힌 글자를 읽어야 기관이 좁혀지는 단서. 옷 자체(교복·원복·도복)는
+    // 디자인만으로도 좁혀질 수 있어 판독을 따지지 않는다.
+    var NEEDS_READ_RE = /명찰|이름표|로고|마크|엠블럼|배지|교표/;
+
+    function isBelongClue(c) {
+      var t = String((c && c.종류) || '');
+      if (!t || NOT_BELONG_TYPE_RE.test(t)) return false;
+      return BELONG_TYPE_RE.test(t);
+    }
+
+    // 이 단서가 소속 점수에서 갖는 무게.
+    // 이름을 못 읽는 명찰은 12점이 아니라 5점이다. 0점이 아닌 이유는 우리가 사진을
+    // 1568px로 줄여 보내기 때문이다 — 여기서 안 읽혀도 원본에서는 읽힐 수 있다.
+    // 판독 값이 아예 없으면(예전 응답) 읽히는 것으로 본다. 놓치는 쪽이 더 나쁘다.
+    function belongClueWeight(c) {
+      if (!isBelongClue(c)) return 0;
+      if (!NEEDS_READ_RE.test(String((c && c.종류) || ''))) return 12;
+      return String((c && c.판독) || '') === '안읽힘' ? 5 : 12;
+    }
 
     function hasBelongClue(clues) {
-      return (clues || []).some(function (c) {
-        return BELONG_CLUE_RE.test(String(c.종류 || '') + String(c.근거 || ''));
-      });
+      return (clues || []).some(isBelongClue);
     }
 
     // 옷 마스크에서 어깨선을 찾아 가슴만 잘라 확대한다(마크 지우기와 같은 방식).
@@ -4670,9 +4702,7 @@
         }
         var base64 = crop.canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
         var data = await postJson(CLAUDE_BACKEND_URL, { imageBase64: base64, mediaType: 'image/jpeg' });
-        var found = (data.시각단서 || []).filter(function (c) {
-          return BELONG_CLUE_RE.test(String(c.종류 || '') + String(c.근거 || ''));
-        });
+        var found = (data.시각단서 || []).filter(isBelongClue);
         console.log('[소속 재확인] 가슴 ' + crop.from + ' -> ' + crop.to
           + ' (x' + crop.scale.toFixed(1) + ') — 단서 ' + found.length + '개', found);
         if (found.length === 0) return ocrResult;
@@ -4680,6 +4710,9 @@
         var tagged = found.map(function (c) {
           return {
             종류: c.종류, 근거: c.근거, 확신: c.확신 || '추정',
+            // 판독 여부를 여기서 떨어뜨리면 안 된다 — 확대해서 본 결과라
+            // 오히려 1차보다 정확하다.
+            판독: c.판독, 읽은글자: c.읽은글자,
             위치: '중앙', 확대재확인: true,
           };
         });
@@ -6805,14 +6838,19 @@
             : '간판·주소·전화번호로 읽히는 글자가 없어요.'));
 
       // ② 소속 노출 (상한 22) — 교복·명찰·기관 로고
-      var belong = clues.filter(function (c) {
-        return /교복|원복|명찰|로고|엠블럼|기관/.test(String(c.종류 || '') + String(c.근거 || ''));
-      });
-      var f2 = Math.min(22, belong.length * 12);
+      // 판정은 isBelongClue 한 곳에만 둔다(위 BELONG_TYPE_RE 주석 참고).
+      var belong = clues.filter(isBelongClue);
+      var f2 = Math.min(22, belong.reduce(function (s, c) { return s + belongClueWeight(c); }, 0));
       var f2why = belong.length > 0
         ? (function () {
           var names = belong.map(function (c) { return c.종류; });
-          return names.join('·') + josa이가(names[names.length - 1]) + ' 보여서 다니는 기관까지 좁혀져요.';
+          var 못읽음 = belong.filter(function (c) { return belongClueWeight(c) < 12; });
+          var head = names.join('·') + josa이가(names[names.length - 1]);
+          // 못 읽었다는 사실을 숨기지 않는다. 점수를 낮춘 이유가 화면에 보여야
+          // 사용자가 "왜 낮지?"를 되묻지 않는다.
+          return 못읽음.length === belong.length
+            ? head + ' 보이지만 적힌 글자까지는 읽히지 않았어요. 원본에서는 읽힐 수 있어요.'
+            : head + ' 보여서 다니는 기관까지 좁혀져요.';
         })()
         : '교복·명찰·기관 로고가 보이지 않아요.';
 
@@ -7623,8 +7661,24 @@
     // 뒤쪽 넷(호수·동번호·단지·안내)이 측정에서 새로 관찰된 유형이다.
     var PLACE_TYPE_RE = /상호|간판|표지|현수막|배너|플래카드|주소|지번|번지|도로|전화|번호판|학교|유치원|어린이집|학원|기관|장소|건물|매장|점포|시설|지명|동네|행사|호수|동번호|단지|안내|아파트|빌라|연립|주택/;
     var PLACE_TEXT_RE = /학교|유치원|어린이집|초등|중학|고등|학원|교습소|아파트|빌라|번지|\d+동|\d+호|\d{2,4}-\d{3,4}|[가-힣]{2,}(로|길)\s*\d|[가-힣]{2,}(시|군|구|읍|면|동)(?![가-힣])/;
+    // 읽어내지 못한 글자. Claude는 글자가 있다는 것만 알고 내용을 못 읽으면
+    // "한글 텍스트 (상호명으로 보임)"처럼 적어준다. 그건 상호명이 아니라
+    // **상호명일지도 모르는 무언가**이고, 내용이 없으니 장소를 못 좁힌다.
+    // (사진89가 이런 항목 셋으로 간판·주소 26점 만점을 받았다)
+    var UNREADABLE_TEXT_RE = /판독\s*불가|읽을\s*수\s*없|식별\s*불가|흐릿|뭉개|불분명|텍스트\s*[(（]|[(（][^)）]*(보임|추정|같음|듯)[)）]\s*$/;
+
+    // 전국 어디에나 있는 이름 — 있어도 위치가 안 좁혀진다. 다만 지점명이 붙어
+    // 있으면("롯데마트 신촌점") 그건 좁혀지므로 그대로 둔다.
+    // 목록은 반드시 불완전하다. 그래도 목록에 없는 프랜차이즈는 지금과 똑같이
+    // 동작할 뿐이라 나빠지지 않는다.
+    var FRANCHISE_RE = /롯데마트|이마트|홈플러스|하나로마트|코스트코|올리브영|다이소|스타벅스|투썸|이디야|메가커피|빽다방|컴포즈|파리바게[뜨트]|뚜레쥬르|배스킨라빈스|맥도[날널]드|버거킹|롯데리아|맘스터치|KFC|피자헛|도미노|BBQ|BHC|교촌|네네치킨|굽네|GS25|CU|세븐일레븐|미니스톱|메가박스|CGV|롯데시네마/i;
+    var BRANCH_RE = /[가-힣A-Za-z0-9]{2,}\s*(지)?점(?![가-힣])/;
+
     function isPlaceWord(w) {
-      return PLACE_TYPE_RE.test(String(w.type || '')) || PLACE_TEXT_RE.test(String(w.text || ''));
+      var text = String((w && w.text) || '');
+      if (UNREADABLE_TEXT_RE.test(text)) return false;
+      if (FRANCHISE_RE.test(text) && !BRANCH_RE.test(text)) return false;
+      return PLACE_TYPE_RE.test(String((w && w.type) || '')) || PLACE_TEXT_RE.test(text);
     }
 
     // 그리기 전에 좌표를 확보한다. 나중에 덮으면 숫자 굴리기 애니메이션과 싸우고
@@ -7667,9 +7721,9 @@
       var words = (ocrResult && ocrResult.words) || [];
       var faces = (faceResult && faceResult.faces) || [];
 
-      var belong = clues.filter(function (c) {
-        return /교복|원복|명찰|로고|엠블럼|기관/.test(String(c.종류 || '') + String(c.근거 || ''));
-      });
+      // 채점과 같은 판정이어야 한다. 여기서만 다르게 고르면 "22점의 근거"라고
+      // 표시한 자리가 실제 근거와 어긋난다(장소 글자에서 실제로 겪었다).
+      var belong = clues.filter(isBelongClue);
       var placeWords = words.filter(isPlaceWord);
       // 유형·내용 어느 쪽으로도 못 가렸더라도, 사진에 읽히는 글자가 있으면
       // 그 자체로 장소가 좁혀질 수 있다. "없음"이라고 단정하지 않는다 —
@@ -9883,6 +9937,8 @@
       buildEmblemMask: buildEmblemMask,   // 가슴 마스크 검증용 (비용 0)
       cropChestZoomed: cropChestZoomed,   // 가슴 확대 조각 (비용 0)
       hasBelongClue: hasBelongClue,
+      isBelongClue: isBelongClue,          // 소속 단서 판정 — 세 곳이 공유하는 단일 자리
+      belongClueWeight: belongClueWeight,  // 판독 못 한 명찰은 12점이 아니라 5점
       addBelongClueByZoom: addBelongClueByZoom, // 소속 재확인 (Claude 호출 1회)
       runEmblemRemoval: runEmblemRemoval, // 마크 지우기 실호출 검증용 (비용 발생)
       runFaceDetectionPipeline: runFaceDetectionPipeline, // 얼굴 검출 단독 검증용 (로컬 실행이라 비용 없음)
