@@ -164,7 +164,12 @@ node server/server.js
 
 ### 테스트
 
+**최초 1회, 저장소 루트에서 `npm install`.** 테스트 39개가 전부 `require('playwright')`로
+시작합니다. 루트에 `node_modules`가 없으면 한 개도 안 돌고 "모듈을 찾을 수 없다"만 납니다.
+서버 의존성은 `server/`에 따로 깔리므로 **루트와 별개입니다** — 둘 다 해야 합니다.
+
 ```bash
+npm install                         # 최초 1회 (루트)
 cd test && node place-words.js      # 장소 글자 판정 (9)
 cd test && node belong-clues.js     # 소속 단서 판정 (13)
 cd test && node landmarks.js        # 알아볼 수 있는 장소 (8)

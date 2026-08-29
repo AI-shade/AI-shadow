@@ -1017,7 +1017,12 @@
 
   .blur-strength { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .bs-label { font-size: 0.82rem; font-weight: 600; }
-  .bs-options { display: flex; gap: 0.35rem; background: var(--soft); border-radius: 999px; padding: 0.25rem; }
+  /* 줄바꿈을 허용한다. 예전엔 flex 한 줄에 버튼 5개를 욱여넣어서 좁은 화면에서 글자가
+     한 자씩 세로로 흘렀다 — 실측: 390px에서 «마크를 완전히 지우기»가 65x116px(5~6줄),
+     768px에서도 111x48px(2줄). 1280px에서만 171x36px로 한 줄이었다.
+     폭을 조건으로 거는 대신(그러면 경계마다 또 깨진다) 자연 너비를 지키고 넘치면
+     다음 줄로 내린다. 알약 배경은 그대로라 PC에서 보이는 모습은 달라지지 않는다. */
+  .bs-options { display: flex; flex-wrap: wrap; gap: 0.35rem; background: var(--soft); border-radius: 999px; padding: 0.25rem; }
   /* 흐림 정도는 3단 버튼보다 슬라이더가 낫다 — 사진마다 적당한 세기가 다르다 */
   .bs-range {
     flex: 1 1 200px; min-width: 160px; max-width: 320px; height: 4px; margin: 0;
@@ -1042,6 +1047,9 @@
   .bs-btn, .fs-btn, .cw-btn, .em-btn {
     border: none; background: transparent; color: var(--muted); cursor: pointer;
     font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px;
+    /* 이름을 쪼개지 않는다. «마크를 완전히 지우기»가 «마 / 크 / 를 / …»로 흐르면
+       무엇을 고르는 버튼인지 읽을 수 없다. 자리가 모자라면 버튼째 다음 줄로 내려간다. */
+    white-space: nowrap;
   }
   .bs-btn:hover, .fs-btn:hover, .cw-btn:hover, .em-btn:hover { color: var(--ink); }
   .bs-btn.selected, .fs-btn.selected, .cw-btn.selected, .em-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
