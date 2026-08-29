@@ -58,6 +58,13 @@
     --accent-hover: #d9b600;
     --accent-2: #ff7a6b;     /* 코랄 — 위에 얹는 글씨는 먹색 6.84:1 */
 
+    /* 하단 액션 바 + 가운데 원형 버튼 전용. 본문 골드(--accent)보다 연하다.
+       "다음 동작"을 점수 막대·단계 표시에 쓰는 골드와 구분한다.
+       실측 대비: 먹색 글씨 12.37:1 · 흰 배경과 1.41:1.
+       더 연한 후보(#f8e690 / #fbf1c4)는 흰 배경과 1.26 / 1.14까지 떨어져
+       버튼 형태가 사라져서 여기서 멈췄다. */
+    --accent-bar: #f4d95c;
+
     /* 구 토큰: 마크업 인라인 스타일이 var(--gold) 등으로 참조 — 이름 유지, 값만 v2 */
     --paper: var(--surface);
     --paper-deep: var(--soft);
@@ -2003,6 +2010,49 @@
     .site-section { padding: 2.8rem 0; }
   }
 
+  /* ── 어플 배치 (폰 폭 전용) ─────────────────────────────────────────────
+     섹션을 DOM에서 옮기지 않는다. 옮기면 리사이즈마다 되돌려야 하고
+     position:sticky와 ScrollTrigger가 꼬인다 — ScrollSmoother로 sticky를
+     전부 깨뜨린 전례가 있다. 여기서는 "맞지 않는 것만" 숨긴다.
+     :not()을 쓰는 이유: 보여야 할 요소의 display를 건드리지 않기 위해서다.
+     display:revert로 되살리면 다른 규칙이 준 flex/grid가 날아간다. */
+  .app-tabbar { display: none; }
+
+  @media (max-width: 560px) {
+    .app-tabbar {
+      display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 600;
+      height: 4.1rem; padding-bottom: env(safe-area-inset-bottom, 0);
+      background: var(--page); border-top: 1px solid var(--line);
+    }
+    .app-tab {
+      display: block; text-align: center; text-decoration: none;
+      font-size: 0.63rem; font-weight: 700; color: var(--muted); line-height: 1.5;
+    }
+    .app-tab[aria-current="true"] { color: var(--ink); }
+    .app-tab-ic { display: block; }
+    .app-tab-ic .mono-icon { width: 1.15rem; height: 1.15rem; }
+    .app-fab {
+      width: 3.1rem; height: 3.1rem; border-radius: 50%; border: 0; margin: -1rem auto 0;
+      background: var(--accent-bar); color: var(--ink); font-size: 1.45rem; font-weight: 800;
+      box-shadow: 0 5px 14px rgba(244, 217, 92, .55); cursor: pointer; font-family: inherit;
+    }
+
+    /* 탭바가 본문 끝을 가리지 않게. 브리프 원안은 5.4rem(탭바 높이 4.1rem + 여유)이지만
+       Task 3에서 .app-actionbar를 position:sticky로 화면 아래 bottom:4.1rem에 붙일 예정이라
+       탭바(4.1rem) + 액션바 자리를 미리 비워둔다. 9rem = 탭바 4.1rem + 액션바 대략 4.9rem. */
+    body { padding-bottom: 9rem; }
+
+    :root[data-tab="진단"]     [data-tab-of]:not([data-tab-of="진단"]),
+    :root[data-tab="과거글"]   [data-tab-of]:not([data-tab-of="과거글"]),
+    :root[data-tab="알아보기"] [data-tab-of]:not([data-tab-of="알아보기"]),
+    :root[data-tab="문답"]     [data-tab-of]:not([data-tab-of="문답"]) { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-tabbar, .app-fab { transition: none; }
+  }
+
 </style>
 
 <script>
@@ -2247,7 +2297,7 @@
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
 </a>
 
-<main id="tool">
+<main id="tool" data-tab-of="진단">
   <!-- 히어로: 화면에 단 하나뿐인 다크 카드 (가이드라인 5절 "다크 카드는 최대 하나") -->
   <div class="app-hero">
   <header class="page-header">
@@ -2746,7 +2796,7 @@
      동작하도록 돼 있었으니, 입구만 따로 만들면 된다.
      사진 진단 도구(#tool) 바로 다음 자리에 둔다 — 사용자 피드백: 처음엔 예시 캐러셀과
      본 도구 사이에 있어서 본 진단으로 가는 흐름을 가로막는 느낌이었다. -->
-<section class="site-section pattern-entry" id="pattern-check">
+<section class="site-section pattern-entry" id="pattern-check" data-tab-of="과거글">
   <div class="section-inner">
     <div class="sc-card pe-card">
       <div class="pe-text">
@@ -2779,7 +2829,7 @@
      스크롤 트랙(steps-track)은 세 화면 높이고, 그 안의 무대(steps-stage)가
      화면에 붙어(sticky) 있는 동안 스크롤 진행도에 따라 단계가 하나씩 넘어간다.
      좁은 화면과 모션 축소 설정에서는 붙이지 않고 그냥 세로로 쌓는다. -->
-<section class="site-section steps-section" id="steps">
+<section class="site-section steps-section" id="steps" data-tab-of="알아보기">
   <div class="pin-track steps-track" id="stepsTrack" data-pin="3">
     <div class="pin-stage steps-stage">
       <div class="section-inner steps-inner">
@@ -2854,7 +2904,7 @@
   </div>
 </section>
 
-<section class="site-section pinned-section" id="features">
+<section class="site-section pinned-section" id="features" data-tab-of="알아보기">
   <div class="pin-track" data-pin="4">
   <div class="pin-stage">
   <div class="section-inner">
@@ -2883,7 +2933,7 @@
   </div>
 </section>
 
-<section class="site-section alt pinned-section" id="why">
+<section class="site-section alt pinned-section" id="why" data-tab-of="알아보기">
   <div class="pin-track" data-pin="4">
   <div class="pin-stage">
   <div class="section-inner">
@@ -2912,7 +2962,7 @@
   </div>
 </section>
 
-<section class="site-section pinned-section" id="faq">
+<section class="site-section pinned-section" id="faq" data-tab-of="문답">
   <div class="pin-track" data-pin="5" data-pin-accumulate="1">
   <div class="pin-stage">
   <div class="section-inner narrow">
@@ -3459,6 +3509,26 @@
     }, 3000);
   })();
 </script>
+
+<!-- 어플 배치용 하단 탭바 — 폰 폭에서만 보인다(CSS 미디어쿼리).
+     진짜 링크라서 JS가 죽어도 해당 자리로 이동은 된다.
+     role="tablist"를 쓰지 않았다: 이건 패널 전환이 아니라 실제 이동이고,
+     주소(#tool 등)가 남는다. 그래서 <nav> + aria-current가 맞다.
+     본문 script 태그들보다 앞에 둔다 — 뒤의 큰 스크립트가 파싱과 동시에
+     즉시 실행되며 appTabbar를 찾으므로, 스크립트보다 뒤에 있으면 못 찾는다. -->
+<nav class="app-tabbar" id="appTabbar" aria-label="화면 이동">
+  <a class="app-tab" href="#tool" data-goto="진단" aria-current="true">
+    <span class="app-tab-ic" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="3"/><path d="M10 20 L14 15 L18 19 L22 12"/></svg></span>진단</a>
+  <a class="app-tab" href="#pattern-check" data-goto="과거글">
+    <span class="app-tab-ic" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>과거글</a>
+  <button class="app-fab" id="appFab" type="button">
+    <span aria-hidden="true">＋</span><span class="sr-only">사진 넣기</span>
+  </button>
+  <a class="app-tab" href="#steps" data-goto="알아보기">
+    <span class="app-tab-ic" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><path d="M16 4 L28 16 L16 28 L4 16 Z"/></svg></span>알아보기</a>
+  <a class="app-tab" href="#faq" data-goto="문답">
+    <span class="app-tab-ic" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="M12.5 12.5a3.5 3.5 0 1 1 3.5 3.5v2.5"/><circle cx="16" cy="23" r="1"/></svg></span>문답</a>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"
   integrity="sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F"
@@ -9958,9 +10028,47 @@
     showScreen('form');
     syncSubmitLabel();
 
+    /* 어플 탭 — 값을 <html>에 세우는 것이 전부고 나머지는 CSS가 한다.
+       미디어쿼리 안에만 규칙이 있어서 데스크톱에서는 세워도 아무 일이 안 일어난다.
+       그래서 리사이즈를 듣지 않는다.
+       window.__anshimTest 리터럴보다 앞에 둔다 — 그 안에서 이 함수를 참조하므로,
+       뒤에 두면 setTabForTest에 undefined가 들어가 테스트가 터진다. */
+    var 탭바 = document.getElementById('appTabbar');
+    function 탭세우기(이름) {
+      if (!이름) return;
+      document.documentElement.setAttribute('data-tab', 이름);
+      if (!탭바) return;
+      탭바.querySelectorAll('.app-tab').forEach(function (a) {
+        if (a.dataset.goto === 이름) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    }
+    if (탭바) {
+      탭바.querySelectorAll('.app-tab').forEach(function (a) {
+        a.addEventListener('click', function () {
+          탭세우기(a.dataset.goto);
+          // 다른 섹션이 숨으므로 맨 위가 곧 그 화면의 처음이다
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        });
+      });
+      var fab = document.getElementById('appFab');
+      if (fab) fab.addEventListener('click', function () {
+        탭세우기('진단');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        var inp = document.getElementById('photoInput');
+        if (inp) inp.click();
+      });
+      // 주소에 앵커가 있으면 그 탭으로 시작한다
+      var 앵커 = (location.hash || '').replace('#', '');
+      var 주인 = 앵커 && document.getElementById(앵커);
+      탭세우기((주인 && 주인.closest('[data-tab-of]') &&
+                주인.closest('[data-tab-of]').getAttribute('data-tab-of')) || '진단');
+    }
+
     // 테스트 전용 접근점 — 앱 전체가 IIFE라 밖에서 순수 함수를 검증할 수 없어서 열어둠.
     // 앱 코드는 이 객체를 쓰지 않는다 (test/text-routing.js에서만 사용).
     window.__anshimTest = {
+      setTabForTest: 탭세우기,
       classifyTextRegions: classifyTextRegions,
       isSignboardText: isSignboardText,
       roundUpTo32: roundUpTo32,
