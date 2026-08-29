@@ -22,7 +22,14 @@ const R = {
   uploadTiming: '실시간 업로드', privacySetting: '전체공개',
   locationScore: 78, locationEvidence: '교복과 캡션으로 학교가 좁혀져요.',
   scheduleOn: true, scheduleEvidence: '매주 화·목 4시', schedulePatterns: [], schedulePredicted: '',
-  actions: ['a', 'b', 'c'], summary: '학교가 특정될 수 있어요.', captionSuggestions: ['1', '2', '3'],
+  // 한 글자짜리로 재면 「지금 할 일」이 35px로 나와 "한 화면에 들어간다"가 거짓이 된다.
+  // 실제 권장 조치는 문장이고 폰 폭에서 두세 줄을 먹는다.
+  actions: [
+    '가슴의 마크를 지우고 교복 색을 바꿔서 어느 학교인지 알 수 없게 해주세요.',
+    '캡션에서 학교명과 요일·시간을 빼주세요. 셋이 모이면 등하원 시간이 드러나요.',
+    '전체공개 대신 친구만 볼 수 있게 바꾸고, 며칠 지난 뒤에 올려주세요.',
+  ],
+  summary: '학교가 특정될 수 있어요.', captionSuggestions: ['1', '2', '3'],
 };
 
 let pass = 0, fail = 0;
