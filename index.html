@@ -2068,9 +2068,29 @@
      test/device-switch.js가 기기 11종으로 이 경계를 지킨다. */
   @media (max-width: 560px),
          (pointer: coarse) and (hover: none) and (max-height: 560px) {
-    /* 앱 껍데기에서는 웹 네비·푸터가 할 일이 없다 — 앱바와 탭바가 그 자리를 맡는다.
-       (실측: 알아보기 탭 아래에 푸터 579px가 그대로 붙어 있었다) */
-    .site-nav, .site-footer { display: none; }
+    /* 앱 껍데기에서는 웹 네비·푸터·CTA 띠가 할 일이 없다 — 앱바와 탭바,
+       그리고 화면 아래 고정 액션이 그 자리를 맡는다.
+       (실측: 알아보기 탭 아래에 푸터 579px, 검증 화면 아래에 CTA 띠가 붙어 있었다) */
+    .site-nav, .site-footer, .cta-band { display: none; }
+
+    /* 도구 머리(제목 + 1-2-3 스테퍼)는 앱바가 같은 말을 한다 — 「검증 ●●▬」.
+       둘 다 두면 화면 위쪽 200px를 같은 정보에 두 번 쓴다. */
+    .app-hero { display: none; }
+
+    /* ── 검증 화면 ─────────────────────────────────────────────────────── */
+    /* 도장과 설명만 남기고 나머지는 얇게. 산문은 이미 넉 줄로 잘려 있다. */
+    #screen-verify .verify-detail {
+      font-size: 0.79rem; line-height: 1.55; padding: 0.75rem 0.85rem; border-radius: 12px;
+    }
+    #screen-verify .disclaimer { font-size: 0.64rem; line-height: 1.5; }
+    /* 「다른 사진으로 처음부터 다시」를 화면 아래 고정 바로. 다른 화면과 같은 자리다. */
+    #screen-verify > #restartBtn {
+      position: fixed; left: 0; right: 0; bottom: 4.1rem; z-index: 500; margin: 0;
+      width: auto; border-radius: 0; border: 0; border-top: 1px solid var(--line);
+      background: var(--page); color: var(--ink); font-weight: 800;
+      padding: 0.85rem 1rem calc(0.85rem + env(safe-area-inset-bottom, 0));
+    }
+    #screen-verify { padding-bottom: 8rem; }
 
     .app-tabbar {
       display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
