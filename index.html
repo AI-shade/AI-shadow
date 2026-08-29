@@ -2221,31 +2221,30 @@
     #screen-result #scoreBreakdown:not(.open) .sb-total { display: none; }
     .sb-more { margin-left: 0.5rem; font-size: 0.74rem; font-weight: 600; }
     /* 오각형 축 이름·값 글자는 176px에서 그대로 두면 서로 붙는다 */
-    /* 히어로가 다크 카드가 되면서 오각형 글자가 어두운 바탕에 어두운 글씨가 됐다.
-       특히 축 값(.radar-val)은 --ink(#1a1a1a)라 통째로 안 보였다 —
-       AGENTS.md가 경고하는 그 유형이다. 다크 위에서 쓸 색으로 바꾼다. */
-    #screen-result .radar-label { font-size: 10px; fill: var(--on-dark); opacity: 0.66; }
-    #screen-result .radar-val { font-size: 11px; fill: var(--on-dark); }
-    /* 격자선도 흰 카드 기준이라 다크 위에서 너무 세다 */
-    #screen-result .sb-radar .radar-grid,
-    #screen-result .sb-radar polygon:not(.radar-shape),
-    #screen-result .sb-radar line { opacity: 0.28; }
-    #screen-result .gauge-score-label { font-size: 1.7rem; }
+    /* 흰 면 위 오각형 — 항목 이름은 죽이고 값은 살린다.
+       색으로 위험도를 말하는 것은 오각형 자체(.radar-shape)가 한다. */
+    #screen-result .radar-label { font-size: 10px; fill: var(--muted); }
+    #screen-result .radar-val { font-size: 11px; fill: var(--ink); }
+    #screen-result .gauge-score-label { font-size: 1.7rem; color: var(--ink); }
     #screen-result .gauge-unit { font-size: 0.62rem; }
 
     /* 히어로 — 화면당 하나뿐인 다크 카드(가이드라인 5절).
        .rcard-score 전체가 아니라 .gauge-wrap만 어둡게 한다. 점수 내역이 같은
        카드 안에 들어 있어서, 카드 전체를 어둡게 하면 내역 막대·근거까지 전부
        다시 칠해야 하고 그러다 어두운 바탕에 어두운 글씨가 나온다(전례 있음). */
+    /* 히어로는 밝게 둔다(제보: "꼭 검정 화면이어야해?").
+       다크 카드는 시안을 따른 것이지 꼭 필요한 게 아니다 — 오각형이 이미
+       색으로 위험도를 말하고 있어서, 바탕까지 어두우면 그 색이 죽는다.
+       다른 카드와 같은 흰 면에 테두리만 두고, 오각형과 글자에 색을 준다. */
     #screen-result .gauge-wrap {
-      background: var(--card-dark); color: var(--on-dark);
+      background: var(--card); border: 1px solid var(--line);
       border-radius: 20px; padding: 0.85rem 1rem 0.9rem; gap: 0.3rem;
       flex-direction: column; align-items: center; text-align: center;
     }
     /* 결론 한 줄 — 시안의 13px/1.5, 살짝 죽인 흰색 */
     #screen-result .hero-line {
       margin: 0.55rem 0 0; font-size: 0.81rem; line-height: 1.5;
-      color: var(--on-dark); opacity: 0.9; text-align: left; width: 100%;
+      color: var(--muted); text-align: left; width: 100%;
       word-break: keep-all;
     }
     #screen-result .hero-line:empty { display: none; }
@@ -2284,9 +2283,10 @@
     #screen-result #actionCard { counter-reset: 할일; }
     #screen-result #actionCard > h3 { font-size: 0.84rem; font-weight: 800; margin-bottom: 0.3rem; }
     #screen-result #actionCard { padding: 0.75rem 0.875rem; }
-    #screen-result .gauge-score-label { font-size: 2.4rem; color: var(--on-dark); }
-    #screen-result .gauge-unit,
-    #screen-result .gauge-hint { color: var(--on-dark); opacity: 0.72; }
+    /* 크기는 위(2228줄)에서 정한다 — 여기서 또 적으면 둘이 싸운다.
+       실제로 싸웠다: 다크 히어로를 밝게 바꾼 뒤에도 이 줄이 남아 점수 「60」이
+       흰 바탕에 흰 글씨로 묻혔다. */
+    #screen-result .gauge-unit { color: var(--muted); }
     #screen-result .gauge-score-sub { display: none; }  /* "위험 등급" 딱지는 칩이 이미 말한다 */
     #screen-result .gauge-meta { flex-direction: row; align-items: center; gap: 0.5rem; }
     #screen-result .gauge-hint { font-size: 0.76rem; }
