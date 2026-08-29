@@ -111,6 +111,12 @@ const 옛_소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|�
             앱소속: T.isBelongClue(c),              // 앱이 실제로 내리는 판정
             무게: T.belongClueWeight(c),
           })),
+          // 글자 없이 배경만으로 알아본 장소. 옛자에는 이 개념이 없다 —
+          // 그래서 이 줄이 옛자/앱자 차이의 일부가 된다.
+          marks: T.scoredLandmarks(claude.landmarks).map((l) => ({
+            이름: l.이름, 범위: l.좁혀지는범위 || '', 확신: l.확신 || '',
+            점수: T.landmarkPoints(l),
+          })),
         };
       }, { u });
     } catch (e) {
@@ -122,7 +128,8 @@ const 옛_소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|�
     // 앱자 — 사용자가 실제로 보는 판정
     const 장소글자 = r.words.filter((w) => w.앱장소);
     const 소속 = r.clues.filter((c) => c.앱소속);
-    const 찾음 = 장소글자.length > 0 || 소속.length > 0;
+    const 랜드마크 = r.marks || [];
+    const 찾음 = 장소글자.length > 0 || 소속.length > 0 || 랜드마크.length > 0;
 
     // 옛자 — 실행끼리 비교하기 위한 고정된 자
     const 옛장소 = r.words.filter((w) => 옛_장소유형.test(w.type));
@@ -132,6 +139,8 @@ const 옛_소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|�
     results.push({
       파일명: row.파일명, 정답: row.최종유형, 찾음, 옛찾음,
       장소글자: 장소글자.map((w) => w.text), 소속: 소속.map((c) => c.종류),
+      랜드마크: 랜드마크.map((l) => l.이름 + '(' + l.범위 + '·' + l.확신 + ')'),
+      랜드마크만: 장소글자.length === 0 && 소속.length === 0 && 랜드마크.length > 0,
       못읽은소속: 소속.filter((c) => c.무게 < 12).map((c) => c.종류),
       버려진글자: r.words.filter((w) => !w.앱장소 && 옛_장소유형.test(w.type)).map((w) => w.text),
       버려진소속: r.clues.filter((c) => !c.앱소속 && 옛_소속단서.test(c.종류 + c.근거)).map((c) => c.종류),
@@ -172,6 +181,11 @@ const 옛_소속단서 = /교복|원복|명찰|로고|엠블럼|배지|기관|�
   console.log('  ' + '─'.repeat(52));
   console.log('  [옛자·비교용]  A ' + 옛검출(A) + '%  B ' + 옛검출(B) + '%  C ' + 옛검출(C) + '%'
     + '   놓침 ' + 옛놓침.length + '  오탐 ' + 옛오탐.length);
+  const 마크 = ok.filter((r) => (r.랜드마크 || []).length > 0);
+  const 마크만 = ok.filter((r) => r.랜드마크만);
+  console.log('  배경만으로 알아본 장소: ' + 마크.length + '장'
+    + '  (그중 글자·소속이 전혀 없어 이것만으로 잡은 것 ' + 마크만.length + '장)');
+  마크만.forEach((r) => console.log('      [' + r.정답 + '] ' + r.파일명 + '  ' + r.랜드마크.join(', ')));
   const 못읽음 = ok.filter((r) => (r.못읽은소속 || []).length > 0);
   console.log('  이번에 낮춘 것: 못 읽은 명찰·로고 ' + 못읽음.length + '장');
   console.log('  이번에 버린 것: 장소글자 '

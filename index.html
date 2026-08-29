@@ -4527,6 +4527,10 @@
         // 글자가 아닌 신원 단서(교복·원복·명찰·기관 로고). 위치가 특정되지 않아 보정 대상은
         // 아니지만, 소속 기관을 드러내므로 위험도 진단에는 반드시 전달해야 한다.
         visualClues: data.시각단서 || [],
+        // 글자 없이 배경만으로 알아볼 수 있는 장소(남산타워 같은 것).
+        // 사진 103장 측정에서 끝까지 남은 놓침 4장 중 하나가 글자가 0개인
+        // 랜드마크 사진이었다 — 글자를 읽는 방식으로는 원리적으로 못 잡는다.
+        landmarks: data.장소단서 || [],
         maskedDataUrl: OCR_DEBUG ? maskedDataUrl : null,
         usage: data.usage, model: data.model, backendTimingMs: data.timingMs,
       };
@@ -6827,15 +6831,26 @@
         // 판정은 isPlaceWord 한 곳에만 둔다(위 PLACE_TYPE_RE 주석 참고).
         return isPlaceWord(w);
       });
-      var f1 = Math.min(26, placeWords.length * 11 + (hasOcrText ? 5 : 0) + (hasNotes ? 4 : 0));
+      // 글자가 없어도 배경만으로 장소가 좁혀질 수 있다. 같은 "사진으로 장소가
+      // 특정되는가"라는 물음이라 별도 항목을 만들지 않고 여기에 합친다.
+      var marks = scoredLandmarks(ocrResult && ocrResult.landmarks);
+      var markPoints = marks.reduce(function (s, l) { return s + landmarkPoints(l); }, 0);
+      var markNames = marks.map(function (l) { return l.이름; });
+
+      var f1 = Math.min(26, placeWords.length * 11 + markPoints
+        + (hasOcrText ? 5 : 0) + (hasNotes ? 4 : 0));
       var f1why = placeWords.length > 0
         ? '사진에서 ' + placeWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
           + ' 같은 글자가 읽혀서 건물·번지까지 좁혀질 수 있어요.'
-        : (hasOcrText
-          ? '간판·주소로 분류될 만한 글자는 아니지만 "' + ocrTextJoined + '"가 읽혔어요.'
-          : (hasNotes
-            ? '배경으로 적어주신 "' + inputs.backgroundNotes.trim() + '"만으로도 장소가 좁혀질 수 있어요.'
-            : '간판·주소·전화번호로 읽히는 글자가 없어요.'));
+          + (markNames.length > 0 ? ' 게다가 배경에 ' + markNames.join('·') + josa이가(markNames[markNames.length - 1]) + ' 보여요.' : '')
+        : (markNames.length > 0
+          ? '글자는 없지만 배경의 ' + markNames.join('·') + josa이가(markNames[markNames.length - 1])
+            + ' 알아볼 수 있어서 장소가 좁혀져요.'
+          : (hasOcrText
+            ? '간판·주소로 분류될 만한 글자는 아니지만 "' + ocrTextJoined + '"가 읽혔어요.'
+            : (hasNotes
+              ? '배경으로 적어주신 "' + inputs.backgroundNotes.trim() + '"만으로도 장소가 좁혀질 수 있어요.'
+              : '간판·주소·전화번호로 읽히는 글자가 없고, 배경으로 알아볼 만한 곳도 없어요.')));
 
       // ② 소속 노출 (상한 22) — 교복·명찰·기관 로고
       // 판정은 isBelongClue 한 곳에만 둔다(위 BELONG_TYPE_RE 주석 참고).
@@ -7674,6 +7689,41 @@
     var FRANCHISE_RE = /롯데마트|이마트|홈플러스|하나로마트|코스트코|올리브영|다이소|스타벅스|투썸|이디야|메가커피|빽다방|컴포즈|파리바게[뜨트]|뚜레쥬르|배스킨라빈스|맥도[날널]드|버거킹|롯데리아|맘스터치|KFC|피자헛|도미노|BBQ|BHC|교촌|네네치킨|굽네|GS25|CU|세븐일레븐|미니스톱|메가박스|CGV|롯데시네마/i;
     var BRANCH_RE = /[가-힣A-Za-z0-9]{2,}\s*(지)?점(?![가-힣])/;
 
+    // 알아볼 수 있는 장소가 위치를 얼마나 좁히는가.
+    // 이름을 못 댄 것은 위치를 못 좁히므로 아예 세지 않는다 — 프롬프트도
+    // 보고하지 말라고 하지만 "도시 풍경" 같은 게 올라올 때가 있다.
+    var LANDMARK_SCOPE_POINTS = { '건물': 11, '구역': 8, '도시': 4 };
+    // 뒤쪽 여섯은 사진 103장에서 실제로 올라온 것들이다. 특히 "특정 불가"는
+    // **여기가 어딘지 모르겠다는 뜻인데 그걸 위치 노출로 세고 있었다.**
+    // "또는"·"유사"가 붙은 것도 이름이 아니라 얼버무림이다 —
+    // "벚꽃 수로원길 또는 유사 공원 경로"는 지도에 못 찍는다.
+    var VAGUE_LANDMARK_RE = /풍경|전경|경치|시내|도심|주택가|아파트\s*단지|바닷가|해안|산자락|불명|미상|알\s*수\s*없|불가|또는|유사|미확인|불명확|기관\s*유형/;
+
+    // 장소의 "종류"를 가리키는 말. 이것만으로 이루어진 이름은 장소가 아니라
+    // 분류다 — 실측에서 종류 "어린이집/유치원", "학교/유치원 운동장"이 올라왔다.
+    // "새롬유치원"은 분류어를 걷어내도 "새롬"이 남지만 "어린이집/유치원"은 아무것도
+    // 안 남는다. 그게 이름과 종류를 가르는 자리다.
+    var PLACE_CATEGORY_RE = /어린이집|유치원|초등학교|중학교|고등학교|학교|학원|공원|놀이터|아파트|빌라|병원|카페|식당|마트|박물관|미술관|도서관|체육관|운동장|정류장|주차장|건물|시설|기관|유형|장소/g;
+
+    function hasProperName(name) {
+      return name.replace(PLACE_CATEGORY_RE, '').replace(/[\s/·,()\-]/g, '').length >= 2;
+    }
+
+    function landmarkPoints(l) {
+      var name = String((l && l.이름) || '').trim();
+      // 이름이 없거나 두 글자도 안 되거나 두루뭉술하면 지도에 못 찍는다
+      if (name.length < 2 || VAGUE_LANDMARK_RE.test(name)) return 0;
+      if (!hasProperName(name)) return 0;
+      // 범위를 안 적어줬으면 가운데인 '구역'과 '도시' 사이로 본다
+      var p = LANDMARK_SCOPE_POINTS[String((l && l.좁혀지는범위) || '')] || 6;
+      // 추정이면 절반. 랜드마크는 이름을 지어내기 쉬운 자리라 확신을 반영한다
+      return String((l && l.확신) || '') === '추정' ? Math.round(p / 2) : p;
+    }
+
+    function scoredLandmarks(list) {
+      return (list || []).filter(function (l) { return landmarkPoints(l) > 0; });
+    }
+
     function isPlaceWord(w) {
       var text = String((w && w.text) || '');
       if (UNREADABLE_TEXT_RE.test(text)) return false;
@@ -7725,6 +7775,7 @@
       // 표시한 자리가 실제 근거와 어긋난다(장소 글자에서 실제로 겪었다).
       var belong = clues.filter(isBelongClue);
       var placeWords = words.filter(isPlaceWord);
+      var chainMarks = scoredLandmarks(ocrResult && ocrResult.landmarks);
       // 유형·내용 어느 쪽으로도 못 가렸더라도, 사진에 읽히는 글자가 있으면
       // 그 자체로 장소가 좁혀질 수 있다. "없음"이라고 단정하지 않는다 —
       // 아이 사진에서는 놓치는 쪽이 잘못 잡는 쪽보다 나쁘다.
@@ -7756,6 +7807,17 @@
           why: belong.length > 0
             ? belong.map(function (c) { return c.종류; }).join('·') + ' — 다니는 기관까지 좁혀져요.'
             : '교복·명찰·기관 로고가 보이지 않아 어디 다니는지는 알 수 없어요.',
+        },
+        {
+          // 글자 칸과 나란히 둔다. 하나는 "적혀 있다", 하나는 "알아볼 수 있다"로
+          // 성질이 달라서, 글자가 0개인 사진에서 이 칸만 켜지는 일이 실제로 있다.
+          on: chainMarks.length > 0,
+          what: '배경만으로 알아볼 수 있다',
+          tag: chainMarks.length > 0 ? chainMarks.length + '곳' : '없음',
+          why: chainMarks.length > 0
+            ? chainMarks.map(function (l) { return l.이름; }).join(', ')
+              + ' — 글자가 없어도 여기가 어딘지 좁혀져요.'
+            : '배경에 이름을 댈 만한 건물이나 랜드마크가 보이지 않아요.',
         },
         {
           on: shownWords.length > 0,
@@ -9922,6 +9984,8 @@
       parseExifBuffer: parseExifBuffer,
       getClothesMask: getClothesMask,
       isPlaceWord: isPlaceWord,  // 장소 글자 판정 — 세 곳이 공유하는 단일 자리
+      landmarkPoints: landmarkPoints,      // 알아볼 수 있는 장소가 위치를 좁히는 정도
+      scoredLandmarks: scoredLandmarks,
       factorRegions: factorRegions,
       ensureClothesRegion: ensureClothesRegion,
       renderFactorMap: renderFactorMap,
