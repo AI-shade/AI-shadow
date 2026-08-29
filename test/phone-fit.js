@@ -78,22 +78,34 @@ const 폭들 = [390, 430, 560];
       const tab = document.querySelector('.app-tabbar');
       const 바높이 = br ? br.height : 0;
       const 탭높이 = tab ? tab.getBoundingClientRect().height : 0;
-      const 아래여백 = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+
+      // 요구사항이 바뀌었다(사용자 결정): 화면을 위/아래 두 칸으로 나눠
+      //   위 = 사진 + 번호 마커,  아래 = 오각형 + 점수 + 결론 한 줄
+      // 이 둘이 첫 화면에 같이 보이면 된다. 점수 내역·할 일은 그 아래로 흘려보낸다 —
+      // 앱에서 스크롤로 더 보는 것은 자연스럽고, **첫 화면이 무엇을 말하느냐**가
+      // 발표용 시각자료의 요구사항이다.
+      // 예전 검사는 #screen-result 전체가 844px에 들어가는지 봤는데, 그 기준으로는
+      // 사진을 숨겨야만 통과한다 — 사진이 이 화면의 주인공이라 기준 쪽이 틀렸다.
+      const 사진 = document.querySelector('#screen-result > .rcard-detect');
+      const 히어로 = document.querySelector('#screen-result .gauge-wrap');
       return {
         높이: Math.round(el.getBoundingClientRect().height),
         // sticky든 fixed든 "화면 아래에 붙어 있다"가 요구사항이다
         액션바: !!bar && (pos === 'sticky' || pos === 'fixed'),
         위치: pos,
-        // 아래여백은 고정된 바가 앉을 자리라 내용이 아니다 — 빼고 잰다
-        내용: Math.round(el.getBoundingClientRect().height - 아래여백),
+        사진보임: !!사진 && getComputedStyle(사진).display !== 'none',
+        // 사진 위 끝부터 히어로 아래 끝까지가 바 위 공간에 들어오는가
+        두칸: (사진 && 히어로 && br)
+          ? Math.round(히어로.getBoundingClientRect().bottom - 사진.getBoundingClientRect().top)
+          : -1,
         자리: Math.round(window.innerHeight - 탭높이 - 바높이),
       };
     });
     console.log('\n폭 ' + w + 'px');
-    ok(잰값.높이 <= 844, '진단 결과가 한 화면에 들어간다', 잰값.높이 + 'px');
+    ok(잰값.사진보임, '위 칸에 사진(감지 항목)이 있다');
+    ok(잰값.두칸 > 0 && 잰값.두칸 <= 잰값.자리, '사진과 오각형이 첫 화면에 같이 들어온다',
+      '두 칸 ' + 잰값.두칸 + 'px / 바 위 자리 ' + 잰값.자리 + 'px');
     ok(잰값.액션바, '하단 액션 바가 화면에 붙어 있다', 잰값.위치);
-    ok(잰값.내용 <= 잰값.자리, '액션 바가 글자를 덮지 않는다',
-      '내용 ' + 잰값.내용 + 'px / 바 위 자리 ' + 잰값.자리 + 'px');
 
     // ── 보정 화면 ──────────────────────────────────────────────────────
     // 고치기 전 실측(390x844): 517자 / 1658px / 폰 화면 2.0개분.
@@ -137,6 +149,38 @@ const 폭들 = [390, 430, 560];
     ok(보정.미리보기가위, '원본/처리 후가 방식 목록보다 위에 있다');
     ok(보정.바있음 && 보정.내용 <= 보정.자리, '액션 바가 글자를 덮지 않는다',
       '내용 ' + 보정.내용 + 'px / 바 위 자리 ' + 보정.자리 + 'px');
+
+    // ── 검증 화면 ──────────────────────────────────────────────────────
+    // 빈 화면은 444px로 멀쩡하다. 문제는 **재검증 설명이 들어왔을 때**다 —
+    // 두 검증자가 갈리면 합의설명 + 설명 + 사진에서 본 것 + 추가 조치가 이어붙어
+    // 300자를 넘는다. 그래서 실제 길이의 문장을 넣고 잰다.
+    const 검증설명 = '⚖ 두 검증자의 판단이 갈렸어요. 설명을 읽은 쪽은 통과로 봤지만 '
+      + '사진을 직접 본 쪽은 재검토가 필요하다고 했어요. 처리 전후로 얼굴 수와 크기는 '
+      + '그대로였고 새로 생긴 위험도 없었습니다. 사진에서 본 것 — 남은 단서: 왼쪽 가슴에 '
+      + '기관을 특정할 수 있는 엠블럼이 그대로 남아 있음 / 인물: 정상 범위. '
+      + '추가 조치: 마크 지우기를 한 번 더 적용하거나 옷 색을 함께 바꿔보세요.';
+
+    await page.evaluate((t) => {
+      window.__anshimTest.showScreenForTest('verify');
+      document.getElementById('verifyDetail').textContent = t;
+      document.getElementById('screen-verify').scrollIntoView({ block: 'start' });
+    }, 검증설명);
+    await page.waitForTimeout(300);
+
+    const 검증 = await page.evaluate(() => {
+      const el = document.getElementById('screen-verify');
+      const tab = document.querySelector('.app-tabbar');
+      const 탭높이 = tab ? tab.getBoundingClientRect().height : 0;
+      const more = document.getElementById('verifyMoreBtn');
+      return {
+        높이: Math.round(el.getBoundingClientRect().height),
+        자리: Math.round(window.innerHeight - 탭높이),
+        접기단추: !!more && getComputedStyle(more).display !== 'none',
+      };
+    });
+    ok(검증.높이 <= 검증.자리, '검증 화면이 한 화면에 들어간다',
+      검증.높이 + 'px / 자리 ' + 검증.자리 + 'px');
+    ok(검증.접기단추, '긴 설명을 펼 수 있는 단추가 있다');
 
     await ctx.close();
   }

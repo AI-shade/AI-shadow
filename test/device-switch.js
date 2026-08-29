@@ -69,10 +69,13 @@ function check(label, ok, detail) {
       const bar = document.querySelector('.app-tabbar');
       const all = [...document.querySelectorAll('[data-tab-of]')];
       const shown = all.filter((e) => getComputedStyle(e).display !== 'none');
+      // 한 탭에 속한 섹션이 여러 개다(진단 탭 = 히어로 + 자가점검 + 도구 + 유도 띠).
+      // 그래서 "보이는 게 하나"가 아니라 **보이는 것이 전부 같은 탭인가**를 잰다.
+      // 예전 기준으로 두면 섹션에 탭 표시를 더할 때마다 이 검사가 거짓으로 깨진다.
+      const 보이는탭 = new Set(shown.map((e) => e.dataset.tabOf));
       return {
         tabbar: bar ? getComputedStyle(bar).display !== 'none' : false,
-        // 어플 배치면 한 번에 한 탭만 보인다
-        oneTabOnly: all.length > 1 && shown.length === 1,
+        oneTabOnly: all.length > 1 && shown.length > 0 && 보이는탭.size === 1,
         padBottom: parseFloat(getComputedStyle(document.body).paddingBottom) || 0,
       };
     });

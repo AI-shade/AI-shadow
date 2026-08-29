@@ -62,7 +62,10 @@ function ok(cond, name, detail) {
       if (os) os.style.display = 'flex';
       return Array.from(document.querySelectorAll('.cw-btn, .em-btn')).map(b => {
         const r = b.getBoundingClientRect();
-        return { 글: b.textContent.trim(), 폭: Math.round(r.width), 높이: Math.round(r.height) };
+        // 픽셀 하한만 재면 글자 크기를 바꿀 때마다 거짓으로 깨진다.
+        // 진짜 요구사항은 «이름이 넘치지 않는다»이므로 넘침을 직접 잰다.
+        return { 글: b.textContent.trim(), 폭: Math.round(r.width), 높이: Math.round(r.height),
+                 넘침: b.scrollWidth - b.clientWidth };
       });
     });
 
@@ -73,8 +76,10 @@ function ok(cond, name, detail) {
     ok(두줄.length === 0, '모든 버튼이 한 줄이다',
        두줄.length ? 두줄.map(b => `${b.글} ${b.폭}x${b.높이}`).join(', ') : `가장 높은 것 ${Math.max(...잰값.map(b => b.높이))}px`);
 
-    const 좁음 = 잰값.filter(b => b.폭 < 최소폭);
-    ok(좁음.length === 0, '이름이 들어갈 폭을 갖는다',
+    // 폭이 하한보다 좁아도 이름이 안 넘치면 통과다 — 어플 배치에서 칩이
+    // 작아지면서 «그대로 두기»가 77px이 됐는데 글자는 한 줄에 멀쩡히 들어간다.
+    const 좁음 = 잰값.filter(b => b.넘침 > 1 || (b.폭 < 최소폭 && b.넘침 > 0));
+    ok(좁음.length === 0, '이름이 넘치지 않는다',
        좁음.length ? 좁음.map(b => `${b.글} ${b.폭}px`).join(', ') : `가장 좁은 것 ${Math.min(...잰값.map(b => b.폭))}px`);
 
     await ctx.close();

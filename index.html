@@ -1181,8 +1181,11 @@
   }
   .method-card .m-ico { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ink); }
   .method-card .m-reason { font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.6; }
-  /* 설명을 자르는 것은 폰뿐이라, 펼치는 단추도 폰에서만 나온다 */
-  .method-more { display: none; }
+  /* 글을 자르는 것은 폰뿐이라, 펼치는 단추도 폰에서만 나온다.
+     .ghost-link가 파일 뒤쪽에서 display를 다시 주므로 두 클래스를 겹쳐
+     특정도를 이긴다(실측: 데스크톱 진단 결과에 「항목별로 보기」가 떠 있었다). */
+  .ghost-link.clamp-more, .clamp-more { display: none; }
+  .hero-line { display: none; }
   /* 배지: 어두운 면 + 밝은 글씨. JS가 background만 바꾸므로(--muted/--risk-low) 글씨색은 --on-chip로 뒤집는다 */
   .m-badge {
     font-size: 0.62rem; font-weight: 600; letter-spacing: 0; color: var(--on-chip); background: var(--ink);
@@ -1479,7 +1482,9 @@
     #screen-verify > * { max-width: 46rem; margin-left: auto; margin-right: auto; }
     /* 버튼이 inline-block이면 auto 마진으로 가운데 정렬되지 않는다 — 실제로 왼쪽으로
        치우쳐 있었다. 블록으로 바꿔야 위 규칙이 먹는다. */
-    #screen-verify > button { display: block; }
+    /* 접기 단추는 폰 전용이다 — 이 규칙(1,0,1)이 .ghost-link.clamp-more(0,2,0)를
+       이겨서 데스크톱 검증 화면에 「자세히 보기」가 떠 있었다. */
+    #screen-verify > button:not(.clamp-more) { display: block; }
 
     /* 카드를 넓혀놓고 본문만 46ch로 묶어두면 글자가 좁게 흐르고 오른쪽이 빈다.
        카드·컬럼 자체가 이미 폭을 잡아주므로 별도 제한을 두지 않는다. */
@@ -2042,7 +2047,7 @@
      전부 깨뜨린 전례가 있다. 여기서는 "맞지 않는 것만" 숨긴다.
      :not()을 쓰는 이유: 보여야 할 요소의 display를 건드리지 않기 위해서다.
      display:revert로 되살리면 다른 규칙이 준 flex/grid가 날아간다. */
-  .app-tabbar { display: none; }
+  .app-tabbar, .app-bar { display: none; }
   /* 감싸기만 하고 배치에는 안 끼어든다 — 데스크톱에서는 버튼 둘이 예전처럼
      카드의 직계 자식으로 놓인다. 폰에서만 진짜 상자가 된다.
      결과 화면에만 거는 이유: 보정 화면에서는 이미 상자였던 .correct-actions에
@@ -2063,6 +2068,10 @@
      test/device-switch.js가 기기 11종으로 이 경계를 지킨다. */
   @media (max-width: 560px),
          (pointer: coarse) and (hover: none) and (max-height: 560px) {
+    /* 앱 껍데기에서는 웹 네비·푸터가 할 일이 없다 — 앱바와 탭바가 그 자리를 맡는다.
+       (실측: 알아보기 탭 아래에 푸터 579px가 그대로 붙어 있었다) */
+    .site-nav, .site-footer { display: none; }
+
     .app-tabbar {
       display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 600;
@@ -2091,26 +2100,118 @@
        탭바(4.1rem) + 액션바 자리를 미리 비워둔다. 9rem = 탭바 4.1rem + 액션바 대략 4.9rem. */
     body { padding-bottom: 9rem; }
 
-    /* ── 진단 결과 화면 (설계서 4.1) ────────────────────────────────────
-       히어로(점수) + 무엇이 걸렸나(막대) + 지금 할 일 + 하단 고정 액션. */
+    /* ── 어플 배치 (시안 sian.html 그대로) ──────────────────────────────
+       웹 카드를 줄인 것이 아니라 시안의 수치를 그대로 옮긴다.
+       카드 16px 라운드 · 14px 안여백 · 카드 사이 11px · 제목 13.5px 800.
+       색은 시안이 이 파일의 :root에서 가져온 것이라 새로 만들 것이 없다. */
+    #screen-result, #screen-correct, #screen-verify {
+      background: var(--page); border: 0; border-radius: 0;
+      box-shadow: none; padding: 0.85rem 1rem 0;
+    }
+    #screen-result > .rcard, #screen-result > .result-section,
+    #screen-correct > .correct-left, #screen-correct > .correct-right {
+      border-radius: 16px; padding: 0.875rem;
+    }
+
+    /* 앱바 — 제목 + 단계 점 */
+    .app-bar {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin: -0.85rem -1rem 0.7rem; padding: 0.85rem 1rem 0.6rem;
+      border-bottom: 1px solid var(--line); background: var(--page);
+    }
+    .app-bar-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+    .app-bar-dots { margin-left: auto; display: flex; gap: 5px; align-items: center; }
+    .app-bar-dots i {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong);
+    }
+    .app-bar-dots i.on { width: 17px; border-radius: 99px; background: var(--accent); }
+
+    /* ── 진단 결과 — 위 절반 사진, 아래 절반 오각형 ──────────────────────
+       DOM 순서는 그대로 두고 order로만 자리를 바꾼다(데스크톱 배치가 이 순서에
+       기대고 있다). 사진 카드는 Task 3에서 자리를 많이 먹는다고 숨겼던 것인데,
+       원래 크기로 뒀기 때문이었다 — 화면에 맞춰 높이를 잡으면 들어가고,
+       이 카드가 시연의 주인공이다. */
+    /* 인라인 style="display:block"을 showScreen이 넣기 때문에 !important가 필요하다.
+       :not([style*="none"])는 감춰야 할 때 안 감춰지는 것을 막는다 —
+       보정 화면이 이미 쓰는 방법과 같게 맞춘다. */
+    #screen-result:not([style*="none"]) { display: flex !important; flex-direction: column; }
+    #screen-result > .app-bar { order: 0; }
+    #screen-result > .rcard-detect { order: 1; }
+    #screen-result > .rcard-score { order: 2; }
+    #screen-result > #actionCard { order: 3; }
+    #screen-result > .app-actionbar { order: 9; }
+
+    /* 사진은 위 절반을 차지한다. 번호 마커가 사진 위에 얹히므로 사진 비율을
+       유지해야 마커가 어긋나지 않는다 — 높이를 직접 주지 않고 최대치만 건다. */
+    #screen-result > .rcard-detect { padding: 0.6rem 0.6rem 0.45rem; }
+    #screen-result > .rcard-detect > .rcard-title {
+      font-size: 0.84rem; font-weight: 800; margin: 0 0 0.5rem;
+    }
+    #screen-result .risk-photo-wrap { max-height: 40vh; }
+    #screen-result .risk-photo-wrap img { max-height: 40vh; object-fit: contain; }
+    /* 핀 범례와 각주는 사진 위 번호가 이미 말해준다 — 폰에서는 뺀다 */
+    #screen-result .pin-legend, #screen-result .pin-note { display: none; }
+    /* 위험 요소 지도 목록도 접는다 — 사진 위 번호가 같은 것을 가리킨다 */
+    #screen-result .factor-map .fm-note { display: none; }
+    #screen-result .factor-map .fm-head { font-size: 0.78rem; font-weight: 700; margin: 0.5rem 0 0.35rem; }
+    #screen-result .fm-list { font-size: 0.74rem; }
+    /* 접힌 상태에서는 목록을 감춘다. 사진 위 번호가 이미 같은 것을 말한다. */
+    #screen-result .fm-list:not(.open) { display: none; }
+    /* 단추를 제목 줄 오른쪽 끝에 앉힌다 — 아래에 따로 두면 28px를 더 먹는다.
+       (시안의 「근거 펼치기 ⌄」가 제목 줄에 있는 것과 같은 자리) */
+    #screen-result .factor-map .fm-head {
+      display: flex; align-items: baseline; gap: 0.4rem; white-space: nowrap;
+    }
+    #screen-result .fm-more {
+      display: inline-block; font-size: 0.72rem; margin: 0 0 0 auto; white-space: nowrap;
+    }
+    /* 사진은 위 절반. 실제 마커가 사진 위에 얹히므로 비율은 유지한다. */
+    /* 위 절반 = 사진. 아래 절반 = 오각형 + 결론. 둘이 첫 화면에 같이 들어와야 한다
+       (제보: "세로로 2분할햇을때 이런식으로 표시되게하고 나머지 절반엔 오각형
+       그리고 그밑에 설명"). 점수 내역·할 일은 그 아래로 흘려보낸다 — 앱에서
+       스크롤로 더 보는 것은 자연스럽고, 첫 화면이 무엇을 말하느냐가 중요하다. */
+    #screen-result .risk-photo-wrap img { max-height: 24vh; width: auto; margin: 0 auto; }
+
+    /* ── 진단 결과 (이어서) ─────────────────────────────────────────────── */
 
     /* 오각형은 폰에서 뺀다. 항목 다섯을 한눈에 보여주려는 그림인데, 바로 아래
        막대 다섯이 같은 정보를 **더 정확하게** 준다 — 오각형으로는 22/22와
        18/18의 차이를 눈으로 못 읽는다. 자리도 많이 먹는다.
        데스크톱에서는 그대로 둔다(GSAP "오각형 그려지기" 모션 포함). */
-    /* !important를 쓰는 이유: 오각형 SVG에 `style="display: block"`이 **인라인으로**
-       붙는다(GSAP 연출). 인라인은 시트 규칙으로 못 이긴다. JS에 폰 분기를 넣으면
-       "폰 배치는 CSS로만"이라는 이 절의 전제가 깨지므로, 여기서만 강제한다. */
-    #screen-result .sb-radar { display: none !important; }
-    /* 오각형을 숨겨도 .gauge-ring이 aspect-ratio로 높이를 그대로 차지한다.
-       숫자만 남기려면 비율·최대폭을 풀고 .gauge-center를 흐름 안으로 되돌린다. */
+    /* 오각형은 폰에서도 남긴다 (사용자 요청 — 설계서 4.1의 "폰에서 뺀다"를 뒤집는
+       결정이다). 이 앱의 상징이고 시연에서 가장 눈에 띄는 그림이라, 자리를 내주더라도
+       보여주는 쪽을 골랐다. 대신 **작게** 넣는다 — 원래 크기로는 288px를 먹어
+       한 화면에 못 들어간다. 폭 상한만 줄이고 나머지는 데스크톱 규칙을 그대로 쓴다
+       (숫자를 가운데 겹쳐 놓는 .gauge-center의 absolute 배치도 그대로 산다). */
+    /* width/height를 같이 적는 이유: 460px 이하에서 118x118로 못박는 규칙이
+       파일 앞쪽에 있어 max-width만으로는 안 이긴다. 실측으로 확인했다 —
+       118px에서는 축 값(22/22)이 겹쳐서 안 읽혔다. */
     #screen-result .gauge-ring {
-      width: auto; height: auto; max-width: none; aspect-ratio: auto; margin: 0;
+      width: 100%; max-width: 206px; height: auto; margin: 0 auto;
     }
-    #screen-result .gauge-center {
-      position: static; transform: none;
-      flex-direction: row; align-items: baseline; gap: 0.3rem;
-    }
+    /* 오각형이 들어오면서 이 한 줄이 자리를 못 얻는다. 오각형 모양과 「중」 칩이
+       같은 것을 말하고 있어 여기서만 감춘다 — 데스크톱에는 그대로 있다. */
+    #screen-result .gauge-hint { display: none; }
+
+    /* 오각형이 다섯 항목의 값(22/22, 18/18…)을 그림 위에 이미 적는다. 그래서 폰에서는
+       같은 정보인 막대 목록을 접어 둔다 — **지우지 않는다.** 「항목별로 보기」를 누르면
+       근거 접기(왜?)까지 그대로 살아 있다.
+       실측: 접으면 258px가 빠져 오각형(158px)을 넣고도 한 화면에 들어간다. */
+    #screen-result #scoreBreakdown:not(.open) .sb-list,
+    #screen-result #scoreBreakdown:not(.open) .sb-total { display: none; }
+    .sb-more { margin-left: 0.5rem; font-size: 0.74rem; font-weight: 600; }
+    /* 오각형 축 이름·값 글자는 176px에서 그대로 두면 서로 붙는다 */
+    /* 히어로가 다크 카드가 되면서 오각형 글자가 어두운 바탕에 어두운 글씨가 됐다.
+       특히 축 값(.radar-val)은 --ink(#1a1a1a)라 통째로 안 보였다 —
+       AGENTS.md가 경고하는 그 유형이다. 다크 위에서 쓸 색으로 바꾼다. */
+    #screen-result .radar-label { font-size: 10px; fill: var(--on-dark); opacity: 0.66; }
+    #screen-result .radar-val { font-size: 11px; fill: var(--on-dark); }
+    /* 격자선도 흰 카드 기준이라 다크 위에서 너무 세다 */
+    #screen-result .sb-radar .radar-grid,
+    #screen-result .sb-radar polygon:not(.radar-shape),
+    #screen-result .sb-radar line { opacity: 0.28; }
+    #screen-result .gauge-score-label { font-size: 1.7rem; }
+    #screen-result .gauge-unit { font-size: 0.62rem; }
 
     /* 히어로 — 화면당 하나뿐인 다크 카드(가이드라인 5절).
        .rcard-score 전체가 아니라 .gauge-wrap만 어둡게 한다. 점수 내역이 같은
@@ -2118,14 +2219,56 @@
        다시 칠해야 하고 그러다 어두운 바탕에 어두운 글씨가 나온다(전례 있음). */
     #screen-result .gauge-wrap {
       background: var(--card-dark); color: var(--on-dark);
-      border-radius: 14px; padding: 0.8rem 1rem; gap: 0.6rem;
-      align-items: baseline;
+      border-radius: 20px; padding: 0.85rem 1rem 0.9rem; gap: 0.3rem;
+      flex-direction: column; align-items: center; text-align: center;
     }
+    /* 결론 한 줄 — 시안의 13px/1.5, 살짝 죽인 흰색 */
+    #screen-result .hero-line {
+      margin: 0.55rem 0 0; font-size: 0.81rem; line-height: 1.5;
+      color: var(--on-dark); opacity: 0.9; text-align: left; width: 100%;
+      word-break: keep-all;
+    }
+    #screen-result .hero-line:empty { display: none; }
+    /* 히어로가 카드 안에 또 카드로 앉으면 테두리가 겹친다 — 바깥 카드를 지운다 */
+    #screen-result > .rcard-score {
+      border: 0; box-shadow: none; padding: 0; background: transparent;
+    }
+    #screen-result > .rcard-score > .rcard-title { display: none; }
+    /* 점수 내역은 시안처럼 자기 카드를 갖는다 */
+    #screen-result #scoreBreakdown {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 0.875rem; margin-top: 0.7rem; border-top: 1px solid var(--line);
+    }
+    #screen-result .sb-head {
+      display: flex; align-items: baseline; gap: 0.5rem;
+      font-size: 0.84rem; font-weight: 800;
+      letter-spacing: -0.01em; margin: 0 0 0.55rem; white-space: nowrap;
+    }
+    /* 단추를 오른쪽 끝으로 밀고, 제목이 줄바꿈되지 않게 한다 */
+    #screen-result .sb-more { margin-left: auto; white-space: nowrap; }
+    /* 막대는 시안의 5px */
+    #screen-result .sb-bar { height: 5px; }
+    /* 할 일 — 번호 동그라미. 마크업은 그대로 두고 counter로 그린다 */
+    #screen-result #actionList { list-style: none; padding-left: 0; }
+    #screen-result #actionList li {
+      display: flex; gap: 0.55rem; align-items: flex-start;
+      font-size: 0.79rem; line-height: 1.45; padding: 0.42rem 0;
+      counter-increment: 할일;
+    }
+    #screen-result #actionList li::before {
+      content: counter(할일); flex: 0 0 auto;
+      width: 19px; height: 19px; border-radius: 50%; background: var(--accent);
+      color: var(--ink); font-size: 0.63rem; font-weight: 800;
+      display: grid; place-items: center; margin-top: 0.08rem;
+    }
+    #screen-result #actionCard { counter-reset: 할일; }
+    #screen-result #actionCard > h3 { font-size: 0.84rem; font-weight: 800; margin-bottom: 0.3rem; }
+    #screen-result #actionCard { padding: 0.75rem 0.875rem; }
     #screen-result .gauge-score-label { font-size: 2.4rem; color: var(--on-dark); }
     #screen-result .gauge-unit,
     #screen-result .gauge-hint { color: var(--on-dark); opacity: 0.72; }
     #screen-result .gauge-score-sub { display: none; }  /* "위험 등급" 딱지는 칩이 이미 말한다 */
-    #screen-result .gauge-meta { flex-direction: row; align-items: baseline; gap: 0.6rem; }
+    #screen-result .gauge-meta { flex-direction: row; align-items: center; gap: 0.5rem; }
     #screen-result .gauge-hint { font-size: 0.76rem; }
 
     /* 폰 한 화면에 들어가려면 여기까지가 한계다. 실측(390x844, 오각형 뺀 뒤):
@@ -2137,7 +2280,6 @@
        되돌리려면 이 규칙 하나만 지우면 된다.
        주의: 위험 요소 지도는 심사 문답이 "이걸 꼭 보여주세요"라고 적어둔 자리다.
        폰으로 시연한다면 이 결정을 다시 봐야 한다. */
-    #screen-result > .rcard-detect,
     #screen-result > .rcard-location,
     #screen-result > #scheduleCard,
     #screen-result > #summaryCard { display: none; }
@@ -2167,7 +2309,7 @@
     #screen-correct > .app-actionbar {
       display: flex; flex-direction: column; gap: 0.5rem;
       position: fixed; left: 0; right: 0; bottom: 4.1rem; z-index: 500;
-      padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0));
+      padding: 0.4rem 1rem calc(0.4rem + env(safe-area-inset-bottom, 0));
       background: var(--page); border-top: 1px solid var(--line);
     }
     /* 고정된 액션 바가 흐름에서 빠졌으니 그만큼 아래를 비운다.
@@ -2204,6 +2346,50 @@
     #screen-correct > .correct-actions { order: 3; }
     /* 고정된 액션 바가 앉을 자리 */
     #screen-correct { padding-bottom: 9rem; }
+
+    /* ── 보정 화면을 시안 수치로 ────────────────────────────────────────
+       원본/처리 후 라벨은 알약이 아니라 작은 캡션이다(시안 10.5px/700).
+       알약으로 두면 «누르는 것»으로 읽히는데 실제로는 그냥 이름표다. */
+    #screen-correct .preview-label {
+      background: none; border: 0; padding: 0; margin: 0 0 0.3rem;
+      font-size: 0.66rem; font-weight: 700; color: var(--muted); text-align: left;
+    }
+    #screen-correct .preview-label.is-after { color: var(--ink); }
+
+    /* 미리보기 아래 링크 둘을 한 줄로. 각자 한 줄씩 쓰면 46px를 더 먹어
+       방식 타일이 액션 바에 잘린다(실측). */
+    #screen-correct .stack-box { display: flex; align-items: baseline; gap: 0.9rem; }
+    #screen-correct #applyStepBtn, #screen-correct #downloadResultBtn { margin: 0; }
+    #screen-correct #downloadResultBtn { align-self: baseline; }
+    /* 미리보기 설명 문구는 방식마다 달라지는 안내다 — 타일 설명이 같은 말을 한다 */
+    #screen-correct #previewCaption { display: none; }
+    /* 겹쳐서 비교하기는 사진 위로 올린다 — 가운데 정렬은 웹 흔적이다 */
+    #screen-correct #compareSliderToggle {
+      display: block; text-align: left; font-size: 0.72rem;
+    }
+
+    /* 「어떻게 고칠까요」를 카드 제목 줄로 — 제목 왼쪽, 접기 링크 오른쪽 끝 */
+    #screen-correct > .correct-left > h3 {
+      display: flex; align-items: baseline; gap: 0.5rem; white-space: nowrap;
+      font-size: 0.84rem !important; font-weight: 800 !important;
+      margin: 0 0 0.55rem !important; letter-spacing: -0.01em !important;
+    }
+    #screen-correct .method-more { margin: 0 0 0 auto; }
+
+    /* 옷 색·교복 티 — 알약 줄을 시안의 칩 줄로.
+       선택된 것은 검은 알약이라 «지금 이것» 이 한눈에 보인다. */
+    #screen-correct .bs-label {
+      display: block; font-size: 0.78rem; font-weight: 800; color: var(--ink);
+      margin: 0.55rem 0 0.35rem;
+    }
+    #screen-correct .cw-btn, #screen-correct .em-btn, #screen-correct .fs-btn {
+      font-size: 0.68rem; font-weight: 700; padding: 0.3rem 0.65rem;
+      border-radius: 999px; border: 0; background: var(--soft); color: var(--muted);
+    }
+    #screen-correct .cw-btn.selected, #screen-correct .em-btn.selected,
+    #screen-correct .fs-btn.selected {
+      background: var(--ink); color: var(--on-dark); box-shadow: none;
+    }
 
     /* 방식은 2열 타일. 1열로 쌓으면 카드 여섯이 화면을 통째로 먹는다.
        (2열 정의는 min-width:560px 안에 있어 폰에 안 닿으므로 여기서 다시 쓴다) */
@@ -2245,10 +2431,144 @@
 
     /* 단추가 목록 바로 밑에 붙으므로 목록의 아래 여백을 그만큼 걷어낸다 */
     .method-grid { margin-bottom: 0.2rem; }
-    .method-more { display: inline-block; margin: 0 0 0.3rem; font-size: 0.76rem; }
+    /* 바깥의 .ghost-link.clamp-more(0,2,0)를 이기려면 여기서도 둘을 겹쳐야 한다 */
+    .ghost-link.clamp-more, .clamp-more { display: inline-block; font-size: 0.76rem; }
+    .method-more { margin: 0 0 0.3rem; }
+
+    /* 검증 설명 — 넉 줄까지만. 실측: 두 검증자가 갈린 설명이 783px로 11px 넘쳤다. */
+    #verifyDetail {
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    #verifyDetail.open { -webkit-line-clamp: unset; }
+    #verifyMoreBtn { margin: 0.35rem 0 0.2rem; }
+
+    /* ── 알아보기·문답 탭 (설계서 4.4) ──────────────────────────────────
+       핀 고정은 1000px 이하에서 이미 풀린다. 남은 문제는 **큰 카드가 줄줄이
+       쌓이는 것**이다 — 실측: 알아보기 탭 3,395px. 카드마다 테두리·그림자·
+       1.6rem 여백이 붙어 자리를 먹는다.
+       폰에서는 목록으로 낮춘다. 줄 사이를 선으로만 나눈다.
+       (.site-section.alt .why-card가 배경을 따로 주므로 id로 특정도를 이긴다) */
+    #features .feature-grid, #why .why-grid { gap: 0; }
+    #features .feature-card, #why .why-card {
+      background: transparent; border: 0; border-top: 1px solid var(--line);
+      border-radius: 0; box-shadow: none; padding: 0.95rem 0;
+    }
+    #features .feature-card:first-child, #why .why-card:first-child { border-top: 0; }
+    /* 시안 수치대로 — 기존 규칙이 특정도로 이기고 있어서 id를 앞에 붙여 못박는다.
+       실측: 설명이 시안의 11px가 아니라 훨씬 크게 나왔다. */
+    #steps .steps-list li .sl-body strong { font-size: 0.79rem !important; font-weight: 800; }
+    #steps .steps-list li .sl-body span {
+      font-size: 0.7rem !important; line-height: 1.4 !important; color: var(--muted);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    #steps .steps-list.open li .sl-body span { -webkit-line-clamp: unset; }
+    #features .feature-card p, #why .why-card p { font-size: 0.7rem !important; }
+    /* 제목 아래 노란 밑줄은 웹 랜딩의 장치다 — 카드 제목에는 안 맞는다 */
+    #features .section-title::after, #why .section-title::after,
+    #faq .section-title::after, #steps .section-title::after { display: none; }
+    /* 행 왼쪽 아이콘 자리 — 시안의 라운드 사각.
+       flex로 만들면 제목과 설명이 형제라 좌우로 갈라진다(실측: 제목이 세로로 쪼개짐).
+       카드는 블록으로 두고 아이콘만 얹는다. */
+    #features .feature-card, #why .why-card {
+      padding-left: 2.5rem; padding-right: 1.2rem;
+    }
+    #features .feature-card::before, #why .why-card::before {
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 30px; height: 30px; border-radius: 9px; background: var(--soft);
+    }
+
+    /* 시안의 행 목록: 제목 + 설명 + 오른쪽 화살표. 카드 하나 안에 행이 쌓인다. */
+    #features .feature-card, #why .why-card { position: relative; padding-right: 1.3rem; }
+    #features .feature-card::after, #why .why-card::after {
+      content: '›'; position: absolute; right: 0.2rem; top: 50%;
+      transform: translateY(-50%); color: var(--line-strong); font-size: 1.05rem;
+    }
+    #features .feature-card h3, #why .why-card h3 {
+      font-size: 0.79rem; font-weight: 800; margin: 0 0 0.15rem;
+    }
+    #features .feature-card p, #why .why-card p {
+      font-size: 0.85rem; line-height: 1.65;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    #features .feature-grid.open p, #why .why-grid.open p { -webkit-line-clamp: unset; }
+
+    /* 문답은 이미 <details> 아코디언이다. 카드 껍데기만 벗겨 목록으로 만든다. */
+    #faq .faq-list { gap: 0; }
+    #faq .faq-list details {
+      background: transparent; border: 0; border-top: 1px solid var(--line);
+      border-radius: 0; box-shadow: none; padding: 0;
+    }
+    #faq .faq-list details:first-child { border-top: 0; }
+    #faq .faq-list summary { padding: 0.85rem 0; font-size: 0.9rem; }
+    #faq .faq-list p { padding: 0 0 0.9rem; font-size: 0.85rem; line-height: 1.7; }
+
+    /* 세 단계도 같은 행 목록으로. 번호 동그라미는 이미 마크업에 있다(.sl-num). */
+    #steps .steps-list { list-style: none; margin: 0; padding: 0; }
+    #steps .steps-list li {
+      display: flex; gap: 0.65rem; align-items: center; position: relative;
+      padding: 0.65rem 1.3rem 0.65rem 0; border-top: 1px solid var(--line);
+      background: none; border-left: 0; border-right: 0; border-bottom: 0;
+      border-radius: 0; box-shadow: none;
+    }
+    #steps .steps-list li:first-child { border-top: 0; }
+    #steps .steps-list li::after {
+      content: '›'; position: absolute; right: 0.2rem; top: 50%;
+      transform: translateY(-50%); color: var(--line-strong); font-size: 1.05rem;
+    }
+    #steps .steps-list .sl-num {
+      flex: 0 0 auto; width: 26px; height: 26px; border-radius: 9px;
+      display: grid; place-items: center; font-size: 0.72rem; font-weight: 800;
+      background: var(--soft); color: var(--ink);
+    }
+    #steps .steps-list .sl-body { display: block; min-width: 0; }
+    #steps .steps-list .sl-body strong { display: block; font-size: 0.79rem; font-weight: 800; }
+    #steps .steps-list .sl-body span { font-size: 0.7rem; line-height: 1.4; color: var(--muted); }
+
+    /* 세 단계 그림은 폰에서 뺀다. 추상 도형 스켈레톤(sp-card·sp-chip·sp-line)이라
+       뜻을 담지 않고, 바로 옆 목록이 같은 세 단계를 글로 말한다. 데스크톱에서는
+       핀 고정으로 한 번에 하나만 나오지만 폰에서는 셋이 한꺼번에 쌓여 641px을 먹는다.
+       데스크톱은 그대로다 — 거기서는 이 그림이 스크롤 연출의 주인공이다. */
+    #steps .steps-panes { display: none; }
+    #steps .steps-viz { gap: 0; }
+    /* 목록 설명도 두 줄까지만. 펴는 단추는 아래에 하나. */
+    #steps .steps-list .sl-body > span {
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    #steps .steps-list.open .sl-body > span { -webkit-line-clamp: unset; }
+
+    /* 섹션 자체의 위아래 여백도 폰에서는 과하다(1000px 이하 규칙이 4rem을 준다) */
+    #features.pinned-section, #why.pinned-section, #faq.pinned-section,
+    #steps.steps-section { padding: 1.4rem 0; }
+    /* 시안은 섹션마다 카드 하나다 — 눈썹 문구를 빼고 제목만 카드 제목으로 */
+    #features .section-eyebrow, #why .section-eyebrow,
+    #faq .section-eyebrow, #steps .section-eyebrow { display: none; }
+    #features .section-title, #why .section-title,
+    #faq .section-title, #steps .section-title {
+      font-size: 0.95rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 0.6rem;
+    }
+    /* 섹션 하나가 카드 하나가 된다 */
+    #features .section-inner, #why .section-inner,
+    #faq .section-inner, #steps .section-inner {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 0.875rem;
+    }
 
     /* 타일 여백을 조인다. 카드 여섯이 3줄이라 한 줄에서 아낀 만큼 세 배로 준다. */
-    .method-card { padding: 0.55rem 0.6rem; }
+    /* 타일 — 시안 수치. 선택된 것은 검은 테두리 (색이 아니라 굵기로 구분한다) */
+    .method-card {
+      padding: 0.65rem; border-radius: 14px;
+      border: 1px solid var(--line); background: var(--card);
+    }
+    .method-card.selected {
+      background: var(--card); border-color: var(--ink);
+      box-shadow: 0 0 0 1.5px var(--ink) inset;
+    }
+    /* ⚠ 원본 전송 배지를 타일 맨 위로 — 시안처럼 «무엇이 나가는지»가 먼저 읽힌다 */
+    .method-card .m-reason .m-badge {
+      display: block !important; float: none; margin: 0 0 0.3rem !important;
+      font-size: 0.55rem; padding: 0.12rem 0.4rem;
+    }
     .method-grid { gap: 0.4rem; }
     #screen-correct > .correct-left { margin-top: 0.25rem; }
     /* 사진 위아래 붙은 안내 두 줄의 여백을 걷는다. 글자는 그대로 둔다. */
@@ -2363,7 +2683,8 @@
   </div>
 </nav>
 
-<header class="hero" id="top">
+<!-- 랜딩 히어로 — 진단 탭 것이다(「지금 진단하기」가 여기 있다). -->
+<header class="hero" id="top" data-tab-of="진단">
   <div class="hero-inner">
     <div class="hero-copy">
       <span class="hero-badge">Campus AX-Ton · 멋쟁이사자처럼</span>
@@ -2421,7 +2742,8 @@
          https://commons.wikimedia.org/wiki/File:South_Korean_license_plate_for_commercial_passenger_cars,_Daegu_(after_Nov._2006,_European-sized).jpg
      apartment.jpg·playground.jpg는 원래부터 한국 맥락(서울 아파트 스카이라인)이거나
      국적이 드러나는 글자가 없어 그대로 둠. -->
-<section class="self-check" id="selfcheck">
+<!-- 「올리기 전에 잠깐」 자가점검 — 진단 탭 것이다. 표시가 없으면 모든 탭에 샌다. -->
+<section class="self-check" id="selfcheck" data-tab-of="진단">
   <div class="section-inner">
     <div class="sc-card">
       <span class="sc-eyebrow">올리기 전에 잠깐</span>
@@ -2505,7 +2827,7 @@
 
 <!-- 예시를 다 보고 나서 진단으로 넘어가는 자리. 예전에는 히어로 맨 아래에
      붙어 있어서 눌러도 피드를 건너뛰었다. -->
-<a class="scroll-cue" href="#tool">
+<a class="scroll-cue" href="#tool" data-tab-of="진단">
   <span>아래로 내려 진단하기</span>
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
 </a>
@@ -2614,6 +2936,12 @@
   <!-- 화면 3: 진단 결과 — 정보 블록마다 독립된 흰 카드 (가이드라인 5절 "카드 그리드").
        래퍼(.rcard)만 추가했고 안쪽의 id·클래스는 그대로다. -->
   <div class="card" id="screen-result" style="display:none;">
+    <!-- 폰 앱바. 데스크톱에서는 안 보인다 — 거기엔 이미 상단 네비와
+         단계 표시가 있다. 단계 점은 시안의 ●○○ 그대로. -->
+    <div class="app-bar" aria-hidden="true">
+      <span class="app-bar-title">진단 결과</span>
+      <span class="app-bar-dots"><i class="on"></i><i></i><i></i></span>
+    </div>
     <div class="rcard rcard-score">
       <h3 class="rcard-title">종합 위험도</h3>
       <p class="risk-pending" id="riskPending"><span class="spin"></span><span id="riskPendingText">위험 요소 판단 중…</span></p>
@@ -2644,10 +2972,19 @@
           <span class="risk-chip risk-중" id="riskBadge">중</span>
           <p class="gauge-hint">100에 가까울수록 사진만으로 아이를 특정하기 쉬워요.</p>
         </div>
+        <!-- 폰 히어로의 결론 한 줄. 종합설명을 그대로 쓴다 — 새 API 항목을 만들지
+             않는다. 데스크톱에서는 아래 「종합 설명」 카드가 같은 말을 하므로 숨긴다. -->
+        <p class="hero-line" id="riskLine"></p>
       </div>
       <!-- 왜 이 점수인지 — 항목 점수의 합이 곧 종합 점수다 -->
       <div class="score-breakdown" id="scoreBreakdown" style="display:none;">
-        <p class="sb-head">이 점수는 이렇게 나왔어요</p>
+        <p class="sb-head">이 점수는 이렇게 나왔어요
+          <!-- 폰에서는 오각형이 같은 다섯 항목을 값까지 적어 보여주므로 막대 목록을
+               접는다. 데스크톱에서는 둘이 좌우로 나란히 놓여 자리 다툼이 없어
+               이 단추가 안 보인다. -->
+          <button type="button" class="ghost-link clamp-more sb-more" aria-expanded="false"
+                  aria-controls="scoreBreakdown">항목별로 보기 ⌄</button>
+        </p>
         <ul class="sb-list" id="sbList"></ul>
         <p class="sb-total" id="sbTotal"></p>
       </div>
@@ -2667,7 +3004,12 @@
       <!-- 점수가 사진의 어디를 보고 매겨졌는지 잇는다. 숫자만 보여주면 "왜 이 점수인지"가
            납득되지 않는다는 피드백을 받아 더했다. -->
       <div class="factor-map" id="factorMap" hidden>
-        <p class="fm-head">점수는 사진의 여기를 보고 매겨졌어요</p>
+        <p class="fm-head">점수는 사진의 여기를 보고 매겨졌어요<!--
+             폰에서는 사진 위 번호가 같은 것을 가리키므로 목록을 접어 둔다.
+             누르면 펼쳐지고, 항목을 누르면 사진에서 그 자리가 밝아지는 동작은 그대로다.
+             제목 줄 안에 두는 이유: 밖에 두면 줄 하나를 더 먹는다(실측 28px). -->
+          <button type="button" class="ghost-link clamp-more fm-more" aria-expanded="false"
+                  aria-controls="fmList">어디를 ⌄</button></p>
         <ul class="fm-list" id="fmList"></ul>
         <p class="fm-note">항목을 누르거나 손을 올리면 사진에서 그 자리만 밝아져요.
           캡션·게시 습관은 사진이 아니라 적어주신 글과 설정에서 나온 점수예요.</p>
@@ -2743,6 +3085,12 @@
 
   <!-- 화면 4: 처리 방식 추천 + 미리보기 -->
   <div class="card" id="screen-correct" style="display:none;">
+    <!-- 폰 앱바. 데스크톱에서는 안 보인다 — 거기엔 이미 상단 네비와
+         단계 표시가 있다. 단계 점은 시안의 ●○○ 그대로. -->
+    <div class="app-bar" aria-hidden="true">
+      <span class="app-bar-title">보정</span>
+      <span class="app-bar-dots"><i></i><i class="on"></i><i></i></span>
+    </div>
     <div class="correct-left">
     <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.6rem; max-width:22ch; color:var(--ink);">
       어떻게 보정할지 골라주세요
@@ -2858,7 +3206,7 @@
 
     <!-- 폰에서 카드 설명을 두 줄로 자르므로 펼 수단이 있어야 한다.
          (옷 손보기 설명이 108자다) 데스크톱에서는 자르지 않으니 이 단추도 안 보인다. -->
-    <button type="button" class="ghost-link method-more" id="methodMoreBtn"
+    <button type="button" class="ghost-link clamp-more method-more" id="methodMoreBtn"
             aria-expanded="false" aria-controls="methodGrid">방식 설명 자세히 보기 ⌄</button>
 
     <p class="evidence note-bar" id="recommendFlow" style="display:none; margin-bottom:1.3rem;"></p>
@@ -2963,11 +3311,21 @@
   </div>
 
   <div class="card" id="screen-verify" style="display:none;">
+    <!-- 폰 앱바. 데스크톱에서는 안 보인다 — 거기엔 이미 상단 네비와
+         단계 표시가 있다. 단계 점은 시안의 ●○○ 그대로. -->
+    <div class="app-bar" aria-hidden="true">
+      <span class="app-bar-title">검증</span>
+      <span class="app-bar-dots"><i></i><i></i><i class="on"></i></span>
+    </div>
     <div class="verify-stamp-wrap">
       <div class="verify-stamp" id="verifyStamp"><span class="s-icon">✓</span><span class="s-text">검증완료</span></div>
     </div>
     <div class="verify-tags" id="verifyTags"></div>
     <div class="verify-detail" id="verifyDetail"></div>
+    <!-- 두 검증자가 갈리면 설명이 300자를 넘는다. 폰에서는 넉 줄만 보이고
+         나머지는 이 단추로 편다. 방식 카드와 같은 장치를 쓴다. -->
+    <button type="button" class="ghost-link clamp-more" id="verifyMoreBtn"
+            aria-expanded="false" aria-controls="verifyDetail">자세히 보기 ⌄</button>
     <button class="ghost-link" id="cycleVerifyBtn">재검증 다시 실행 ↻</button>
     <button class="secondary" id="restartBtn" style="margin-top:1.3rem;">다른 사진으로 처음부터 다시</button>
     <p class="disclaimer">
@@ -3088,6 +3446,9 @@
               </span>
             </li>
           </ol>
+          <!-- 폰에서 단계 설명을 두 줄로 자르므로 펼 수단을 둔다(같은 .clamp-more 장치) -->
+          <button type="button" class="ghost-link clamp-more" aria-expanded="false"
+                  aria-controls="stepsList">단계 설명 자세히 보기 ⌄</button>
 
           <div class="steps-panes" id="stepsPanes" aria-hidden="true">
             <div class="steps-pane pin-item" data-step="0">
@@ -3135,7 +3496,7 @@
   <div class="section-inner">
     <p class="section-eyebrow">기능</p>
     <h2 class="section-title">사람이 놓치는 것을 대신 찾아드려요</h2>
-    <div class="feature-grid">
+    <div class="feature-grid" id="featureGrid">
       <article class="feature-card pin-item">
         <h3>배경 글자 판독</h3>
         <p>간판·전화번호·지번처럼 위치를 특정할 수 있는 글자를 찾아냅니다. 브라우저 안 OCR과 Claude Vision을 함께 써서, 읽은 내용과 정확한 좌표를 모두 확보해요.</p>
@@ -3153,6 +3514,10 @@
         <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
       </article>
     </div>
+    <!-- 폰에서 설명을 두 줄로 자르므로 펼 수단을 둔다. 방식 카드·검증 설명과
+         같은 장치(.clamp-more)를 쓴다 — 새로 만들지 않는다. -->
+    <button type="button" class="ghost-link clamp-more" aria-expanded="false"
+            aria-controls="featureGrid">설명 자세히 보기 ⌄</button>
   </div>
   </div>
   </div>
@@ -3164,7 +3529,7 @@
   <div class="section-inner">
     <p class="section-eyebrow">왜 안전한가</p>
     <h2 class="section-title">아이를 건드리지 않는다는 원칙</h2>
-    <div class="why-grid">
+    <div class="why-grid" id="whyGrid">
       <article class="why-card pin-item">
         <h3>얼굴은 가려서 보냅니다</h3>
         <p>진단을 위해 외부로 보낼 때 얼굴을 먼저 검게 덮습니다. 원본이 필요한 기능(AI 보정 · 인터넷 이미지 검색)은 누를 때마다 따로 동의를 받아요.</p>
@@ -3182,6 +3547,8 @@
         <p>보정된 사진을 처음과 같은 검사에 한 번 더 통과시켜, 정말 위험이 사라졌는지 확인하고 결과를 보여드립니다.</p>
       </article>
     </div>
+    <button type="button" class="ghost-link clamp-more" aria-expanded="false"
+            aria-controls="whyGrid">설명 자세히 보기 ⌄</button>
   </div>
   </div>
   </div>
@@ -3206,7 +3573,9 @@
   </div>
 </section>
 
-<section class="cta-band">
+<!-- 진단으로 유도하는 띠 — 진단 탭 것이다. 표시가 없으면 모든 탭에 새어 나온다
+     (실측: 알아보기 탭 맨 위에 「사진으로 확인하기」가 떠 있었다). -->
+<section class="cta-band" data-tab-of="진단">
   <div class="section-inner narrow">
     <!-- 히어로에서 떨어져 나온 잎이 여기서 다시 붙는다. 처음엔 세잎이고, 잎이
          도착하는 순간 네 번째 잎(.cl-leaf-detach)이 채워진다. -->
@@ -7939,6 +8308,10 @@
       });
 
       document.getElementById('summaryText').textContent = r.summary;
+      // 폰 히어로의 결론 한 줄. 같은 문장을 두 곳에 쓰는 것이지 새로 만드는 게 아니다 —
+      // 폰에서는 아래 「종합 설명」 카드를 숨기고 이 자리에서 말한다.
+      var riskLineEl = document.getElementById('riskLine');
+      if (riskLineEl) riskLineEl.textContent = r.summary || '';
 
       withHeightTransition(document.getElementById('actionCard'), function () {
         var actionList = document.getElementById('actionList');
@@ -10330,18 +10703,23 @@
       몸.hidden = 열림;
     });
 
-    // 폰에서 방식 카드 설명을 두 줄로 자른 것을 펴는 단추.
+    // 폰에서 줄 수를 자른 글(방식 카드 설명 · 검증 설명)을 펴는 단추.
     // 자르는 것은 CSS(-webkit-line-clamp)라 여기서는 .open만 얹는다.
-    var methodMoreBtn = document.getElementById('methodMoreBtn');
-    if (methodMoreBtn) {
-      methodMoreBtn.addEventListener('click', function () {
-        var grid = document.getElementById('methodGrid');
-        var 열림 = methodMoreBtn.getAttribute('aria-expanded') === 'true';
-        methodMoreBtn.setAttribute('aria-expanded', 열림 ? 'false' : 'true');
-        methodMoreBtn.textContent = 열림 ? '방식 설명 자세히 보기 ⌄' : '설명 접기 ⌃';
-        if (grid) grid.classList.toggle('open', !열림);
-      });
-    }
+    // **장치는 하나뿐이다** — 두 벌로 두면 한쪽만 자란다(이 저장소에서 두 번 겪었다).
+    // 단추는 aria-controls로 자기가 펼 대상을 가리킨다.
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.clamp-more');
+      if (!btn) return;
+      var 대상 = document.getElementById(btn.getAttribute('aria-controls'));
+      var 열림 = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', 열림 ? 'false' : 'true');
+      btn.textContent = 열림 ? btn.dataset.펼침 : '접기 ⌃';
+      if (대상) 대상.classList.toggle('open', !열림);
+    });
+    // 접었을 때 되돌릴 글자를 기억해 둔다(단추마다 문구가 다르다)
+    document.querySelectorAll('.clamp-more').forEach(function (b) {
+      b.dataset.펼침 = b.textContent;
+    });
 
     // 테스트 전용 접근점 — 앱 전체가 IIFE라 밖에서 순수 함수를 검증할 수 없어서 열어둠.
     // 앱 코드는 이 객체를 쓰지 않는다 (test/text-routing.js에서만 사용).

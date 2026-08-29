@@ -55,6 +55,15 @@ function ok(cond, name, detail) {
   }, R);
   await page.waitForTimeout(500);
 
+  // 폰에서는 오각형이 다섯 항목의 값을 그림 위에 이미 적으므로 막대 목록이
+  // 「항목별로 보기」 뒤에 접혀 있다. 근거 접기(왜?)는 그 안에 있으니 먼저 편다.
+  // 데스크톱에서는 이 단추가 안 보이고 목록도 처음부터 펼쳐져 있다.
+  await page.evaluate(() => {
+    const more = document.querySelector('.sb-more');
+    if (more && getComputedStyle(more).display !== 'none') more.click();
+  });
+  await page.waitForTimeout(300);
+
   const 첫상태 = await page.evaluate(() => {
     const btns = Array.from(document.querySelectorAll('.why-btn'));
     const 보이나 = el => { const s = getComputedStyle(el); return s.display !== 'none' && s.visibility !== 'hidden'; };
