@@ -3,6 +3,7 @@
 // - 브러시 도구는 결과에 반영되는 방식에서만 보인다
 // - 획 하나씩 되돌릴 수 있다
 const { chromium } = require('playwright');
+const URL = process.env.ANSHIM_URL || 'http://localhost:8000/index.html';
 
 const PNG_100 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAHUlEQVR42u3BAQ0AAADCoPdPbQ43oAAAAAAAAAAOBgAAAWfAAAHkYzUAAAAASUVORK5CYII=';
 
@@ -47,7 +48,7 @@ async function setup(p, method, mode) {
   const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
   const errs = [];
   p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('http://localhost:8000/index.html', { waitUntil: 'load' });
+  await p.goto(URL, { waitUntil: 'load' });
   await p.waitForTimeout(1200);
 
   await p.evaluate(async a => {

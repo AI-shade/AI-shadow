@@ -1,0 +1,402 @@
+<title>아이SHADOW · 해커톤 고도화 로드맵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     qa.html · industry-qa.html · ideathon-qa.html과 같은 "계측 보고서"
+     스타일. 이 문서만 Q&A가 아니라 실행 로드맵이라 카드 내부 구조를
+     "지금 상태 → 완료 기준"으로 바꿔 썼다.
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --ground: #F3F6F8;
+    --surface: #FFFFFF;
+    --surface-2: #EAEFF3;
+    --ink: #14171B;
+    --ink-mid: #3D454F;
+    --ink-soft: #626C78;
+    --rule: #D9E1E8;
+    --rule-strong: #B9C5CF;
+    --gold: #A8760D;
+    --invert-bg: #14171B;
+    --invert-fg: #F3F6F8;
+    --invert-strong: #FFFFFF;
+    --invert-soft: #C9D3DD;
+    --invert-rule: #333C46;
+    --num: #17559B;
+    --num-bg: #E4EDF8;
+    --show: #0F6247;
+    --show-bg: #DFF0E8;
+    --admit: #96382B;
+    --admit-bg: #FAE5E1;
+    --est: #6B4FA0;
+    --est-bg: #ECE6F6;
+    --shadow: 0 1px 2px rgba(20, 23, 27, .05), 0 8px 24px -12px rgba(20, 23, 27, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14181C; --surface: #1B2027; --surface-2: #232A32;
+      --ink: #EDF1F5; --ink-mid: #BDC7D2; --ink-soft: #8D99A6;
+      --rule: #2E363F; --rule-strong: #414B57; --gold: #E3B355;
+      --invert-bg: #0D1115; --invert-fg: #E6EDF3; --invert-strong: #FFFFFF;
+      --invert-soft: #9DA9B5; --invert-rule: #262E36;
+      --num: #86B8EC; --num-bg: #16283C;
+      --show: #6FCCA4; --show-bg: #122E24;
+      --admit: #EA9E90; --admit-bg: #35201C;
+      --est: #C4A9EA; --est-bg: #241C33;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14181C; --surface: #1B2027; --surface-2: #232A32;
+    --ink: #EDF1F5; --ink-mid: #BDC7D2; --ink-soft: #8D99A6;
+    --rule: #2E363F; --rule-strong: #414B57; --gold: #E3B355;
+    --invert-bg: #0D1115; --invert-fg: #E6EDF3; --invert-strong: #FFFFFF;
+    --invert-soft: #9DA9B5; --invert-rule: #262E36;
+    --num: #86B8EC; --num-bg: #16283C;
+    --show: #6FCCA4; --show-bg: #122E24;
+    --admit: #EA9E90; --admit-bg: #35201C;
+    --est: #C4A9EA; --est-bg: #241C33;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: 'IBM Plex Sans KR', system-ui, -apple-system, sans-serif;
+    font-weight: 400; font-size: 15px; line-height: 1.72; word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; gap: 32px; }
+  @media (min-width: 1020px) { .wrap { padding-top: 56px; } }
+  .cols { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+  @media (min-width: 1020px) { .cols { display: grid; grid-template-columns: 226px 1fr; gap: 44px; align-items: start; } }
+
+  .head { border-bottom: 2px solid var(--ink); padding-bottom: 22px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--gold); margin: 0 0 10px;
+  }
+  h1 { font-size: clamp(28px, 4.4vw, 40px); line-height: 1.18; font-weight: 700; letter-spacing: -.022em; margin: 0 0 12px; text-wrap: balance; }
+  .lede { margin: 0; max-width: 66ch; color: var(--ink-mid); font-size: 15.5px; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; box-shadow: var(--shadow); }
+  .legend-item { display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-mid); }
+
+  .tag { display: inline-block; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; line-height: 1.5; white-space: nowrap; }
+  .tag.num { background: var(--num-bg); color: var(--num); }
+  .tag.show { background: var(--show-bg); color: var(--show); }
+  .tag.admit { background: var(--admit-bg); color: var(--admit); }
+  .tag.est { background: var(--est-bg); color: var(--est); }
+  .tag.hard { background: var(--ink); color: var(--surface); }
+
+  .index { align-self: start; }
+  @media (min-width: 1020px) { .index { position: sticky; top: 32px; max-height: calc(100vh - 64px); overflow-y: auto; scrollbar-width: thin; } }
+  .index h2 { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 12px; }
+  .index ol { list-style: none; margin: 0 0 20px; padding: 0; }
+  .index li { margin-bottom: 3px; }
+  .index a { display: flex; gap: 8px; align-items: baseline; color: var(--ink-mid); text-decoration: none; font-size: 13px; line-height: 1.5; padding: 3px 6px; border-radius: 5px; border-left: 2px solid transparent; }
+  .index a:hover, .index a:focus-visible { background: var(--surface); color: var(--ink); border-left-color: var(--gold); outline: none; }
+  .index .n { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .index .grp { font-size: 11.5px; font-weight: 600; color: var(--ink); margin: 16px 0 6px; padding-left: 8px; letter-spacing: .01em; }
+  .index .grp:first-of-type { margin-top: 0; }
+
+  .body { min-width: 0; }
+  section.group { margin-bottom: 44px; }
+  .group-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; border-bottom: 1px solid var(--rule-strong); padding-bottom: 8px; margin-bottom: 10px; }
+  .group-head h2 { font-size: 19px; font-weight: 700; letter-spacing: -.014em; margin: 0; }
+  .group-head .cap { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--gold); font-weight: 600; }
+  .group-why { margin: 0 0 22px; color: var(--ink-mid); font-size: 13.5px; max-width: 74ch; }
+
+  article.qa { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 22px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  article.qa.priority { border-color: var(--rule-strong); border-left: 4px solid var(--gold); }
+  .q { display: flex; gap: 12px; align-items: baseline; margin-bottom: 4px; }
+  .q .n { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: var(--gold); font-variant-numeric: tabular-nums; flex-shrink: 0; padding-top: 2px; }
+  .q h3 { font-size: 16.5px; font-weight: 600; line-height: 1.5; letter-spacing: -.012em; margin: 0; text-wrap: balance; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px 30px; }
+  .a { margin: 0 0 0 30px; color: var(--ink-mid); }
+  .a p { margin: 0 0 10px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+  .a em { font-style: normal; color: var(--ink); font-weight: 500; }
+
+  .proof { margin: 14px 0 0 30px; padding: 12px 14px; background: var(--surface-2); border-radius: 8px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.85; font-variant-numeric: tabular-nums; color: var(--ink-mid); overflow-x: auto; }
+  .proof .lbl { display: block; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+  .proof b { color: var(--ink); font-weight: 600; }
+  .proof-row { display: flex; gap: 10px; }
+  .proof-row span:first-child { min-width: 15em; color: var(--ink-soft); }
+
+  .demo { margin: 12px 0 0 30px; padding: 11px 14px; background: var(--show-bg); border-radius: 8px; border-left: 3px solid var(--show); font-size: 13.5px; line-height: 1.7; color: var(--ink-mid); }
+  .demo .lbl { display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--show); margin-bottom: 4px; }
+  .demo b { color: var(--ink); font-weight: 600; }
+
+  .caveat { margin: 12px 0 0 30px; padding: 11px 14px; background: var(--admit-bg); border-radius: 8px; border-left: 3px solid var(--admit); font-size: 13.5px; line-height: 1.7; color: var(--ink-mid); }
+  .caveat .lbl { display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--admit); margin-bottom: 4px; }
+  .caveat b { color: var(--ink); font-weight: 600; }
+
+  .estimate { margin: 12px 0 0 30px; padding: 11px 14px; background: var(--est-bg); border-radius: 8px; border-left: 3px solid var(--est); font-size: 13.5px; line-height: 1.7; color: var(--ink-mid); }
+  .estimate .lbl { display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--est); margin-bottom: 4px; }
+  .estimate b { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 560px) { .tags, .a, .proof, .demo, .caveat, .estimate { margin-left: 0; } article.qa { padding: 16px 15px; } }
+
+  .closing { margin-top: 8px; padding: 24px 26px; background: var(--invert-bg); color: var(--invert-fg); border-radius: 12px; }
+  .closing h2 { margin: 0 0 14px; font-size: 18px; font-weight: 700; color: var(--invert-strong); }
+  .closing ul { margin: 0; padding-left: 20px; }
+  .closing li { margin-bottom: 8px; color: var(--invert-soft); }
+  .closing li:last-child { margin-bottom: 0; }
+  .closing b { color: var(--invert-strong); font-weight: 600; }
+  .closing .rule-note { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--invert-rule); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .02em; color: var(--invert-soft); }
+</style>
+
+<div class="wrap">
+
+  <header class="head">
+    <p class="eyebrow">Campus AX-Ton · 네잎클로드 · 아이SHADOW</p>
+    <h1>해커톤 고도화 로드맵</h1>
+    <p class="lede">아이디어톤을 통과해 실제 해커톤으로 넘어갈 경우, 무엇부터 손댈지 정리했습니다.
+      새로 지어낸 목록이 아니라 <a href="qa.html" style="color:inherit">심사 문답</a>·
+      <a href="industry-qa.html" style="color:inherit">AI 실무자 문답</a>·
+      <a href="ideathon-qa.html" style="color:inherit">아이디어톤 문답</a> 세 문서에서 이미
+      <strong>스스로 "인정할 것"으로 표시해둔 약점들</strong>을 실행 순서로 바꾼 것입니다. 카드마다
+      "지금 상태"와 "완료 기준"을 나눠서, 해커톤이 끝났을 때 <strong>뭘 보여주면 이 항목이
+      끝난 건지</strong>를 미리 정해뒀습니다.</p>
+  </header>
+
+  <div class="legend">
+    <span class="legend-item"><span class="tag hard">최우선</span> 이게 뚫리면 나머지가 다 무너지는 항목</span>
+    <span class="legend-item"><span class="tag num">근거 있음</span> 기존 세 문서에 실측 근거로 이미 기록됨</span>
+    <span class="legend-item"><span class="tag show">저비용</span> 해커톤 기간 내 완결 가능</span>
+    <span class="legend-item"><span class="tag est">중비용</span> 부분 완결 또는 계정·자원 확보 필요</span>
+    <span class="legend-item"><span class="tag admit">의존성</span> 외부 의존·정책 제약으로 완결이 어려움</span>
+  </div>
+
+  <div class="cols">
+
+  <nav class="index" aria-label="항목 목차">
+    <h2>목차</h2>
+    <p class="grp">P0 · 근본 신뢰도</p>
+    <ol>
+      <li><a href="#r1"><span class="n">01</span><span>정확도 표본 확대·오탐 개선</span></a></li>
+      <li><a href="#r2"><span class="n">02</span><span>아동 얼굴 검출 실측</span></a></li>
+      <li><a href="#r3"><span class="n">03</span><span>3단계 검증(재검증) 구현</span></a></li>
+    </ol>
+    <p class="grp">P1 · 이번에 나온 질문 검증</p>
+    <ol>
+      <li><a href="#r4"><span class="n">04</span><span>비결정성 완화책 구현</span></a></li>
+      <li><a href="#r5"><span class="n">05</span><span>프리미엄 전환율 실측</span></a></li>
+      <li><a href="#r6"><span class="n">06</span><span>모델 벤치마크</span></a></li>
+    </ol>
+    <p class="grp">P2 · 인프라 부채</p>
+    <ol>
+      <li><a href="#r7"><span class="n">07</span><span>게이트웨이 의존성 제거</span></a></li>
+      <li><a href="#r8"><span class="n">08</span><span>접근 인증·프론트 구조</span></a></li>
+    </ol>
+    <p class="grp">P3 · 관계·포지셔닝</p>
+    <ol>
+      <li><a href="#r9"><span class="n">09</span><span>지자체·교육청 접촉 시작</span></a></li>
+      <li><a href="#r10"><span class="n">10</span><span>법률 자문 착수</span></a></li>
+    </ol>
+  </nav>
+
+  <main class="body">
+
+    <!-- ══════════════ P0 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>P0 · 근본 신뢰도</h2></div>
+      <p class="group-why">이 셋이 뚫리면 수익모델·확장성·법률을 아무리 잘 준비해도 "그래서 이 진단을
+        믿을 수 있냐"는 질문 하나로 전부 무너집니다. 해커톤 첫 주에 붙여야 하는 항목들입니다.</p>
+
+      <article class="qa priority" id="r1">
+        <div class="q"><span class="n">01</span><h3>정확도 검증 표본 확대 + 오탐률 개선</h3></div>
+        <div class="tags"><span class="tag hard">최우선</span><span class="tag num">근거 있음</span></div>
+        <div class="a">
+          <p>세 문서를 통틀어 가장 위험한 숫자입니다 — "98% 정확도"의 실체는 팀원이 직접 라벨링한
+            <strong>N=103장</strong>이고, 그중 안전한 사진 32장 중 <strong>19장(59%)을 오히려 위험하다고
+            오탐</strong>했습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>N=103, 자체 라벨, 오탐 59%</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>제3자 라벨링 N≥300, 오탐률 30%대 이하, 배점 조정 근거 기록</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #5</span></div>
+        </div>
+      </article>
+
+      <article class="qa priority" id="r2">
+        <div class="q"><span class="n">02</span><h3>아동 얼굴 검출 정확도 실측</h3></div>
+        <div class="tags"><span class="tag hard">최우선</span><span class="tag num">근거 있음</span></div>
+        <div class="a">
+          <p>지금 face-api.js 검출률(77~89%)은 전부 <strong>성인 얼굴</strong> 기준입니다. "아동 얼굴
+            데이터로는 한 번도 실측하지 못했다"고 스스로 인정한 상태 — 아이 전용 서비스인데 핵심
+            지표가 아이 데이터로 검증이 안 됐습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>성인 얼굴만 실측, 아동 데이터 실측 0건</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>동의 기반·합성 아동 얼굴 테스트셋(최소 50장) 구축, 검출률 실측치 확보</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #3</span></div>
+        </div>
+      </article>
+
+      <article class="qa priority" id="r3">
+        <div class="q"><span class="n">03</span><h3>3단계 검증(재검증 루프) 구현</h3></div>
+        <div class="tags"><span class="tag hard">최우선</span><span class="tag num">근거 있음</span></div>
+        <div class="a">
+          <p>README에 이미 "아직 없는 것"으로 명시된 기능입니다 — 보정된 사진을 다시 1단계
+            파이프라인에 통과시켜 위험이 실제로 사라졌는지 재확인하는 루프. "AI가 놓치면 책임은
+            누구인가"라는 질문에 대한 가장 실질적인 답이 될 기능입니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>미구현 (수동 마스킹 UI도 미구현)</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>보정 이미지 → 1단계 재통과 → 위험 해소 여부 자동 판정까지 동작</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>README.md "아직 없는 것" · ideathon-qa.html #8</span></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ P1 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>P1 · 이번에 나온 질문 검증</h2></div>
+      <p class="group-why">P0만큼 근본적이진 않지만, 이번 아이디어톤·실무자 문답에서 실제로 나온
+        지적들입니다. 각각 하루~며칠 안에 검증까지 가능한 항목들이라 P0 다음으로 붙입니다.</p>
+
+      <article class="qa" id="r4">
+        <div class="q"><span class="n">04</span><h3>판정 비결정성 완화책 실제 구현</h3></div>
+        <div class="tags"><span class="tag num">근거 있음</span><span class="tag show">저비용</span></div>
+        <div class="a">
+          <p>같은 사진을 두 번 넣으면 판정이 <strong>6.8% 흔들린다</strong>는 것까지는 측정해뒀지만,
+            완화책(다수결 재실행 / "두 번 다 찾음·한 번만 찾음" UX 구분)은 둘 다 미구현입니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>흔들림 측정만 됨, 완화책 미구현</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>둘 중 하나 배포 후 재측정으로 흔들림 감소 확인</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #6</span></div>
+        </div>
+      </article>
+
+      <article class="qa" id="r5">
+        <div class="q"><span class="n">05</span><h3>프리미엄 전환율 실측 (수익모델 검증)</h3></div>
+        <div class="tags"><span class="tag est">중비용</span><span class="tag show">저비용</span></div>
+        <div class="a">
+          <p>수익모델 후보 ①(B2C 프리미엄)의 손익분기 계산에 쓴 "전환율 5%"는 근거 없는 가정값입니다.
+            AI 배경교체 기능에 유료 안내 문구를 붙이고 결제 페이지 도달률을 재는 건 하루면 붙일 수
+            있는 가장 싼 검증입니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>전환율 5% 가정, 실측 0건</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>유료 안내 문구 배포 후 결제 페이지 도달률 실측치 확보</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>ideathon-qa.html #6</span></div>
+        </div>
+      </article>
+
+      <article class="qa" id="r6">
+        <div class="q"><span class="n">06</span><h3>모델 벤치마크 (Haiku vs 상위 모델)</h3></div>
+        <div class="tags"><span class="tag num">근거 있음</span><span class="tag est">중비용</span></div>
+        <div class="a">
+          <p>"충분히 싸고 빠른 모델을 먼저 골랐다"까지는 정직하게 인정했지만 실제 A/B 비교는
+            안 했습니다. 위험도 채점처럼 미묘한 판단이 필요한 항목에서 더 큰 모델이 오탐(01번)을
+            줄여줄 가능성이 있어 함께 봐야 합니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>비교 없이 Haiku 4.5 단일 사용</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>확장된 표본에 대해 상위 모델 1개 이상과 정확도·오탐률 비교표 확보</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #1</span></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ P2 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>P2 · 인프라 부채</h2></div>
+      <p class="group-why">"해커톤 데모 등급"이라고 스스로 인정한 부분들. 완벽한 프로덕션까지는
+        못 가도, 해커톤 기간에 충분히 따라잡을 수 있는 수준입니다.</p>
+
+      <article class="qa" id="r7">
+        <div class="q"><span class="n">07</span><h3>충남대 게이트웨이 의존성 제거</h3></div>
+        <div class="tags"><span class="tag admit">의존성</span><span class="tag num">근거 있음</span></div>
+        <div class="a">
+          <p>3단계 교차검증이 <strong>월 5,000 크레딧짜리 학생 계정</strong>에 걸려 있어, "구조는
+            증명됐지만 상용 등급이 아니다"라는 게 이미 인정된 상태입니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>충남대 학생 계정(비상용) 의존</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>정식 Gemini API(또는 동급) 키로 교차검증 경로 이전</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #4, #11</span></div>
+        </div>
+      </article>
+
+      <article class="qa" id="r8">
+        <div class="q"><span class="n">08</span><h3>접근 인증 강화 + 프론트 구조 정리</h3></div>
+        <div class="tags"><span class="tag admit">의존성</span><span class="tag est">중비용</span></div>
+        <div class="a">
+          <p>접근 코드 "qwerty"와 빌드 없는 단일 HTML은 "빠르게 만들고 정직하게 배포"라는 해커톤
+            목표에는 맞았지만, 다음 단계에서는 손봐야 할 부채로 이미 목록화돼 있습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>고정 접근 코드, 코드 분할·CSP 없음</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>최소 인증(로그인 또는 강화된 코드) + 1차 코드 분할 적용</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #10</span></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ P3 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>P3 · 관계·포지셔닝</h2></div>
+      <p class="group-why">코드가 아니라 <strong>"시도한 흔적"</strong>이 필요한 항목들. 계약이나
+        완결까지는 못 가도, 접촉 기록 하나만 있어도 "포지셔닝 문장"에서 "실제로 시도한 확장"으로
+        격이 달라집니다.</p>
+
+      <article class="qa" id="r9">
+        <div class="q"><span class="n">09</span><h3>지자체·교육청 접촉 시작 (B2G 검증)</h3></div>
+        <div class="tags"><span class="tag admit">의존성</span><span class="tag show">저비용</span></div>
+        <div class="a">
+          <p>"지우개서비스=사후구제 / 우리=사전예방" 포지셔닝은 있지만 실제 접촉은 없었다고 이미
+            인정한 부분입니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>접촉 이력 0건, 포지셔닝 문장만 존재</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>최소 1개 기관 담당 부서에 문의 기록(메일·통화) 확보</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>ideathon-qa.html #7</span></div>
+        </div>
+      </article>
+
+      <article class="qa" id="r10">
+        <div class="q"><span class="n">10</span><h3>법률 자문 착수</h3></div>
+        <div class="tags"><span class="tag admit">의존성</span><span class="tag show">저비용</span></div>
+        <div class="a">
+          <p>아동 개인정보보호법 관련 확인은 지금까지 <strong>벤더 API 약관을 읽는 수준</strong>이었지,
+            서명된 법률 검토는 아니었습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태 → 완료 기준</span>
+          <div class="proof-row"><span>지금</span><span>약관 확인 수준, 정식 자문 0건</span></div>
+          <div class="proof-row"><span>완료 기준</span><span>법학과·법률상담 채널 등 최소 1회 정식 문의 기록</span></div>
+          <div class="proof-row"><span>근거 문서</span><span>industry-qa.html #8 · ideathon-qa.html #9</span></div>
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  </div><!-- /.cols -->
+
+  <div class="closing">
+    <h2>이 로드맵을 쓰는 법</h2>
+    <ul>
+      <li><b>P0 세 개를 먼저 끝내지 않은 채 P1~P3로 넘어가지 마세요.</b> 정확도·오탐·아동 얼굴
+        검증이 안 뚫린 상태로 확장성·비즈니스 얘기를 하면, 심사에서 "그래서 진단을 믿을 수 있냐"는
+        질문 한 방에 나머지 준비가 전부 무의미해집니다.</li>
+      <li><b>완료 기준은 "완벽"이 아니라 "실측치 확보"입니다.</b> 예를 들어 01번은 오탐률을 0%로
+        만드는 게 목표가 아니라, 표본을 키우고 그 결과를 정직하게 보고할 수 있는 상태를 목표로
+        합니다 — 이 프로젝트 전체가 지금까지 그렇게 움직여왔습니다.</li>
+      <li><b>P3는 "완결"이 아니라 "시도"가 기준입니다.</b> 지자체 계약이나 법률 자문 완료를
+        해커톤 기간에 끝낼 순 없습니다. 접촉했다는 기록 하나가 포지셔닝 문장을 실제 시도로
+        바꿔줍니다.</li>
+    </ul>
+    <p class="rule-note">출처: docs/qa.html · docs/industry-qa.html · docs/ideathon-qa.html ·
+      README.md("아직 없는 것") — 2026-09-03 기준, 세 문서의 "인정할 것" 항목을 실행 순서로 재구성</p>
+  </div>
+
+</div>

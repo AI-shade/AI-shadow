@@ -81,6 +81,9 @@ const heroInView = p => p.evaluate(() => {
   // scroll-behavior: smooth + 14화면 길이라 이동이 1.1초쯤 걸린다(직접 추적해 확인).
   // "두 번 연속 같은 위치"로 멈춤을 판단하면 이징 구간의 정체를 멈춤으로 오해하므로
   // 실측 시간보다 넉넉히 기다린 뒤에 잰다.
+  // restartBtn이 이제 확인 창(confirm)을 띄운다(UX 감사 지적 — 되돌릴 수 없는 초기화라 확인 없이는 위험).
+  // Playwright는 안 받아주면 confirm()이 자동으로 취소로 처리돼 클릭이 아무 효과가 없다.
+  p.once('dialog', (d) => d.accept());
   await p.evaluate(() => document.getElementById('restartBtn').click());
   await p.waitForTimeout(2000);
   const after = await p.evaluate(() => ({

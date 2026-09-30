@@ -35,7 +35,9 @@
   :root {
     /* 흰 배경 테마. 배경과 카드가 모두 흰색이라 면끼리 구분이 안 되므로,
        카드는 머리카락 굵기 테두리 + 옅은 그림자로, 보조 면(입력·리스트 행)은
-       차가운 연회색으로 나눈다. 대비비는 아래 주석의 실측값 기준. */
+       연회색으로 나눈다. 골드·테라코타가 둘 다 따뜻한 색인데 연회색만 차가운
+       회청색이면 브랜드색이 화면에 뜬 채 겉돌아 보인다 — 같은 온도의 따뜻한
+       회색으로 맞췄다. 대비비는 아래 주석의 실측값 기준. */
     --page: #ffffff;         /* 가장 바깥 바닥 */
     --surface: #ffffff;      /* 앱 본체 */
     --card: #ffffff;         /* 카드 */
@@ -43,20 +45,22 @@
        피드백을 받고 원래 무채색 검정으로 되돌림 — 그린은 골드 버튼 옆 포인트로만
        충분하다고 판단. */
     --card-dark: #1c1c1c;
-    --card-tan: #f5f6f8;     /* 보조 카드 */
-    --soft: #f5f6f8;         /* 흰 면 위 옅은 면 (입력·트랙·리스트 행) */
-    --soft-hover: #edeff2;
+    --card-tan: #f6f5f2;     /* 보조 카드 */
+    --soft: #f6f5f2;         /* 흰 면 위 옅은 면 (입력·트랙·리스트 행) */
+    --soft-hover: #efeeea;
     --ink: #1a1a1a;          /* 흰 배경 위 17.40:1 */
-    --muted: #5f6b76;        /* 흰 배경 5.45:1 · 연회색 면 5.04:1 */
+    --muted: #6b6459;        /* 흰 배경 5.85:1 · 연회색 면 5.36:1 */
     --on-dark: #f7f8fa;      /* 다크 카드 위 글씨 */
     --on-chip: #f7f8fa;      /* 어두운 배지 위 글씨 */
-    --line: #e8eaee;
-    --line-strong: #d6dae0;
+    --line: #e9e6e1;
+    --line-strong: #d8d3cc;
     /* 사용자가 준 색상 가이드(UNC Charlotte 스타일)의 골드로 교체. 실측 대비:
        위에 얹는 먹색 글씨 10.98:1(AA 통과, 기존 12.58:1과 큰 차 없음). */
     --accent: #f0cb00;
     --accent-hover: #d9b600;
-    --accent-2: #ff7a6b;     /* 코랄 — 위에 얹는 글씨는 먹색 6.84:1 */
+    /* 코랄(#ff7a6b)은 골드와 채도·명도가 맞먹어 둘이 서로 튀려고 싸웠다 —
+       같은 웜톤 계열이되 한 톤 가라앉은 테라코타로 내려서 골드에 자리를 내준다. */
+    --accent-2: #d97a4f;     /* 테라코타 — 위에 얹는 글씨는 먹색 5.67:1 */
 
     /* 하단 액션 바 + 가운데 원형 버튼 전용. 본문 골드(--accent)보다 연하다.
        "다음 동작"을 점수 막대·단계 표시에 쓰는 골드와 구분한다.
@@ -158,85 +162,18 @@
      정지점을 앞쪽(0~20%)에 몰아 두면 중심이 뭉치고, 뒤쪽은 길게 끌어 가장자리가
      선으로 보이지 않게 한다. */
 
-  /* 오른쪽 위 — 골드. 처음엔 완전히 오른쪽 위 구석에서 작게 시작하고(사용자 피드백),
-     스크롤을 내리면 아래 스크립트(ScrollTrigger)가 왼쪽 아래 연두 조명 쪽으로
-     옮겨서 겹치게 만든다. 크기는 예전 780px짜리보다 작게 줄였다. */
+  /* 오른쪽 위 — 은은한 골드 한 겹만. 예전엔 이 옆에 넓은 온기 둘레(.gb-warm)·왼쪽 아래
+     연두(.gb-aurora)·둘이 만나면 열리는 숨은 클로버(.gb-clover)까지 넷이 스크롤 따라
+     옮겨다녔는데, 겹겹이 뭉실한 빛이 오히려 "SaaS 랜딩 템플릿" 느낌을 준다는 지적(요청) —
+     숨은 클로버는 코드로 안 읽으면 있는지도 모른다. 구석에 가만히 있는 조명 하나로 줄인다. */
   .gb-core {
     width: 420px; height: 420px; right: -120px; top: -160px;
     background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(240, 180, 0, 0.72) 0%,
-      rgba(240, 195, 10, 0.52) 17%,
-      rgba(230, 205, 40, 0.30) 38%,
-      rgba(210, 210, 90, 0.13) 64%,
-      rgba(195, 213, 120, 0) 100%);
+      rgba(240, 180, 0, 0.60) 0%,
+      rgba(240, 195, 10, 0.40) 20%,
+      rgba(230, 205, 40, 0.20) 45%,
+      rgba(210, 210, 90, 0) 100%);
   }
-  /* 그 둘레의 넓고 옅은 온기 — 바깥쪽은 연두 쪽으로 더 기울인다 */
-  .gb-warm {
-    width: 620px; height: 500px; right: -200px; top: -260px;
-    background: radial-gradient(ellipse closest-side at 50% 50%,
-      rgba(240, 203, 0, 0.30) 0%, rgba(220, 210, 70, 0.14) 45%,
-      rgba(195, 213, 120, 0) 100%);
-  }
-  /* 왼쪽 아래 — 채도가 낮고 밝은 연두.
-     처음엔 진한 브랜드 그린이었고("너무 초록"), 다음엔 불투명도만 내렸다. 그건 틀린
-     방법이었다 — 색 자체는 그대로 진한데 옅게만 깔린 것이라, 짙은 부분에서는 여전히
-     초록으로 읽혔다. 색을 바꿨다.
-     목표를 숫자로 잡고 골랐다: 채도 35% 이하, 밝기 75% 이상.
-       예전 rgb(95,158,55)  = 색조 97°, 채도 48%, 밝기 42%
-       중간 rgb(150,195,105) = 색조 90°, 채도 43%, 밝기 59%   <- 불투명도만 내린 판
-       지금 rgb(200,219,183) = 색조 92°, 채도 33%, 밝기 79%
-     .glow-track > span에 mix-blend-mode: multiply가 걸려 있어 흰 배경에서는 이 색이
-     거의 그대로 화면 색이 된다 — 그래서 "보고 싶은 최종 색"을 그대로 적는다.
-     불투명도는 오히려 올렸다(0.36 -> 0.82). 색이 연해진 만큼 진하게 깔아야 보인다. */
-  .gb-aurora {
-    width: 900px; height: 820px; left: -250px; bottom: -300px;
-    background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(200, 219, 183, 0.82) 0%,
-      rgba(208, 223, 194, 0.58) 18%,
-      rgba(216, 228, 202, 0.33) 40%,
-      rgba(228, 234, 216, 0.12) 66%,
-      rgba(240, 242, 232, 0) 100%);
-  }
-  /* 두 빛이 합쳐지는 자리의 실루엣 — 네잎클로버 (요청).
-     골드가 스크롤을 따라 연두 쪽으로 내려와 겹치는 순간 드러난다. 평소에는 안 보인다.
-
-     왜 두 겹인가: 바깥(span)에 blur, 안쪽(b)에 mask를 나눠 건다. 한 요소에 둘 다 걸면
-     CSS는 filter를 mask보다 먼저 적용해서 "흐려진 것을 잎 모양으로 자르는" 셈이 되고,
-     가장자리가 칼같이 떨어져 빛이 아니라 스티커처럼 보인다. 나누면 잎 모양으로 자른
-     뒤 흐려지므로 윤곽이 부드럽게 번진다.
-
-     색은 골드×연두가 겹친 자리의 색(올리브 쪽)에 맞췄다 — 새로 튀는 색이 아니라
-     "두 빛이 만나서 생긴 색"으로 읽혀야 한다. mix-blend-mode: multiply는 부모의
-     .glow-track > span 규칙에서 이미 걸린다. */
-  /* 자리: 왼쪽 아래 구석이 아니라 화면 가운데 왼쪽이다. 구석에 두면 두 빛이 합쳐질
-     때쯤 그 자리가 이미 본문 카드에 덮여서 안 보인다(실측: 흰 카드가 y590부터 시작).
-     스크롤 35~45% 지점에서 배경이 실제로 보이는 띠가 y350~580이라 그 안에 앉힌다. */
-  .gb-clover {
-    width: 390px; height: 390px; left: 56px; top: 20%;
-    opacity: 0;                  /* 스크롤이 열어준다 */
-    /* 블러는 빛처럼 보이게 하는 최소한만. 세게 걸면 잎 네 개가 한 덩어리로 뭉쳐서
-       클로버로 안 읽힌다(실측으로 18px -> 11px). */
-    filter: blur(11px);
-    /* 부모 규칙의 --pulse 기반 opacity를 쓰지 않는다. 이 덩어리는 숨쉬는 대신
-       스크롤에만 반응해야 한다 — 둘이 겹치면 나타나는 타이밍이 흐려진다. */
-  }
-  .gb-clover > b {
-    position: absolute; inset: 0; display: block;
-    /* 가운데로 몰리는 그라디언트를 쓰면 잎 끝이 사라져서 모양이 안 읽힌다.
-       안쪽을 넓게 고르게 채우고(58%까지 평평하게) 바깥에서만 떨어뜨린다. */
-    background: radial-gradient(circle closest-side at 50% 45%,
-      rgba(148, 154, 76, 0.90) 0%,
-      rgba(154, 160, 84, 0.86) 40%,
-      rgba(166, 171, 98, 0.74) 58%,
-      rgba(190, 192, 132, 0.38) 82%,
-      rgba(214, 211, 172, 0) 100%);
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23fff'%3E%3Cpath d='M50,42 C50,58 48,70 43,80' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3Cg transform='translate(50,42)'%3E%3Cpath transform='rotate(-45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(-135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23fff'%3E%3Cpath d='M50,42 C50,58 48,70 43,80' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3Cg transform='translate(50,42)'%3E%3Cpath transform='rotate(-45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(45)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3Cpath transform='rotate(-135)' d='M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-position: center; mask-position: center;
-    -webkit-mask-size: contain; mask-size: contain;
-  }
-
   /* 덩어리 한가운데의 심지. 스크롤에 따라 이것만 진해졌다 흐려진다.
      덩어리 전체를 껐다 켜면 화면 전체가 깜빡이는 것처럼 보이므로,
      바깥 번짐은 그대로 두고 가운데만 숨을 쉬게 한다.
@@ -251,10 +188,6 @@
     background: radial-gradient(circle closest-side at 50% 50%,
       rgba(240, 180, 0, 0.50) 0%, rgba(230, 200, 30, 0.26) 42%, rgba(210, 210, 90, 0) 100%);
   }
-  .gb-aurora > i {
-    background: radial-gradient(circle closest-side at 50% 50%,
-      rgba(200, 219, 183, 0.46) 0%, rgba(216, 228, 202, 0.22) 42%, rgba(236, 240, 228, 0) 100%);
-  }
   /* 모션을 줄이는 설정이면 숨쉬기를 멈추고 중간값에 고정한다 */
   @media (prefers-reduced-motion: reduce) { .glow-track { --pulse: 0.7; } }
 
@@ -262,8 +195,17 @@
      장식이므로 클릭·읽기를 절대 방해하지 않는다(pointer-events:none, aria-hidden).
      카드보다 뒤 레이어라 지나갈 때 카드 뒤로 자연스럽게 가려진다. */
   .clover { position: absolute; pointer-events: none; overflow: visible; }
-  .cl-leaf { fill: #6aa84f; }
-  .cl-stem { fill: none; stroke: #6aa84f; stroke-width: 2.6; stroke-linecap: round; }
+  /* 채도 높은 풀색은 심각한 주제(아동 위험 진단) 옆에서 장난감처럼 들떠 보인다는
+     지적 — 가라앉은 세이지 톤으로 낮췄다. risk-low(#1f7a52, 청록 쪽)와 색상각을
+     45도 넘게 벌려서 "안전 등급"으로 오독되지 않게 했다. */
+  .cl-leaf { fill: #4f6b48; }
+  .cl-stem { fill: none; stroke: #4f6b48; stroke-width: 2.6; stroke-linecap: round; }
+  /* 팀이 시안으로 준 로고(회로 무늬 든 잎)의 느낌만 가져온다. 그 로고를 그대로
+     쓰면 래스터라 잎 하나만 떼는 지금 애니메이션을 못 살리고, 사이트 전체가
+     얇은 선 SVG 아이콘인데 그 로고만 셀셰이딩 픽셀아트라 튄다 — 그래서 잎
+     하나(뗀 잎 말고 고정된 잎)에만 작은 회로 자국을 얇은 선으로 얹었다. */
+  .cl-circuit { fill: none; stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .cl-pad { fill: rgba(255, 255, 255, 0.55); }
   .clover-hero {
     width: 76px; height: 76px; right: 5%; top: 6%; z-index: 0;
     opacity: 0.9;
@@ -272,14 +214,14 @@
   .clover-cta {
     position: static; width: 62px; height: 62px; margin: 0 auto 0.9rem; display: block;
   }
-  .clover-cta .cl-leaf { fill: #8fd46a; }
-  .clover-cta .cl-stem { stroke: #8fd46a; }
+  .clover-cta .cl-leaf { fill: #7a9a6e; }
+  .clover-cta .cl-stem { stroke: #7a9a6e; }
   /* 떠다니는 잎 — 화면에 고정해두고 스크롤에 따라 내려보낸다(스크립트가 y를 준다) */
   .clover-fly {
     position: fixed; right: 6%; top: 12vh; width: 30px; height: 26px;
     pointer-events: none; overflow: visible; z-index: 0; opacity: 0;
   }
-  .clover-fly .cl-leaf { fill: #6aa84f; }
+  .clover-fly .cl-leaf { fill: #4f6b48; }
   /* 여백이 없는 좁은 화면에선 떠다니는 잎이 글자를 덮는다 — 아예 숨기고
      클로버는 온전한 네잎으로 둔다(스크립트도 같은 기준으로 건너뛴다). */
   @media (max-width: 900px) {
@@ -288,10 +230,7 @@
   }
 
   @media (max-width: 900px) {
-    .gb-core   { width: 300px; height: 300px; right: -100px; top: -110px; }
-    .gb-warm   { width: 420px; height: 340px; right: -160px; top: -170px; }
-    .gb-clover { width: 210px; height: 210px; left: 6px; top: 34%; filter: blur(14px); }
-    .gb-aurora { width: 620px; height: 580px; left: -180px; bottom: -210px; }
+    .gb-core { width: 300px; height: 300px; right: -100px; top: -110px; }
   }
 
   /* 화면에 들어올 때 살짝 올라오며 나타난다.
@@ -757,8 +696,11 @@
   li.action-skel:nth-child(3) { width: 80%; }
 
   li.skel-li { display: block; list-style: none; height: 0.95rem; margin: 0.4rem 0; border-radius: 8px; }
-  /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김 */
-  p.evidence.skel { display: block; width: 90%; height: 1rem; margin: 0.3rem 0; }
+  /* locationEvidence/summaryText는 처음엔 내용이 비어있어 .skel만으로는 높이가 안 생김.
+     높이·여백은 실제 p.evidence(글자 0.92rem × 행간 1.75, margin 0.15rem 0 0)와 맞춘다 —
+     예전엔 1rem·0.3rem을 그냥 썼는데 실제 글보다 12px 낮아서 결과가 오면 스케줄 경고·
+     권장 조치 카드가 아래로 밀렸다(settle.js 실측). li.action-skel과 같은 원칙. */
+  p.evidence.skel { display: block; width: 90%; height: calc(0.92rem * 1.75); margin: 0.15rem 0 0; }
 
   /* ---- 종합 점수 게이지 카드 (시안 "Steps for Today") ----
      큰 수치·등급은 왼쪽, 반원 게이지는 오른쪽에 비대칭으로. 카드 자체는 .rcard-score가 그린다. */
@@ -849,6 +791,9 @@
      "JS가 죽어도 근거는 남는다"는 안전선이 깨진다. */
   .why-body[hidden] { display: block; }
   :root.fold-on .why-body[hidden] { display: none; }
+  /* 웹(넓은 화면)은 fold-on 자체를 안 켠다(아래 JS) — 근거가 이미 다 보이니 접었다 펴는
+     단추가 눌러도 아무 변화 없는 죽은 단추가 된다. 그래서 fold-on이 없으면 단추째 숨긴다. */
+  :root:not(.fold-on) .why-btn { display: none; }
   /* 오각형 — 값이 도착하면 형태가 부드럽게 자란다 */
   .radar-ring { fill: none; stroke: var(--line); stroke-width: 1; }
   .radar-spoke { stroke: var(--line); stroke-width: 1; }
@@ -1035,7 +980,7 @@
      상자를 옮기는 것이므로 move(사방 화살표)가 뜻도 맞고 모양도 깔끔하다. */
   .cover-handle {
     position: absolute; border: 2px solid var(--accent-2); border-radius: 6px;
-    background: rgba(255, 122, 107, 0.16); cursor: move; touch-action: none;
+    background: rgba(217, 122, 79, 0.16); cursor: move; touch-action: none;
   }
   .cover-handle::after {
     content: attr(data-label); position: absolute; left: 0; top: -1.35rem;
@@ -1148,13 +1093,13 @@
   .target-picker .t-del:hover { background: var(--card); color: var(--risk-high); }
   .target-picker li.hi label { background: var(--soft-hover); box-shadow: 0 0 0 1.5px var(--accent-2) inset; }
   /* 목록에서 짚은 항목이 사진 어디인지 보여준다 */
-  .cover-handle.hi { box-shadow: 0 0 0 3px var(--accent-2), 0 0 0 9px rgba(255, 122, 107, 0.28); }
+  .cover-handle.hi { box-shadow: 0 0 0 3px var(--accent-2), 0 0 0 9px rgba(217, 122, 79, 0.28); }
   /* 덮개 핸들이 없는 방식(흐림·AI 등)에서도 위치를 확인할 수 있어야 한다 —
      짚는 동안에만 잠깐 표시되는 테두리 */
   .cover-peek {
     position: absolute; pointer-events: none; border-radius: 6px;
     border: 2px solid var(--accent-2);
-    box-shadow: 0 0 0 6px rgba(255, 122, 107, 0.22);
+    box-shadow: 0 0 0 6px rgba(217, 122, 79, 0.22);
   }
   /* 추천 흐름 안내는 카드 폭에 꽉 차게 — 본문 62ch 제한을 받으면 왼쪽에만 붙어
      오른쪽이 휑하게 남는다 */
@@ -1462,9 +1407,33 @@
       margin-top: 0; border-top: none; padding-top: 0.2rem;
     }
     #screen-result > .rcard-detect { order: 3; grid-column: 1 / -1; }
+    /* 지도가 카드 안에 들어오면서 세로로 너무 길어졌다(사용자 지적) — 가로 전체를 주고
+       안을 왼쪽(점수·근거)·오른쪽(지도·역추적)으로 나눈다. 그러면 옆 칸(스케줄 경고)은
+       이 카드와 나란히 못 서고 자연히 그 아래로 내려간다(별도 규칙 필요 없음). */
+    /* 안쪽 분할 비율(0.9fr/1.1fr)과 간격(2.4rem)이 아래 줄(스케줄 경고·권장 조치, 1fr/1fr
+       + 1.1rem)과 달라서 카드마다 세로 분할선이 어긋나 보였다(사용자 지적, 스크린샷으로
+       확인) — 바깥 그리드와 같은 비율·간격으로 맞춰서 세로선이 아래 줄까지 이어지게 한다. */
+    #screen-result > .rcard-location {
+      order: 4; grid-column: 1 / -1;
+      display: grid; grid-template-columns: minmax(20rem, 1fr) minmax(22rem, 1fr);
+      column-gap: 1.1rem; align-items: start;
+    }
+    #screen-result > .rcard-location > .loc-left,
+    #screen-result > .rcard-location > .loc-right { display: flex; flex-direction: column; min-width: 0; }
+    /* 역방향 검색 칸은 두 칸 다 가로질러 — grid 자동배치가 한 줄에 안 들어가면
+       (loc-left·loc-right가 이미 그 줄의 두 칸을 채웠으니) 저절로 다음 줄로 내려간다. */
+    #screen-result > .rcard-location > .loc-web-check { grid-column: 1 / -1; }
     #screen-result > .result-section { order: 4; }
-    /* 캡션 카드는 마지막에 홀로 남아 옆이 비었다. 가로 전체를 주면 빈 반쪽이 없어진다. */
+    /* order:4 auto-flow 칸에 남는 건 스케줄 경고·권장 조치·종합 설명 셋(홀수)이라
+       종합 설명이 항상 혼자 남아 옆 칸이 통째로 빈다(사용자 지적) — 캡션 카드도
+       입력 없으면 혼자 남는 건 같다. 둘 다 가로 전체로 주면, 남는 auto-flow 칸은
+       스케줄·조치 둘(짝수)뿐이라 항상 나란히 채워지고 빈 반쪽이 안 생긴다. */
+    #screen-result > #summaryCard,
     #screen-result > .rcard-caption { order: 4; grid-column: 1 / -1; }
+    /* .evidence 공통 규칙의 76ch 줄길이 제한이 좁은 칸 기준이라, 종합 설명이 가로
+       전체로 넓어진 지금은 글이 카드 왼쪽 절반에만 몰리고 오른쪽이 비어 보인다
+       (사용자 지적). 이 카드만 풀어서 넓어진 만큼 글도 같이 채운다. */
+    #summaryText { max-width: none; }
     #screen-result > button,
     #screen-result > .app-actionbar > button,
     #screen-result > .disclaimer { order: 5; grid-column: 1 / -1; }
@@ -1741,7 +1710,7 @@
   .hero-visual { display: grid; gap: 0.8rem; }
   .hv-card {
     background: var(--card); border: 1px solid var(--line); border-radius: 20px;
-    padding: 1.1rem 1.2rem; box-shadow: var(--shadow-card); display: grid; gap: 0.55rem;
+    padding: 1.1rem 1.2rem; box-shadow: var(--shadow-card); display: grid; gap: 0.5rem;
   }
   .hv-1 { margin-right: 2.5rem; }
   .hv-2 { margin-left: 2.5rem; }
@@ -1886,7 +1855,7 @@
   .sp-tag.on { background: var(--accent); color: var(--ink); }
   .sp-box {
     position: absolute; left: 18%; bottom: 22%; width: 52%; height: 18%;
-    border-radius: 6px; border: 2px solid var(--accent-2); background: rgba(255, 122, 107, 0.16);
+    border-radius: 6px; border: 2px solid var(--accent-2); background: rgba(217, 122, 79, 0.16);
   }
   .sp-box.covered { border-color: transparent; background: var(--line-strong); }
   .sp-check {
@@ -2047,7 +2016,40 @@
      전부 깨뜨린 전례가 있다. 여기서는 "맞지 않는 것만" 숨긴다.
      :not()을 쓰는 이유: 보여야 할 요소의 display를 건드리지 않기 위해서다.
      display:revert로 되살리면 다른 규칙이 준 flex/grid가 날아간다. */
-  .app-tabbar, .app-bar { display: none; }
+  .app-tabbar, .app-bar, .app-home { display: none; }
+  /* 히어로+알약+메뉴를 묶는 구조용 껍데기 — 기본은 박스를 만들지 않는다(있으나 마나).
+     폰 홈 화면에서만 flex로 바뀌어 묶음 전체를 세로 가운데 정렬한다. */
+  .app-home-wrap { display: contents; }
+  .method-row, .sheet-backdrop, .sheet-close, .sheet-done { display: none; }
+  .factor-chips, .factor-backdrop, .factor-sheet, .map-backdrop, .map-sheet { display: none; }
+  /* 장소 지도 시트 — 내용 규칙은 폰·데스크톱이 같이 쓴다. 원은 "이 안 어딘가"다. 지도는 그림이라 끌거나
+     늘리지 못한다(핀을 찍지 않고, 거리 단위까지 들여다보지 못하게 한다). 단계 버튼이 원 크기를 바꾼다. */
+  .map-box {
+    height: min(30vh, 250px); min-height: 190px; margin-bottom: 0.7rem; border-radius: 12px;
+    overflow: hidden; background: var(--soft); isolation: isolate;
+  }
+  .map-box.fail {
+    display: flex; align-items: center; justify-content: center; padding: 0 1rem;
+    text-align: center; font-size: 0.85rem; color: var(--muted);
+  }
+  .map-steps { display: grid; gap: 0.35rem; margin-bottom: 0.6rem; }
+  .map-step {
+    display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.55rem 0.75rem;
+    border: 0; border-radius: 12px; background: var(--soft); color: var(--ink);
+    font: inherit; font-size: 0.8rem; font-weight: 600; text-align: left; cursor: pointer;
+  }
+  .map-step b { flex: none; font-weight: 800; }
+  .map-step.on { background: var(--risk-high-soft); color: var(--risk-high); }
+  .map-why { margin: 0 0 0.5rem; min-height: 2.9em; font-size: 0.88rem; line-height: 1.55; word-break: keep-all; }
+  .map-note { margin: 0 0 1rem; font-size: 0.72rem; line-height: 1.5; color: var(--muted); }
+  /* 데스크톱: 예전엔 「📍 지도로 보기」를 눌러야 가운데 대화상자가 떴다. 사용자 요청으로
+     누를 필요 없이 카드 안에 바로 떠 있게 바꿔서, 이제 이 카드는 #mapSheet 대화상자를
+     안 쓴다(그건 폰 전용 하단 시트로만 남는다 — 아래 폰 블록에서 계속 쓴다). */
+  .loc-map-hint { margin: 0.9rem 0 0.7rem; font-size: 0.78rem; color: var(--muted); }
+  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+    /* 카드 안에 바로 있으니 폰 크기(30vh/250px)보다 조금 더 크게 — 여유 있는 데스크톱 공간을 쓴다. */
+    #mapBoxInline { height: min(34vh, 320px); }
+  }
   /* 감싸기만 하고 배치에는 안 끼어든다 — 데스크톱에서는 버튼 둘이 예전처럼
      카드의 직계 자식으로 놓인다. 폰에서만 진짜 상자가 된다.
      결과 화면에만 거는 이유: 보정 화면에서는 이미 상자였던 .correct-actions에
@@ -2101,8 +2103,16 @@
     .app-tab {
       display: block; text-align: center; text-decoration: none;
       font-size: 0.63rem; font-weight: 700; color: var(--muted); line-height: 1.5;
+      border-radius: 10px; padding: 0.15rem 0;
     }
     .app-tab[aria-current="true"] { color: var(--ink); }
+    /* 탭·알약·아이콘 메뉴는 손끝으로 두 번 눌러 확대되거나(더블탭 줌) 눌렀을 때
+       회색 플래시(기본 탭 하이라이트)가 뜨는 걸 막는다 — 대신 밑의 :active로
+       직접 누른 느낌을 준다. 데스크톱 리사이즈로 볼 때를 위한 :hover도 같이. */
+    .app-tab, .app-fab, .app-pill, .app-menu-item {
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .app-tab:hover, .app-tab:active { background: var(--soft); }
     .app-tab-ic { display: block; }
     /* margin auto가 없으면 아이콘이 칸 왼쪽에 붙는다. .mono-icon이 display:block이라
        부모의 text-align:center가 안 먹기 때문이다 — 글자만 가운데 오고 아이콘은
@@ -2114,6 +2124,7 @@
       background: var(--accent-bar); color: var(--ink); font-size: 1.45rem; font-weight: 800;
       box-shadow: 0 5px 14px rgba(244, 217, 92, .55); cursor: pointer; font-family: inherit;
     }
+    .app-fab:hover, .app-fab:active { background: var(--accent-hover); }
 
     /* 탭바가 본문 끝을 가리지 않게. 브리프 원안은 5.4rem(탭바 높이 4.1rem + 여유)이지만
        Task 3에서 .app-actionbar를 position:sticky로 화면 아래 bottom:4.1rem에 붙일 예정이라
@@ -2602,6 +2613,310 @@
     :root[data-tab="문답"]     [data-tab-of]:not([data-tab-of="문답"]) { display: none; }
   }
 
+  /* ── 배민식 정돈 (폰 폭 전용) ───────────────────────────────────────────
+     배달의민족 앱의 화면 구조를 참고했다(공개 자료 분석, 2026-09-20). 옮긴 것은
+     **구조와 패턴**뿐이다:
+       · 카드마다 테두리·모서리·그림자를 두르는 대신, 화면 끝까지 닿는 흰 면을
+         8px 연회색 띠로 나눈다
+       · 목록은 행 + 가는 구분선 (방식 고르기는 오른쪽 라디오 원)
+       · 단계는 이름 붙은 밑줄 탭 (진단 · 보정 · 검증)
+       · 하단 버튼은 알약이 아니라 큰 둥근 사각형
+       · 홈 맨 위는 제목 바 + 알약 모양 입력 진입점
+     옮기지 않은 것: 로고·캐릭터·민트색·전용 서체·카피·아이콘. 색은 이 파일의 토큰만 쓴다.
+     진짜 배민 앱으로 착각할 만큼 닮게 만들지 않는다.
+     위 「어플 배치」 블록과 같은 조건이고 뒤에 있어서, 같은 무게의 규칙은 이쪽이 이긴다.
+     데스크톱은 건드리지 않는다. */
+  @media (max-width: 560px),
+         (pointer: coarse) and (hover: none) and (max-height: 560px) {
+    /* 바닥은 연회색, 그 위에 흰 면. 앱 본체 판(main)의 테두리·모서리·그림자는 걷는다. */
+    body { background: var(--soft); }
+    main {
+      width: 100%; max-width: none; margin: 0; padding: 0 0 0.5rem;
+      background: transparent; border: 0; border-radius: 0; box-shadow: none;
+    }
+    main > .card { border: 0; border-radius: 0; box-shadow: none; margin: 0 0 8px; }
+    #screen-result, #screen-correct { background: var(--soft); }
+    /* 검증은 카드로 나뉘지 않은 한 흐름이라 연회색 바탕이면 글자가 뜬다 — 흰 면으로 둔다 */
+    #screen-verify { background: var(--card); }
+
+    /* 앱바 — 제목은 왼쪽, 단계는 이름 붙은 밑줄 탭. 탭 밑줄이 바 아래 선 위에 얹힌다. */
+    .app-bar {
+      align-items: flex-end; margin-bottom: 8px; padding: 0.85rem 1rem 0;
+      background: var(--card);
+    }
+    .app-bar-title { padding-bottom: 0.55rem; }
+    .app-bar-steps { margin-left: auto; display: flex; gap: 0.95rem; align-items: flex-end; }
+    .app-bar-steps span {
+      font-size: 0.74rem; font-weight: 700; color: var(--muted); line-height: 1.2;
+      padding: 0 0 0.55rem; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .app-bar-steps span.on { color: var(--ink); border-bottom-color: var(--ink); }
+    /* 탭 페이지의 제목 바 — 스크롤해도 위에 붙는다 */
+    .app-bar--tab {
+      position: sticky; top: 0; z-index: 400; margin: 0 0 8px;
+      padding: 0.85rem 1rem 0;
+    }
+    .app-bar--tab .app-bar-title { padding-bottom: 0.75rem; }
+    .app-home { display: block; background: var(--card); margin-bottom: 8px; }
+    .app-home > .app-bar--tab { position: static; margin: 0; border-bottom: 0; }
+    .app-pill {
+      display: flex; align-items: center; gap: 0.6rem;
+      width: calc(100% - 2rem); margin: 0 1rem 0.9rem; padding: 0.78rem 0.9rem;
+      border: 0; border-radius: 999px; background: var(--soft); color: var(--muted);
+      font: inherit; font-size: 0.9rem; font-weight: 600; text-align: left; cursor: pointer;
+    }
+    .app-pill:hover, .app-pill:active { background: var(--soft-hover); }
+    .app-pill .mono-icon { width: 1.15rem; height: 1.15rem; flex: none; color: var(--ink); }
+    .app-pill-go {
+      margin-left: auto; width: 1.6rem; height: 1.6rem; border-radius: 50%; flex: none;
+      display: grid; place-items: center; background: var(--accent-bar); color: var(--ink);
+      font-size: 1rem; font-weight: 800; line-height: 1;
+    }
+    /* 홈 맨 위에 알약이 있어서, 히어로의 큰 버튼 둘은 같은 말을 두 번 하게 된다 */
+    .hero .hero-actions { display: none; }
+    /* 히어로는 화면 한 장을 채우던 것이라 위쪽이 텅 비어 알약 밑에 큰 구멍이 났다.
+       내용 높이만큼만 차지하는 흰 면으로 줄인다. */
+    header.hero {
+      min-height: 0; padding: 1.1rem 0 1.5rem; background: var(--card); margin-bottom: 8px;
+    }
+    /* 과거글 — 큰 회색 카드 대신 흰 면 */
+    #pattern-check.pattern-entry { padding: 0; background: var(--card); }
+    #pattern-check .section-inner { padding: 0; }
+    #pattern-check .pe-card {
+      background: transparent; border: 0; border-radius: 0; box-shadow: none;
+      padding: 1.1rem 1rem 1.4rem;
+    }
+
+    /* 진단 결과·보정 — 카드를 화면 끝까지 늘려 흰 면으로 만든다.
+       화면 안쪽 여백이 1rem(위 어플 배치 블록)이라 음수 여백 -1rem이 정확히 맞는다. */
+    #screen-result > .rcard, #screen-result > .result-section,
+    #screen-correct > .correct-left, #screen-correct > .correct-right {
+      margin-left: -1rem; margin-right: -1rem; margin-bottom: 8px;
+      border: 0; border-radius: 0; box-shadow: none; background: var(--card);
+      padding: 0.9rem 1rem;
+    }
+    /* 점수 카드는 껍데기일 뿐 — 안의 두 면(오각형, 점수 내역)이 각자 흰 면이 된다 */
+    #screen-result > .rcard-score { background: transparent; padding: 0; margin-bottom: 0; }
+    #screen-result .gauge-wrap {
+      background: var(--card); border: 0; border-radius: 0; margin: 0 0 8px;
+      padding: 0.9rem 1rem 1rem;
+    }
+    #screen-result #scoreBreakdown {
+      border: 0; border-radius: 0; margin: 0 0 8px; padding: 0.9rem 1rem;
+    }
+    /* 점수 내역 — 행 + 구분선 */
+    #screen-result .sb-list { gap: 0; }
+    #screen-result .sb-list li { padding: 0.7rem 0; border-top: 1px solid var(--line); }
+    #screen-result .sb-list li:first-child { border-top: 0; padding-top: 0.2rem; }
+    #screen-result > #actionCard { padding: 0.9rem 1rem; }
+
+    /* 보정 방식은 2열 타일을 그대로 둔다. 행 목록(배민식)으로 바꿔봤더니 6개가 세로로 서서
+       보정 화면이 1060px이 됐다 — 「한 화면에 들어간다」(844px) 기준을 깬다. 이 앱은
+       "한 화면에 글이 너무 많다"는 제보에서 출발해서 그 기준을 일부러 지킨다(test/phone-fit.js).
+       배민도 목록이 스크롤로 이어지지만, 여기서는 한 화면이 우선이다. */
+
+    /* 홈 아이콘 메뉴 — 배민 홈의 카테고리 아이콘처럼. 원래 네 칸(사진 진단·과거글·알아보기·문답)이었는데
+       바로 위 알약("사진을 올려 진단해요")이 이미 "사진 진단"이라 한 화면에서 같은 문구·같은 행동을
+       두 번 팔았다(UX 감사 지적) — 그 칸을 빼고 세 칸만 남긴다. */
+    .app-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; padding: 0 1rem 1rem; }
+    .app-menu-item {
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      padding: 0.75rem 0.15rem 0.6rem; border-radius: 16px; background: var(--soft);
+      color: var(--ink); text-decoration: none; font-size: 0.7rem; font-weight: 700; text-align: center;
+      letter-spacing: -0.02em; line-height: 1.25;
+    }
+    .app-menu-item:hover, .app-menu-item:active { background: var(--soft-hover); }
+    .app-menu-item .mono-icon { width: 1.6rem; height: 1.6rem; }
+
+    /* 신뢰 포인트 미리보기 — 아이콘 메뉴는 목적지 3개를 나란히 보여주려고 세로형
+       (아이콘 위·글자 아래)인데, 이건 짧은 문장이라 가로형이 자연스럽다. 누르면
+       app-menu-item과 똑같이 그 탭으로 간다(같은 클래스라 위 스크립트가 그대로 처리
+       — data-menu 클릭 핸들러를 다시 만들지 않는다). 모양만 여기서 바꾼다. */
+    .app-trust { display: flex; flex-direction: column; gap: 0.5rem; padding: 0 1rem 1rem; }
+    .app-trust .app-trust-row {
+      flex-direction: row; align-items: center; gap: 0.7rem;
+      padding: 0.7rem 0.85rem; text-align: left;
+    }
+    .app-trust-row .mono-icon { width: 1.3rem; height: 1.3rem; flex: none; }
+    .app-trust-row span:not(.app-trust-go) { font-size: 0.82rem; }
+    .app-trust-go { margin-left: auto; flex: none; color: var(--muted); font-size: 1.1rem; line-height: 1; }
+
+    /* 보정 방식 시트 — .correct-left 전체가 화면 아래에서 올라온다(배민의 옵션 시트처럼).
+       미리보기는 그대로 화면에 남고, 방식은 한 줄 요약(.method-row)으로만 보인다.
+       fixed라 탭바(600)·액션바(500)보다 위(900)에 둔다. 닫혀 있을 때 visibility:hidden이라
+       화면 밖 요소가 탭 순서에 끼지 않는다. */
+    .method-row {
+      order: 2; display: flex; align-items: center; gap: 0.6rem;
+      width: calc(100% + 2rem); margin: 0 -1rem 8px; padding: 0.95rem 1rem;
+      border: 0; background: var(--card); font: inherit; text-align: left; cursor: pointer;
+    }
+    .method-row-label { font-size: 0.82rem; font-weight: 700; color: var(--muted); }
+    .method-row-value { margin-left: auto; font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+    .method-row-go { color: var(--muted); font-size: 1.25rem; line-height: 1; }
+    #screen-correct > .correct-left {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; margin: 0;
+      max-height: 70vh; overflow-y: auto; overscroll-behavior: contain;
+      border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(16, 24, 40, 0.18);
+      padding: 1.3rem 1rem calc(1rem + env(safe-area-inset-bottom, 0));
+      transform: translateY(105%); visibility: hidden;
+      transition: transform 0.24s ease, visibility 0s linear 0.24s;
+    }
+    #screen-correct.sheet-open > .correct-left {
+      transform: none; visibility: visible; transition: transform 0.24s ease;
+    }
+    #screen-correct > .correct-left::before {   /* 잡는 손잡이 */
+      content: ""; position: absolute; top: 0.5rem; left: 50%; width: 2.4rem; height: 4px;
+      margin-left: -1.2rem; border-radius: 99px; background: var(--line-strong);
+    }
+    .sheet-close {
+      display: block; position: absolute; top: 0.6rem; right: 0.7rem; z-index: 2;
+      width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: var(--soft);
+      color: var(--ink); font-size: 0.9rem; font-weight: 800; cursor: pointer;
+    }
+    .sheet-done { display: block; position: sticky; bottom: 0; width: 100%; margin-top: 0.8rem; border-radius: 12px; }
+    .sheet-backdrop {
+      display: block; position: fixed; inset: 0; z-index: 850;
+      background: rgba(28, 22, 16, 0.45); opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    #screen-correct.sheet-open .sheet-backdrop { opacity: 1; pointer-events: auto; }
+    /* 시트가 열려 있으면 뒤 화면은 스크롤하지 않는다 */
+    body:has(#screen-correct.sheet-open) { overflow: hidden; }
+
+    /* ── 진단 탭: 홈(허브) ↔ 도구 화면 ─────────────────────────────────────
+       홈은 스크롤 없이 한 화면이다 — 제목 바 · 알약 · 아이콘 메뉴 · 짧은 소개까지만.
+       사진을 고르면(또는 진단이 시작되면) 도구 화면(main#tool)으로 넘어가고, 거기서
+       ‹ 로 홈에 돌아온다. 홈에서는 폼·자가 점검이 안 보인다(자가 점검은 알아보기 탭으로 갔다).
+       data-view는 아래 스크립트가 세운다. DOM은 옮기지 않고 보이고 숨기기만 한다. */
+    :root[data-tab="진단"][data-view="home"] main#tool,
+    :root[data-tab="진단"][data-view="home"] .scroll-cue { display: none; }
+    :root[data-tab="진단"][data-view="tool"] .app-home,
+    :root[data-tab="진단"][data-view="tool"] header.hero,
+    :root[data-tab="진단"][data-view="tool"] .scroll-cue { display: none; }
+    /* 홈이 한 화면이려면 본문 아래 여백(9rem — 하단 고정 액션 바 자리)이 필요 없다.
+       탭바(4.1rem)만 비운다 — 4.2rem. 4.6rem이면 375x667에서 2px 넘쳤다. */
+    :root[data-tab="진단"][data-view="home"] body { padding-bottom: 4.2rem; }
+    /* 히어로는 위에 자기 크기만큼만 있고, 검색창(app-home)은 그 바로 아래에 붙는다.
+       빈 공간을 CSS로 위아래 나눠 억지로 메우는 대신(그래도 결국 "빈 자리"였다),
+       app-home 맨 아래에 신뢰 포인트 두 줄(.app-trust)을 실제 내용으로 채웠다 —
+       #why(알아보기 탭) 카드 제목을 그대로 가져왔다(새 문구를 지어내지 않는다).
+       남는 공간은 이제 그 밑, 탭바 바로 위에만 약간 남는다. */
+    :root[data-tab="진단"][data-view="home"] .app-home-wrap {
+      display: flex; flex-direction: column; min-height: calc(100svh - 4.6rem);
+    }
+    :root[data-tab="진단"][data-view="home"] header.hero { margin-bottom: 0; }
+    :root[data-tab="진단"][data-view="home"] .app-home {
+      flex: 1; display: flex; flex-direction: column;
+    }
+    /* 도구 화면의 폼 상단 바 — 폼이 보일 때만(다른 화면은 자기 앱바가 있다) */
+    .app-bar--form { display: none; }
+    main#tool:has(> #screen-form:not([style*="none"])) > .app-bar--form { display: flex; }
+    /* 화면 안(음수 여백으로 좌우를 채우는 .app-bar)이 아니라 main 바로 아래에 있으므로
+       좌우 여백을 0으로 되돌린다. 안 그러면 양옆으로 1rem씩 삐져나가 오른쪽 탭이 잘린다. */
+    .app-bar--form { position: sticky; top: 0; z-index: 400; margin: 0 0 8px; }
+    .app-back {
+      align-self: center; width: 2.1rem; height: 2.1rem; margin: 0 -0.3rem 0 -0.5rem;
+      border: 0; border-radius: 50%; background: transparent; color: var(--ink);
+      font-size: 1.7rem; line-height: 1; padding: 0 0 0.15rem; cursor: pointer;
+    }
+    .app-bar--form .app-bar-title { padding-bottom: 0.55rem; }
+
+    /* 칩 줄이 생기면서 사진+오각형+칩이 하단 고정 바 위에 다 안 들어와 칩이 반쯤 가렸다(실측:
+       844px 화면에서 칩 아래쪽 약 30px가 바 뒤로 들어감). 사진 높이 상한을 24vh→20vh,
+       오각형 폭 상한을 206→190px로 줄여 메운다 — 사진은 여전히 화면의 주인공이다. */
+    #screen-result .risk-photo-wrap img { max-height: 20vh; }
+    #screen-result .gauge-ring { max-width: 190px; }
+
+    /* 위험 항목 칩 + 시트 — 오각형 아래 칩 한 줄(가로 스크롤). 누르면 그 항목이 시트로 올라온다.
+       점수 높은 항목이 앞에 온다. 만점은 위험색, 0점은 흐리게(막대와 같은 규칙). */
+    .factor-chips {
+      display: flex; gap: 0.4rem; width: 100%; overflow-x: auto; padding: 0.75rem 0 0.1rem;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .factor-chips::-webkit-scrollbar { display: none; }
+    .factor-chips[hidden] { display: none; }
+    .factor-chip, .map-chip {
+      flex: none; display: inline-flex; align-items: baseline; gap: 0.35rem;
+      padding: 0.45rem 0.75rem; border: 0; border-radius: 999px; background: var(--soft);
+      color: var(--ink); font: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .factor-chip b { font-weight: 800; font-variant-numeric: tabular-nums; }
+    .map-chip { background: var(--ink); color: var(--card); }
+    .factor-chip.max { background: var(--risk-high-soft); color: var(--risk-high); }
+    .factor-chip.zero { color: var(--muted); }
+    .factor-backdrop, .map-backdrop {
+      display: block; position: fixed; inset: 0; z-index: 850;
+      background: rgba(28, 22, 16, 0.45); opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    #screen-result.factor-open .factor-backdrop,
+    #screen-result.map-open .map-backdrop { opacity: 1; pointer-events: auto; }
+    .factor-sheet, .map-sheet {
+      display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+      max-height: 70vh; overflow-y: auto; overscroll-behavior: contain;
+      background: var(--card); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 30px rgba(16, 24, 40, 0.18);
+      padding: 1.5rem 1rem calc(1rem + env(safe-area-inset-bottom, 0));
+      transform: translateY(105%); visibility: hidden;
+      transition: transform 0.24s ease, visibility 0s linear 0.24s;
+    }
+    #screen-result.factor-open .factor-sheet,
+    #screen-result.map-open .map-sheet { transform: none; visibility: visible; transition: transform 0.24s ease; }
+    .factor-sheet::before, .map-sheet::before {
+      content: ""; position: absolute; top: 0.5rem; left: 50%; width: 2.4rem; height: 4px;
+      margin-left: -1.2rem; border-radius: 99px; background: var(--line-strong);
+    }
+    .fs-eyebrow { margin: 0 0 0.25rem; font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+    .fs-title { margin: 0 2.6rem 0.6rem 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
+    .fs-score { margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--muted); }
+    .fs-score b { margin-right: 0.15rem; font-size: 1.7rem; font-weight: 800; color: var(--ink); }
+    .fs-bar { height: 6px; margin-bottom: 1rem; border-radius: 99px; background: var(--soft); overflow: hidden; }
+    .fs-bar span { display: block; width: 0; height: 100%; border-radius: 99px; background: var(--risk-mid); }
+    .fs-bar span.max { background: var(--risk-high); }
+    .fs-bar span.zero { background: var(--line-strong); }
+    .fs-why { margin: 0 0 1rem; font-size: 0.92rem; line-height: 1.65; word-break: keep-all; }
+    .factor-sheet .sheet-done, .map-sheet .sheet-done { margin-top: 0; }
+    body:has(#screen-result.factor-open), body:has(#screen-result.map-open) { overflow: hidden; }
+
+    /* 장소 지도 시트 — 원은 "이 안 어딘가"다. 지도는 그림이라 끌거나 늘리지 못한다(핀을 찍지 않고,
+       거리 단위까지 들여다보지 못하게 한다). 단계 버튼이 원 크기를 바꾼다. */
+    .map-sheet { max-height: 84vh; }
+
+    /* 하단 버튼 — 알약이 아니라 큰 둥근 사각형 */
+    #screen-result > .app-actionbar > .primary,
+    #screen-correct > .app-actionbar > .primary { border-radius: 12px; }
+
+    /* 알아보기·문답 — 카드 하나짜리 섹션도 화면 끝까지 닿는 흰 면으로 */
+    #features .section-inner, #why .section-inner,
+    #faq .section-inner, #steps .section-inner {
+      border: 0; border-radius: 0; box-shadow: none; padding: 0.9rem 1rem;
+    }
+    #features.pinned-section, #why.pinned-section, #faq.pinned-section,
+    #steps.steps-section { padding: 0; margin: 0 0 8px; background: var(--card); }
+  }
+
+  /* 소개 문단(.hero-sub)은 홈 화면에서 접는다 — 제목과 개인정보 안내 문구(.hero-note)는
+     남긴다. 원래는 아주 낮은 폰(360x640)의 넘침을 막으려고 max-height 700px 이하에서만
+     껐는데, 844px처럼 안 넘치는 폰에서도 첫 화면 절반이 설명 글로 채워진다는 제보(실사용)를
+     받아 높이 조건을 뺐다 — 이제 폰 폭이면 키와 무관하게 접는다. */
+  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+    :root[data-tab="진단"][data-view="home"] header.hero .hero-sub { display: none; }
+  }
+
+  /* 신뢰 포인트(.app-trust) 두 줄은 375x667까지는 한 화면에 들어간다(실측 664px/667px,
+     여유 없이 딱 맞음). 360x640에서만 18px 넘친다 — 그 밑에서만 뺀다. 640과 667 사이라면
+     아무 값이나 되지만, 실측 두 값 사이에 넉넉히 걸치도록 660으로 잡았다. */
+  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 660px) {
+    :root[data-tab="진단"][data-view="home"] .app-trust { display: none; }
+  }
+
+  /* 진단 결과의 항목 칩이 하단 고정 바에 가리지 않게, 낮은 폰에서는 사진과 오각형을 더 줄인다.
+     실측: 360x740에서 20vh/190px로는 칩이 48px 가렸다. 아주 낮은 폰(667 이하)은 그래도 조금
+     스크롤해야 칩이 다 보인다 — 알려진 한계. */
+  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 800px) {
+    #screen-result .risk-photo-wrap img { max-height: 14vh; }
+    #screen-result .gauge-ring { max-width: 168px; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .app-tabbar, .app-fab { transition: none; }
   }
@@ -2652,12 +2967,12 @@
 </script>
 
 <div class="page-glow" aria-hidden="true">
+  <!-- 디자인 감사 지적: 조명 4겹(골드·둘레 온기·연두·숨은 클로버 실루엣)이 스크롤을 따라
+       옮겨가며 합쳐지는 건 공들여 만들었지만, 겹겹이 뭉실한 빛 덩어리 자체가 "SaaS 랜딩
+       템플릿" 느낌을 준다는 지적(요청) — 숨은 클로버는 코드로 읽지 않으면 존재도 모른다.
+       구석의 은은한 골드 한 겹만 남긴다. -->
   <div class="glow-track">
-    <span class="gb-warm"></span>
     <span class="gb-core"><i></i></span>
-    <!-- 두 빛이 합쳐지는 자리의 클로버 실루엣. 스크롤이 열어준다(아래 스크립트). -->
-    <span class="gb-clover"><b></b></span>
-    <span class="gb-aurora"><i></i></span>
   </div>
 </div>
 <div class="page-grain" aria-hidden="true"></div>
@@ -2703,7 +3018,13 @@
   </div>
 </nav>
 
-<!-- 랜딩 히어로 — 진단 탭 것이다(「지금 진단하기」가 여기 있다). -->
+<!-- 랜딩 히어로 — 진단 탭 것이다(「지금 진단하기」가 여기 있다).
+     폰에서는 이걸 먼저 보여주고 알약형 진입점(app-home)은 그 아래에 둔다 — 사용자 요청으로 순서를 바꿈.
+     이 둘을 app-home-wrap으로 묶는 이유: 검색창(app-pill)이 화면 중간에 오려면 히어로 혼자
+     남는 공간을 다 채우는 게 아니라 "히어로+알약+메뉴" 묶음 전체를 세로 가운데 정렬해야 한다.
+     데스크톱·기본값은 display:contents라 박스를 만들지 않는다(있으나 마나) — 순서를 바꿀 때처럼
+     이번에도 폰 전용 미디어 쿼리 안에서만 실제 레이아웃 효과를 낸다. -->
+<div class="app-home-wrap">
 <header class="hero" id="top" data-tab-of="진단">
   <div class="hero-inner">
     <div class="hero-copy">
@@ -2720,6 +3041,8 @@
       <p class="hero-note">계정 연동도, 비밀번호도 필요 없어요. 진단할 때는 얼굴을 가려서 보내고,
         원본이 필요한 기능(AI 보정 · 인터넷 이미지 검색)은 누를 때마다 먼저 물어봅니다.</p>
     </div>
+    <!-- 오각형 스크린샷, 실제 부품으로 채운 카드까지 시도해봤는데 사용자가 그냥
+         맨 처음(가짜 라벨+회색 막대) 그대로 되돌려달라고 했다 — 그대로 되돌린다. -->
     <div class="hero-visual" aria-hidden="true">
       <div class="hv-card hv-1"><span class="hv-tag risk">위치노출 82점</span><span class="hv-line"></span><span class="hv-line short"></span></div>
       <div class="hv-card hv-2"><span class="hv-tag ok">교복 감지</span><span class="hv-line"></span></div>
@@ -2732,19 +3055,62 @@
   <svg class="clover clover-hero" viewBox="0 0 100 100" aria-hidden="true">
     <path class="cl-stem" d="M50,42 C50,58 48,70 43,80" />
     <g transform="translate(50,42)">
-      <path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
-      <path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
-      <path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+      <path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
+      <g transform="rotate(135)">
+        <path class="cl-leaf" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
+        <path class="cl-circuit" d="M0,-6 L0,-13 L-6,-13 L-6,-18 M0,-13 L6,-13 L6,-17 M0,-13 L0,-19" />
+        <rect class="cl-pad" x="-7" y="-19" width="2" height="2" />
+        <rect class="cl-pad" x="5" y="-18" width="2" height="2" />
+        <rect class="cl-pad" x="-1" y="-20" width="2" height="2" />
+      </g>
+      <path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
       <!-- 떨어져 나가는 잎(오른쪽 위) — 오른쪽 가장자리로 흘러내리므로 그쪽 잎을 쓴다 -->
-      <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+      <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
     </g>
   </svg>
 </header>
 
+<!-- 폰 전용 진단 탭 머리 — 제목 바 + 알약 모양 진입점. 배민 앱 홈의 「상단 바 + 검색창」 구조를
+     참고했다(검색창 자리에 "사진 올리기"). 누르면 가운데 ＋ 버튼과 똑같이 사진 고르기를 연다.
+     데스크톱에서는 CSS가 숨긴다. 히어로 다음(사용자 요청으로 순서를 바꿈). -->
+<div class="app-home" data-tab-of="진단">
+  <div class="app-bar app-bar--tab" aria-hidden="true"><span class="app-bar-title">아이SHADOW</span></div>
+  <button type="button" class="app-pill" id="appPill">
+    <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="3"/><path d="M10 20 L14 15 L18 19 L22 12"/></svg>
+    <span>사진을 올려 진단해요</span>
+    <span class="app-pill-go" aria-hidden="true">＋</span>
+  </button>
+  <!-- 배민 홈의 아이콘 메뉴처럼 기능을 한눈에 고른다. 하단 탭과 같은 곳으로 간다. -->
+  <nav class="app-menu" aria-label="기능 바로가기">
+    <a class="app-menu-item" href="#pattern-check" data-menu="과거글">
+      <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg>
+      <span>과거글 패턴</span></a>
+    <a class="app-menu-item" href="#steps" data-menu="알아보기">
+      <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 L28 16 L16 28 L4 16 Z"/></svg>
+      <span>알아보기</span></a>
+    <a class="app-menu-item" href="#faq" data-menu="문답">
+      <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12"/><path d="M12.5 12.5a3.5 3.5 0 1 1 3.5 3.5v2.5"/><circle cx="16" cy="23" r="1"/></svg>
+      <span>문답</span></a>
+  </nav>
+  <!-- 신뢰 포인트 미리보기. #why(알아보기 탭) 카드 제목을 그대로 가져왔다 —
+       근거 없이 "안전해요"만 반복하는 문구를 새로 짓지 않기 위해서다. -->
+  <div class="app-trust">
+    <a class="app-menu-item app-trust-row" href="#why" data-menu="알아보기">
+      <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16C4 16 9 8 16 8C23 8 28 16 28 16C28 16 23 24 16 24C9 24 4 16 4 16Z"/><circle cx="16" cy="16" r="3"/><path d="M6 6L26 26"/></svg>
+      <span>얼굴은 가려서 보냅니다</span>
+      <span class="app-trust-go" aria-hidden="true">›</span></a>
+    <a class="app-menu-item app-trust-row" href="#why" data-menu="알아보기">
+      <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4L27 8V15C27 22 22 27 16 29C10 27 5 22 5 15V8L16 4Z"/></svg>
+      <span>부탁이 아니라 차단</span>
+      <span class="app-trust-go" aria-hidden="true">›</span></a>
+  </div>
+</div>
+</div><!-- /.app-home-wrap -->
+
 <!-- 떨어진 잎. .hero가 overflow:hidden이라 그 안에 두면 히어로 밖으로 못 나간다 —
      화면에 고정(fixed)해두고 스크롤 진행도에 따라 내려보낸다. -->
 <svg class="clover-fly" id="cloverFlyLeaf" viewBox="-20 -32 40 34" aria-hidden="true">
-  <path class="cl-leaf" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+  <path class="cl-leaf" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
 </svg>
 
 
@@ -2763,7 +3129,8 @@
      apartment.jpg·playground.jpg는 원래부터 한국 맥락(서울 아파트 스카이라인)이거나
      국적이 드러나는 글자가 없어 그대로 둠. -->
 <!-- 「올리기 전에 잠깐」 자가점검 — 진단 탭 것이다. 표시가 없으면 모든 탭에 샌다. -->
-<section class="self-check" id="selfcheck" data-tab-of="진단">
+<div class="app-bar app-bar--tab" data-tab-of="알아보기" aria-hidden="true"><span class="app-bar-title">알아보기</span></div>
+<section class="self-check" id="selfcheck" data-tab-of="알아보기">
   <div class="section-inner">
     <div class="sc-card">
       <span class="sc-eyebrow">올리기 전에 잠깐</span>
@@ -2778,12 +3145,12 @@
         </header>
         <div class="ig-photo">
           <img src="public/self-check/school-sign.jpg" alt="" loading="lazy" decoding="async" width="440" height="440" />
-          <span class="ig-badge">학교명 노출</span>
+          <span class="ig-badge">기관명 노출</span>
         </div>
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 128개</p>
-        <p class="ig-cap"><strong>mom_haewon</strong> 오늘 첫 등교 완료! 🎒✨</p>
-        <p class="ig-note">간판에 학교 이름이 그대로 나와 있어요</p>
+        <p class="ig-cap"><strong>mom_haewon</strong> 오늘 첫 등원! 우리 아들 씩씩하다 🎒</p>
+        <p class="ig-note">간판과 가슴 명찰에 어린이집 이름이 그대로 나와 있어요</p>
         <p class="ig-time">2시간 전</p>
       </article>
       <article class="ig-card">
@@ -2798,8 +3165,8 @@
         </div>
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 94개</p>
-        <p class="ig-cap"><strong>seoul_mom22</strong> 이사 온 우리 동네, 뷰가 예술이에요 🏢</p>
-        <p class="ig-note">동·호수까지 특정될 수 있는 배경이에요</p>
+        <p class="ig-cap"><strong>seoul_mom22</strong> 하원길에 달려오는 우리 딸 🥰</p>
+        <p class="ig-note">뒤 건물에 아파트 이름과 동이 적혀 있어요</p>
         <p class="ig-time">5시간 전</p>
       </article>
       <article class="ig-card">
@@ -2814,8 +3181,8 @@
         </div>
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 211개</p>
-        <p class="ig-cap"><strong>daddy_junho</strong> 새 차 뽑았어요 🚗💨</p>
-        <p class="ig-note">번호판이 선명하게 보여요</p>
+        <p class="ig-cap"><strong>daddy_junho</strong> 오랜만에 온 가족 나들이 🌳</p>
+        <p class="ig-note">차 번호판과 공원 이름이 같이 찍혔어요</p>
         <p class="ig-time">1일 전</p>
       </article>
       <article class="ig-card">
@@ -2830,15 +3197,15 @@
         </div>
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 76개</p>
-        <p class="ig-cap"><strong>playdate_with_us</strong> 매주 화요일 4시, 이 놀이터에서 놀아요 🛝</p>
-        <p class="ig-note">요일·시간이 반복되면 위치가 예측돼요</p>
+        <p class="ig-cap"><strong>playdate_with_us</strong> 매주 화요일 4시, 태권도 끝나고 한 컷 🥋</p>
+        <p class="ig-note">도장 이름에 요일·시간까지 겹치면 다음에 어디 있을지 예측돼요</p>
         <p class="ig-time">3시간 전</p>
       </article>
         </div>
         <button type="button" class="sc-nav prev" id="scPrev" aria-label="이전 예시"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
         <button type="button" class="sc-nav next" id="scNext" aria-label="다음 예시"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
-      <p class="sc-credit">사진: Wikimedia Commons (CC BY / CC BY-SA / CC0) · 계정명·게시물은 예시입니다</p>
+      <p class="sc-credit">사진·계정명·게시물 모두 예시예요 — 실제 아이 사진이 아니라 AI로 만든 이미지입니다</p>
       <p class="sc-foot">눈으로 다 확인하기 어렵다면, 사진 한 장이면 저희가 대신 확인해드려요.</p>
       <a class="primary sc-cta" href="#tool">사진으로 확인하기</a>
     </div>
@@ -2873,6 +3240,13 @@
   </div><!-- /.app-hero -->
 
   <!-- 화면 1: 업로드 -->
+  <!-- 폰 전용: 사진 폼 화면의 상단 바. 홈(허브)으로 돌아가는 ‹ 가 있다.
+       폼이 보일 때만 CSS가 보여준다(:has). 데스크톱에서는 안 보인다. -->
+  <div class="app-bar app-bar--form">
+    <button type="button" class="app-back" id="appBack" aria-label="홈으로 돌아가기">‹</button>
+    <span class="app-bar-title">사진 진단</span>
+    <span class="app-bar-steps" aria-hidden="true"><span class="on">진단</span><span>보정</span><span>검증</span></span>
+  </div>
   <div class="card" id="screen-form">
     <!-- 왼쪽 칸: 위는 올릴 사진, 아래는 과거 게시물 스크린샷.
          스크린샷 칸이 체크리스트 맨 끝에 붙어 있을 때는 "이건 뭐지?" 하는 자리였다.
@@ -2960,7 +3334,7 @@
          단계 표시가 있다. 단계 점은 시안의 ●○○ 그대로. -->
     <div class="app-bar" aria-hidden="true">
       <span class="app-bar-title">진단 결과</span>
-      <span class="app-bar-dots"><i class="on"></i><i></i><i></i></span>
+      <span class="app-bar-steps"><span class="on">진단</span><span>보정</span><span>검증</span></span>
     </div>
     <div class="rcard rcard-score">
       <h3 class="rcard-title">종합 위험도</h3>
@@ -2995,6 +3369,10 @@
         <!-- 폰 히어로의 결론 한 줄. 종합설명을 그대로 쓴다 — 새 API 항목을 만들지
              않는다. 데스크톱에서는 아래 「종합 설명」 카드가 같은 말을 하므로 숨긴다. -->
         <p class="hero-line" id="riskLine"></p>
+        <!-- 폰 전용: 위험 항목 칩. 누르면 그 항목의 점수·근거가 하단 시트로 올라온다.
+             점수 내역 목록(#scoreBreakdown)을 펼치면 화면이 길어지므로, 칩 한 줄 + 시트로 대신한다.
+             칩은 아래 #sbList 행에서 JS가 만든다(행이 없으면 숨는다). 데스크톱에서는 CSS가 숨긴다. -->
+        <div class="factor-chips" id="factorChips" role="group" aria-label="위험 항목별로 자세히 보기" hidden></div>
       </div>
       <!-- 왜 이 점수인지 — 항목 점수의 합이 곧 종합 점수다 -->
       <div class="score-breakdown" id="scoreBreakdown" style="display:none;">
@@ -3039,19 +3417,38 @@
     <section class="result-section rcard-location">
       <!-- 왼쪽 내역의 "간판·주소 노출"과 이름이 겹치면 같은 것으로 오해한다.
            이쪽은 사진 한 장으로 아이가 있는 곳을 얼마나 좁힐 수 있는지를 본다. -->
-      <h3>장소 특정 가능성</h3>
-      <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
-      <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
-      <p class="evidence" id="locationEvidence"></p>
-      <!-- 점수만 있으면 "그래서 어떻게 알아낸다는 건데"가 남는다.
-           이미 감지한 것들로 좁혀지는 순서를 보여준다. 새로 호출하지 않는다. -->
-      <p class="chain-head">이렇게 좁혀집니다</p>
-      <ol class="loc-chain" id="locChain"></ol>
+      <!-- 세로로 너무 길어져서(점수+사슬+지도+역추적 확인이 한 줄로 쌓임) 데스크톱에서는
+           둘로 나눈다 — 왼쪽 점수·근거, 오른쪽 지도·역추적. 사용자 요청. 폰은 이 카드
+           자체가 숨어 있어서(위 주석) 이 나눔은 폰에 영향이 없다. -->
+      <div class="loc-left">
+        <h3>장소 특정 가능성</h3>
+        <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
+        <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
+        <p class="evidence" id="locationEvidence"></p>
+        <!-- 점수만 있으면 "그래서 어떻게 알아낸다는 건데"가 남는다.
+             이미 감지한 것들로 좁혀지는 순서를 보여준다. 새로 호출하지 않는다. -->
+        <p class="chain-head">이렇게 좁혀집니다</p>
+        <ol class="loc-chain" id="locChain"></ol>
+      </div>
+      <div class="loc-right">
+        <!-- 예전엔 눌러야 열리는 대화상자였다 — 사용자 요청으로 누를 필요 없이 진단하자마자
+             카드 안에 바로 떠 있게 바꿨다(사진은 안 보내고, 카카오 장소 검색만 자동으로 부른다). -->
+        <p class="loc-map-hint">사진 속 글자·파일 좌표로 어디까지 좁혀지는지 반경으로 보여줘요</p>
+        <div class="map-box" id="mapBoxInline" role="img" aria-label="지도"></div>
+        <div class="map-steps" id="mapStepsInline" role="group" aria-label="단서를 더할수록 좁혀지는 범위"></div>
+        <p class="map-why" id="mapWhyInline"></p>
+        <p class="map-note">원은 “이 안 어딘가”라는 뜻이고, 정확한 위치는 표시하지 않아요.
+          사진은 보내지 않고, 사진 속 장소 글자만 카카오 장소 검색으로 보내요. 지도 그림은 OpenStreetMap에서 받아요.</p>
+      </div>
 
       <!-- 위 사슬은 Claude가 사진 속 "글자"를 읽어서 판단한 것. 이건 결이 다르다 —
            사진(배경) 자체가 인터넷에 이미 있는 이미지와 일치하는지 역방향 이미지
            검색으로 본다. 자동으로 돌지 않는다 — 버튼을 눌러야만 호출(비용·무료
-           한도 때문에 사용자가 원할 때만). -->
+           한도 때문에 사용자가 원할 때만).
+           .loc-right 안에 있었는데(오른쪽 칸 너비만큼만 그려지는 점선) 왼쪽 목록에는
+           맞대는 선이 없어 어중간해 보였다(사용자 지적) — 같은 칸의 형제로 빼서
+           두 칸을 다 가로지르는 하나의 선으로 그린다(desktop 전용 CSS가 grid-column:
+           1/-1을 준다. 폰 폭에서는 그냥 다음 블록으로 이어질 뿐 모양은 그대로다). -->
       <div class="loc-web-check" id="locWebCheck">
         <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
         <p class="loc-web-hint">한 번 누르면 확실한 것부터 차례로 봐요 — ① 사진 파일에 박힌 좌표(브라우저 안에서만 확인)
@@ -3101,6 +3498,33 @@
       <button class="primary" id="goCorrectBtn">보정 방식 선택하기 →</button>
       <button class="secondary" id="skipCorrectBtn">보정 없이 마치기</button>
     </div>
+
+    <!-- 폰 전용: 위험 항목 시트. 칩을 누르면 올라온다. 내용은 그 항목 행(#sbList li)에서 읽는다. -->
+    <div class="factor-backdrop" id="factorBackdrop"></div>
+    <div class="factor-sheet" id="factorSheet">
+      <button type="button" class="sheet-close" aria-label="닫기">✕</button>
+      <p class="fs-eyebrow">위험 항목</p>
+      <h3 class="fs-title" id="fsTitle"></h3>
+      <p class="fs-score" id="fsScore"></p>
+      <div class="fs-bar"><span id="fsBar"></span></div>
+      <p class="fs-why" id="fsWhy"></p>
+      <button type="button" class="primary sheet-done">확인</button>
+    </div>
+
+    <!-- 폰 전용: 장소 지도 시트(목업). 사진으로 장소가 어디까지 좁혀지는지를 반경 원으로 보여준다.
+         좌표·단계는 예시 값이고 실제 분석과 연결돼 있지 않다. 지도(Leaflet)는 처음 열 때만 받는다. -->
+    <div class="map-backdrop" id="mapBackdrop"></div>
+    <div class="map-sheet" id="mapSheet">
+      <button type="button" class="sheet-close" aria-label="닫기">✕</button>
+      <p class="fs-eyebrow">장소 특정</p>
+      <h3 class="fs-title">이 사진으로 여기까지 좁혀져요</h3>
+      <div class="map-box" id="mapBox" role="img" aria-label="지도"></div>
+      <div class="map-steps" id="mapSteps" role="group" aria-label="단서를 더할수록 좁혀지는 범위"></div>
+      <p class="map-why" id="mapWhy"></p>
+      <p class="map-note">원은 “이 안 어딘가”라는 뜻이고, 정확한 위치는 표시하지 않아요.
+        사진은 보내지 않고, 사진 속 장소 글자만 카카오 장소 검색으로 보내요. 지도 그림은 OpenStreetMap에서 받아요.</p>
+      <button type="button" class="primary sheet-done">확인</button>
+    </div>
   </div>
 
   <!-- 화면 4: 처리 방식 추천 + 미리보기 -->
@@ -3109,9 +3533,11 @@
          단계 표시가 있다. 단계 점은 시안의 ●○○ 그대로. -->
     <div class="app-bar" aria-hidden="true">
       <span class="app-bar-title">보정</span>
-      <span class="app-bar-dots"><i></i><i class="on"></i><i></i></span>
+      <span class="app-bar-steps"><span>진단</span><span class="on">보정</span><span>검증</span></span>
     </div>
     <div class="correct-left">
+    <!-- 폰 전용: 이 칸 전체가 하단 시트가 된다(배민의 옵션 시트처럼). 데스크톱에서는 CSS가 숨긴다. -->
+    <button type="button" class="sheet-close" aria-label="닫기">✕</button>
     <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.6rem; max-width:22ch; color:var(--ink);">
       어떻게 보정할지 골라주세요
     </h3>
@@ -3120,7 +3546,7 @@
     <div class="blur-strength" id="fillStyle" style="display:none;">
       <span class="bs-label">덮는 방식</span>
       <div class="bs-options" role="group" aria-label="덮는 방식">
-        <button type="button" class="fs-btn selected" data-fill="auto">자동</button>
+        <button type="button" class="fs-btn selected" data-fill="auto" title="기관 이름은 «어린이집»처럼 일반 이름으로 바꿔 쓰고, 나머지는 주변 배경에 맞춰 덮어요">자동</button>
         <button type="button" class="fs-btn" data-fill="color">주변색</button>
         <button type="button" class="fs-btn" data-fill="mosaic">모자이크</button>
       </div>
@@ -3159,7 +3585,7 @@
         <span class="bs-label">옷 색</span>
         <div class="bs-options" role="group" aria-label="옷 색">
           <button type="button" class="cw-btn" data-cw="keep" title="색은 그대로 두고 아래에서 고른 마크 처리만 한다">색 안 바꾸기</button>
-          <button type="button" class="cw-btn selected" data-cw="brown" title="상의 오트밀 · 트림 다크브라운">오트밀 &amp; 브라운</button>
+          <button type="button" class="cw-btn selected" data-cw="brown" title="상의 웜 토프 · 트림 다크브라운">토프 &amp; 브라운</button>
           <button type="button" class="cw-btn" data-cw="navy" title="상의 연하늘 · 트림 네이비">스카이 &amp; 네이비</button>
           <button type="button" class="cw-btn" data-cw="gray" title="상의 웜그레이 · 트림 차콜">그레이 &amp; 차콜</button>
           <button type="button" class="cw-btn" data-cw="green" title="상의 크림 · 트림 딥그린">크림 &amp; 포레스트</button>
@@ -3180,8 +3606,13 @@
 
     <div class="target-picker" id="targetPicker" style="display:none;">
       <p class="target-picker-head">찾은 것이 맞는지 확인해주세요
-        <span class="hint">체크한 것만 처리해요 · 내용이 다르면 눌러서 고치고, 아예 틀린 건 빼주세요</span></p>
+        <span class="hint">체크한 것만 처리해요 · 내용이 다르면 눌러서 고치고, 아예 틀린 건 빼주세요 · 놓친 게 있으면 추가해주세요</span></p>
       <ul id="targetList"></ul>
+      <!-- 예전엔 찾은 것을 빼기만 할 수 있었다 — AI가 놓친 것(예: 배경의 학원 간판)은
+           신고할 길이 없었다(AGENTS.md 알려진 구멍 1번, 놓침이 더 나쁜 실패인데 구조가
+           거꾸로였다). 빈 상자를 하나 만들어 사진 위로 끌어다 맞추게 한다 — 자동 감지된
+           것과 똑같이 체크·고치기·빼기·크기조절이 다 되게(별도 코드 없이 같은 목록에 얹는다). -->
+      <button type="button" class="ghost-link" id="addMissedBtn">+ 놓친 곳 추가</button>
       <!-- AI 방식은 체크를 고칠 때마다 다시 부르면 요금이 나가고 원본이 또 나간다.
            체크는 체크만 하고, 다시 만드는 건 여기서 직접 누른다. -->
       <div class="target-redo" id="targetRedo" style="display:none;">
@@ -3197,7 +3628,7 @@
       </button>
       <button class="method-card" data-method="sticker">
         <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="10" rx="2"/><path d="M4 6 h24 M4 26 h24"/></svg> 자연스럽게 덮기 <span class="m-badge" id="badge-sticker" style="display:none;">1순위</span></div>
-        <div class="m-reason" id="reason-sticker">글자 자리를 주변 배경색으로 칠해요. 평평한 간판에서는 불이 꺼진 것처럼 보여 거의 티가 나지 않아요. 배경에 무늬가 있으면 모자이크로 처리해요.</div>
+        <div class="m-reason" id="reason-sticker">햇살어린이집 같은 기관 이름은 «어린이집»처럼 <strong>일반 이름으로 바꿔 써요</strong> — 덮은 자국이 남지 않아요. 전화번호 같은 그 밖의 글자는 주변 배경에 맞춰 덮고, 주변색·모자이크를 직접 고를 수도 있어요.</div>
       </button>
       <!-- 원본을 외부로 보내는 두 방식(AI 옷 바꾸기·AI 배경 교체)을 나란히 묶는다.
            사용자 피드백: 예전엔 격자에서 대각선으로 떨어져 있어 같은 종류(⚠ 원본 전송)라는
@@ -3233,6 +3664,7 @@
 
 
 
+    <button type="button" class="primary sheet-done">이 방식으로 선택</button>
     </div><!-- /.correct-left -->
 
     <div class="correct-right">
@@ -3281,6 +3713,15 @@
 
     <button class="secondary" id="downloadResultBtn" style="margin-top:0.4rem;">⬇ 처리된 사진 다운로드</button>
     </div><!-- /.correct-right -->
+
+    <!-- 폰 전용: 지금 고른 보정 방식을 한 줄로 보여주고, 누르면 방식 시트가 올라온다.
+         방식 여섯을 세로로 세우면 보정 화면이 1060px이 돼서 한 화면 기준(844px)을 깬다. -->
+    <button type="button" class="method-row" id="methodRow" aria-haspopup="dialog" aria-expanded="false">
+      <span class="method-row-label">보정 방식</span>
+      <span class="method-row-value" id="methodRowValue">배경 흐림</span>
+      <span class="method-row-go" aria-hidden="true">›</span>
+    </button>
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
 
     <!-- 이미 상자였으므로 감싸지 않고 클래스만 얹는다. 폰에서 화면 아래에
          고정되고, 데스크톱에서는 .correct-actions 그대로다. -->
@@ -3335,7 +3776,7 @@
          단계 표시가 있다. 단계 점은 시안의 ●○○ 그대로. -->
     <div class="app-bar" aria-hidden="true">
       <span class="app-bar-title">검증</span>
-      <span class="app-bar-dots"><i></i><i></i><i class="on"></i></span>
+      <span class="app-bar-steps"><span>진단</span><span>보정</span><span class="on">검증</span></span>
     </div>
     <div class="verify-stamp-wrap">
       <div class="verify-stamp" id="verifyStamp"><span class="s-icon">✓</span><span class="s-text">검증완료</span></div>
@@ -3399,6 +3840,7 @@
      동작하도록 돼 있었으니, 입구만 따로 만들면 된다.
      사진 진단 도구(#tool) 바로 다음 자리에 둔다 — 사용자 피드백: 처음엔 예시 캐러셀과
      본 도구 사이에 있어서 본 진단으로 가는 흐름을 가로막는 느낌이었다. -->
+<div class="app-bar app-bar--tab" data-tab-of="과거글" aria-hidden="true"><span class="app-bar-title">과거글</span></div>
 <section class="site-section pattern-entry" id="pattern-check" data-tab-of="과거글">
   <div class="section-inner">
     <div class="sc-card pe-card">
@@ -3574,6 +4016,7 @@
   </div>
 </section>
 
+<div class="app-bar app-bar--tab" data-tab-of="문답" aria-hidden="true"><span class="app-bar-title">문답</span></div>
 <section class="site-section pinned-section" id="faq" data-tab-of="문답">
   <div class="pin-track" data-pin="5" data-pin-accumulate="1">
   <div class="pin-stage">
@@ -3602,10 +4045,16 @@
     <svg class="clover clover-cta" viewBox="0 0 100 100" aria-hidden="true">
       <path class="cl-stem" d="M50,42 C50,58 48,70 43,80" />
       <g transform="translate(50,42)">
-        <path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
-        <path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
-        <path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
-        <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" />
+        <path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
+        <g transform="rotate(135)">
+          <path class="cl-leaf" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
+          <path class="cl-circuit" d="M0,-6 L0,-13 L-6,-13 L-6,-18 M0,-13 L6,-13 L6,-17 M0,-13 L0,-19" />
+          <rect class="cl-pad" x="-7" y="-19" width="2" height="2" />
+          <rect class="cl-pad" x="5" y="-18" width="2" height="2" />
+          <rect class="cl-pad" x="-1" y="-20" width="2" height="2" />
+        </g>
+        <path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
+        <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
       </g>
     </svg>
     <h2>올리기 전에 30초만 써보세요</h2>
@@ -3626,7 +4075,7 @@
     <div class="foot-cols">
       <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#pattern-check">패턴만 검사</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
       <div><h4>지원</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
-      <div><h4>제작·배포</h4><ul><li class="foot-team">Team 네잎클로드<svg class="clover-inline" viewBox="-32 -32 64 64" aria-hidden="true"><path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-26 -11,-30 -6,-27 C-3,-25 -1,-22 0,-18 C1,-22 3,-25 6,-27 C11,-30 18,-26 18,-19 C18,-10 10,-2 0,0 Z" /></svg></li><li>김민석</li><li>남근오</li><li>김현미</li><li>최윤서</li><li>이영우</li></ul></div>
+      <div><h4>제작·배포</h4><ul><li class="foot-team">Team 네잎클로드<svg class="clover-inline" viewBox="-32 -32 64 64" aria-hidden="true"><path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /></svg></li><li>김민석</li><li>남근오</li><li>김현미</li><li>최윤서</li><li>이영우</li></ul></div>
       <div><h4>사용 기술</h4><ul><li>Claude Vision</li><li>face-api.js</li><li>Tesseract.js</li><li>fal.ai FLUX</li></ul></div>
     </div>
   </div>
@@ -3735,61 +4184,11 @@
     track.style.setProperty('--pulse', current.toFixed(3));
   })();
 
-  // 시간 기반으로 임의의 자리를 오가는 "반딧불이" 움직임을 시도했는데, 뭉실한
-  // 빛 덩어리라 자리가 바뀌는 게 눈에 잘 안 들어온다는 제보를 받았다(움직임 자체는
-  // transform 값으로 실측 확인됨 — 그저 체감이 안 됨). 시간에 맡기는 대신 "스크롤을
-  // 내리면 골드 조명이 왼쪽 아래 연두 조명 쪽으로 옮겨간다"는 훨씬 뚜렷한 동작으로
-  // 바꿨다 — 사용자가 직접 스크롤을 움직이는 동안 눈으로 원인과 결과를 바로
-  // 연결할 수 있다. ScrollTrigger의 scrub로 스크롤 위치에 정확히 붙인다(시간 애니메이션이
-  // 아니라 스크롤 자체가 진행률이라 되감기도 그대로 된다).
-  // 연두 조명(.gb-aurora)은 그 자리에서 숨쉬듯 계속 흔들리게 남겨둔다.
-  (function () {
-    if (!window.gsap || !window.ScrollTrigger) return;
-    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    gsap.registerPlugin(ScrollTrigger);
-
-    var hero = document.querySelector('.hero');
-    var core = document.querySelector('.gb-core');
-    var warm = document.querySelector('.gb-warm');
-    if (!hero || !core || !warm) return;
-
-    // 연두 조명(.gb-aurora) 쪽으로 옮겨가는 이동량. 두 조명의 자리(CSS의 left/bottom)
-    // 차이로 대략 잡았다 — 정확히 겹치지 않아도 된다, 겹치는 느낌만 내면 충분하다.
-    // 이제 오른쪽 위 구석에서 시작하므로(사용자 피드백) 왼쪽 아래까지 가로질러야 한다 —
-    // 화면 폭에 따라 정확한 값은 다르지만(고정 px라 완벽히 일치하진 않는다), 장식용
-    // 배경이라 대략 겹치는 느낌만 내면 충분하다. 화면이 넓을수록 갈 길이 머니 살짝
-    // 더 옮기게 폭에 비례한 값을 더한다.
-    // 가장자리만 스치게 두면 겹친 자리의 새 색(mix-blend-mode: multiply)이 거의 안
-    // 보인다(실측 확인). 골드가 연두 덩어리 "중심 가까이"까지 들어와야 두 빛이 다
-    // 진한 지점에서 만나 색이 확실히 섞인다.
-    var travelX = -Math.min(1250, Math.max(850, window.innerWidth * 0.75));
-    // y를 700에서 430으로 줄였다. 끝까지 내려가면 두 빛이 겹치는 자리가 화면 아래
-    // 구석(y 750 근처)이 되는데, 그때쯤 그 자리는 본문 카드에 덮여서 합쳐지는 것이
-    // 보이지 않는다(실측: 흰 카드가 y590부터 시작). 겹침을 화면 가운데로 끌어올린다.
-    gsap.to([core, warm], {
-      x: travelX, y: 430, ease: 'none',
-      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
-    });
-
-    gsap.to('.gb-aurora', {
-      x: 60, y: -40, duration: 10, ease: 'sine.inOut', yoyo: true, repeat: -1,
-    });
-
-    // 두 빛이 합쳐지는 자리의 클로버 실루엣(요청). 골드가 내려오는 것과 같은 구간에
-    // 붙이되 뒤쪽 절반에서만 열린다 — 아직 멀리 있을 때 떠 있으면 "합쳐져서 생긴 것"으로
-    // 안 읽힌다. 그래서 시작을 'top top'이 아니라 히어로 중간으로 잡는다.
-    var clover = document.querySelector('.gb-clover');
-    if (clover) {
-      // 골드가 내려오는 것과 같은 구간에 걸치되, 후반에서 진해지게 한다(power2.in).
-      // 'center top'에서 시작하게 해봤더니 히어로가 다 지나간 뒤에 열려서 배경이 이미
-      // 본문에 덮여 안 보였다 — 합쳐지는 과정이 보여야 "합쳐져서 생긴 것"으로 읽힌다.
-      gsap.fromTo(clover, { opacity: 0, scale: 0.8 }, {
-        opacity: 1, scale: 1, ease: 'power2.in', transformOrigin: '50% 45%',
-        // 히어로 절반에서 완성된다. 끝까지 끌면 그때는 배경이 본문에 덮여 안 보인다.
-        scrollTrigger: { trigger: hero, start: 'top top', end: 'center top', scrub: true },
-      });
-    }
-  })();
+  // 예전엔 여기서 골드 조명이 스크롤을 따라 왼쪽 아래로 옮겨가며 연두 조명(.gb-aurora)과
+  // 겹치고, 그 겹침 자리에 숨은 클로버 실루엣(.gb-clover)이 드러났다. 겹겹이 뭉실한
+  // 조명이 오히려 "SaaS 랜딩 템플릿" 느낌을 준다는 지적(요청)으로 골드 한 겹만 남기면서
+  // — 옮겨갈 상대(.gb-warm/.gb-aurora)도 열어줄 클로버(.gb-clover)도 없어져 이 블록
+  // 전체가 필요 없어졌다.
 
   /* 네잎클로버 — 잎 하나가 떨어져 페이지를 따라 내려가고, 맨 아래 CTA에서 다시 붙는다.
      (팀 이름 "네잎클로드"에서 온 장식. 꽃말로 네잎=행운, 세잎=행복이라 잎이 하나
@@ -3923,7 +4322,7 @@
   })();
 
   /* 히어로 — 스크롤에 따라 오른쪽 카드 석 장이 서로 다른 속도로 어긋난다.
-     개별 요소만 transform으로 옮기는 것이라 페이지의 sticky와 부딪히지 않는다
+     개별 요소만 transform으로 옮기는 것이라 페이지의 sticky와 부딫히지 않는다
      (페이지 전체를 미는 ScrollSmoother와 다른 점이 이것이다).
      900px 아래에서는 카드가 아예 감춰져 있으므로 걸지 않는다. */
   (function () {
@@ -4433,6 +4832,302 @@
       return (claudeWords || []).filter(function (h) {
         return h && h.text && !isAlreadyLocated(h, locatedWords);
       });
+    }
+
+    // ===== Google Vision(TEXT_DETECTION) 기반 정밀 위치 탐지 =====
+    // Tesseract 힌트 방식(cropRegionForHint 등, 위 참고)은 PSM·이진화 임계값을
+    // 아무리 튜닝해도 인식 자체가 자주 틀린다 — Google Vision은 전용 OCR 엔진이라
+    // 내용·좌표를 한 번에 정확히 준다. 이걸 1순위로 쓰고, 실패하거나(키 미설정 등)
+    // 매칭 안 되는 힌트만 기존 Tesseract 경로로 폴백한다(runFaceshieldProtect 같은
+    // 이 프로젝트의 다른 폴백들과 같은 정신 — 기능이 끊기지 않게).
+    var TEXT_DETECT_BACKEND_URL = '/api/text-detect';
+
+    // 서버가 준 픽셀 좌표(x0,y0,x1,y1)를 다른 위치 정보들과 같은 퍼센트 좌표로 바꾼다
+    function visionWordsToPct(words, W, H) {
+      return (words || []).map(function (w) {
+        return {
+          text: w.text,
+          xPct: (w.x0 + w.x1) / 2 / W * 100,
+          yPct: (w.y0 + w.y1) / 2 / H * 100,
+          wPct: (w.x1 - w.x0) / W * 100,
+          hPct: (w.y1 - w.y0) / H * 100,
+          aspect: W / H, // 가로·세로 퍼센트를 같은 자로 재려고(이웃 판정용)
+        };
+      });
+    }
+
+    // 화면 비율과 상관없이 재려고 세로(H)를 1로 하는 자로 바꾼다
+    function visionUnit(v) {
+      var asp = v.aspect || 1;
+      return {
+        l: (v.xPct - v.wPct / 2) / 100 * asp, r: (v.xPct + v.wPct / 2) / 100 * asp,
+        cy: v.yPct / 100, h: v.hPct / 100,
+      };
+    }
+    // 같은 줄에 붙어 있는 조각인가.
+    //  · 세로 중심이 **작은 쪽** 글자 높이의 0.6배 안 — 큰 쪽 기준으로 재면 큰 간판 글자(높이 154)와 그 바로 밑
+    //    작은 줄(높이 40)이 한 줄로 묶인다(푸른하늘서점 사진: "푸른하늘푸른책하늘서점서점").
+    //  · 두 글자 높이가 2.2배 넘게 다르면 다른 줄 — 같은 줄의 글자는 크기가 비슷하다.
+    //  · 가로 틈은 글자 높이의 1.2배 이내.
+    function visionAdjacent(p, q) {
+      var up = visionUnit(p), uq = visionUnit(q);
+      var hMin = Math.min(up.h, uq.h), hMax = Math.max(up.h, uq.h);
+      var gap = Math.max(0, Math.max(up.l, uq.l) - Math.min(up.r, uq.r));
+      return hMax <= hMin * 2.2 && Math.abs(up.cy - uq.cy) <= hMin * 0.6 && gap <= hMax * 1.2;
+    }
+
+    // Google Vision이 준 조각들을 **줄 단위로 묶어 바로 보정 대상으로** 만든다.
+    // 예전에는 Tesseract 전체 스캔을 먼저 돌려 그 결과를 대상으로 삼았는데, 한글 간판 사진에서는
+    // "| Pureun Haneul Bookstore 1 해"·"A 푸른) 책하늘서점" 같은 깨진 줄에 화면 절반 폭의 상자가
+    // 붙어서, 글자는 못 읽고 아이 얼굴까지 덮는 대상이 됐다(푸른하늘서점 사진). Vision은 조각마다
+    // 정확한 글자와 좌표를 주므로 같은 줄의 붙은 조각을 이어 붙이기만 하면 된다.
+    //  · 줄 높이가 사진 높이의 1% 미만이면 뺀다 — 사람이 읽을 수 없는 글자라 노출 위험이 아니다
+    //    (2000x1092 사진에서 5~9픽셀짜리 유리창 포스터 잡음).
+    //  · 종류(type)는 Claude가 읽은 글 중 겹치는 것에서 가져온다. 없으면 비워 둔다
+    //    (간판인지는 크기로도 판정된다).
+    var VISION_LINE_MIN_H_PCT = 1.0;
+    function visionLinesToTargets(visionWords, claudeWords) {
+      var ws = (visionWords || []).filter(function (v) { return normalizeForMatch(v.text); });
+      var n = ws.length, root = [], i, j;
+      for (i = 0; i < n; i++) root[i] = i;
+      function find(a) { while (root[a] !== a) { root[a] = root[root[a]]; a = root[a]; } return a; }
+      for (i = 0; i < n; i++) {
+        for (j = i + 1; j < n; j++) {
+          if (visionAdjacent(ws[i], ws[j])) root[find(i)] = find(j);
+        }
+      }
+      var groups = {};
+      for (i = 0; i < n; i++) {
+        var k = find(i);
+        (groups[k] = groups[k] || []).push(ws[i]);
+      }
+      var out = [];
+      Object.keys(groups).forEach(function (key) {
+        var g = groups[key].sort(function (a, b) { return visionUnit(a).l - visionUnit(b).l; });
+        var x0 = Math.min.apply(null, g.map(function (m) { return m.xPct - m.wPct / 2; }));
+        var x1 = Math.max.apply(null, g.map(function (m) { return m.xPct + m.wPct / 2; }));
+        var y0 = Math.min.apply(null, g.map(function (m) { return m.yPct - m.hPct / 2; }));
+        var y1 = Math.max.apply(null, g.map(function (m) { return m.yPct + m.hPct / 2; }));
+        if (y1 - y0 < VISION_LINE_MIN_H_PCT) return;
+        var text = joinVisionTokens(g.map(function (m) { return m.text; }));
+        var norm = normalizeForMatch(text), type = '';
+        (claudeWords || []).some(function (c) {
+          var cn = normalizeForMatch(c.text);
+          if (cn.length >= 2 && norm.length >= 2 && (cn.indexOf(norm) >= 0 || norm.indexOf(cn) >= 0)) { type = c.type || ''; return true; }
+          return false;
+        });
+        out.push({
+          text: text, type: type, confidence: null,
+          xPct: (x0 + x1) / 2, yPct: (y0 + y1) / 2, wPct: x1 - x0, hPct: y1 - y0,
+          approximate: false, source: 'vision',
+        });
+      });
+      // 사진 위에서 아래로, 왼쪽에서 오른쪽으로 — 목록이 읽는 순서와 같도록
+      out.sort(function (a, b) { return (a.yPct - b.yPct) || (a.xPct - b.xPct); });
+      return out;
+    }
+
+    // Claude가 읽은 글자(9분할 위치 + 유형별 추정 크기)를 Vision 줄의 **정확한 상자**로 바꾼다.
+    // 진단 화면의 핀·위험 요소 지도가 이 위치를 쓴다. Claude는 "상단 중앙" 같은 말만 주고 크기는 유형별로
+    // 짐작해서(상호명 32x9%), 핀이 글자에서 한참 벗어나곤 했다. 목록에 없던 글자를 새로 넣지는 않는다 —
+    // 채점에 들어가는 글자 목록이 바뀌면 점수가 달라진다. 위치만 고친다.
+    //
+    // 짝짓기는 네 등급을 높은 것부터 돌린다(등급마다 모든 글자를 한 번씩 훑는다). 한 글자씩 순서대로 최선을
+    // 고르면, 한두 글자 다르게 읽은 글이 정확히 같은 글의 줄을 먼저 가져가 버린다.
+    //   4 같은 글 · 3 한두 글자 오독("해샬어린이집"↔"햇살어린이집") · 2 글이 여러 줄을 담음(칠판) · 1 줄의 일부
+    // 같은 글의 줄이 여럿이면(큰 간판·유리창) Claude가 말한 위치에 가장 가까운 것을 고른다. 한 줄은 한 글자에만 쓴다.
+    // 짝이 없으면 그 글자는 그대로 둔다(근사 위치 유지).
+    function refineWordsWithVisionLines(words, lines) {
+      if (!words || !lines || !lines.length) return 0;
+      var info = lines.map(function (l) { return { line: l, n: normalizeForMatch(l.text), used: false }; });
+      var todo = words.filter(function (w) { return normalizeForMatch(w && w.text).length >= 2; });
+      var changed = 0;
+      function rankOf(a, n) {
+        if (a === n) return 4;
+        if (a.length >= 4 && n.length >= 4 && editDistance(a, n) <= Math.max(1, Math.floor(Math.max(a.length, n.length) * 0.34))) return 3;
+        if (a.length > n.length && n.length >= 2 && a.indexOf(n) >= 0) return 2;
+        if (n.length > a.length && a.length >= 3 && n.indexOf(a) >= 0) return 1;
+        return 0;
+      }
+      [4, 3, 2, 1].forEach(function (rank) {
+        todo.forEach(function (w) {
+          if (w._refined) return;
+          var a = normalizeForMatch(w.text), best = null;
+          info.forEach(function (it) {
+            if (it.used || rankOf(a, it.n) !== rank) return;
+            var dist = Math.hypot(it.line.xPct - w.xPct, it.line.yPct - w.yPct);
+            if (!best || dist < best.dist) best = { it: it, dist: dist };
+          });
+          if (!best) return;
+          var group = [best.it];
+          if (rank === 2) {
+            // 칠판처럼 한 글이 여러 줄이면, 가까이 모여 있는 줄들을 한 상자로 묶는다
+            info.forEach(function (it) {
+              if (it === best.it || it.used || it.n.length < 2 || a.indexOf(it.n) < 0) return;
+              if (Math.hypot(it.line.xPct - best.it.line.xPct, it.line.yPct - best.it.line.yPct) <= 25) group.push(it);
+            });
+          }
+          var x0 = Math.min.apply(null, group.map(function (g) { return g.line.xPct - g.line.wPct / 2; }));
+          var x1 = Math.max.apply(null, group.map(function (g) { return g.line.xPct + g.line.wPct / 2; }));
+          var y0 = Math.min.apply(null, group.map(function (g) { return g.line.yPct - g.line.hPct / 2; }));
+          var y1 = Math.max.apply(null, group.map(function (g) { return g.line.yPct + g.line.hPct / 2; }));
+          group.forEach(function (g) { g.used = true; });
+          w.xPct = (x0 + x1) / 2; w.yPct = (y0 + y1) / 2; w.wPct = x1 - x0; w.hPct = y1 - y0;
+          w.sizeEstimated = false; w.positionSource = 'vision'; w._refined = true;
+          changed++;
+        });
+      });
+      todo.forEach(function (w) { delete w._refined; });
+      return changed;
+    }
+
+    // Claude 힌트 하나에 해당하는 Vision 단어(들)를 찾아 하나의 박스로 합친다 — 간판
+    // 글자가 여러 단어로 쪼개져 인식되는 경우가 많아서(예: "OO어린이집" → "OO"+"어린이집").
+    //
+    // 실측(test/vision-accuracy.tmp.js, 꽃집간판.jpg)으로 첫 버전의 결함 둘을 잡았다:
+    //  ① 같은 글자가 사진 두 군데에 있으면("1118-1" 지번이 왼쪽 벽과 유리문에 둘)
+    //     둘을 한 박스로 합쳐 화면 절반을 덮었다(IoU 0.02).
+    //  ② "힌트 근처 단어"까지 후보로 넣었더니 옆 글자("누아")를 끌고 들어왔다(IoU 0.28).
+    // 그래서 ① 글자가 겹치는 단어만 후보로 삼고(한 글자짜리는 뺀다 — "1"·"," 같은 건
+    // 아무 데나 붙는다), ② 힌트에 가장 가까운 것에서 시작해 ③ 같은 줄에 붙어 있는
+    // 조각만 이어 붙인다. 글자가 안 겹치면 null — 옆 단어를 추측해 합치는 것보다
+    // 호출부가 Tesseract 경로(정밀이든 넉넉한 근사든)로 넘기는 게 안전하다.
+    function matchVisionWordsToHint(hint, visionWords) {
+      var b = normalizeForMatch(hint.text);
+      if (!b) return null;
+      var cands = (visionWords || []).filter(function (v) {
+        var a = normalizeForMatch(v.text);
+        if (a.length < 2 && a !== b) return false;
+        return b.indexOf(a) >= 0 || a.indexOf(b) >= 0;
+      });
+      if (!cands.length) return null;
+
+      var unit = visionUnit;
+      var hx = hint.xPct / 100 * (cands[0].aspect || 1), hy = hint.yPct / 100;
+      var seed = cands.slice().sort(function (p, q) {
+        var up = unit(p), uq = unit(q);
+        return Math.hypot((up.l + up.r) / 2 - hx, up.cy - hy) - Math.hypot((uq.l + uq.r) / 2 - hx, uq.cy - hy);
+      })[0];
+
+      var adjacent = visionAdjacent;
+      var group = [seed];
+      var grew = true;
+      while (grew) {
+        grew = false;
+        cands.forEach(function (c) {
+          if (group.indexOf(c) < 0 && group.some(function (g) { return adjacent(g, c); })) {
+            group.push(c); grew = true;
+          }
+        });
+      }
+
+      var x0 = Math.min.apply(null, group.map(function (m) { return m.xPct - m.wPct / 2; }));
+      var x1 = Math.max.apply(null, group.map(function (m) { return m.xPct + m.wPct / 2; }));
+      var y0 = Math.min.apply(null, group.map(function (m) { return m.yPct - m.hPct / 2; }));
+      var y1 = Math.max.apply(null, group.map(function (m) { return m.yPct + m.hPct / 2; }));
+      return { xPct: (x0 + x1) / 2, yPct: (y0 + y1) / 2, wPct: x1 - x0, hPct: y1 - y0 };
+    }
+
+    // 사진 전체의 글자를 Google Vision으로 한 번에 찾는다. 실패(키 미설정·네트워크
+    // 오류 등)하면 null을 돌려줘서 호출부가 Tesseract로 폴백하게 한다 — 빈 배열([])과
+    // 구분해야 한다("시도했지만 하나도 못 찾음"과 "아예 못 물어봄"은 다른 상황이다).
+    // 안전 설계 원칙 1번(얼굴 가려서 전송)에 따라 maskFaces를 거친 사진만 보낸다 —
+    // location-check(역방향 이미지 검색용, 원본 그대로 + 별도 동의)과는 다른 카테고리다.
+    // 작은 글자 인식이 목표라 Claude 전송과 달리 해상도를 줄이지 않는다(fitForVision 생략).
+    //
+    // 진단(runClaudeVisionPipeline)이 먼저 부르고, 보정 화면(2단계보정)이 같은 사진으로 다시
+    // 부르므로 사진 하나에 Vision 호출이 두 번 나가지 않게 결과를 기억해 둔다. 성공한
+    // 결과만 기억한다(null은 기억하지 않는다 — 나중에 다시 시도할 수 있게). 데이터 URL처럼
+    // 긴 주소는 키로 쓰면 메모리만 먹어서 짧은 주소(blob:/경로)만 기억한다.
+    var visionWordsCache = {};
+    async function fetchVisionWords(imgUrl, faces) {
+      var cacheable = typeof imgUrl === 'string' && imgUrl.length < 300;
+      if (cacheable && visionWordsCache[imgUrl]) return visionWordsCache[imgUrl];
+      try {
+        var img = await loadImage(imgUrl);
+        var maskedCanvas = maskFaces(img, faces);
+        var base64 = maskedCanvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+        var data = await postJson(TEXT_DETECT_BACKEND_URL, { imageBase64: base64 });
+        var words = visionWordsToPct(data.words, maskedCanvas.width, maskedCanvas.height);
+        if (cacheable) visionWordsCache[imgUrl] = words;
+        return words;
+      } catch (e) {
+        console.warn('[글자인식] Google Vision 글자 인식 실패 — Claude/Tesseract만으로 진행:', e.message);
+        return null;
+      }
+    }
+
+    // ===== Claude가 읽은 한글을 Vision이 읽은 글자로 교정 =====
+    // 서버가 OCR 목록을 참고로 줘도 Claude는 여전히 글자 하나를 바꿔 읽는 경우가 있다
+    // ("해님반"→"해남반"). 한글 낱말이 Vision 조각(들)을 이어 붙인 글과 1~2글자만
+    // 다르면 Vision 쪽 표기로 바꾼다. 두 엔진 중 Vision이 글자 모양을 더 정확히 읽는다는
+    // 게 측정 결과다(명찰 32개 중 Vision 25, Claude 18).
+    //
+    // 일부러 건드리지 않는 것:
+    //  · 숫자가 다른 글(전화번호·지번·동호수 "102동"↔"101동") — 한 글자가 다르면 뜻이 달라진다.
+    //    어느 쪽이 맞는지 모르는데 Vision을 믿고 덮어쓰면 맞게 읽은 걸 틀리게 만들 수 있다.
+    //    그래서 숫자 부분이 두 쪽에서 똑같을 때만 고친다("해남반 6세"→"해님반6세"는 6이 같아서 고침).
+    //  · 3글자 미만 — 한 글자 차이가 "다른 낱말"일 확률이 너무 크다("서우"↔"서유").
+    //  · 한글이 없는 글(영문 이름 등).
+    var HANGUL_RE = /[가-힣]/;
+
+    function editDistance(a, b) {
+      var prev = [], cur = [], i, j;
+      for (j = 0; j <= b.length; j++) prev[j] = j;
+      for (i = 1; i <= a.length; i++) {
+        cur = [i];
+        for (j = 1; j <= b.length; j++) {
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+        }
+        prev = cur;
+      }
+      return prev[b.length];
+    }
+
+    // Vision 조각을 다시 붙인다: 한글이 닿는 자리는 붙이고, 영문·숫자끼리만 띄운다
+    function joinVisionTokens(parts) {
+      var out = parts[0] || '';
+      for (var k = 1; k < parts.length; k++) {
+        var prev = out.charAt(out.length - 1), next = parts[k].charAt(0);
+        out += (HANGUL_RE.test(prev) || HANGUL_RE.test(next) ? '' : ' ') + parts[k];
+      }
+      return out;
+    }
+
+    // words(Claude)를 제자리에서 고치고, 고친 개수를 돌려준다.
+    function reconcileWordsWithVision(words, visionWords) {
+      if (!words || !visionWords || !visionWords.length) return 0;
+      var tokens = visionWords
+        .map(function (v) { return { raw: v.text, n: normalizeForMatch(v.text) }; })
+        .filter(function (t) { return t.n; });
+      var changed = 0;
+      words.forEach(function (w) {
+        var a = normalizeForMatch(w.text);
+        if (a.length < 3 || !HANGUL_RE.test(a)) return;
+        var aDigits = a.replace(/\D/g, '');
+        var tol = a.length >= 7 ? 2 : 1;
+        var best = null;
+        for (var i = 0; i < tokens.length; i++) {
+          var joined = '';
+          for (var j = i; j < tokens.length && j < i + 6; j++) {
+            joined += tokens[j].n;
+            if (joined.length > a.length + 2) break;
+            var d = editDistance(a, joined);
+            if (d === 0) return; // 이미 Vision과 같은 글 — 고칠 게 없다
+            if (d <= tol && joined.replace(/\D/g, '') === aDigits &&
+                (!best || d < best.d || (d === best.d && j - i < best.len))) {
+              best = { d: d, i: i, j: j, len: j - i };
+            }
+          }
+        }
+        if (best) {
+          w.claudeText = w.text;
+          w.text = joinVisionTokens(tokens.slice(best.i, best.j + 1).map(function (t) { return t.raw; }));
+          w.reconciled = true;
+          changed++;
+        }
+      });
+      return changed;
     }
 
     async function locateTextsByHints(imgUrl, hints) {
@@ -5189,11 +5884,20 @@
       var base64 = maskedDataUrl.split(',')[1];
       timing.maskMs = performance.now() - t0;
 
+      // 글자는 Google Vision(전용 OCR)이 먼저 읽고, Claude에는 그 조각을 참고로 준다.
+      // 명찰 32개 중 Vision 25 / Claude 18 — Claude는 글자를 하나씩 바꿔 읽거나 작은
+      // 명찰을 "판독 불가"로 포기했다. 뜻·위험 판단은 그대로 Claude가 한다.
+      // Vision이 실패하면(키 미설정·네트워크) 예전과 똑같이 Claude만으로 진행한다.
+      var tv = performance.now();
+      var visionWords = await fetchVisionWords(imgUrl, faces);
+      timing.visionMs = performance.now() - tv;
+      var ocrWords = visionWords ? visionWords.map(function (v) { return v.text; }) : [];
+
       var t1 = performance.now();
       var res = await fetch(CLAUDE_BACKEND_URL, {
         method: 'POST',
         headers: apiHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ imageBase64: base64, mediaType: 'image/jpeg' }),
+        body: JSON.stringify({ imageBase64: base64, mediaType: 'image/jpeg', ocrWords: ocrWords }),
       });
       timing.requestMs = performance.now() - t1;
       timing.totalMs = performance.now() - t0;
@@ -5213,6 +5917,19 @@
           type: item.유형, position: item.위치, refined: false, source: 'claude',
         };
       });
+      // 참고 목록을 줬는데도 한두 글자 다르게 읽은 한글은 Vision 표기로 바로잡는다
+      var reconciledCount = reconcileWordsWithVision(words, visionWords);
+      if (reconciledCount > 0) {
+        console.log('[글자인식] Claude가 다르게 읽은 ' + reconciledCount + '개를 Vision 표기로 교정:',
+          words.filter(function (w) { return w.reconciled; })
+            .map(function (w) { return '"' + w.claudeText + '" → "' + w.text + '"'; }).join(', '));
+      }
+
+      // 위치는 Vision 줄의 정확한 상자로 — 핀과 위험 요소 지도가 글자 위에 정확히 앉는다
+      var refinedPos = visionWords ? refineWordsWithVisionLines(words, visionLinesToTargets(visionWords, [])) : 0;
+      if (refinedPos > 0) {
+        console.log('[글자인식] Claude 글자 ' + words.length + '개 중 ' + refinedPos + '개의 위치를 Vision 줄의 정확한 상자로 교체');
+      }
 
       var result = {
         words: words, timing: timing, source: 'claude',
@@ -5815,9 +6532,12 @@
       // 가슴 마크, 글자)만 지운다. 색까지 바꾸는 쪽이 기관 특정을 더 확실히 끊지만,
       // 사진 분위기를 그대로 두고 싶을 때가 있어서 열어둔다.
       keep: { label: '색 안 바꾸기', keepColors: true, sample: null },
-      brown: { label: '오트밀 & 브라운',
-        hex: '#CCB490',  // 로컬 색 변경(AI 없이)이 쓰는 실제 색값
-        top: 'oatmeal beige (#CCB490)', trim: 'dark chocolate brown (#483018)',
+      // 상의를 오트밀 베이지(#CCB490)에서 웜 토프 브라운으로 진하게 바꿨다. 오트밀·카멜처럼 살색에 가까운 밝은 베이지는
+      // fal 안전 필터가 아이 옷 그림을 오탐해 검은색으로 돌려주는 일이 잦았다(같은 시드 5장 A/B: 오트밀 3장, 카멜 2장·1장은
+      // 세 번 다 실패, 모카 1장, 웜 토프 브라운 0장). 웜 토프 브라운은 필터를 안 건드리면서 옷도 끝까지 갈아입혔다.
+      brown: { label: '토프 & 브라운',
+        hex: '#A38B72',  // 로컬 색 변경(AI 없이)이 쓰는 실제 색값
+        top: 'warm taupe brown (#A38B72)', trim: 'dark chocolate brown (#483018)',
         bottomSolid: 'solid dark chocolate brown (#483018)',
         bottomPlaid: 'a brown-and-beige plaid with stronger contrast than the original',
         sample: 'brown' },
@@ -5841,43 +6561,270 @@
         sample: null },
     };
 
+    // 프롬프트에는 **있어야 할 것만** 적는다. FLUX Fill에는 negative prompt가 없어서 "no logo, no badge…"라고
+    // 적으면 금지가 아니라 그 낱말을 넣는 것이 된다 — 강하게 밀어붙인 프롬프트가 가슴에 없던 네모 마크를 만든 것도
+    // "no logos, no badges"가 이미 들어 있는 상태였다(아래 옛 주석). 마크가 없는 가슴은 "매끈하게 이어진 천"이라고 쓴다.
+    // 포켓을 고르면 그 문장만 더한다.
     var EMBLEM_MODES = {
-      pocket: 'Include a small plain patch pocket on the chest in the same fabric — no logo, no lettering, no motif, no crest on it.',
-      none: 'Keep the chest completely plain: no pocket, no logo, no lettering, no motif, no crest.',
+      pocket: 'a small plain patch pocket on the chest in the same fabric',
+      none: '', // 가슴은 아래 outfitClosing의 «매끈하게 이어진 천» 문장이 맡는다
     };
     var EMBLEM_MODE_KO = {
       keep: '그대로 뒀어요', pocket: '무늬 없는 포켓으로 바꿔요',
       none: '흔적 없이 완전히 지워요', all: '옷 전체를 다른 옷으로 바꿨어요',
     };
 
+    // ===== 옷 색을 사진에서 읽어 프롬프트에 색 이름으로 적기 =====
+    // 「색 안 바꾸기」 프롬프트는 "keeping the exact same colors as the garment already worn"이었다.
+    // 인페인팅 모델은 마스크로 비운 자리의 원래 픽셀을 못 본다 — 그러니 이 문장은 모델이 알 수 없는
+    // 것을 지키라는 말이라, 색이 추측으로 흘러갔다. 색을 브라우저가 읽어서 이름으로 직접 적는다.
+    // 아이가 여럿이면 옷 색이 서로 다르므로(초록 조끼 / 어두운 상의) 사람마다 따로 읽어 왼쪽부터 적는다.
+    // 색 이름은 T5 계열 모델이 알아듣는 흔한 영어 이름만 쓴다(헥스 코드는 잘 안 통한다).
+    var COLOR_NAMES = [
+      ['white', '흰색', '#F5F5F5'], ['cream', '크림색', '#EFE6CF'], ['beige', '베이지', '#D9C3A0'], ['tan', '황갈색', '#C19A6B'],
+      ['brown', '갈색', '#7B5230'], ['dark brown', '진갈색', '#3E2A1E'], ['black', '검정', '#1A1A1A'],
+      ['charcoal gray', '짙은 회색', '#3F4147'], ['gray', '회색', '#8E9095'], ['light gray', '연회색', '#C9CBCE'],
+      ['red', '빨강', '#C62828'], ['burgundy', '자주색', '#6D1F2B'], ['coral', '산호색', '#F0806F'], ['peach', '살구색', '#F7C6A3'],
+      ['orange', '주황', '#EF7B2A'], ['mustard yellow', '겨자색', '#D9A621'], ['yellow', '노랑', '#F2D53C'],
+      ['lime green', '연두', '#9BC53D'], ['green', '초록', '#3E9B4F'], ['forest green', '진초록', '#24503A'],
+      ['olive', '올리브', '#6B6B2E'], ['mint', '민트', '#A6DFC5'], ['teal', '청록', '#1F8A8A'],
+      ['sky blue', '하늘색', '#8EC5F0'], ['denim blue', '청색', '#4F6D95'], ['blue', '파랑', '#2F6FDB'], ['navy', '남색', '#1F2A55'],
+      ['lavender', '연보라', '#C5B4E3'], ['purple', '보라', '#7B3FA0'], ['pink', '분홍', '#F4A6C0'], ['hot pink', '진분홍', '#E0447F'],
+    ];
+
+    function rgbToLab(r, g, b) {
+      function lin(v) { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+      var R = lin(r), G = lin(g), B = lin(b);
+      var X = (0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047;
+      var Y = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+      var Z = (0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883;
+      function f(t) { return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116; }
+      return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+    }
+    var COLOR_NAME_LABS = COLOR_NAMES.map(function (c) {
+      var n = parseInt(c[2].slice(1), 16);
+      return rgbToLab(n >> 16 & 255, n >> 8 & 255, n & 255);
+    });
+    // 가장 가까운 이름(CIELAB 거리 — 사람 눈에 가까운 색이 가까운 값이 된다)
+    function nameColor(rgb) {
+      var lab = rgbToLab(rgb[0], rgb[1], rgb[2]), best = 0, bestD = Infinity;
+      for (var i = 0; i < COLOR_NAME_LABS.length; i++) {
+        var l = COLOR_NAME_LABS[i];
+        var d = (lab[0] - l[0]) * (lab[0] - l[0]) + (lab[1] - l[1]) * (lab[1] - l[1]) + (lab[2] - l[2]) * (lab[2] - l[2]);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return { en: COLOR_NAMES[best][0], ko: COLOR_NAMES[best][1], hex: COLOR_NAMES[best][2] };
+    }
+
+    // 하의 모양(치마·반바지·긴바지). 프롬프트가 "bottoms"라고만 하면 모델이 치마를 반바지로 그렸다(A/B 실측: 아이3의
+    // 치마 둘이 반바지가 됨). 마스크 실루엣만으로는 못 가린다(블레이저와 치마가 한 덩어리) — 그래서 **하의 밑단 폭을
+    // 그 아래 맨다리 폭과 비교**한다: 치마 자락은 다리보다 넓고(≥1.3배), 반바지는 다리와 폭이 비슷하다.
+    // 옷이 사진 맨 아래까지 이어지면(밑단이 안 보임) 긴바지일 때만 답하고, 판단이 안 서면 null("bottoms").
+    // 사람 가운데(±0.5 얼굴폭)에서 옷이 이어지는 줄까지를 하의로 본다.
+    // 폭을 잰 자리 밖으로는 안 나간다(x0~x1 안에서만 왼쪽/오른쪽으로 번진다) — 옆 아이와 옷이 맞닿아 있으면
+    // 픽셀은 안 끊기므로, 자리를 안 막으면 옆 아이 몸까지 폭에 잡힌다(실측: medianClothesColor에서 이미 겪은 문제).
+    function runWidthAt(data, w, x0, x1, y, seedX) {
+      var lo = Math.max(0, x0), hi = Math.min(w - 1, x1);
+      var seed = -1, x;
+      for (x = lo; x <= hi; x++) { if (data[(y * w + x) * 4 + 3] > 128) { if (seed < 0 || Math.abs(x - seedX) < Math.abs(seed - seedX)) seed = x; } }
+      if (seed < 0) return 0;
+      var l = seed, r = seed;
+      while (l > lo && data[(y * w + l - 1) * 4 + 3] > 128) l--;
+      while (r < hi && data[(y * w + r + 1) * 4 + 3] > 128) r++;
+      return r - l + 1;
+    }
+    function median(a) { var b = a.slice().sort(function (p, q) { return p - q; }); return b.length ? b[Math.floor(b.length / 2)] : 0; }
+    function classifyBottom(md, sd, w, h, q) {
+      var y0 = Math.round(q.shoulder + q.fh * 1.9), cx = Math.round(q.cx), sp = Math.round(q.fw * 0.5);
+      if (y0 >= h - 4 || !sd) return null;
+      var widths = [], y;
+      for (y = y0; y < h; y++) widths.push(runWidthAt(md, w, cx - sp, cx + sp, y, cx));
+      var end = -1, zeros = 0, i;
+      for (i = 0; i < widths.length; i++) {
+        if (widths[i] === 0) { zeros++; if (zeros >= 3) { end = i - 2; break; } } else zeros = 0;
+      }
+      var cropped = end < 0;
+      if (cropped) return widths.length / q.fh >= 3.0 ? 'trousers' : null;
+      if (end < 4) return null;
+      var hemY = y0 + end - 1;
+      var hemW = median(widths.slice(Math.max(0, end - 4), end));
+      // 밑단 바로 아래 맨살(다리)의 폭
+      var legs = [];
+      for (y = hemY + 3; y <= Math.min(h - 1, hemY + 3 + Math.round(q.fh * 0.4)); y++) legs.push(runWidthAt(sd, w, cx - sp * 2, cx + sp * 2, y, cx));
+      var legW = median(legs.filter(function (v) { return v > 0; }));
+      q.bottomInfo = { hemW: hemW, legW: legW, ratio: legW ? +(hemW / legW).toFixed(2) : null };
+      // 밑단은 있는데 그 아래에 맨다리가 안 보인다 — 긴바지일 수도 있지만, 다리가 사진에 안 잡히는
+      // 다른 이유(각도·그림자·인식 실패)도 있어 하나로 단정 못 한다. 모르면 null("bottoms").
+      if (!legW) return null;
+      return hemW / legW >= 1.3 ? 'skirt' : 'shorts';
+    }
+
+    // 띠 안에서 옷인 픽셀의 중앙값 색. 평균이 아니라 중앙값이라 작은 로고·무늬·그림자에 안 끌린다.
+    // 띠가 사진 밖으로 나가면 null — 실측(학교 간판 사진): 가슴 아래가 잘린 사진에서 하의 띠가 사진 맨 아래의
+    // 그림자 몇 줄만 걸쳐 「하의 검정」이라고 지어냈다. 띠 넓이의 15%도 옷이 아니면 마찬가지로 근거가 없다.
+    function medianClothesColor(pix, md, w, h, band) {
+      if (band.y1 > h || band.y0 < 0) return null;
+      var x0 = Math.max(0, Math.floor(band.x0)), x1 = Math.min(w, Math.ceil(band.x1));
+      var y0 = Math.max(0, Math.floor(band.y0)), y1 = Math.min(h, Math.ceil(band.y1));
+      var area = Math.max(1, (x1 - x0) * (y1 - y0));
+      var hist = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)], n = 0;
+      for (var y = y0; y < y1; y++) {
+        for (var x = x0; x < x1; x++) {
+          var i = (y * w + x) * 4;
+          if (md[i + 3] <= 128) continue;
+          hist[0][pix[i]]++; hist[1][pix[i + 1]]++; hist[2][pix[i + 2]]++; n++;
+        }
+      }
+      if (n < 25 || n < area * 0.15) return null; // 옷이 거의 없다 — 색을 말할 근거가 없다
+      var rgb = [];
+      for (var c = 0; c < 3; c++) {
+        var acc = 0, v = 0;
+        for (; v < 255; v++) { acc += hist[c][v]; if (acc >= n / 2) break; }
+        rgb.push(v);
+      }
+      return rgb;
+    }
+
+    // 알려진 한계: 사람이 여럿이면 "왼쪽부터 몇 번째"라는 텍스트 문장으로만 순서를 알려준다 —
+    // 마스크 자체에 "이 픽셀 덩어리 = 몇 번째 사람"이라는 구조적 표시가 없다. FLUX가 문장의
+    // 순서를 잘못 읽어 색을 서로 바꿔 칠해도(예: 왼쪽 아이에게 오른쪽 아이 색을 입힘) 코드가
+    // 잡아낼 방법이 없다 — 모델의 프롬프트 해석 한계라 이 앱 구조로는 못 고친다. 사람별로
+    // 마스크를 분리해 각각 따로 인페인팅하면 구조적으로 막을 수 있지만, 지금은 한 번에 같이
+    // 채우는 구조라 비용·속도가 몇 배로 늘어난다 — 지금 단계에서는 고치는 대신 알려만 둔다.
+    //
+    // 사람마다 상의(가슴 띠)·하의(허리 아래 띠) 색을 읽어 왼쪽부터 돌려준다. 못 읽으면 null.
+    // 띠는 얼굴 크기에 비례한다(가슴 띠는 buildEmblemMask의 EMBLEM_BAND와 같은 어깨선 기준).
+    // 하의 띠는 어린이 몸 비율(어깨~무릎이 머리 4배 안팎)로 잡은 값이다 — 어른이면 상체와 같은 색이 읽힌다.
+    // 띠 폭은 얼굴 폭 기준으로 좁게 잡는다(상의 ±0.95, 하의 ±0.75) — 아이들이 어깨를 맞대고 선 사진에서 넓은 띠가
+    // 옆 아이의 치마·바지를 읽어 «하의 짙은 회색»으로 잘못 지정했다(A/B 실측: 아이2의 카키 바지가 회색 바지로 그려졌다).
+    function describeOutfitColors(img, faces, clothesMask) {
+      if (!clothesMask || !faces || !faces.length) return null;
+      var W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+      var k = Math.min(1, 480 / Math.max(W, H));
+      var w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k));
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      var cx0 = c.getContext('2d');
+      cx0.drawImage(img, 0, 0, w, h);
+      var pix = cx0.getImageData(0, 0, w, h).data;
+      var m = document.createElement('canvas'); m.width = w; m.height = h;
+      var mx = m.getContext('2d');
+      mx.drawImage(clothesMask, 0, 0, w, h);
+      var md = mx.getImageData(0, 0, w, h).data;
+      var sd = null;
+      if (clothesMask._skin) {
+        var sk = document.createElement('canvas'); sk.width = w; sk.height = h;
+        var skx = sk.getContext('2d');
+        skx.drawImage(clothesMask._skin, 0, 0, w, h);
+        sd = skx.getImageData(0, 0, w, h).data;
+      }
+      // 옷 분할 마스크는 얼굴이 잡힌 사람만이 아니라 사진 속 모든 사람의 옷을 담는다(buildClothingMask가 그대로 쓴다).
+      // 그래서 ① 옷이 안 잡히는 얼굴(배경 그림·오탐)은 사람으로 세지 않고 ② 어떤 얼굴 밑에도 없는 옷이
+      // 마스크의 15%를 넘으면 "그 밖의 옷"이 있다고 알린다 — 안 그러면 얼굴이 안 잡힌 어른의 옷까지 아이 색으로 칠해진다
+      // (실측: 아파트 사진에서 얼굴이 안 잡힌 엄마의 스웨터·바지).
+      var placed = [];
+      faces.forEach(function (f) {
+        var fx = f.box.x * k, fy = f.box.y * k, fw = f.box.width * k, fh = f.box.height * k;
+        var cx = fx + fw / 2;
+        var shoulder = findShoulderY(md, w, h, Math.max(0, Math.round(cx - fw * EMBLEM_BAND.findWidthRatio)),
+          Math.min(w, Math.round(cx + fw * EMBLEM_BAND.findWidthRatio)), fy + fh * 0.9);
+        if (shoulder >= 0) placed.push({ cx: cx, fw: fw, fh: fh, shoulder: shoulder });
+      });
+      if (!placed.length) return null;
+      placed.sort(function (a, b) { return a.cx - b.cx; }); // 왼쪽부터 순서를 매긴다
+      var people = [], unread = 0;
+      // 순서는 색을 읽은 사람끼리만 센다 — 읽지 못한 얼굴(배경 그림 등)이 끼면 «몇 번째 사람»이 실제와 어긋난다
+      placed.forEach(function (q) {
+        var top = medianClothesColor(pix, md, w, h, { x0: q.cx - q.fw * 0.95, x1: q.cx + q.fw * 0.95, y0: q.shoulder + q.fh * 0.25, y1: q.shoulder + q.fh * 1.5 });
+        if (!top) { unread++; return; }
+        var bottom = medianClothesColor(pix, md, w, h, { x0: q.cx - q.fw * 0.75, x1: q.cx + q.fw * 0.75, y0: q.shoulder + q.fh * 2.4, y1: q.shoulder + q.fh * 3.6 });
+        people.push({ rank: people.length, x: q.cx / w, top: nameColor(top), bottom: bottom ? nameColor(bottom) : null,
+          bottomKind: classifyBottom(md, sd, w, h, q), bottomInfo: q.bottomInfo });
+      });
+      if (!people.length) return null;
+      var total = 0, inside = 0;
+      for (var yy = 0; yy < h; yy++) {
+        for (var xx = 0; xx < w; xx++) {
+          if (md[(yy * w + xx) * 4 + 3] <= 128) continue;
+          total++;
+          for (var pi = 0; pi < placed.length; pi++) {
+            if (Math.abs(xx - placed[pi].cx) <= placed[pi].fw * 2.2) { inside++; break; }
+          }
+        }
+      }
+      // missing: 색을 말할 수 없는 사람·옷이 있다는 표시(개수가 아니라 있고 없고가 뜻이다)
+      people.missing = unread + (total > 0 && (total - inside) / total > 0.15 ? 1 : 0);
+      return people;
+    }
+
+    // 사람이 여럿이면 왼쪽부터 순서를 붙여 말한다 — 모델이 위치 표현은 이 정도까지만 따른다.
+    var PERSON_ORDER_EN = ['first', 'second', 'third', 'fourth'];
+    var BOTTOM_WORD = { skirt: 'skirt', shorts: 'shorts', trousers: 'trousers' };
+    function outfitColorPhrase(p, crew) {
+      return 'a plain solid ' + p.top.en + (crew ? ' crew-neck' : '') + ' top' + (p.bottom ? ' and plain solid ' + p.bottom.en + ' ' + (BOTTOM_WORD[p.bottomKind] || 'bottoms') : '');
+    }
+    function outfitColorsKo(colors) {
+      function one(p) { return '상의 ' + p.top.ko + (p.bottom ? ' · 하의 ' + p.bottom.ko : ''); }
+      if (colors.length === 1 && !(colors.missing > 0)) return one(colors[0]);
+      return colors.map(function (p) { return (p.rank + 1) + '번째(왼쪽부터) ' + one(p); }).join(', ')
+        + (colors.missing > 0 ? ' (그 밖의 옷은 색을 못 읽어 무난한 색으로)' : '');
+    }
+
+    // 모든 옷 프롬프트의 맺음말. 가슴은 매끈하게 이어진 천, 포켓을 골랐을 때만 포켓 문장을 더한다.
+    function outfitClosing(emblemMode) {
+      return 'Smooth unbroken fabric across the chest and sleeves'
+        + (emblemMode === 'pocket' ? ', with ' + EMBLEM_MODES.pocket : '')
+        + ', soft natural folds following the pose, lighting and shadows matching the rest of the photograph, photorealistic photograph.';
+    }
+
+    // 색 이름만 남긴다: "warm taupe brown (#A38B72)" → "warm taupe brown", "solid dark chocolate brown (#483018)" → "dark chocolate brown".
+    // 헥스 코드는 T5 계열 모델이 색으로 알아듣지 못하고(색은 이름이 실어 나른다), 로컬 색 변경(AI 없이)만 hex를 쓴다.
+    function plainColorName(s) {
+      return String(s || '').replace(/\s*\(#[0-9a-fA-F]{6}\)/g, '').replace(/^solid\s+/, '');
+    }
+
     // 마스크 안을 채울 프롬프트. 마스크가 이미 "여기만 새로 그려라"를 강제하므로
     // 여기서는 인물 보존 문구를 넣지 않는다(넣어도 무해하지만 중복) — 순수하게 디자인만 지시.
-    function buildOutfitFillPrompt(colorway, emblemMode) {
+    //
+    // 원칙: **부정문·"school uniform" 낱말을 넣지 않는다.** 인페인팅 모델은 "no logos"를 금지로 읽지 못하고
+    // 그 낱말을 프롬프트의 재료로 쓴다. 그리고 마스크로 비운 자리의 원래 픽셀은 모델이 못 보므로 "원래 옷처럼"
+    // "whichever matches the garment already worn" 같은 문장은 모델이 알 수 없는 것을 지키라는 말이다.
+    // 그래서 구체적인 옷 이름(crew-neck top)과 색 이름만 적는다. 하의 모양(치마·바지)은 마스크 실루엣이 정한다.
+    // (깃·소매의 배색 띠와 격자무늬는 뺐다 — 기관 옷의 배색과 닮아서 없던 줄무늬·마크의 원인 후보였다.)
+    function buildOutfitFillPrompt(colorway, emblemMode, colors) {
       var cw = COLORWAYS[colorway] || COLORWAYS.brown;
-      var emblem = EMBLEM_MODES[emblemMode] || EMBLEM_MODES.pocket;
-      // 색을 그대로 두는 선택 — 색 지시를 아예 빼고, 교복임을 드러내는 것만 지운다.
+      // 색을 그대로 두는 선택 — 사진에서 읽은 색을 이름으로 적는다(위 「옷 색을 사진에서 읽어…」)
+      if (cw.keepColors && colors && colors.length) {
+        var others = colors.missing > 0;
+        var who = colors.length === 1 && !others
+          ? 'A ' + outfitColorPhrase(colors[0], true).replace(/^a /, '')
+          : 'Each person keeps their own colors, every top a plain cotton crew-neck: ' + colors.map(function (p) {
+              return 'the ' + (PERSON_ORDER_EN[p.rank] || 'next') + ' person from the left wears ' + outfitColorPhrase(p);
+            }).join('; ') + (others ? '; everyone else wears plain solid muted cotton clothes' : '');
+        return who + '. ' + outfitClosing(emblemMode);
+      }
+      // 색을 못 읽었을 때(옷 마스크·얼굴 문제) — 없는 색을 지키라고 하지 않고 무난한 색을 고른다
       if (cw.keepColors) {
-        return 'a plain simple childrens outfit keeping the exact same colors and fabric as the garment already worn — do not change any color. '
-          + 'Use a collar and closure style clearly different from a school or kindergarten uniform. '
-          + emblem + ' '
-          + 'Keep the bottoms in their existing color and pattern. '
-          + 'No logos, no badges, no crest, no institution lettering, no school uniform markings. '
-          + 'Natural fabric folds matching the pose, photorealistic, not an illustration.';
+        return 'A plain solid cotton crew-neck top and plain solid bottoms in muted natural colors. ' + outfitClosing(emblemMode);
       }
       // 색이 원본에 끌려간다는 제보를 받고 "원본 색은 무시하라"를 앞에 붙이고 목표 색을
       // 끝에서 한 번 더 반복해 강하게 밀어붙여 봤다. 되돌렸다 — 같은 사진으로 A/B를
       // 돌려보니 강한 쪽이 가슴에 **없던 네모 마크를 새로 만들어냈다.** 프롬프트에
-      // "no logos, no badges"가 있는데도 그랬다. 강하게 지시하면 모델이 더 많이 다시
-      // 그리고, 그 과정에서 없던 것이 생긴다.
+      // "no logos, no badges"가 있는데도 그랬다(→ 지금은 그 낱말 자체를 뺐다).
+      // 강하게 지시하면 모델이 더 많이 다시 그리고, 그 과정에서 없던 것이 생긴다.
       // 색이 약한 것보다 없던 마크가 생기는 쪽이 훨씬 나쁘다 — 기관 마크를 없애는 게
-      // 이 기능의 목적이기 때문이다. 색 강화는 다른 방법을 찾아야 한다(프롬프트로
-      // 밀어붙이는 방향은 막다른 길이다).
-      return 'a plain simple childrens outfit dyed in ' + cw.top + ', with a narrow trim band at the cuffs and collar in ' + cw.trim + '. '
-        + 'Use a collar and closure style clearly different from a school or kindergarten uniform. '
-        + emblem + ' '
-        + 'Bottoms are either ' + cw.bottomSolid + ' shorts or trousers, or ' + cw.bottomPlaid + ' pleated skirt — whichever matches the garment already worn. '
-        + 'No other logos, no badges, no crest, no institution lettering, no school uniform markings. '
-        + 'Natural fabric folds matching the pose, photorealistic, not an illustration.';
+      // 이 기능의 목적이기 때문이다.
+      var topName = plainColorName(cw.top), botName = plainColorName(cw.bottomSolid);
+      var kinds = (colors || []).map(function (p) { return p.bottomKind; });
+      var known = kinds.length > 0 && kinds.every(Boolean) && !(colors.missing > 0);
+      var same = known && kinds.every(function (k) { return k === kinds[0]; });
+      if (known && !same) {
+        // 사람마다 하의가 다르면(치마/반바지) 왼쪽부터 말한다
+        return 'Each person wears a plain solid ' + topName + ' cotton crew-neck top: ' + colors.map(function (p) {
+          return 'the ' + (PERSON_ORDER_EN[p.rank] || 'next') + ' person from the left with plain solid ' + botName + ' ' + BOTTOM_WORD[p.bottomKind];
+        }).join('; ') + '. ' + outfitClosing(emblemMode);
+      }
+      return 'A plain solid ' + topName + ' cotton crew-neck top and plain solid ' + botName + ' '
+        + (same ? BOTTOM_WORD[kinds[0]] : 'bottoms') + '. ' + outfitClosing(emblemMode);
     }
 
     function buildOutfitSummaryKo(colorway, emblemMode) {
@@ -5904,6 +6851,9 @@
     // 매겨져서 $0.60까지 간다(실측 기준 1.8MP면 $0.09).
     // 진단에 쓰는 상한(VISION_MAX_SIDE)과 같은 값으로 맞춰 둔다.
     var FAL_MAX_SIDE = 1568;
+    // 옷 교체에서 마스크 안 원본을 회색으로 지워 보낼지(아래 blankInsideMask). A/B로 정한 기본값.
+    // A/B(같은 시드 5장)에서 켠 쪽이 헌 옷 조각(흰 소매·허리띠·블레이저 테두리)이 새 옷에 섞이는 일이 눈에 띄게 줄었다.
+    var OUTFIT_BLANK_INSIDE_MASK = true;
     function falSendSize(ow, oh) {
       var k = Math.min(1, FAL_MAX_SIDE / Math.max(ow, oh));
       return { w: roundUpTo32(Math.round(ow * k)), h: roundUpTo32(Math.round(oh * k)) };
@@ -5952,10 +6902,30 @@
       return out;
     }
 
+    // 마스크 안쪽의 원본 픽셀을 회색으로 지워서 보낸다. 마스크로 비운 자리를 FLUX Fill이 백지에서 그리지 않고 원본 구조를
+    // 그대로 물려받는 것으로 보인다(A/B 실측: 흰 셔츠·리본·멜빵·허리띠·흰 소매가 «새 옷» 안에 그대로 남아 헌 옷과 새 옷이
+    // 섞인 옷이 나왔다). 회색으로 지우면 그 구조를 베낄 수 없다. 얼굴·손은 마스크에서 이미 빠져 있어 그대로 남는다.
+    // 가장자리는 maskToAlpha가 살짝 흐려서 경계에 회색 테두리가 남지 않는다.
+    function blankInsideMask(ic, mask, sw, sh) {
+      var out = document.createElement('canvas');
+      out.width = sw; out.height = sh;
+      var ox = out.getContext('2d');
+      ox.drawImage(ic, 0, 0);
+      var g = document.createElement('canvas');
+      g.width = sw; g.height = sh;
+      var gx = g.getContext('2d');
+      gx.fillStyle = '#808080';
+      gx.fillRect(0, 0, sw, sh);
+      gx.globalCompositeOperation = 'destination-in';
+      gx.drawImage(maskToAlpha(mask, sw, sh), 0, 0);
+      ox.drawImage(g, 0, 0);
+      return out;
+    }
+
     // promptOverrideForTest — 같은 사진·같은 마스크에 프롬프트만 바꿔 A/B로 비교할 때 쓴다.
     // 프롬프트로 결과를 조종하려 한 적이 두 번 있었고 두 번 다 실측으로 뒤집혔다
     // (강하게 밀어붙이니 없던 마크를 만들어냈다). 그래서 비교 경로를 열어둔다.
-    async function runOutfitSwap(img, faces, riskResult, colorway, emblemMode, promptOverrideForTest) {
+    async function runOutfitSwap(img, faces, riskResult, colorway, emblemMode, promptOverrideForTest, opts) {
 
       var ow = img.naturalWidth, oh = img.naturalHeight;
       var send = falSendSize(ow, oh);
@@ -5987,19 +6957,26 @@
           width: hb.width * sw / ow, height: hb.height * sh / oh,
         };
       });
-      var clothesMask = await getClothesMask(img, imageCacheKey('outfit', img.src));
+      var clothesMask = await getClothesMask(img, imageCacheKey('outfit-strict', img.src), true, faces);
       var mask = buildClothingMask(scaledFaces, sw, sh, personMask, handBoxes, clothesMask);
       console.log('[옷교체] 마스크 — ' + (clothesMask ? '옷 분할 사용' : (personMask ? '인물 분리 + 네모' : '네모만'))
         + ', 손 ' + handBoxes.length + '개 제외');
+      // 「색 안 바꾸기」일 때만: 원래 옷 색을 사진에서 읽어 색 이름으로 지정한다(위 「옷 색을 사진에서 읽어…」)
+      var readColors = null;
+      if (!promptOverrideForTest) {
+        try { readColors = describeOutfitColors(img, faces, clothesMask); } catch (e) { console.warn('[옷교체] 옷 색 읽기 실패 — 색 지정 없이 진행:', e.message); }
+        if (readColors) console.log('[옷교체] 사진에서 읽은 옷:', outfitColorsKo(readColors), readColors.map(function (p) { return p.bottomKind || '?'; }).join('/'));
+      }
 
+      var blank = opts && opts.blank != null ? !!opts.blank : OUTFIT_BLANK_INSIDE_MASK;
       var data = await postJson(INPAINT_BACKEND_URL, {
-        imageBase64: ic.toDataURL('image/png').split(',')[1],
+        imageBase64: (blank ? blankInsideMask(ic, mask, sw, sh) : ic).toDataURL('image/png').split(',')[1],
         maskBase64: mask.toDataURL('image/png').split(',')[1],
         mediaType: 'image/png',
         // 프롬프트를 직접 지정한다 — 서버는 마스크가 '글자'인지 '옷'인지 모른다.
         // 로고·엠블럼·무늬가 다시 생기지 않도록 명시하는 것이 핵심.
         // 컬러체인지/엠블럼 선택에 따라 문구만 바뀐다 — 마스크(위 buildClothingMask)는 그대로.
-        promptOverride: promptOverrideForTest || buildOutfitFillPrompt(colorway, emblemMode),
+        promptOverride: promptOverrideForTest || buildOutfitFillPrompt(colorway, emblemMode, readColors),
         grade: riskResult && riskResult.grade,
         locationEvidence: riskResult && riskResult.locationEvidence,
       });
@@ -6008,41 +6985,84 @@
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
       console.log('[옷교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (마스크 안쪽만 합성)', data);
-      return { canvas: out, data: data };
+      return { canvas: out, data: data, colors: readColors };
     }
 
     // ===== 옷 색만 바꾸기 (AI 없이) =====
-    // 옷 분할 마스크 안쪽의 색조·채도만 목표색으로 옮기고 밝기는 원본을 그대로 둔다.
-    // 캔버스의 'color' 합성이 정확히 그 일을 한다(CSS mix-blend-mode: color와 같은 규칙) —
-    // 주름·그림자·단추·무늬가 밝기 정보에 담겨 있어서 전부 살아남는다.
+    // 예전에는 캔버스 'color' 합성으로 옷 전체에 목표색의 색조·채도를 덮었다. 밝기는 남지만 **색이 하나로 뭉쳐서**
+    // 낡은 사진처럼 갈색 한 톤이 됐다(실측: 체크 치마·파란 리본·넥타이가 전부 같은 갈색, 흰 셔츠·도복은 누런 크림색,
+    // 신발까지 물듦). 그래서 색을 나눠서 바꾼다:
+    //   · 색이 있는 픽셀(파랑·초록·빨강 등): 색조를 목표색으로 옮기고 채도는 목표색 쪽으로 끌어온다. 밝기는 그대로라
+    //     주름·그림자·체크 무늬의 명암이 산다.
+    //   · 밝은 무채색(흰 셔츠·도복): 목표색을 살짝만 얹는다 — 완전히 흰색으로 두면 «바뀐 게 없다»고 느끼고, 다 덮으면 누렇다.
+    //   · 아주 어두운 무채색(검정 허리띠·바지): 진한 색 기운이 돌 정도로만 물들인다. 순흑·순백은 그대로 둔다.
+    // 마스크는 옷(4번)만 쓴다 — 신발·머리 장식(5번)은 옷이 아니다. 무채색을 건드리지 않으므로 5번이 받쳐 주던
+    // "흰 옷이 4번에서 새는" 문제도 더는 문제가 아니다.
     //
     // AI를 부르지 않으므로 즉시 끝나고 비용이 0이고 사진이 기기 밖으로 나가지 않는다.
     // 한계: 마크는 모양이 그대로 남는다(색만 바뀐다). 그래서 화면에 그 사실을 적는다.
+    function hexToHsl(hex) {
+      var n = parseInt(String(hex).slice(1), 16);
+      return rgbToHsl((n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255);
+    }
+    function rgbToHsl(r, g, b) {
+      var mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn, h = 0, sat = 0;
+      if (d > 0) {
+        sat = d / (1 - Math.abs(2 * l - 1));
+        if (mx === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        else if (mx === g) h = ((b - r) / d + 2) / 6;
+        else h = ((r - g) / d + 4) / 6;
+      }
+      return [h, sat, l];
+    }
+    function hslToRgb(h, sat, l) {
+      var c = (1 - Math.abs(2 * l - 1)) * sat, x = c * (1 - Math.abs((h * 6) % 2 - 1)), m = l - c / 2, r, g, b;
+      var k = Math.floor(h * 6) % 6;
+      if (k === 0) { r = c; g = x; b = 0; } else if (k === 1) { r = x; g = c; b = 0; } else if (k === 2) { r = 0; g = c; b = x; }
+      else if (k === 3) { r = 0; g = x; b = c; } else if (k === 4) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
+      return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+    }
+
     async function runOutfitRecolor(img, targetHex) {
       var w = img.naturalWidth, h = img.naturalHeight;
-      var clothes = await getClothesMask(img, imageCacheKey('recolor', img.src));
+      var clothes = await getClothesMask(img, imageCacheKey('recolor-strict', img.src), true);
       if (!clothes) {
         var e = new Error('옷 영역을 찾지 못했어요.');
         e.noClothes = true;
         throw e;
       }
-      // 옷만 잘라낸 판에 목표색을 'color'로 얹는다
-      var layer = document.createElement('canvas');
-      layer.width = w; layer.height = h;
-      var lx = layer.getContext('2d');
-      lx.drawImage(img, 0, 0);
-      lx.globalCompositeOperation = 'color';
-      lx.fillStyle = targetHex;
-      lx.fillRect(0, 0, w, h);
-      lx.globalCompositeOperation = 'destination-in';
-      lx.drawImage(clothes, 0, 0, w, h);
-
       var out = document.createElement('canvas');
       out.width = w; out.height = h;
       var ox = out.getContext('2d');
       ox.drawImage(img, 0, 0);
-      ox.drawImage(layer, 0, 0);
-      console.log('[옷색변경] 완료 — 옷 분할 마스크로 색조만 이동, 비용 0');
+      var id = ox.getImageData(0, 0, w, h), d = id.data;
+      var mk = document.createElement('canvas');
+      mk.width = w; mk.height = h;
+      var mx = mk.getContext('2d');
+      mx.drawImage(clothes, 0, 0, w, h);
+      var md = mx.getImageData(0, 0, w, h).data;
+      var t = hexToHsl(targetHex);
+      for (var i = 0; i < d.length; i += 4) {
+        if (md[i + 3] < 128) continue;
+        var hsl = rgbToHsl(d[i] / 255, d[i + 1] / 255, d[i + 2] / 255);
+        var sat = hsl[1], l = hsl[2], ns;
+        if (sat < 0.14 || l < 0.12 || l > 0.97) {
+          if (l < 0.03 || l > 0.97) continue;   // 순흑·순백은 그대로(그림자·하이라이트)
+          // 회색·진회색 옷은 목표색을 그대로 입히고(그 옷의 색이 «회색»이라는 정보뿐이라 물들여도 이상하지 않다),
+          // 밝은 흰 옷(셔츠·도복)만 살짝 물들인다 — 다 덮으면 누렇게 뜬다
+          ns = l > 0.85 ? t[1] * 0.45 : (l < 0.2 ? t[1] * 0.7 : t[1]); // 검정 계열은 진한 갈색 기운이 돌 정도로만
+        } else {
+          ns = t[1] + (sat - t[1]) * 0.35;      // 색이 있는 픽셀: 채도를 목표색 쪽으로
+        }
+        var rgb = hslToRgb(t[0], Math.min(1, Math.max(0, ns)), l);
+        // 색조를 옮기면 눈에 보이는 밝기(BT.601)가 달라진다(파랑→갈색은 더 밝다) — 원래 밝기로 맞춰서 주름·그림자를 지킨다
+        var y0 = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        var y1 = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+        var k = y1 > 1 ? y0 / y1 : 1;
+        d[i] = Math.min(255, rgb[0] * k); d[i + 1] = Math.min(255, rgb[1] * k); d[i + 2] = Math.min(255, rgb[2] * k);
+      }
+      ox.putImageData(id, 0, 0);
+      console.log('[옷색변경] 완료 — 색이 있는 곳은 색조를 옮기고 흰 옷은 살짝만 물들임, 비용 0');
       return out;
     }
 
@@ -6124,15 +7144,12 @@
 
     // 지우는 자리를 "무엇으로 채울지" 말한다. 색·질감을 주변에 맞추라고 해야 이음선이
     // 안 생긴다(실측: 이 문구로 두 사진 모두 이음선이 보이지 않았다).
-    var EMBLEM_FILL_PROMPT = 'plain fabric with no emblem, no badge, no crest, no logo and no '
-      + 'lettering, exactly the same fabric colour and texture as the surrounding garment, '
-      + 'natural folds matching the pose, photorealistic, not an illustration';
+    var EMBLEM_FILL_PROMPT = 'smooth plain fabric in exactly the same colour and texture as the surrounding garment, '
+      + 'continuing the garment seamlessly across the chest, natural folds matching the pose, photorealistic photograph';
     // 포켓으로 바꾸는 선택 — 원복 느낌을 남기고 싶을 때. 마크 자리에 무늬 없는 주머니를
     // 그린다. 천 색·질감은 여전히 주변에 맞춰야 이음선이 안 생긴다.
-    var EMBLEM_POCKET_PROMPT = 'a small plain patch pocket on the chest with no logo, no badge, '
-      + 'no crest, no lettering and no motif on it, in exactly the same fabric colour and texture '
-      + 'as the surrounding garment, natural folds matching the pose, photorealistic, '
-      + 'not an illustration';
+    var EMBLEM_POCKET_PROMPT = 'a small plain patch pocket on the chest with a smooth flat surface, in exactly the same '
+      + 'fabric colour and texture as the surrounding garment, natural folds matching the pose, photorealistic photograph';
 
     async function runEmblemRemoval(img, faces, riskResult, emblemMode) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
@@ -6432,8 +7449,49 @@
       return prefix + ':' + u.length + ':' + u.slice(0, 24) + ':' + u.slice(-40);
     }
 
+    // 목에서 가슴 사이만 본다 — 넥타이·리본·나비넥타이는 5번(그외)으로 분류되는데,
+    // 그 번호를 통째로 빼면 신발도 같이 빠지고(그래서 strict를 만들었다), 통째로 넣으면
+    // 신발이 돌아온다. 신발은 발 쪽, 머리 장식은 머리 쪽, 넥타이는 목~가슴 쪽이라
+    // 위치로 가른다. 얼굴 기준이라 EMBLEM_BAND(가슴 마크 자리)와 같은 비율을 쓴다.
+    var NECKWEAR_BAND = { findWidthRatio: 1.7, widthRatio: 1.0, aboveRatio: 0.15, heightRatio: 2.0 };
+    function neckwearBands(data, w, h, faces) {
+      var bands = [];
+      (faces || []).forEach(function (f) {
+        var fx = f.box.x, fy = f.box.y, fw = f.box.width, fh = f.box.height;
+        var cx = fx + fw / 2;
+        var x0 = Math.max(0, Math.round(cx - fw * NECKWEAR_BAND.findWidthRatio));
+        var x1 = Math.min(w, Math.round(cx + fw * NECKWEAR_BAND.findWidthRatio));
+        var y0 = Math.max(0, Math.round(fy + fh * 0.9));
+        var shoulder = -1;
+        for (var y = y0; y < h && shoulder < 0; y++) {
+          for (var x = x0; x < x1; x++) { if (data[y * w + x] === 4) { shoulder = y; break; } }
+        }
+        if (shoulder < 0) {
+          // 아래로 스캔해서 옷(4번)을 못 찾았다 — 누움·고개 돌림처럼 얼굴이 기울어진
+          // 자세에서 벌어진다. 그냥 넘기면 이 얼굴의 넥타이·리본은 통째로 보호가
+          // 안 된다. 얼굴 박스를 기준으로 사방을 넉넉히 두른 기본 범위를 대신 쓴다 —
+          // 과소 보호(놓침)보다 과다 보호(더 지움)가 이 앱의 목적에 맞다.
+          bands.push({
+            x0: cx - fw * (NECKWEAR_BAND.widthRatio + 0.5), x1: cx + fw * (NECKWEAR_BAND.widthRatio + 0.5),
+            y0: fy - fh * NECKWEAR_BAND.aboveRatio, y1: fy + fh * (NECKWEAR_BAND.heightRatio + 1),
+          });
+          return;
+        }
+        bands.push({
+          x0: cx - fw * NECKWEAR_BAND.widthRatio, x1: cx + fw * NECKWEAR_BAND.widthRatio,
+          y0: shoulder - fh * NECKWEAR_BAND.aboveRatio, y1: shoulder + fh * NECKWEAR_BAND.heightRatio,
+        });
+      });
+      return bands;
+    }
     // 옷이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하거나 미더우면 null.
-    async function getClothesMask(img, cacheKey) {
+    // strict: 4번(옷)만(+얼굴 기준 목~가슴 띠 안의 5번). 옷 교체(AI가 마스크 안을 새로 그린다)는
+    // strict로 부른다 — 5번(그외)을 통째로 넣으면 신발까지 «옷»으로 다시 그려졌다(A/B 실측:
+    // 아이3의 운동화가 뭉개지고 모양이 바뀜). 그런데 통째로 빼면 넥타이·리본이 5번이라 마스크에서
+    // 빠져서 새 옷 위에 원본 넥타이가 그대로 남았다(실측: 아이3 결과 사진, 목 밑 넥타이가 안 바뀜).
+    // faces를 주면 그 목~가슴 띠 안의 5번만 되살린다(신발·머리 장식이 있는 자리는 그대로 뺀다).
+    // 색 바꾸기(로컬)·위험 지도는 흰 옷이 4번에서 새는 것을 5번이 받쳐 주므로 예전 그대로 4+5를 쓴다.
+    async function getClothesMask(img, cacheKey, strict, faces) {
       if (cacheKey && clothesMaskCache.key === cacheKey && clothesMaskCache.canvas) {
         return clothesMaskCache.canvas;
       }
@@ -6445,14 +7503,30 @@
         var cat = res.categoryMask;
         var w = cat.width, h = cat.height;
         var data = cat.getAsUint8Array();
+        var bands = strict ? neckwearBands(data, w, h, faces) : [];
+        function inBands(x, y) {
+          for (var b = 0; b < bands.length; b++) {
+            var bd = bands[b];
+            if (x >= bd.x0 && x <= bd.x1 && y >= bd.y0 && y <= bd.y1) return true;
+          }
+          return false;
+        }
 
         var cv = document.createElement('canvas');
         cv.width = w; cv.height = h;
         var ctx = cv.getContext('2d');
         var idata = ctx.createImageData(w, h);
+        var skin = document.createElement('canvas');
+        skin.width = w; skin.height = h;
+        var skx = skin.getContext('2d');
+        var sdata = skx.createImageData(w, h);
         var clothes = 0;
         for (var i = 0; i < data.length; i++) {
-          var on = CLOTHES_CATEGORIES.indexOf(data[i]) >= 0 ? 255 : 0;
+          if (data[i] === 2 || data[i] === 3) { sdata.data[i * 4 + 3] = 255; }
+          var v = data[i];
+          var on = strict
+            ? (v === 4 || (v === 5 && bands.length > 0 && inBands(i % w, (i - i % w) / w)) ? 255 : 0)
+            : (CLOTHES_CATEGORIES.indexOf(v) >= 0 ? 255 : 0);
           if (on) clothes++;
           idata.data[i * 4] = 255;
           idata.data[i * 4 + 1] = 255;
@@ -6460,6 +7534,7 @@
           idata.data[i * 4 + 3] = on;
         }
         ctx.putImageData(idata, 0, 0);
+        skx.putImageData(sdata, 0, 0);
         cat.close();
 
         var pct = clothes / data.length;
@@ -6484,6 +7559,7 @@
           }
         }
         out = g;
+        out._skin = skin; // 맨살(몸·얼굴) 마스크 — describeOutfitColors가 하의 모양을 가릴 때 쓴다
       } catch (e) {
         console.warn('[옷분할] 실패 — 얼굴 기준 네모로 대체:', e.message);
         return null;
@@ -6539,9 +7615,10 @@
           var ys = pts.map(function (p) { return p.y * h; });
           var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
           var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-          // 랜드마크는 손가락 뼈대만 잡아서 살집·소매가 삐져나온다. 손 크기에 비례해
-          // 넉넉히 넓힌다 — 조금 넓게 지키는 쪽이 손이 다시 그려지는 것보다 낫다.
-          var padX = (x1 - x0) * 0.35, padY = (y1 - y0) * 0.35;
+          // 랜드마크는 손가락 뼈대만 잡아서 살집이 조금 삐져나온다 — 손 크기에 비례해 넓힌다.
+          // 예전에는 35%씩 넓혔는데, 그러면 손목에 닿은 소매 끝(흰 소매 끝 등)까지 마스크에서 빠져서 새 옷 옆에 헌 소매가
+          // 그대로 남았다(옷 교체 A/B 실측: 태권도복). 살집은 12%면 덮이고, 옷 마스크(4번)는 원래 맨살을 안 담는다.
+          var padX = (x1 - x0) * 0.12, padY = (y1 - y0) * 0.12;
           return { x: x0 - padX, y: y0 - padY, width: (x1 - x0) + padX * 2, height: (y1 - y0) + padY * 2 };
         });
       } catch (e) {
@@ -7016,7 +8093,15 @@
       (faceBoxes || []).forEach(function (f) {
         var padX = f.width * 0.35, padTop = f.height * 0.55;
         var padBottom = f.height * padBottomRatio;
-        x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop + padBottom);
+        // 얼굴+머리는 그대로 넓게 덮는다(이 앱에서 가장 큰 위험이라 안 줄인다).
+        x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop);
+        // 그 아래(목 피부용 여백)만 얼굴 폭 그대로 내리지 않고 목 폭(얼굴의 60%)만큼만
+        // 좁혀서 덮는다 — 얼굴 폭 그대로 내리면 그 귀퉁이가 어깨(라펠·깃) 위까지 넘어가서
+        // 실측(아이3)에서 라펠 끝이 원본 그대로 남아 새 옷 위에 얹힌 것처럼 보였다.
+        if (padBottom > 0) {
+          var neckW = f.width * 0.6, neckX = f.x + (f.width - neckW) / 2;
+          x.fillRect(neckX, f.y + f.height, neckW, padBottom);
+        }
       });
       // 손도 같이 덮는다. 손이 가슴 앞에 있으면 AI가 손과 옷을 같이 새로 그리면서
       // "옷을 들고 있는 자세"를 만들어냈다(실사용 제보). 손은 아이 신체이니 애초에
@@ -7168,6 +8253,46 @@
       return { x0: x0, y0: y0, x1: x1 + step, y1: y1 + step };
     }
 
+    // 같은 줄에 붙어 있는 조각을 하나로 묶는다. OCR이 한 간판을 "청룡"·"태권도"·"체육관"처럼
+    // 여러 낱말로 쪼개 주면, 낱말별로 따로 덮어서 틈새로 원본이 비치고 조각조각 나 보인다
+    // (실측: 태권도장 간판 사진). visionLinesToTargets가 Vision 조각을 줄로 묶는 것과 같은
+    // 판정(visionAdjacent — 세로 중심 근접·높이 비슷·가로 틈이 좁음)을, 여기서는 이미 아는
+    // 실제 픽셀 크기로 다시 적용한다. 힌트 재탐색·Tesseract 폴백처럼 그 병합을 거치지 않는
+    // 경로도 있어서, 덮기 직전에 한 번 더 걸러주는 안전망이다.
+    function groupAdjacentTexts(texts, imgW, imgH) {
+      var items = (texts || []).map(function (t) {
+        var b = textWordToPixelBbox(t, imgW, imgH);
+        return { t: t, x0: b.x0, x1: b.x1, y0: b.y0, y1: b.y1, cy: (b.y0 + b.y1) / 2, h: b.y1 - b.y0 };
+      });
+      var n = items.length, root = [], i, j;
+      for (i = 0; i < n; i++) root[i] = i;
+      function find(a) { while (root[a] !== a) { root[a] = root[root[a]]; a = root[a]; } return a; }
+      function sameLine(p, q) {
+        var hMin = Math.min(p.h, q.h), hMax = Math.max(p.h, q.h);
+        var gap = Math.max(0, Math.max(p.x0, q.x0) - Math.min(p.x1, q.x1));
+        return hMax <= hMin * 2.2 && Math.abs(p.cy - q.cy) <= hMin * 0.6 && gap <= hMax * 1.2;
+      }
+      for (i = 0; i < n; i++) {
+        for (j = i + 1; j < n; j++) {
+          if (sameLine(items[i], items[j])) root[find(i)] = find(j);
+        }
+      }
+      var groups = {};
+      for (i = 0; i < n; i++) { var k = find(i); (groups[k] = groups[k] || []).push(items[i]); }
+      return Object.keys(groups).map(function (key) {
+        var g = groups[key].sort(function (a, b) { return a.x0 - b.x0; });
+        var gx0 = Math.min.apply(null, g.map(function (m) { return m.x0; }));
+        var gx1 = Math.max.apply(null, g.map(function (m) { return m.x1; }));
+        var gy0 = Math.min.apply(null, g.map(function (m) { return m.y0; }));
+        var gy1 = Math.max.apply(null, g.map(function (m) { return m.y1; }));
+        return {
+          text: g.length === 1 ? g[0].t.text : joinVisionTokens(g.map(function (m) { return m.t.text; })),
+          xPct: (gx0 + gx1) / 2 / imgW * 100, yPct: (gy0 + gy1) / 2 / imgH * 100,
+          wPct: (gx1 - gx0) / imgW * 100, hPct: (gy1 - gy0) / imgH * 100,
+        };
+      });
+    }
+
     function applyPatchFill(img, texts, imgW, imgH, mode, cellPx, brushMask) {
       var canvas = document.createElement('canvas');
       canvas.width = imgW; canvas.height = imgH;
@@ -7179,17 +8304,45 @@
       clean.width = imgW; clean.height = imgH;
       clean.getContext('2d').drawImage(img, 0, 0, imgW, imgH);
 
-      (texts || []).forEach(function (t) {
+      // 사용자가 주변색·모자이크를 직접 고르면 그대로 덮는다. 자동일 때만 기관 이름을 바꿔 쓴다.
+      var swapOk = mode !== 'color' && mode !== 'mosaic';
+      var replaced = [], kept = 0, angles = [], slants = [];
+      groupAdjacentTexts(texts, imgW, imgH).forEach(function (t) {
+        // 「어린이집」뿐인 글자는 이미 일반 이름이다 — 덮으면 오히려 자국만 남는다
+        if (swapOk && isGenericOnly(t.text)) { kept++; return; }
         var b = textWordToPixelBbox(t, imgW, imgH);
-        var pad = Math.max(2, (b.y1 - b.y0) * 0.15);
+        var padY = Math.max(2, (b.y1 - b.y0) * 0.15);
+        // 가로는 세로보다 넉넉히 둔다 — OCR이 준 글자 폭이 실제보다 좁으면(실측:
+        // 글자 수가 많거나 자간이 좁은 간판에서 자주 벌어짐) 원래 글자의 양 끝
+        // 자락이 이 상자 밖에 남아 안 지워진다. 고정 비율로는 이름이 길수록 모자란
+        // 양도 커져서 안 맞았다(실측: 5자는 됐는데 6자에서 다시 잔해가 남음) — 한글
+        // 한 글자는 대략 정사각형이라 "글자 수 × 높이"를 기대 폭으로 삼고, 준 폭이
+        // 그보다 좁으면 모자란 만큼만 더 채운다. 지우는 쪽이 목적이니 과소 추정보다
+        // 과다하게 잡는 게 안전하다.
+        var nChars = Math.max(1, String(t.text || '').replace(/\s+/g, '').length);
+        var expectedW = nChars * (b.y1 - b.y0) * 0.95;
+        var shortfall = Math.max(0, expectedW - (b.x1 - b.x0));
+        var padX = Math.max(2, (b.y1 - b.y0) * 0.25, shortfall / 2 + (b.y1 - b.y0) * 0.15);
         var box = {
-          x0: Math.max(0, b.x0 - pad), y0: Math.max(0, b.y0 - pad),
-          x1: Math.min(imgW, b.x1 + pad), y1: Math.min(imgH, b.y1 + pad),
+          x0: Math.max(0, b.x0 - padX), y0: Math.max(0, b.y0 - padY),
+          x1: Math.min(imgW, b.x1 + padX), y1: Math.min(imgH, b.y1 + padY),
         };
         var w = box.x1 - box.x0, h = box.y1 - box.y0;
         if (w <= 0 || h <= 0) return;
 
-        var stats = sampleBoxSurround(clean, box);
+        // box(여백 포함) 기준으로 주변을 재면, box를 넓힐수록(긴 이름) 그 바깥 밴드가
+        // 간판 테두리 같은 다른 요소까지 번져서 배경색을 잘못 읽는다(실측: 남색 간판
+        // 테두리 회색을 배경으로 착각 → 글자 자리가 허옇게 뜸). 글자만 감싼 좁은
+        // 상자(b) 기준으로 재면 항상 같은 자리(글자 바로 옆)만 본다.
+        var stats = sampleBoxSurround(clean, b);
+        var generic = swapOk ? genericNameFor(t.text) : null;
+        if (generic) {
+          var sk = paintGenericName(ctx, clean, box, b, generic, stats, t.text);
+          angles.push(sk.angle * 180 / Math.PI);
+          slants.push(sk.slant * 180 / Math.PI);
+          replaced.push(generic);
+          return;
+        }
         // 'auto'는 배경 균일도로 판단하고, 나머지는 사용자가 고른 대로 강제한다
         var useColor = mode === 'color' || (mode !== 'mosaic' && stats.uniform);
         if (useColor) {
@@ -7265,16 +8418,300 @@
         ectx.drawImage(brushMask, 0, 0);
         ctx.drawImage(effect, 0, 0);
       }
+      canvas._replaced = replaced;
+      canvas._angles = angles;
+      canvas._slants = slants;
+      canvas._kept = kept;
       return canvas;
     }
 
     // 배경이 균일하지 않을 때 — 셀 단위 평균색으로 뭉갠다
+    // ===== 기관 이름을 일반 이름으로 바꿔 쓰기 =====
+    // 「햇살어린이집」처럼 기관 이름이 잡히면 모자이크나 색으로 덮는 대신 그 자리에 「어린이집」이라고 다시 쓴다.
+    // 덮은 자국이 안 남고, 사진이 "이 어린이집"이 아니라 "어느 어린이집"으로 읽힌다.
+    // 종류 낱말로 끝나는 이름만 바꾼다. 종류 낱말뿐인 글자("어린이집")는 이미 일반 이름이라 그대로 두고,
+    // 이름 뒤에 다른 글자가 붙은 것("햇살어린이집 원생모집")·전화번호처럼 바꿀 수 없는 것은 예전처럼 덮는다.
+    // 순서가 중요하다: 긴 낱말이 먼저여야 "○○대학교"가 "학교"로 뭉개지지 않는다.
+    var GENERIC_NAME_RULES = [
+      [/어린이집$/, '어린이집'], [/유치원$/, '유치원'], [/초등학교$/, '초등학교'], [/중학교$/, '중학교'],
+      [/고등학교$/, '고등학교'], [/대학교$/, '대학교'], [/학교$/, '학교'], [/학원$/, '학원'], [/교습소$/, '교습소'],
+      [/체육관$/, '체육관'], [/도서관$/, '도서관'], [/박물관$/, '박물관'], [/미술관$/, '미술관'],
+      [/병원$/, '병원'], [/카페$/, '카페'], [/식당$/, '식당'], [/마트$/, '마트'], [/공원$/, '공원'], [/놀이터$/, '놀이터'],
+    ];
+    var GENERIC_ONLY_RE = /^(어린이집|유치원|초등학교|중학교|고등학교|대학교|학교|학원|교습소|체육관|도서관|박물관|미술관|병원|카페|식당|마트|공원|놀이터)$/;
+    var GENERIC_FONT = '"Pretendard Variable", Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+
+    function genericNameFor(text) {
+      var t = String(text || '').replace(/\s+/g, '');
+      if (!hasProperName(t)) return null; // 종류 낱말뿐이거나 이름이 한 글자 이하
+      for (var i = 0; i < GENERIC_NAME_RULES.length; i++) {
+        if (GENERIC_NAME_RULES[i][0].test(t)) return GENERIC_NAME_RULES[i][1];
+      }
+      return null;
+    }
+    function isGenericOnly(text) {
+      return GENERIC_ONLY_RE.test(String(text || '').replace(/\s+/g, ''));
+    }
+
+    // 상자 안을 네 변 바깥의 색을 이어서 채운다(쿤스 패치). 단색으로 칠하면 무늬 있는 간판에서 얼룩처럼 뜨고,
+    // 모자이크 위에 글자를 쓰면 지저분하다. 네 변에서 안쪽으로 색이 번지므로 나무결·그러데이션에서도 덜 튄다.
+    // 이미지 가장자리라 바깥이 없는 변은 마주 보는 변을, 둘 다 없으면 주변 대표색(fallback)을 쓴다.
+    function fillBoxSmooth(ctx, clean, box, fallback) {
+      var W = clean.width, H = clean.height;
+      var x0 = Math.floor(box.x0), y0 = Math.floor(box.y0), x1 = Math.ceil(box.x1), y1 = Math.ceil(box.y1);
+      var w = x1 - x0, h = y1 - y0;
+      var flat = 'rgb(' + fallback[0] + ',' + fallback[1] + ',' + fallback[2] + ')';
+      if (w < 2 || h < 2) { ctx.fillStyle = flat; ctx.fillRect(x0, y0, Math.max(1, w), Math.max(1, h)); return; }
+      var cctx = clean.getContext('2d');
+      // 변 하나의 색줄: 상자 바깥 3픽셀 띠를 가로지르는 평균
+      function band(bx, by, bw, bh, perRow) {
+        if (bx < 0 || by < 0 || bx + bw > W || by + bh > H) return null;
+        var d = cctx.getImageData(bx, by, bw, bh).data;
+        var n = perRow ? bh : bw, out = [];
+        for (var k = 0; k < n; k++) {
+          var sum = [0, 0, 0], cnt = 0;
+          var m = perRow ? bw : bh;
+          for (var q = 0; q < m; q++) {
+            var i = (perRow ? (k * bw + q) : (q * bw + k)) * 4;
+            sum[0] += d[i]; sum[1] += d[i + 1]; sum[2] += d[i + 2]; cnt++;
+          }
+          out.push([sum[0] / cnt, sum[1] / cnt, sum[2] / cnt]);
+        }
+        return out;
+      }
+      var L = band(x0 - 3, y0, 3, h, true), R = band(x1, y0, 3, h, true);
+      var T = band(x0, y0 - 3, w, 3, false), B = band(x0, y1, w, 3, false);
+      function constant(n) { var a = []; for (var k = 0; k < n; k++) a.push(fallback); return a; }
+      L = L || R || constant(h); R = R || L;
+      T = T || B || constant(w); B = B || T;
+      function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]; }
+      var TL = mid(L[0], T[0]), TR = mid(R[0], T[w - 1]), BL = mid(L[h - 1], B[0]), BR = mid(R[h - 1], B[w - 1]);
+      var out = ctx.createImageData(w, h);
+      for (var y = 0; y < h; y++) {
+        var v = (y + 0.5) / h;
+        for (var x = 0; x < w; x++) {
+          var u = (x + 0.5) / w, o = (y * w + x) * 4;
+          for (var c = 0; c < 3; c++) {
+            var val = (1 - u) * L[y][c] + u * R[y][c] + (1 - v) * T[x][c] + v * B[x][c]
+              - ((1 - u) * (1 - v) * TL[c] + u * (1 - v) * TR[c] + (1 - u) * v * BL[c] + u * v * BR[c]);
+            out.data[o + c] = val < 0 ? 0 : val > 255 ? 255 : val;
+          }
+          out.data[o + 3] = 255;
+        }
+      }
+      ctx.putImageData(out, x0, y0);
+    }
+
+    // 원래 글자의 색: 배경에서 가장 멀리 떨어진 픽셀들의 평균. 글자가 안 보이면 null.
+    function sampleInkColor(clean, box, bg) {
+      var x0 = Math.max(0, Math.floor(box.x0)), y0 = Math.max(0, Math.floor(box.y0));
+      var w = Math.min(clean.width, Math.ceil(box.x1)) - x0, h = Math.min(clean.height, Math.ceil(box.y1)) - y0;
+      if (w < 1 || h < 1) return null;
+      var d = clean.getContext('2d').getImageData(x0, y0, w, h).data;
+      var n = d.length / 4, dist = new Float32Array(n), max = 0;
+      for (var i = 0; i < n; i++) {
+        dist[i] = Math.abs(d[i * 4] - bg[0]) + Math.abs(d[i * 4 + 1] - bg[1]) + Math.abs(d[i * 4 + 2] - bg[2]);
+        if (dist[i] > max) max = dist[i];
+      }
+      if (max < 60) return null;
+      // 가장 멀리 떨어진 것부터 본다 — 획이 가는 작은 글자는 가장자리가 배경과 섞여 평균이 탁해진다
+      var sum = [0, 0, 0], cnt = 0;
+      for (var frac = 0.85; frac >= 0.5 && cnt < 3; frac -= 0.15) {
+        sum = [0, 0, 0]; cnt = 0;
+        for (var j = 0; j < n; j++) {
+          if (dist[j] < max * frac) continue;
+          sum[0] += d[j * 4]; sum[1] += d[j * 4 + 1]; sum[2] += d[j * 4 + 2]; cnt++;
+        }
+      }
+      return cnt ? [Math.round(sum[0] / cnt), Math.round(sum[1] / cnt), Math.round(sum[2] / cnt)] : null;
+    }
+
+    // 글자 줄의 기울기를 잰다(라디안).
+    //  · angle: 줄 자체가 기운 정도. 획 픽셀을 각도별로 돌려 보고, 가로줄 분포가 가장 뾰족해지는(윗선·밑선이
+    //    한 줄로 모이는) 각도를 고른다. 글자 모양이 좌우 비대칭이어도(햇·살은 아래로 삐진다) 흔들리지 않는다.
+    //  · slant: 세로획이 누운 정도. 줄을 바로 세운 뒤 세로줄 분포가 가장 뾰족해지는 값. 비스듬히 찍은 간판은
+    //    줄이 안 기울어도 글자가 이탤릭처럼 눕는다 — 줄 기울기만 맞추면 그래도 어색하다.
+    // 0도와 거의 차이가 없으면 0(잡음으로 기울이지 않는다). angle ±15°, slant ±20°를 넘으면 오탐이라 안 잡는다.
+    function estimateTextSkew(mask, w) {
+      var xs = [], ys = [];
+      for (var i = 0; i < mask.length; i++) if (mask[i]) { xs.push(i % w); ys.push((i / w) | 0); }
+      var none = { angle: 0, slant: 0 };
+      if (xs.length < 30) return none;
+      var h = Math.ceil(mask.length / w), n = xs.length, off = 2 * (w + h);
+      var hist = new Uint32Array(4 * (w + h) + 4);
+      function sharp() {
+        var sc = 0;
+        for (var b = 0; b < hist.length; b++) sc += hist[b] * hist[b];
+        hist.fill(0);
+        return sc;
+      }
+      // 줄 기울기: y' = y·cos − x·sin
+      var angle = 0, best = -1, zero = 0, deg, k;
+      for (deg = -15; deg <= 15; deg += 0.5) {
+        var t = deg * Math.PI / 180, cs = Math.cos(t), sn = Math.sin(t);
+        for (k = 0; k < n; k++) hist[Math.round(ys[k] * cs - xs[k] * sn) + off]++;
+        var sc = sharp();
+        if (deg === 0) zero = sc;
+        if (sc > best) { best = sc; angle = t; }
+      }
+      if (best <= zero * 1.005) angle = 0;
+      // 줄을 바로 세운 좌표 (u, v)
+      var ca = Math.cos(angle), sa = Math.sin(angle), us = new Float32Array(n), vs = new Float32Array(n);
+      for (k = 0; k < n; k++) { us[k] = xs[k] * ca + ys[k] * sa; vs[k] = ys[k] * ca - xs[k] * sa; }
+      // 세로획 누움: u' = u + v·tan(slant) (위가 오른쪽으로 누우면 +)
+      var slant = 0, bestS = -1, zeroS = 0;
+      for (deg = -20; deg <= 20; deg += 0.5) {
+        var ts = Math.tan(deg * Math.PI / 180);
+        for (k = 0; k < n; k++) hist[Math.round(us[k] + vs[k] * ts) + off]++;
+        var ss = sharp();
+        if (deg === 0) zeroS = ss;
+        if (ss > bestS) { bestS = ss; slant = deg * Math.PI / 180; }
+      }
+      if (bestS <= zeroS * 1.005) slant = 0;
+      return { angle: angle, slant: slant };
+    }
+
+    // 글자 **획만** 지운다. 상자 전체를 다시 칠하면 나무결·그러데이션이 사각형으로 뭉개져서 "여기를 덮었다"가
+    // 그대로 보인다. 획 픽셀(글자색에 더 가까운 것 + 번진 테두리)만 골라 주변에서 색을 이어 채우고, 남은
+    // 자리에는 주변 알갱이와 같은 세기의 잡음을 얹는다. 획이 안 잡히면 false(→ 호출한 쪽이 상자 채우기로 넘어간다).
+    function eraseTextStrokes(ctx, clean, box, bg, ink, tight, origText) {
+      var x0 = Math.floor(box.x0), y0 = Math.floor(box.y0);
+      var w = Math.ceil(box.x1) - x0, h = Math.ceil(box.y1) - y0;
+      if (w < 3 || h < 3) return null;
+      var img = clean.getContext('2d').getImageData(x0, y0, w, h);
+      var d = img.data, n = w * h;
+      // 획 후보는 글자를 감싼 상자(살짝 부풀린 것) 안으로 한정한다. 여백까지 보면 명찰 테두리 같은
+      // 글자색과 비슷한 다른 물체를 획으로 착각해 지운다. 번짐을 덮는 건 아래 부풀리기가 맡는다.
+      var r = Math.max(1, Math.round((tight.y1 - tight.y0) * 0.03));
+      // 찾는 범위(searchPad)는 r(마스크 부풀리기 반지름)과 다른 값이다 — r을 키우면
+      // 가장자리가 물러져서 흐려지므로 그대로 두고, "얼마나 멀리서 찾을지"만 따로 넓힌다.
+      // applyPatchFill의 padX와 같은 식(글자 수 × 높이 대비 모자란 폭)을 쓴다 — 고정
+      // 비율이면 긴 이름일수록 모자란 양도 커져서 못 따라간다(실측: 6자 이름에서 재현).
+      var nChars = Math.max(1, String(origText || '').replace(/\s+/g, '').length);
+      var expectedW = nChars * (tight.y1 - tight.y0) * 0.95;
+      var shortfall = Math.max(0, expectedW - (tight.x1 - tight.x0));
+      var searchPad = Math.max(2 * r, shortfall / 2 + (tight.y1 - tight.y0) * 0.15);
+      var cx0 = Math.floor(tight.x0 - x0 - searchPad), cx1 = Math.ceil(tight.x1 - x0 + searchPad);
+      var cy0 = Math.floor(tight.y0 - y0 - 2 * r), cy1 = Math.ceil(tight.y1 - y0 + 2 * r);
+      var mask = new Uint8Array(n), cnt = 0;
+      for (var i = 0; i < n; i++) {
+        var ax = i % w, ay = (i - ax) / w;
+        if (ax < cx0 || ax > cx1 || ay < cy0 || ay > cy1) continue;
+        var db = Math.abs(d[i * 4] - bg[0]) + Math.abs(d[i * 4 + 1] - bg[1]) + Math.abs(d[i * 4 + 2] - bg[2]);
+        var di = Math.abs(d[i * 4] - ink[0]) + Math.abs(d[i * 4 + 1] - ink[1]) + Math.abs(d[i * 4 + 2] - ink[2]);
+        if (di < db) { mask[i] = 1; cnt++; }
+      }
+      if (cnt < n * 0.01) return null;
+      var skew = estimateTextSkew(mask, w);
+      // 번진 테두리까지 덮도록 부풀린다(가로 → 세로 두 번)
+      var tmp = new Uint8Array(n), x, y, k;
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        var on = 0;
+        for (k = -r; k <= r && !on; k++) { var xx = x + k; if (xx >= 0 && xx < w && mask[y * w + xx]) on = 1; }
+        tmp[y * w + x] = on;
+      }
+      var grown = new Uint8Array(n);
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        var on2 = 0;
+        for (k = -r; k <= r && !on2; k++) { var yy = y + k; if (yy >= 0 && yy < h && tmp[yy * w + x]) on2 = 1; }
+        grown[y * w + x] = on2;
+      }
+      // 주변 알갱이의 세기: 획이 아닌 픽셀이 이웃 평균에서 얼마나 벗어나는가.
+      // 글자 바로 옆(cx0~cx1)만 본다 — box 전체를 보면(예전 방식) box가 넓어졌을 때
+      // 간판 테두리처럼 진짜 가장자리(배경↔벽 같은 강한 경계)가 섞여 들어와 "알갱이가
+      // 아주 거칠다"고 잘못 재고, 그 세기를 그대로 잡음 진폭으로 써서 글자 지운 자리가
+      // 허옇게 튀었다(실측: 6자 이름 + 넓힌 상자에서 재현).
+      var f = new Float32Array(n * 3), c;
+      for (i = 0; i < n; i++) for (c = 0; c < 3; c++) f[i * 3 + c] = grown[i] ? bg[c] : d[i * 4 + c];
+      var sx0 = Math.max(1, cx0), sx1 = Math.min(w - 2, cx1);
+      var sy0 = Math.max(1, cy0), sy1 = Math.min(h - 2, cy1);
+      var e2 = 0, ec = 0;
+      for (y = sy0; y <= sy1; y++) for (x = sx0; x <= sx1; x++) {
+        var q = y * w + x;
+        if (grown[q] || grown[q - 1] || grown[q + 1] || grown[q - w] || grown[q + w]) continue;
+        for (c = 0; c < 3; c++) {
+          var av = (d[(q - 1) * 4 + c] + d[(q + 1) * 4 + c] + d[(q - w) * 4 + c] + d[(q + w) * 4 + c]) / 4;
+          e2 += (d[q * 4 + c] - av) * (d[q * 4 + c] - av); ec++;
+        }
+      }
+      var sigma = ec ? Math.sqrt(e2 / ec) : 0;
+      // 가우스-자이델: 획 자리를 이웃 평균으로 반복해서 채운다 → 바깥 색이 안쪽으로 번진다
+      for (var it = 0; it < 160; it++) {
+        for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+          var p = y * w + x;
+          if (!grown[p]) continue;
+          for (c = 0; c < 3; c++) {
+            var sum = 0, m = 0;
+            if (x > 0) { sum += f[(p - 1) * 3 + c]; m++; }
+            if (x < w - 1) { sum += f[(p + 1) * 3 + c]; m++; }
+            if (y > 0) { sum += f[(p - w) * 3 + c]; m++; }
+            if (y < h - 1) { sum += f[(p + w) * 3 + c]; m++; }
+            f[p * 3 + c] = sum / m;
+          }
+        }
+      }
+      // 결정적인 잡음(같은 입력은 같은 결과) — 테스트와 미리보기 깜빡임을 피한다
+      var seed = 1234567;
+      var rnd = function () { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296 - 0.5; };
+      var amp = sigma * 3.46 * 0.5; // 균일분포 [-a,a]의 표준편차가 a/√3 → a = σ√3, rnd()는 ±0.5라 두 배
+      for (i = 0; i < n; i++) {
+        if (!grown[i]) continue;
+        var nz = rnd() * 2 * amp;
+        for (c = 0; c < 3; c++) {
+          var v = f[i * 3 + c] + nz;
+          d[i * 4 + c] = v < 0 ? 0 : v > 255 ? 255 : v;
+        }
+      }
+      ctx.putImageData(img, x0, y0);
+      return skew;
+    }
+
+    // 획을 지우고 그 자리에 일반 이름을 다시 쓴다.
+    // box는 여백을 포함한 상자(지우는 범위), tight는 글자만 감싼 상자(글자 크기·색을 읽는 범위).
+    // 글자 크기는 **원래 글자 한 자의 폭**에 맞춘다 — 상자 높이에 맞추면 원래보다 커져서 붙여 놓은 티가 난다.
+    function paintGenericName(ctx, clean, box, tight, word, stats, origText) {
+      var bg = stats.color;
+      var lum = function (c) { return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+      var ink = sampleInkColor(clean, tight, bg);
+      var erased = ink ? eraseTextStrokes(ctx, clean, box, bg, ink, tight, origText) : null;
+      if (!erased) fillBoxSmooth(ctx, clean, box, bg);
+      var skew = erased || { angle: 0, slant: 0 };
+      // 배경과 잘 안 구분되는 색이면 읽히지 않으니 검정·흰색 중 대비가 큰 쪽으로
+      if (!ink || Math.abs(lum(ink) - lum(bg)) < 70) ink = lum(bg) > 140 ? [30, 30, 30] : [245, 245, 245];
+      var tw = tight.x1 - tight.x0, th = tight.y1 - tight.y0;
+      var nOrig = Math.max(1, String(origText || '').replace(/\s+/g, '').length);
+      var charW = tw / nOrig;
+      var hi = th * 0.95, lo = th * 0.5;
+      var size = Math.max(6, Math.min(hi, Math.max(lo, charW)));
+      ctx.save();
+      ctx.font = '700 ' + size + 'px ' + GENERIC_FONT;
+      var perChar = ctx.measureText(word).width / word.length;
+      if (perChar > 0) size = Math.max(6, Math.min(hi, Math.max(lo, size * charW / perChar)));
+      ctx.font = '700 ' + size + 'px ' + GENERIC_FONT;
+      var maxW = (box.x1 - box.x0) * 0.98, mw = ctx.measureText(word).width;
+      if (mw > maxW) { size = Math.max(6, size * maxW / mw); ctx.font = '700 ' + size + 'px ' + GENERIC_FONT; }
+      ctx.fillStyle = 'rgb(' + ink[0] + ',' + ink[1] + ',' + ink[2] + ')';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      // 원래 글자 줄이 기울어 있으면 같은 각도로 기울여 쓴다 — 똑바로 쓰면 붙여 놓은 티가 난다
+      ctx.translate((tight.x0 + tight.x1) / 2, (tight.y0 + tight.y1) / 2);
+      ctx.rotate(skew.angle);
+      ctx.transform(1, 0, -Math.tan(skew.slant), 1, 0, 0); // 세로획이 누운 만큼 같이 눕힌다
+      ctx.fillText(word, 0, size * 0.05);
+      ctx.restore();
+      return skew;
+    }
+
     function drawMosaic(ctx, sourceCanvas, box, cellPx) {
       var w = box.x1 - box.x0, h = box.y1 - box.y0;
       // 셀이 글자보다 작으면 글자 모양이 그대로 남는다 (실측: h/3이면 15%가 읽힘).
       // 한 셀이 글자 하나보다 크도록 잡아야 평균에 배경이 충분히 섞여 뭉개진다.
       // 사용자가 고른 픽셀 크기를 우선 쓰되, 글자보다 작으면 글자 모양이 남으므로 최소값을 지킨다
-      var cell = cellPx ? Math.max(6, cellPx) : Math.max(10, Math.round(h / 1.6));
+      // 사용자가 고른 크기가 글자 높이 대비 너무 작으면 글자 모양이 그대로 읽힌다 — 실제로 높이 154픽셀 간판을
+      // 16픽셀 셀로 덮었더니 «푸른하늘서점»이 그대로 읽혔다(푸른하늘서점 사진). 프라이버시가 목적이라
+      // 고른 값이 작아도 글자 높이의 1/1.8 밑으로는 내려가지 않게 한다. 슬라이더는 그보다 크게만 움직인다.
+      var minCell = Math.max(10, Math.round(h / 1.8));
+      var cell = cellPx ? Math.max(6, cellPx, minCell) : minCell;
       var sctx = sourceCanvas.getContext('2d');
       for (var y = box.y0; y < box.y1; y += cell) {
         for (var x = box.x0; x < box.x1; x += cell) {
@@ -7732,7 +9169,7 @@
             xPct: w.xPct, yPct: w.yPct,
             wPct: w.wPct || 22, hPct: w.hPct || 6,
             tag: '"' + String(w.text || '').slice(0, 12) + '"',
-            rough: !!w.approximate,
+            rough: !!(w.approximate || w.sizeEstimated),
           };
         });
       }
@@ -7996,7 +9433,7 @@
       var words = (ocrResult && ocrResult.words) || [];
       if (words.length > 0) {
         words.forEach(function (w) {
-          var confPart = w.confidence != null ? ('신뢰도 ' + Math.round(w.confidence) + '%') : 'Claude Vision 판독';
+          var confPart = w.confidence != null ? ('신뢰도 ' + Math.round(w.confidence) + '%') : 'Claude Vision 판독' + (w.positionSource === 'vision' ? ' · 글자 위치 정밀' : '');
           var label = '텍스트 감지: "' + w.text + '" · ' + confPart + (w.refined ? ' (영역 확대 재인식)' : '');
           addPin(wrap, legend, num++, w.xPct, w.yPct, label, 'text');
         });
@@ -8484,6 +9921,214 @@
       }
       return { score: r.locationScore, evidence: r.locationEvidence };
     }
+
+    // ===== 장소 지도 — 이 사진에서 실제로 찾은 단서로 단계를 만든다 =====
+    // 단서: ① 사진 파일의 좌표(EXIF) ② 사진 속 장소 글자·랜드마크 이름 ③ 지역 글자(○○구·○○동).
+    // 이름만으로는 대개 안 좁혀진다("햇살어린이집"은 전국에서 175건 검색된다). 지역 글자가 더해져야
+    // 좁혀지는 것을 있는 그대로 보여주는 게 이 지도의 요점이다.
+    // 사진은 안 보낸다 — 장소 글자만 /api/geocode(카카오 장소 검색)로 간다. 지도를 여는 순간에만 부른다.
+    // 결과는 핀이 아니라 반경이다(건물 단위 위치를 찍어 주면 아이 위치를 찾는 도구가 된다).
+    var MAP_REGION_RE = /[가-힣]{2,}(?:시|군|구|읍|면|동)(?![가-힣])/;
+    var mapStepsCache = {};
+
+    function mapDistanceM(a, b) {
+      var R = 6371000, rad = Math.PI / 180;
+      var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+      var h = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+        + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 2 * R * Math.asin(Math.sqrt(h));
+    }
+    function mapRadiusText(m) {
+      return '반경 약 ' + (m >= 1000 ? (m / 1000).toFixed(m % 1000 ? 1 : 0) + 'km' : m + 'm');
+    }
+    // 검색 결과가 그 이름과 실제로 같은 곳들인가: 이름이 들어 있는 것만 남긴다("원생모집" 같은 문구는 0건이 된다).
+    // 남은 곳들이 한 동네에 모여 있으면 그 근처로 좁혀진 것이고, 전국에 흩어져 있으면 안 좁혀진 것이다.
+    // area가 있으면 그 지역 안의 곳만 남긴다(카카오는 다른 구의 비슷한 곳도 섞어 준다).
+    // "스타벅스 강남점"처럼 끝이 "OO점"이면 상호+지점으로 나눈다. 카카오 등록명은 그 사이에
+    // 건물·몰 이름이 끼는 경우가 많아서("스타벅스 케이스퀘어강남점") 정확히 일치하지 않는다.
+    function splitBrandBranch(name) {
+      var parts = name.trim().split(/\s+/);
+      if (parts.length < 2) return null;
+      var last = parts[parts.length - 1];
+      if (!/^[가-힣A-Za-z0-9]{2,}(지)?점$/.test(last)) return null;
+      return { brand: parts.slice(0, -1).join('').replace(/\s/g, ''), branch: last };
+    }
+    function mapNarrow(result, name, area) {
+      var key = name.replace(/\s/g, '');
+      var places = (result && result.places) || [];
+      function areaOk(pl) { return !area || String(pl.address || '').indexOf(area) >= 0; }
+      var hits = places.filter(function (pl) {
+        return String(pl.name || '').replace(/\s/g, '').indexOf(key) >= 0 && areaOk(pl);
+      });
+      // 정확히 일치하는 곳이 없으면, 상호+지점이 (사이에 뭐가 끼었어도) 둘 다 들어있는
+      // 곳까지는 후보로 봐준다 — 카카오맵 자체도 이 정도는 "그 근처에서 다시 찾은 결과"로
+      // 보여준다(실측: "스타벅스 강남점"→"스타벅스 케이스퀘어강남점"). 대신 loose로 표시해
+      // "정확한 지점명은 아니다"를 화면에서 숨기지 않는다.
+      var loose = false;
+      if (!hits.length) {
+        var bb = splitBrandBranch(name);
+        if (bb) {
+          hits = places.filter(function (pl) {
+            var plName = String(pl.name || '').replace(/\s/g, '');
+            var bi = plName.indexOf(bb.brand), ci = plName.indexOf(bb.branch);
+            return bi >= 0 && ci >= bi && areaOk(pl);
+          });
+          if (hits.length) loose = true;
+        }
+      }
+      // 쉼표 뒤는 대개 동·호수 같은 "이름이 아니라 주소" 조각이다(간판을 그대로 옮기면
+      // "사랑아파트, 102동"처럼 붙는다) — 카카오 등록명에는 그 조각이 없어서 정확 일치가
+      // 안 된다. 쉼표 앞까지만 잘라 다시 찾는다.
+      if (!hits.length && key.indexOf(',') >= 0) {
+        var beforeComma = key.slice(0, key.indexOf(','));
+        if (beforeComma.length >= 2) {
+          hits = places.filter(function (pl) {
+            return String(pl.name || '').replace(/\s/g, '').indexOf(beforeComma) >= 0 && areaOk(pl);
+          });
+          if (hits.length) loose = true;
+        }
+      }
+      // 그래도 없으면 간판에 곁들이는 일반 명사(체육관·어린이집 등, PLACE_CATEGORY_RE)를
+      // 뗀 핵심 이름으로 다시 찾는다 — 등록명은 "청룡태권도"인데 간판엔 "청룡태권도체육관"
+      // 처럼 종류어가 붙어 있으면, 정확 일치도 상호+지점 보정도 못 잡는다(실사용 제보 —
+      // Claude가 간판 전체를 한 덩어리로 합쳐 적게 고친 뒤에 새로 드러난 자리).
+      if (!hits.length) {
+        var coreKey = key.replace(PLACE_CATEGORY_RE, '');
+        if (coreKey.length >= 2 && coreKey !== key) {
+          hits = places.filter(function (pl) {
+            return String(pl.name || '').replace(/\s/g, '').indexOf(coreKey) >= 0 && areaOk(pl);
+          });
+          if (hits.length) loose = true;
+        }
+      }
+      if (!hits.length) return null;
+      // 이름이 같아도 전혀 다른 동네의 동명이인이 섞여 들어온다(실측: "우에무라" 검색에
+      // 대전의 실제 라멘집 옆에 화성의 "한국우에무라공장"이 같이 잡혀 평균이 흩어졌다).
+      // 진짜 그 가게는 한 동네에 모여 있으므로, 가장 이웃이 많은 곳을 중심으로 그 무리만
+      // 남기고 멀리 떨어진 동명이인은 버린다.
+      // ponytail: 정식 군집화가 아니라 "가장 가까운 이웃이 많은 점 하나"만 기준으로 삼는
+      // 그리디 방식이다 — 무리가 두 개로 쪼개지는 경우까지는 못 가린다.
+      var CLUSTER_R = 3000;
+      var bestSeed = 0, bestCount = -1;
+      hits.forEach(function (h, i) {
+        var count = hits.filter(function (o) { return mapDistanceM(h, o) <= CLUSTER_R; }).length;
+        if (count > bestCount) { bestCount = count; bestSeed = i; }
+      });
+      // 다들 서로 멀면(무리가 하나도 없으면) 진짜 전국에 흩어진 것이다 — 그중 하나를 임의로
+      // 고르면 안 된다("햇살어린이집" 175건처럼). 무리(2곳 이상 뭉침)가 있을 때만 나머지를 버린다.
+      var outliers = 0;
+      if (bestCount >= 2) {
+        outliers = hits.length - bestCount;
+        hits = hits.filter(function (h) { return mapDistanceM(hits[bestSeed], h) <= CLUSTER_R; });
+      }
+      var c = { lat: 0, lng: 0 };
+      hits.forEach(function (pl) { c.lat += pl.lat / hits.length; c.lng += pl.lng / hits.length; });
+      var spread = 0;
+      hits.forEach(function (pl) { spread = Math.max(spread, mapDistanceM(c, pl)); });
+      var scattered = hits.length > 1 && spread > 5000;
+      var m = hits.length === 1 ? 300 : Math.min(5000, Math.max(300, Math.round((spread + 300) / 100) * 100));
+      // 흩어진 경우 지도에 낱개 핑으로 찍어 보여줄 자리(카카오가 최대 5곳까지 준다).
+      // 핑마다 시·도(mapRegionKey)를 같이 담아서, 그릴 때 지역별로 다른 색을 입힌다.
+      var points = hits.map(function (pl) { return { latlng: [pl.lat, pl.lng], region: mapRegionKey(pl.address) }; });
+      return { center: [c.lat, c.lng], m: m, scattered: scattered, total: result.total, address: hits[0].address, outliers: outliers, points: points, loose: loose };
+    }
+    // 시·구·동까지만 적는다 — 번지까지 적으면 기관의 정확한 주소가 화면에 남는다
+    function mapAreaText(address) {
+      return String(address || '').split(' ').slice(0, 3).join(' ');
+    }
+    // 흩어진 핑에 지역별 색을 입히려면 시·도 정도의 큰 단위가 필요하다 — 주소 맨 앞 한 토큰.
+    function mapRegionKey(address) {
+      return String(address || '').split(' ')[0] || '';
+    }
+
+    async function buildMapSteps() {
+      var steps = [], note = '';
+      var ocr = lastOcrResult || {};
+      var exif = lastExifResult;
+      var words = ocr.words || [];
+
+      var names = [];
+      function addName(t) {
+        t = String(t || '').replace(/\s+/g, ' ').trim();
+        // "유성구"처럼 지역만 적힌 글자는 이름이 아니다 — 아래 지역 단서로 쓴다
+        if (t.replace(/[가-힣]{2,}(?:시|군|구|읍|면|동)(?![가-힣])/g, '').replace(/\s/g, '').length < 2) return;
+        if (t.length >= 2 && t.length <= 30 && hasProperName(t) && names.indexOf(t) < 0 && names.length < 3) names.push(t);
+      }
+      words.filter(isPlaceWord).forEach(function (w) { addName(w.text); });
+      scoredLandmarks(ocr.landmarks).forEach(function (l) { addName(l.이름); });
+
+      // 지역 글자: 사진 속 글자에서 먼저, 없으면 적어 준 캡션에서
+      var region = '';
+      var pool = words.map(function (w) { return String(w.text || ''); });
+      pool.push(String((captionInputEl && captionInputEl.value) || ''));
+      for (var i = 0; i < pool.length && !region; i++) {
+        var m = pool[i].match(MAP_REGION_RE);
+        if (m) region = m[0];
+      }
+
+      var queries = names.slice();
+      if (region) names.forEach(function (n) { queries.push(region + ' ' + n); });
+
+      if (queries.length) {
+        var key = JSON.stringify(queries);
+        try {
+          if (!mapStepsCache[key]) mapStepsCache[key] = postJson('/api/geocode', { queries: queries });
+          var data = await mapStepsCache[key];
+          var by = {};
+          (data.results || []).forEach(function (r) { by[r.query] = r; });
+
+          // 이름만으로: 검색 결과가 한 동네에 모이는 이름 중 가장 좁은 것 → 없으면 가장 흔한 이름을 보여준다
+          var best = null;
+          names.forEach(function (n) {
+            var nr = mapNarrow(by[n], n);
+            if (!nr) return;
+            nr.name = n;
+            if (!best || (best.scattered && !nr.scattered) || (best.scattered === nr.scattered && nr.m < best.m)) best = nr;
+          });
+          if (best) {
+            // 정확한 지점명이 아니라 상호+지점만 맞춰 다시 찾은 결과면(카카오맵도 이렇게
+            // 한다), 정확한 자리로 오해하지 않게 문구를 덧붙인다.
+            var looseNote = best.loose ? ' (정확한 지점명은 아니고, 이름으로 다시 찾은 근처 결과예요.)' : '';
+            steps.push(best.scattered
+              ? { label: '“' + best.name + '”만', where: '전국 ' + best.total + '건', m: 0, center: null, points: best.points,
+                  why: '“' + best.name + '”은 검색 결과가 전국에 흩어져 있어서 하나로 좁혀지지 않아요 — 찾은 곳들을 지도에 낱개로 찍어드려요.' + looseNote }
+              : { label: '“' + best.name + '”만', where: mapRadiusText(best.m), m: best.m, center: best.center,
+                  why: '“' + best.name + '”은 검색 결과가 한 동네에 모여 있어서 이름만으로도 그 근처까지 좁혀져요.' + looseNote });
+          }
+          // + 지역 글자: 이름에 지역이 붙으면 그 지역 안의 곳으로 좁혀진다
+          if (region) {
+            var bestR = null;
+            names.forEach(function (n) {
+              var rr = mapNarrow(by[region + ' ' + n], n, region);
+              if (!rr || rr.scattered) return;
+              rr.name = n;
+              if (!bestR || rr.m < bestR.m) bestR = rr;
+            });
+            if (bestR && (!best || best.scattered || bestR.m < best.m)) {
+              steps.push({ label: '+ 지역 글자 “' + region + '”', where: mapRadiusText(bestR.m), m: bestR.m, center: bestR.center,
+                why: '“' + region + '”가 더해지면 “' + bestR.name + '”이(가) ' + mapAreaText(bestR.address) + ' 근처로 좁혀져요.'
+                  + (bestR.loose ? ' (정확한 지점명은 아니고, 이름으로 다시 찾은 근처 결과예요.)' : '') });
+            }
+          }
+        } catch (e) {
+          // 준비 중(501)이거나 검색이 실패한 것 — 없는 것과 못 찾은 것을 구분해서 알린다
+          note = '장소 검색을 하지 못해서 글자로는 좁혀 보지 못했어요.';
+          delete mapStepsCache[key];
+          console.warn('[장소지도] 장소 검색 실패:', e.message);
+        }
+      }
+
+      // 파일 좌표는 추측이 아니라 사실이라 맨 끝(가장 좁은 것)에 둔다
+      if (exif && exif.hasGps) {
+        steps.push({ label: '+ 사진 파일의 좌표', where: mapRadiusText(50), m: 50, center: [exif.lat, exif.lng],
+          why: '사진 파일에 촬영 장소의 좌표가 적혀 있어요 — 추측이 아니라 사실이고, 간판을 가려도 남아요.' });
+      }
+      if (!steps.length && !note) {
+        note = '이 사진에서는 지도로 좁혀지는 단서(파일 좌표·장소 글자)를 찾지 못했어요.';
+      }
+      return { steps: steps, note: note };
+    }
+    window.__anshimLocMap = { getSteps: buildMapSteps };
 
     function renderLocationChain(r, faceResult, ocrResult) {
 
@@ -9092,6 +10737,8 @@
           lastOcrResult = ocrResult;
           lastRiskResult = result;
           renderRiskFields(result);
+          // 데스크톱 지도 카드 — 누를 필요 없이 여기서 자동으로 채운다(다른 스크립트 태그에 있음).
+          if (window.__autoLoadInlineMap) window.__autoLoadInlineMap();
           var skeletonFillMs = performance.now() - tRiskStart;
           console.log('[성능] 스켈레톤이 채워지기까지: ' + Math.round(skeletonFillMs) + 'ms, 전체 소요: ' + Math.round(performance.now() - tStart) + 'ms');
 
@@ -9167,7 +10814,7 @@
     function brushCursorCss() {
       var d = Math.max(10, Math.min(96, brushSizePx));
       var half = d / 2, r = half - 2;
-      var ring = brushErasing ? '%231a1a1a' : '%23ff7a6b';
+      var ring = brushErasing ? '%231a1a1a' : '%23d97a4f';
       var dash = brushErasing ? "%20stroke-dasharray='4%203'" : '';
       var svg = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='" + d + "'%20height='" + d + "'%3E"
         + "%3Ccircle%20cx='" + half + "'%20cy='" + half + "'%20r='" + r + "'%20fill='none'%20stroke='white'%20stroke-width='3'/%3E"
@@ -9311,6 +10958,7 @@
         edit.type = 'text';
         edit.className = 't-edit';
         edit.value = w.text;
+        if (w.userAdded && !w.text) edit.placeholder = '무엇을 봤는지 적어주세요';
         edit.setAttribute('aria-label', '찾은 내용 고치기');
         edit.addEventListener('click', function (ev) { ev.preventDefault(); });
         edit.addEventListener('change', function () {
@@ -9320,13 +10968,13 @@
 
         var kind = document.createElement('span');
         kind.className = 't-kind' + (w.approximate ? ' rough' : '');
-        kind.textContent = w.approximate ? '위치 대략' : (isSignboardText(w) ? '큰 간판' : '작은 글씨');
+        kind.textContent = w.userAdded ? '직접 추가' : (w.approximate ? '위치 대략' : (isSignboardText(w) ? '큰 간판' : '작은 글씨'));
 
         var del = document.createElement('button');
         del.type = 'button';
         del.className = 't-del';
         del.textContent = '빼기';
-        del.title = '이건 잘못 찾은 것 — 목록에서 지웁니다';
+        del.title = w.userAdded ? '추가한 항목을 뺍니다' : '이건 잘못 찾은 것 — 목록에서 지웁니다';
         del.addEventListener('click', function (ev) {
           ev.preventDefault();
           correctionTextWords = correctionTextWords.filter(function (x) { return x._tid !== w._tid; });
@@ -9353,6 +11001,24 @@
 
       var 안내 = 뺀것안내();
       if (안내) list.appendChild(안내);
+    }
+
+    // AI가 놓친 것을 사용자가 직접 신고한다 — 빈 상자를 하나 만들어 목록에 얹으면,
+    // 그 뒤로는 자동 감지된 항목과 완전히 똑같은 길을 탄다(체크·고치기·빼기는 renderTargetPicker,
+    // 사진 위 끌기·크기조절은 renderCoverHandles가 correctionTextWords를 그대로 훑어서 그린다 —
+    // "직접 추가"만 표시로 구분하고 나머지 코드는 하나도 새로 안 만든다).
+    function addMissedTarget() {
+      var w = { text: '', type: '기타', xPct: 50, yPct: 50, wPct: 24, hPct: 10, approximate: true, userAdded: true };
+      assignTargetIds([w]);
+      correctionTextWords = (correctionTextWords || []).concat([w]);
+      if (!selectedTargetIds) selectedTargetIds = [];
+      selectedTargetIds.push(w._tid);
+      renderTargetPicker(true);
+      renderCoverHandles();
+      고른것바뀜();
+      // 방금 만든 항목의 입력칸으로 바로 포커스 — 뭘 봤는지 바로 적을 수 있게
+      var input = document.querySelector('#targetList li[data-tid="' + w._tid + '"] .t-edit');
+      if (input) input.focus();
     }
 
     // 원본 전송 동의가 필요한 방식들 — 취소했을 때 여기로 되돌리면 안 된다
@@ -9402,19 +11068,56 @@
       document.getElementById('previewCaption').textContent = '정확한 위치 계산 중…';
     methodCards.forEach(function (c) { c.disabled = true; });
     try {
-      var localOcr = await runOcrPipeline(uploadedPhotoUrl);
-      correctionTextWords = localOcr.words;
+      // 글자 위치는 Google Vision이 준 조각을 줄로 묶어 바로 쓴다(위 「visionLinesToTargets」).
+      // Tesseract 전체 스캔은 한글 간판에서 깨진 줄·넓은 상자를 만들어서, Vision이 실패했을 때
+      // (키 미설정·네트워크)만 예전처럼 쓴다 — 그때도 기능이 끊기지 않는다. 진단이 이미 Vision을
+      // 불렀으면 기억해 둔 결과를 그대로 쓰므로 호출은 늘지 않는다.
+      var faces0 = (lastFaceResult && lastFaceResult.faces) || [];
+      var visionAll = await fetchVisionWords(uploadedPhotoUrl, faces0);
+      var claudeWords = (lastOcrResult && lastOcrResult.words) || [];
+      if (visionAll) {
+        correctionTextWords = visionLinesToTargets(visionAll, claudeWords);
+        console.log('[2단계보정] Google Vision 조각 ' + visionAll.length + '개 → 글자 줄 ' + correctionTextWords.length +
+          '개 (Tesseract 전체 스캔은 건너뜀)');
+      } else {
+        var localOcr = await runOcrPipeline(uploadedPhotoUrl);
+        correctionTextWords = localOcr.words;
+      }
 
       // Tesseract 전체 스캔이 놓친 텍스트를, Claude가 준 근사 위치를 단서로 다시 찾는다.
       // (예전에는 여기서 "위치를 몰라 처리 못 함"이라고 경고만 찍고 포기했다)
-      var claudeWords = (lastOcrResult && lastOcrResult.words) || [];
+      // 1순위는 Google Vision(TEXT_DETECTION, 전용 OCR이라 더 정확) — 매칭 안 되거나
+      // Vision 자체가 실패한 힌트만 기존 Tesseract 힌트 경로로 폴백한다.
       var missing = pickUnlocatedHints(claudeWords, correctionTextWords);
       if (missing.length > 0) {
         console.log('[2단계보정] Claude가 읽은 ' + claudeWords.length + '개 중 ' + missing.length +
           '개는 전체 스캔이 위치를 못 찾음 — 근사 위치를 단서로 재탐색합니다:',
           missing.map(function (w) { return '"' + w.text + '"'; }).join(', '));
         try {
-          var recovered = await locateTextsByHints(uploadedPhotoUrl, missing);
+          var faces = (lastFaceResult && lastFaceResult.faces) || [];
+          var visionWords = await fetchVisionWords(uploadedPhotoUrl, faces);
+          var recovered = [];
+          var stillMissing = missing;
+          if (visionWords) {
+            stillMissing = [];
+            missing.forEach(function (hint) {
+              var box = matchVisionWordsToHint(hint, visionWords);
+              if (box) {
+                recovered.push({
+                  text: hint.text, type: hint.type, confidence: hint.confidence,
+                  xPct: box.xPct, yPct: box.yPct, wPct: box.wPct, hPct: box.hPct,
+                  approximate: false,
+                });
+              } else {
+                stillMissing.push(hint);
+              }
+            });
+            console.log('[2단계보정] Google Vision으로 ' + recovered.length + '개 위치 확정' +
+              (stillMissing.length ? ', ' + stillMissing.length + '개는 Tesseract로 재시도' : ''));
+          }
+          if (stillMissing.length > 0) {
+            recovered = recovered.concat(await locateTextsByHints(uploadedPhotoUrl, stillMissing));
+          }
           correctionTextWords = correctionTextWords.concat(recovered);
         } catch (e) {
           console.warn('[2단계보정] 재탐색 실패 — 전체 스캔 결과만으로 진행:', e.message);
@@ -9866,7 +11569,7 @@
           vctx.globalAlpha = 0.85;
           vctx.drawImage(mask, 0, 0, view.width, view.height);
           vctx.globalCompositeOperation = 'source-in';
-          vctx.fillStyle = 'rgba(255, 122, 107, 0.5)';
+          vctx.fillStyle = 'rgba(217, 122, 79, 0.5)';
           vctx.fillRect(0, 0, view.width, view.height);
           vctx.globalCompositeOperation = 'source-over';
           vctx.globalAlpha = 1;
@@ -10156,6 +11859,8 @@
             clearPreviewBusy();
             currentCorrectionCanvas = of.canvas;
             요약.push(buildOutfitSummaryKo(outfitColorway, 'all')
+              + (of.colors ? ' — 원래 옷 색을 사진에서 읽어 지정했어요(' + outfitColorsKo(of.colors) + ')'
+                : (cwSel.keepColors ? ' — 옷 색을 읽지 못해 AI가 무난한 색으로 그렸어요' : ''))
               + ' (약 $' + Number(of.data.estimatedCostUsd || 0).toFixed(2)
               + ', ' + Math.round(of.data.timingMs / 1000) + '초)');
           } else if (wantAi) {
@@ -10175,7 +11880,7 @@
             ? ' 얼굴과 자세는 그대로예요. 어느 기관 옷인지 알아볼 수 없게 됐는지 꼭 눈으로 확인해주세요.'
             : (wantAi
               ? ' 마크가 소매나 모자에 있었다면 남아 있을 수 있으니 꼭 눈으로 확인해주세요.'
-              : ' ⚠ 밝은 색 옷은 배경과 비슷해서 일부만 잡힐 수 있어요 — 안 바뀐 부분이 없는지 확인해주세요.'
+              : ' 색이 있는 옷은 색조가 옮겨지고, 흰 옷·검정 옷은 살짝만 물들어요(밝기와 무늬 명암은 그대로). ⚠ 밝은 색 옷은 배경과 비슷해서 일부만 잡힐 수 있어요 — 안 바뀐 부분이 없는지 확인해주세요.'
                 + ' 가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, 위에서 «마크를 포켓으로»를 골라주세요.');
           previewCaption.textContent = '✨ ' + 요약.join(' 그리고 ') + '.' + 꼬리;
           lastCorrectionMeta = {
@@ -10316,14 +12021,25 @@
         var painted = brushMaskHasPaint();
         var howText = currentFill === 'mosaic' ? '모자이크로'
           : currentFill === 'color' ? '주변 배경색으로' : '주변 배경에 맞춰';
+        // 기관 이름을 바꿔 쓴 것은 원래 이름을 적지 않는다 — 이 문장이 3단계 재검증으로 넘어가는데,
+        // 지운 이름을 다시 적으면 검증하는 쪽에 답을 알려 주는 셈이다.
+        var swapped = canvas._replaced || [];
+        var keptN = canvas._kept || 0;
+        var coveredN = texts.length - swapped.length - keptN;
         var doneParts = [];
-        if (texts.length > 0) doneParts.push('글자 ' + texts.length + '곳');
+        if (coveredN > 0) doneParts.push('글자 ' + coveredN + '곳');
         if (painted) doneParts.push('직접 칠한 영역');
-        previewCaption.textContent = doneParts.length === 0
-          ? (brushAvailable()
+        var swapText = swapped.length > 0
+          ? '기관 이름 ' + swapped.length + '곳을 “' + swapped.filter(function (g, i) { return swapped.indexOf(g) === i; }).join('·')
+            + '”처럼 일반 이름으로 바꿔 썼어요.'
+          : '';
+        var coverText = doneParts.length > 0 ? doneParts.join('과 ') + '을 ' + howText + ' 덮었어요.' : '';
+        var keptText = keptN > 0 ? '“어린이집”처럼 이미 일반 이름인 글자는 그대로 뒀어요.' : '';
+        previewCaption.textContent = (swapText || coverText || keptText)
+          ? [swapText, coverText, keptText].filter(Boolean).join(' ')
+          : (brushAvailable()
             ? '아직 덮은 곳이 없어요 — 위 목록에서 항목을 고르거나 브러시로 직접 칠해보세요.'
-            : '아직 덮은 곳이 없어요 — 위 목록에서 처리할 항목을 골라주세요.')
-          : doneParts.join('과 ') + '을 ' + howText + ' 덮었어요.';
+            : '아직 덮은 곳이 없어요 — 위 목록에서 처리할 항목을 골라주세요.');
       }
 
       currentCorrectionCanvas = canvas;
@@ -10398,6 +12114,12 @@
         showTargetRedo(false);
         selectMethod(currentMethod);
       });
+    })();
+
+    (function () {
+      var btn = document.getElementById('addMissedBtn');
+      if (!btn) return;
+      btn.addEventListener('click', addMissedTarget);
     })();
 
     // 컬러체인지 / 엠블럼 처리 버튼 — 고르면 옷 방식 미리보기를 그 자리에서 다시 만든다
@@ -10644,6 +12366,9 @@
     document.getElementById('cycleVerifyBtn').addEventListener('click', function () { renderVerify(); });
 
     document.getElementById('restartBtn').addEventListener('click', function () {
+      // 여기까지 왔다는 건 진단·보정(AI라면 비용도)이 끝난 상태다 — 확인 없이 지우면
+      // 실수로 누른 손끝 하나에 그 작업이 통째로 날아간다(UX 감사 지적).
+      if (!confirm('지금까지의 진단·보정 결과가 모두 사라져요. 다른 사진으로 처음부터 다시 할까요?')) return;
       photoInput.value = '';
       pastInput.value = '';
       pastCount = 0;
@@ -10696,6 +12421,8 @@
         });
       });
       var fab = document.getElementById('appFab');
+      var pill = document.getElementById('appPill');
+      if (pill && fab) pill.addEventListener('click', function () { fab.click(); });
       if (fab) fab.addEventListener('click', function () {
         탭세우기('진단');
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -10711,9 +12438,14 @@
 
     /* 근거 접기 — 접기를 켜는 것은 JS다. 이 줄이 안 돌면 근거는 그냥 다 보인다
        (위 CSS의 :root.fold-on 규칙이 안 걸린다).
+       폰 앱 화면(좁은 화면)에서만 접는다 — 자리가 좁아서 접어 둘 가치가 있다. 웹(넓은
+       화면)은 자리가 넉넉하니 «왜?»를 안 눌러도 근거가 바로 보이는 쪽이 낫다(사용자 요청).
+       기준값은 다른 스크립트 태그의 PHONE_SHELL_MQ(인라인 지도)와 같다 — 스크립트 태그가
+       갈려 있어 상수를 그대로 공유하지 못해 문자열을 옮겨 적었다. 값을 바꿀 땐 같이 바꿀 것.
        클릭 핸들러는 .sb-row가 아니라 공용 껍데기 .foldable로 몸통을 찾는다 —
        FAQ 항목(Task 5)에는 .sb-row가 없어서 .sb-row 기준이면 그때 null 참조로 터진다. */
-    document.documentElement.classList.add('fold-on');
+    var FOLD_PHONE_MQ = '(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)';
+    if (matchMedia(FOLD_PHONE_MQ).matches) document.documentElement.classList.add('fold-on');
     document.addEventListener('click', function (e) {
       var btn = e.target.closest && e.target.closest('.why-btn');
       if (!btn) return;
@@ -10745,6 +12477,11 @@
     // 앱 코드는 이 객체를 쓰지 않는다 (test/text-routing.js에서만 사용).
     window.__anshimTest = {
       setTabForTest: 탭세우기,
+      setLocCluesForTest: function (o) {
+        lastOcrResult = o.ocr || null;
+        lastExifResult = o.exif || null;
+        if ('caption' in o) captionInputEl.value = o.caption;
+      },
       classifyTextRegions: classifyTextRegions,
       isSignboardText: isSignboardText,
       roundUpTo32: roundUpTo32,
@@ -10753,6 +12490,12 @@
       buildClothingMask: buildClothingMask,
       detectHandBoxes: detectHandBoxes,
       buildOutfitFillPrompt: buildOutfitFillPrompt,
+      nameColor: nameColor,
+      describeOutfitColors: describeOutfitColors,
+      runWidthAt: runWidthAt, // 옆 아이 몸까지 폭에 잡히는지 검증용
+      outfitColorsKo: outfitColorsKo,
+      emblemPromptsForTest: function () { return { fill: EMBLEM_FILL_PROMPT, pocket: EMBLEM_POCKET_PROMPT }; },
+      colorwaysForTest: function () { return Object.keys(COLORWAYS); },
       falSendSizeForTest: falSendSize,
       maskToAlphaForTest: maskToAlpha,
       compositeThroughMaskForTest: compositeThroughMask,
@@ -10784,6 +12527,9 @@
       focusFactor: focusFactor,
       clearPersonMaskCache: clearPersonMaskCache,
       applyPatchFill: applyPatchFill,
+      genericNameFor: genericNameFor,
+      visionLinesToTargets: visionLinesToTargets,
+      refineWordsWithVisionLines: refineWordsWithVisionLines,
       sampleBoxSurround: sampleBoxSurround,
       labelBrushBlobs: labelBrushBlobs,
       runInpaintRegions: runInpaintRegions, // 실제 fal 호출 경로 검증용 (비용 발생)
@@ -10824,6 +12570,10 @@
       syncSubmitLabel: syncSubmitLabel,
       locateTextsByHints: locateTextsByHints,
       pickUnlocatedHints: pickUnlocatedHints,
+      matchVisionWordsToHint: matchVisionWordsToHint,
+      reconcileWordsWithVision: reconcileWordsWithVision,
+      visionWordsToPct: visionWordsToPct,
+      fetchVisionWords: fetchVisionWords,
       // 검수 목록(빼기·내용 고치기) 검증용
       setTargets: function (words) { correctionTextWords = words; selectedTargetIds = null; },
       getTargets: function () { return correctionTextWords; },
@@ -10881,5 +12631,477 @@
       getFinalCanvas: getFinalCanvas,
       combinedMeta: combinedMeta,
     };
+  })();
+</script>
+
+<script>
+  /* 폰 전용 인터랙션 두 가지. 큰 스크립트와 따로 둔 이유: 이 요소들이 없거나 데스크톱이면
+     아무 일도 안 하고, 큰 스크립트가 어디서 깨져도 이쪽은 살아 있게 하려는 것. */
+  (function () {
+    // 1) 보정 방식 시트
+    var screen = document.getElementById('screen-correct');
+    var row = document.getElementById('methodRow');
+    var val = document.getElementById('methodRowValue');
+    var grid = document.getElementById('methodGrid');
+    var sheet = screen && screen.querySelector('.correct-left');
+    if (screen && row && val && grid && sheet) {
+      var nameOf = function (card) {
+        var t = card && card.querySelector('.m-title');
+        if (!t) return '';
+        var out = '';
+        t.childNodes.forEach(function (n) { if (n.nodeType === 3) out += n.textContent; });
+        return out.replace(/\s+/g, ' ').trim();
+      };
+      var refresh = function () {
+        var n = nameOf(grid.querySelector('.method-card.selected'));
+        if (n) val.textContent = n;
+      };
+      var setOpen = function (open) {
+        screen.classList.toggle('sheet-open', open);
+        row.setAttribute('aria-expanded', open ? 'true' : 'false');
+        // 시트일 때만 대화상자다 — 데스크톱에서는 그냥 왼쪽 칸이라 역할을 붙이면 거짓이 된다
+        if (open) { sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', '보정 방식 선택'); }
+        else { sheet.removeAttribute('role'); sheet.removeAttribute('aria-modal'); sheet.removeAttribute('aria-label'); }
+        var target = open ? sheet.querySelector('.sheet-close') : row;
+        if (target && target.focus) target.focus({ preventScroll: true });
+      };
+      row.addEventListener('click', function () { setOpen(true); });
+      document.getElementById('sheetBackdrop').addEventListener('click', function () { setOpen(false); });
+      screen.querySelectorAll('.sheet-close, .sheet-done').forEach(function (b) {
+        b.addEventListener('click', function () { setOpen(false); });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && screen.classList.contains('sheet-open')) setOpen(false);
+      });
+      // 방식은 프런트가 클래스로 고른다(동의 취소로 blur로 되돌아갈 때도) — 그걸 지켜본다
+      new MutationObserver(refresh).observe(grid, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      // 화면이 닫히면(다른 단계로 가면) 시트도 닫는다 — 안 그러면 돌아왔을 때 열려 있다
+      new MutationObserver(function () {
+        if (screen.style.display === 'none') screen.classList.remove('sheet-open');
+      }).observe(screen, { attributes: true, attributeFilter: ['style'] });
+      refresh();
+    }
+
+    // 4) 위험 항목 칩 + 시트. 칩은 점수 내역 행(#sbList li)에서 만들고, 시트도 그 행에서 읽는다 —
+    //    서버 응답 모양을 다시 해석하지 않으니 점수 내역과 시트가 어긋날 수 없다.
+    var resultScreen = document.getElementById('screen-result');
+    var sbList = document.getElementById('sbList');
+    var chipBox = document.getElementById('factorChips');
+    var fSheet = document.getElementById('factorSheet');
+    if (resultScreen && sbList && chipBox && fSheet) {
+      var fsTitle = document.getElementById('fsTitle');
+      var fsScore = document.getElementById('fsScore');
+      var fsBar = document.getElementById('fsBar');
+      var fsWhy = document.getElementById('fsWhy');
+      var lastChip = null;
+      var toInt = function (t) { return parseInt(String(t || '').replace(/\D/g, ''), 10) || 0; };
+      var factorOf = function (li) {
+        var num = li.querySelector('.sb-num');
+        var cap = num && num.querySelector('.cap');
+        return {
+          li: li,
+          name: (li.querySelector('.sb-name') || {}).textContent || '',
+          pt: num && num.firstChild ? toInt(num.firstChild.textContent) : 0,
+          cap: toInt(cap && cap.textContent),
+        };
+      };
+      var shortName = function (n) { return n.replace(/\s*노출$/, '').replace(/\s*식별성$/, ''); };
+      var setFactorOpen = function (open, trigger) {
+        resultScreen.classList.toggle('factor-open', open);
+        // 시트일 때만 대화상자다 — 데스크톱에서는 이 요소가 아예 안 보인다
+        if (open) { fSheet.setAttribute('role', 'dialog'); fSheet.setAttribute('aria-modal', 'true'); fSheet.setAttribute('aria-label', '위험 항목 자세히'); lastChip = trigger || lastChip; }
+        else { fSheet.removeAttribute('role'); fSheet.removeAttribute('aria-modal'); fSheet.removeAttribute('aria-label'); }
+        var target = open ? fSheet.querySelector('.sheet-close') : lastChip;
+        if (target && target.focus) target.focus({ preventScroll: true });
+      };
+      var openFactor = function (f, chip) {
+        fsTitle.textContent = f.name;
+        fsScore.textContent = '';
+        var b = document.createElement('b');
+        b.textContent = String(f.pt);
+        fsScore.appendChild(b);
+        fsScore.appendChild(document.createTextNode(' / ' + f.cap + '점'));
+        // 0점을 폭 0%로 그리면 "검사를 안 했다"로 읽힌다 — 점수 내역 막대와 같은 규칙(최소 2%)
+        fsBar.style.width = (f.pt === 0 ? 2 : (f.cap ? Math.round(f.pt / f.cap * 100) : 0)) + '%';
+        fsBar.className = f.pt === 0 ? 'zero' : (f.cap && f.pt === f.cap ? 'max' : '');
+        var why = f.li.querySelector('.sb-why');
+        var txt = why ? why.textContent.trim() : '';
+        fsWhy.textContent = txt || '이 항목의 근거를 아직 만들지 못했어요.';
+        setFactorOpen(true, chip);
+      };
+      var buildChips = function () {
+        // 판단 중인 자리표시 행(.pending)은 점수가 없어서 칩으로 만들지 않는다
+        var rows = Array.prototype.slice.call(sbList.querySelectorAll('li.sb-row')).filter(function (li) {
+          return !li.classList.contains('pending');
+        });
+        chipBox.textContent = '';
+        if (!rows.length) { chipBox.hidden = true; return; }
+        chipBox.appendChild(makeMapChip());
+        rows.map(factorOf).sort(function (a, b) { return b.pt - a.pt; }).forEach(function (f) {
+          var chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'factor-chip' + (f.cap && f.pt === f.cap ? ' max' : (f.pt === 0 ? ' zero' : ''));
+          chip.setAttribute('aria-haspopup', 'dialog');
+          var label = document.createElement('span');
+          label.textContent = shortName(f.name);
+          var val = document.createElement('b');
+          val.textContent = f.pt + '/' + f.cap;
+          chip.appendChild(label);
+          chip.appendChild(val);
+          chip.addEventListener('click', function () { openFactor(f, chip); });
+          chipBox.appendChild(chip);
+        });
+        chipBox.hidden = false;
+      };
+      // 5) 장소 지도. 핀이 아니라 반경 원으로만 보여준다 — 건물 단위 위치를 찍어 주면 아이 위치를 찾는 도구가
+      //    된다. 단계는 window.__anshimLocMap.getSteps()가 이 사진의 단서로 만든다(위 「장소 지도」).
+      //    Leaflet은 처음 열 때만 받는다. 확대는 16단계(거리 단위)까지만 허용한다.
+      var mapSheet = document.getElementById('mapSheet');
+      var mapBox = document.getElementById('mapBox');
+      var mapStepsEl = document.getElementById('mapSteps');
+      var mapWhy = document.getElementById('mapWhy');
+      var LEAFLET = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet';
+      var KOREA = [36.4, 127.8];
+      var mapState = { map: null, circle: null, timer: 0, lastChip: null, leaflet: null, steps: [], note: '', run: 0, regionColors: {} };
+      var mapBtns = [];
+      // 흩어진 핑을 전부 같은 빨강으로 찍으면 어느 게 어느 동네인지 구분이 안 된다는
+      // 지적(네이버 지도와 비교) — 라벨·핀 아이콘까지는 위치가 너무 정확히 짚혀서
+      // 안 쓰지만, 지역별로 색만 다르게는 줄 수 있다. 위험 등급(빨강/주황/초록)·브랜드
+      // 색(골드·테라코타)과 겹치지 않는 차가운 색 5개만 쓴다 — 의미가 안 섞이게.
+      var MAP_REGION_PALETTE = ['#3596b6', '#3555b6', '#5535b6', '#9635b6', '#b63596'];
+      var mapRegionStyle = function (region) {
+        var key = region || '(미상)';
+        if (!(key in mapState.regionColors)) {
+          var used = Object.keys(mapState.regionColors).length;
+          mapState.regionColors[key] = MAP_REGION_PALETTE[used % MAP_REGION_PALETTE.length];
+        }
+        var c = mapState.regionColors[key];
+        return { color: c, fillColor: c };
+      };
+      var loadLeaflet = function () {
+        if (window.L) return Promise.resolve();
+        // 실패하면 다음에 다시 시도한다(비워 둔다)
+        if (!mapState.leaflet) {
+          mapState.leaflet = new Promise(function (resolve, reject) {
+            var css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = LEAFLET + '.css';
+            document.head.appendChild(css);
+            var js = document.createElement('script');
+            js.src = LEAFLET + '.js';
+            js.onload = resolve;
+            js.onerror = function () { reject(new Error('leaflet')); };
+            document.head.appendChild(js);
+          }).catch(function (e) { mapState.leaflet = null; throw e; });
+        }
+        return mapState.leaflet;
+      };
+      var showMapStep = function (i, animate) {
+        var st = mapState.steps[i];
+        if (!st) return;
+        mapBtns.forEach(function (b, j) {
+          b.classList.toggle('on', j === i);
+          b.setAttribute('aria-pressed', j === i ? 'true' : 'false');
+        });
+        mapWhy.textContent = st.why + (mapState.note ? ' ' + mapState.note : '');
+        mapBox.setAttribute('aria-label', '지도: ' + st.where
+          + (st.center ? ' 안 어딘가' : (st.points && st.points.length ? ' 중 ' + st.points.length + '곳을 지도에 표시' : '')));
+        var map = mapState.map;
+        if (!map) return;
+        if (!st.center) {
+          // 이름만으로는 하나로 안 좁혀지는 단계 — 원 대신, 찾은 곳들을 낱개 핑으로 찍는다
+          // (카카오가 최대 5곳까지 준다). 핑도 하나 없으면(단서 자체가 없음) 그냥 전국을 보여준다.
+          if (map.hasLayer(mapState.circle)) mapState.circle.remove();
+          mapState.pins.clearLayers();
+          if (st.points && st.points.length) {
+            st.points.forEach(function (p) {
+              var style = Object.assign({}, mapState.pinStyle, mapRegionStyle(p.region));
+              L.circleMarker(p.latlng, style).addTo(mapState.pins);
+            });
+            if (!map.hasLayer(mapState.pins)) mapState.pins.addTo(map);
+            var pOpts = { padding: [24, 24], maxZoom: 8 };
+            if (animate) map.flyToBounds(mapState.pins.getBounds(), Object.assign({ duration: 0.8 }, pOpts));
+            else map.fitBounds(mapState.pins.getBounds(), Object.assign({ animate: false }, pOpts));
+          } else {
+            map.setView(KOREA, 6, { animate: !!animate });
+          }
+          return;
+        }
+        mapState.pins.clearLayers();
+        mapState.circle.setLatLng(st.center).setRadius(st.m);
+        if (!map.hasLayer(mapState.circle)) mapState.circle.addTo(map);
+        var opts = { padding: [12, 12], maxZoom: 16 };
+        if (animate) map.flyToBounds(mapState.circle.getBounds(), Object.assign({ duration: 0.8 }, opts));
+        else map.fitBounds(mapState.circle.getBounds(), Object.assign({ animate: false }, opts));
+      };
+      var renderMapButtons = function (steps) {
+        mapStepsEl.textContent = '';
+        mapBtns = steps.map(function (st, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'map-step';
+          b.setAttribute('aria-pressed', 'false');
+          var l = document.createElement('span');
+          l.textContent = st.label;
+          var w = document.createElement('b');
+          w.textContent = st.where;
+          b.appendChild(l);
+          b.appendChild(w);
+          b.addEventListener('click', function () { clearTimeout(mapState.timer); showMapStep(i, true); });
+          mapStepsEl.appendChild(b);
+          return b;
+        });
+      };
+      var ensureMap = function () {
+        if (mapState.map) return;
+        mapBox.textContent = '';
+        mapBox.classList.remove('fail');
+        var L = window.L;
+        var red = getComputedStyle(document.documentElement).getPropertyValue('--risk-high').trim() || '#c0392b';
+        mapState.map = L.map(mapBox, {
+          zoomControl: false, dragging: false, touchZoom: false, doubleClickZoom: false,
+          scrollWheelZoom: false, boxZoom: false, keyboard: false, maxZoom: 16,
+        }).setView(KOREA, 6);
+        mapState.map.attributionControl.setPrefix(false);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 16, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+        }).addTo(mapState.map);
+        mapState.circle = L.circle(KOREA, { radius: 1, color: red, weight: 2, fillOpacity: 0.16 });
+        // 전국에 흩어진 단계용 낱개 핑. 실제 자리보다 살짝 크게 보이는 픽셀 원이라
+        // 여러 개를 찍어도 "이만큼 흩어져 있다"는 게 눈에 들어온다(건물 하나를 콕 찍지 않는다).
+        // color/fillColor는 여기서 기본값(빨강)만 잡고, 실제로 찍을 때 mapRegionStyle()이
+        // 지역별 색으로 덮어쓴다 — 모두 같은 색이면 어느 핑이 어느 동네인지 구분이 안 된다.
+        mapState.pinStyle = { radius: 8, color: red, weight: 2, fillColor: red, fillOpacity: 0.55 };
+        mapState.pins = L.featureGroup(); // getBounds()가 있어야 핀들에 맞춰 화면을 맞출 수 있다(layerGroup엔 없다)
+      };
+      var setMapOpen = function (open, trigger) {
+        resultScreen.classList.toggle('map-open', open);
+        if (open) { mapSheet.setAttribute('role', 'dialog'); mapSheet.setAttribute('aria-modal', 'true'); mapSheet.setAttribute('aria-label', '장소 지도'); mapState.lastChip = trigger || mapState.lastChip; }
+        else { clearTimeout(mapState.timer); mapState.run++; mapSheet.removeAttribute('role'); mapSheet.removeAttribute('aria-modal'); mapSheet.removeAttribute('aria-label'); }
+        var target = open ? mapSheet.querySelector('.sheet-close') : mapState.lastChip;
+        if (target && target.focus) target.focus({ preventScroll: true });
+      };
+      var openMap = function (chip) {
+        setMapOpen(true, chip);
+        clearTimeout(mapState.timer);
+        var run = ++mapState.run;
+        mapState.steps = [];
+        mapState.note = '';
+        renderMapButtons([]);
+        mapWhy.textContent = '이 사진의 단서로 찾는 중이에요…';
+        var api = window.__anshimLocMap;
+        Promise.all([
+          loadLeaflet().then(function () { return true; }, function () { return false; }),
+          (api ? api.getSteps() : Promise.resolve({ steps: [], note: '' }))
+            .catch(function () { return { steps: [], note: '단서를 찾다가 문제가 생겼어요.' }; }),
+        ]).then(function (r) {
+          if (run !== mapState.run || !resultScreen.classList.contains('map-open')) return;
+          var hasMap = r[0], res = r[1];
+          mapState.steps = res.steps;
+          mapState.note = res.steps.length ? res.note : '';
+          renderMapButtons(res.steps);
+          var last = res.steps.length - 1;
+          if (hasMap) {
+            ensureMap();
+            mapState.map.invalidateSize();
+            if (mapState.map.hasLayer(mapState.circle)) mapState.circle.remove();
+            mapState.pins.clearLayers();
+            mapState.map.setView(KOREA, 6, { animate: false });
+          } else {
+            mapBox.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.';
+            mapBox.classList.add('fail');
+          }
+          if (last < 0) { mapWhy.textContent = res.note; return; }
+          // 움직임을 줄인 사람에게는 끝 단계를 바로 보여준다. 아니면 넓은 단계에서 시작해 한 단계씩 좁힌다.
+          if (!hasMap || last === 0 || matchMedia('(prefers-reduced-motion: reduce)').matches) { showMapStep(last, false); return; }
+          var i = 0;
+          showMapStep(0, false);
+          (function next() {
+            mapState.timer = setTimeout(function () {
+              if (++i > last) return;
+              showMapStep(i, true);
+              next();
+            }, 1200);
+          })();
+        });
+      };
+
+      // 데스크톱 인라인 지도 — 카드 안에 바로 뜨는 자동 버전(사용자 요청: 눌러야만 보이지
+      // 않게). 위 mapSheet(폰 하단 시트)와는 DOM이 달라서 leaflet 지도 객체도 따로 둔다.
+      // CSS의 폰 조건(어플 배치 미디어 쿼리)과 똑같은 식이어야 한다 — 갈라지면 폰에서
+      // 숨은 카드 안 지도를 부르느라 헛김만 새는 API 호출이 생긴다.
+      var PHONE_SHELL_MQ = '(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)';
+      var mapBoxInline = document.getElementById('mapBoxInline');
+      var mapStepsInlineEl = document.getElementById('mapStepsInline');
+      var mapWhyInline = document.getElementById('mapWhyInline');
+      var inlineMapState = { map: null, circle: null, pins: null, pinStyle: null, steps: [], note: '', run: 0 };
+      var ensureInlineMap = function () {
+        if (inlineMapState.map || !mapBoxInline) return;
+        var L = window.L;
+        var red = getComputedStyle(document.documentElement).getPropertyValue('--risk-high').trim() || '#c0392b';
+        inlineMapState.map = L.map(mapBoxInline, {
+          zoomControl: false, dragging: false, touchZoom: false, doubleClickZoom: false,
+          scrollWheelZoom: false, boxZoom: false, keyboard: false, maxZoom: 16,
+        }).setView(KOREA, 6);
+        inlineMapState.map.attributionControl.setPrefix(false);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 16, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+        }).addTo(inlineMapState.map);
+        inlineMapState.circle = L.circle(KOREA, { radius: 1, color: red, weight: 2, fillOpacity: 0.16 });
+        inlineMapState.pinStyle = { radius: 8, color: red, weight: 2, fillColor: red, fillOpacity: 0.55 };
+        inlineMapState.pins = L.featureGroup();
+      };
+      var showInlineMapStep = function (i) {
+        var st = inlineMapState.steps[i];
+        if (!st) return;
+        Array.prototype.forEach.call(mapStepsInlineEl.children, function (b, j) {
+          b.classList.toggle('on', j === i);
+          b.setAttribute('aria-pressed', j === i ? 'true' : 'false');
+        });
+        mapWhyInline.textContent = st.why + (inlineMapState.note ? ' ' + inlineMapState.note : '');
+        mapBoxInline.setAttribute('aria-label', '지도: ' + st.where
+          + (st.center ? ' 안 어딘가' : (st.points && st.points.length ? ' 중 ' + st.points.length + '곳을 지도에 표시' : '')));
+        var map = inlineMapState.map;
+        if (!map) return;
+        if (!st.center) {
+          if (map.hasLayer(inlineMapState.circle)) inlineMapState.circle.remove();
+          inlineMapState.pins.clearLayers();
+          if (st.points && st.points.length) {
+            // p는 {latlng, region} — p 자체를 좌표로 넘기면(전엔 그랬다) Leaflet이 좌표를
+            // 못 읽어 핑이 하나도 안 찍힌다. 폰 쪽(showMapStep)과 같은 모양으로 맞춘다.
+            st.points.forEach(function (p) {
+              var style = Object.assign({}, inlineMapState.pinStyle, mapRegionStyle(p.region));
+              L.circleMarker(p.latlng, style).addTo(inlineMapState.pins);
+            });
+            if (!map.hasLayer(inlineMapState.pins)) inlineMapState.pins.addTo(map);
+            map.fitBounds(inlineMapState.pins.getBounds(), { padding: [24, 24], maxZoom: 8, animate: false });
+          } else {
+            map.setView(KOREA, 6, { animate: false });
+          }
+          return;
+        }
+        inlineMapState.pins.clearLayers();
+        inlineMapState.circle.setLatLng(st.center).setRadius(st.m);
+        if (!map.hasLayer(inlineMapState.circle)) inlineMapState.circle.addTo(map);
+        map.fitBounds(inlineMapState.circle.getBounds(), { padding: [12, 12], maxZoom: 16, animate: false });
+      };
+      var renderInlineMapButtons = function (steps) {
+        mapStepsInlineEl.textContent = '';
+        steps.forEach(function (st, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'map-step';
+          b.setAttribute('aria-pressed', 'false');
+          var l = document.createElement('span'); l.textContent = st.label;
+          var w = document.createElement('b'); w.textContent = st.where;
+          b.appendChild(l); b.appendChild(w);
+          b.addEventListener('click', function () { showInlineMapStep(i); });
+          mapStepsInlineEl.appendChild(b);
+        });
+      };
+      // 진단이 끝나면 자동으로 부른다 — 누를 필요 없다(사용자 요청). 사진은 안 보내고
+      // 카카오 장소 검색만 부른다. 폰은 이 카드 자체가 숨어 있어서 그대로 칩을 눌러 시트를 연다.
+      var autoLoadInlineMap = function () {
+        if (!mapBoxInline || matchMedia(PHONE_SHELL_MQ).matches) return;
+        var run = ++inlineMapState.run;
+        mapWhyInline.textContent = '이 사진의 단서로 찾는 중이에요…';
+        var api = window.__anshimLocMap;
+        Promise.all([
+          loadLeaflet().then(function () { return true; }, function () { return false; }),
+          (api ? api.getSteps() : Promise.resolve({ steps: [], note: '' }))
+            .catch(function () { return { steps: [], note: '단서를 찾다가 문제가 생겼어요.' }; }),
+        ]).then(function (r) {
+          if (run !== inlineMapState.run) return;
+          var hasMap = r[0], res = r[1];
+          inlineMapState.steps = res.steps;
+          inlineMapState.note = res.steps.length ? res.note : '';
+          renderInlineMapButtons(res.steps);
+          var last = res.steps.length - 1;
+          if (hasMap) {
+            ensureInlineMap();
+            inlineMapState.map.invalidateSize();
+          } else {
+            mapBoxInline.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.';
+            mapBoxInline.classList.add('fail');
+          }
+          if (last < 0) { mapWhyInline.textContent = res.note; return; }
+          showInlineMapStep(last);
+        });
+      };
+      window.__autoLoadInlineMap = autoLoadInlineMap; // 진단 흐름(다른 스크립트 태그)에서 호출
+
+      var makeMapChip = function () {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'map-chip';
+        chip.setAttribute('aria-haspopup', 'dialog');
+        chip.textContent = '📍 장소 지도';
+        chip.addEventListener('click', function () { openMap(chip); });
+        return chip;
+      };
+      document.getElementById('mapBackdrop').addEventListener('click', function () { setMapOpen(false); });
+      mapSheet.querySelectorAll('.sheet-close, .sheet-done').forEach(function (btn) {
+        btn.addEventListener('click', function () { setMapOpen(false); });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && resultScreen.classList.contains('map-open')) setMapOpen(false);
+      });
+      new MutationObserver(function () {
+        if (resultScreen.style.display === 'none') { clearTimeout(mapState.timer); mapState.run++; resultScreen.classList.remove('map-open'); }
+      }).observe(resultScreen, { attributes: true, attributeFilter: ['style'] });
+
+      new MutationObserver(buildChips).observe(sbList, { childList: true });
+      buildChips();
+      document.getElementById('factorBackdrop').addEventListener('click', function () { setFactorOpen(false); });
+      fSheet.querySelectorAll('.sheet-close, .sheet-done').forEach(function (btn) {
+        btn.addEventListener('click', function () { setFactorOpen(false); });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && resultScreen.classList.contains('factor-open')) setFactorOpen(false);
+      });
+      // 다른 단계로 가면 시트를 닫는다 — 안 그러면 돌아왔을 때 열려 있다
+      new MutationObserver(function () {
+        if (resultScreen.style.display === 'none') resultScreen.classList.remove('factor-open');
+      }).observe(resultScreen, { attributes: true, attributeFilter: ['style'] });
+    }
+
+    // 3) 진단 탭의 홈(허브) ↔ 도구 화면. data-view는 CSS가 읽는다(위 「진단 탭: 홈 ↔ 도구」).
+    var root = document.documentElement;
+    var tool = document.getElementById('tool');
+    var photoIn = document.getElementById('photoInput');
+    var setView = function (v) { if (root.getAttribute('data-view') !== v) root.setAttribute('data-view', v); };
+    var busy = function () {
+      // 폼 말고 다른 화면이 하나라도 떠 있으면 진행 중이다
+      return ['screen-analyzing', 'screen-result', 'screen-correct', 'screen-verify', 'screen-pattern'].some(function (id) {
+        var el = document.getElementById(id);
+        return !!(el && el.style.display && el.style.display !== 'none');
+      });
+    };
+    var hasPhoto = function () { return !!(photoIn && photoIn.files && photoIn.files[0]); };
+    // 주소가 #tool이면(공유 링크) 도구 화면으로 시작한다. 아니면 홈.
+    setView((location.hash || '') === '#tool' ? 'tool' : 'home');
+    if (photoIn) photoIn.addEventListener('change', function () { if (hasPhoto()) setView('tool'); });
+    if (tool) {
+      new MutationObserver(function () { if (busy()) setView('tool'); })
+        .observe(tool, { subtree: true, attributes: true, attributeFilter: ['style'] });
+    }
+    var back = document.getElementById('appBack');
+    if (back) back.addEventListener('click', function () {
+      setView('home');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    // 진단 탭을 다시 누르면: 진행 중이거나 사진을 골랐으면 그대로, 아니면 홈으로
+    var diagTab = document.querySelector('.app-tab[data-goto="진단"]');
+    if (diagTab) diagTab.addEventListener('click', function () { setView(busy() || hasPhoto() ? 'tool' : 'home'); });
+
+    // 2) 홈 아이콘 메뉴 — 하단 탭과 같은 곳으로 간다(같은 핸들러를 재사용)
+    document.querySelectorAll('.app-menu-item[data-menu]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var to = a.getAttribute('data-menu');
+        var target = to === '진단' ? document.getElementById('appFab') : document.querySelector('.app-tab[data-goto="' + to + '"]');
+        if (target) target.click();
+      });
+    });
   })();
 </script>

@@ -1,0 +1,541 @@
+<title>아이SHADOW · AI 실무자 문답</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     docs/qa.html과 같은 "계측 보고서" 스타일을 그대로 쓴다. 청중만 다르다 —
+     그쪽은 심사위원(배점표), 이쪽은 AI 업계 실무자(엔지니어링 판단)다.
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --ground: #F3F6F8;
+    --surface: #FFFFFF;
+    --surface-2: #EAEFF3;
+    --ink: #14171B;
+    --ink-mid: #3D454F;
+    --ink-soft: #626C78;
+    --rule: #D9E1E8;
+    --rule-strong: #B9C5CF;
+    --gold: #A8760D;
+    --invert-bg: #14171B;
+    --invert-fg: #F3F6F8;
+    --invert-strong: #FFFFFF;
+    --invert-soft: #C9D3DD;
+    --invert-rule: #333C46;
+    --num: #17559B;
+    --num-bg: #E4EDF8;
+    --show: #0F6247;
+    --show-bg: #DFF0E8;
+    --admit: #96382B;
+    --admit-bg: #FAE5E1;
+    --est: #6B4FA0;
+    --est-bg: #ECE6F6;
+    --shadow: 0 1px 2px rgba(20, 23, 27, .05), 0 8px 24px -12px rgba(20, 23, 27, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14181C; --surface: #1B2027; --surface-2: #232A32;
+      --ink: #EDF1F5; --ink-mid: #BDC7D2; --ink-soft: #8D99A6;
+      --rule: #2E363F; --rule-strong: #414B57; --gold: #E3B355;
+      --invert-bg: #0D1115; --invert-fg: #E6EDF3; --invert-strong: #FFFFFF;
+      --invert-soft: #9DA9B5; --invert-rule: #262E36;
+      --num: #86B8EC; --num-bg: #16283C;
+      --show: #6FCCA4; --show-bg: #122E24;
+      --admit: #EA9E90; --admit-bg: #35201C;
+      --est: #C4A9EA; --est-bg: #241C33;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14181C; --surface: #1B2027; --surface-2: #232A32;
+    --ink: #EDF1F5; --ink-mid: #BDC7D2; --ink-soft: #8D99A6;
+    --rule: #2E363F; --rule-strong: #414B57; --gold: #E3B355;
+    --invert-bg: #0D1115; --invert-fg: #E6EDF3; --invert-strong: #FFFFFF;
+    --invert-soft: #9DA9B5; --invert-rule: #262E36;
+    --num: #86B8EC; --num-bg: #16283C;
+    --show: #6FCCA4; --show-bg: #122E24;
+    --admit: #EA9E90; --admit-bg: #35201C;
+    --est: #C4A9EA; --est-bg: #241C33;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: 'IBM Plex Sans KR', system-ui, -apple-system, sans-serif;
+    font-weight: 400; font-size: 15px; line-height: 1.72; word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; gap: 32px; }
+  @media (min-width: 1020px) { .wrap { padding-top: 56px; } }
+  .cols { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+  @media (min-width: 1020px) { .cols { display: grid; grid-template-columns: 226px 1fr; gap: 44px; align-items: start; } }
+
+  .head { border-bottom: 2px solid var(--ink); padding-bottom: 22px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--gold); margin: 0 0 10px;
+  }
+  h1 { font-size: clamp(28px, 4.4vw, 40px); line-height: 1.18; font-weight: 700; letter-spacing: -.022em; margin: 0 0 12px; text-wrap: balance; }
+  .lede { margin: 0; max-width: 66ch; color: var(--ink-mid); font-size: 15.5px; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; box-shadow: var(--shadow); }
+  .legend-item { display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-mid); }
+
+  .tag { display: inline-block; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; line-height: 1.5; white-space: nowrap; }
+  .tag.num { background: var(--num-bg); color: var(--num); }
+  .tag.show { background: var(--show-bg); color: var(--show); }
+  .tag.admit { background: var(--admit-bg); color: var(--admit); }
+  .tag.est { background: var(--est-bg); color: var(--est); }
+  .tag.hard { background: var(--ink); color: var(--surface); }
+
+  .index { align-self: start; }
+  @media (min-width: 1020px) { .index { position: sticky; top: 32px; max-height: calc(100vh - 64px); overflow-y: auto; scrollbar-width: thin; } }
+  .index h2 { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 12px; }
+  .index ol { list-style: none; margin: 0 0 20px; padding: 0; }
+  .index li { margin-bottom: 3px; }
+  .index a { display: flex; gap: 8px; align-items: baseline; color: var(--ink-mid); text-decoration: none; font-size: 13px; line-height: 1.5; padding: 3px 6px; border-radius: 5px; border-left: 2px solid transparent; }
+  .index a:hover, .index a:focus-visible { background: var(--surface); color: var(--ink); border-left-color: var(--gold); outline: none; }
+  .index .n { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .index .grp { font-size: 11.5px; font-weight: 600; color: var(--ink); margin: 16px 0 6px; padding-left: 8px; letter-spacing: .01em; }
+  .index .grp:first-of-type { margin-top: 0; }
+
+  .body { min-width: 0; }
+  section.group { margin-bottom: 44px; }
+  .group-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; border-bottom: 1px solid var(--rule-strong); padding-bottom: 8px; margin-bottom: 22px; }
+  .group-head h2 { font-size: 19px; font-weight: 700; letter-spacing: -.014em; margin: 0; }
+  .group-head .cap { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--gold); font-weight: 600; }
+
+  article.qa { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 20px 22px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  article.qa.priority { border-color: var(--rule-strong); border-left: 4px solid var(--gold); }
+  .q { display: flex; gap: 12px; align-items: baseline; margin-bottom: 4px; }
+  .q .n { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: var(--gold); font-variant-numeric: tabular-nums; flex-shrink: 0; padding-top: 2px; }
+  .q h3 { font-size: 16.5px; font-weight: 600; line-height: 1.5; letter-spacing: -.012em; margin: 0; text-wrap: balance; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px 30px; }
+  .a { margin: 0 0 0 30px; color: var(--ink-mid); }
+  .a p { margin: 0 0 10px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+  .a em { font-style: normal; color: var(--ink); font-weight: 500; }
+
+  .proof { margin: 14px 0 0 30px; padding: 12px 14px; background: var(--surface-2); border-radius: 8px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.85; font-variant-numeric: tabular-nums; color: var(--ink-mid); overflow-x: auto; }
+  .proof .lbl { display: block; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+  .proof b { color: var(--ink); font-weight: 600; }
+  .proof-row { display: flex; gap: 10px; }
+  .proof-row span:first-child { min-width: 15em; color: var(--ink-soft); }
+
+  .demo { margin: 12px 0 0 30px; padding: 11px 14px; background: var(--show-bg); border-radius: 8px; border-left: 3px solid var(--show); font-size: 13.5px; line-height: 1.7; color: var(--ink-mid); }
+  .demo .lbl { display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--show); margin-bottom: 4px; }
+  .demo b { color: var(--ink); font-weight: 600; }
+
+  .caveat { margin: 12px 0 0 30px; padding: 11px 14px; background: var(--admit-bg); border-radius: 8px; border-left: 3px solid var(--admit); font-size: 13.5px; line-height: 1.7; color: var(--ink-mid); }
+  .caveat .lbl { display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--admit); margin-bottom: 4px; }
+  .caveat b { color: var(--ink); font-weight: 600; }
+
+  /* 이 문서에만 있는 블록 — 실측이 아니라 back-of-envelope 추정임을 분명히 표시 */
+  .estimate { margin: 12px 0 0 30px; padding: 11px 14px; background: var(--est-bg); border-radius: 8px; border-left: 3px solid var(--est); font-size: 13.5px; line-height: 1.7; color: var(--ink-mid); }
+  .estimate .lbl { display: block; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--est); margin-bottom: 4px; }
+  .estimate b { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 560px) { .tags, .a, .proof, .demo, .caveat, .estimate { margin-left: 0; } article.qa { padding: 16px 15px; } }
+
+  .closing { margin-top: 8px; padding: 24px 26px; background: var(--invert-bg); color: var(--invert-fg); border-radius: 12px; }
+  .closing h2 { margin: 0 0 14px; font-size: 18px; font-weight: 700; color: var(--invert-strong); }
+  .closing ul { margin: 0; padding-left: 20px; }
+  .closing li { margin-bottom: 8px; color: var(--invert-soft); }
+  .closing li:last-child { margin-bottom: 0; }
+  .closing b { color: var(--invert-strong); font-weight: 600; }
+  .closing .rule-note { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--invert-rule); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; letter-spacing: .02em; color: var(--invert-soft); }
+</style>
+
+<div class="wrap">
+
+  <header class="head">
+    <p class="eyebrow">Campus AX-Ton · 네잎클로드 · 아이SHADOW</p>
+    <h1>AI 실무자 문답</h1>
+    <p class="lede"><a href="qa.html" style="color:inherit">심사 문답(qa.html)</a>이 배점표를 가진 심사위원을 향한 것이라면,
+      이 문서는 <strong>같은 걸 만들어본 AI 엔지니어·PM</strong>이 커피 한 잔 앞에 두고 던질 법한 질문 14개를 모았습니다.
+      배점 대신 <strong>모델 선택 근거, 평가 방법론의 허점, 실서비스 규모에서의 비용·장애</strong>를 캐묻는 쪽입니다.
+      숫자는 전부 <code>README.md</code>·<code>AGENTS.md</code>에 실측으로 기록된 값이고, 실측이 없는 곳은
+      <span class="tag est">추정</span>으로 따로 표시했습니다 — 재보지 않은 걸 잰 것처럼 말하지 않습니다.</p>
+  </header>
+
+  <div class="legend">
+    <span class="legend-item"><span class="tag num">숫자</span> 실측값으로 답할 수 있음</span>
+    <span class="legend-item"><span class="tag show">화면</span> 그 자리에서 눌러 보여줄 수 있음</span>
+    <span class="legend-item"><span class="tag admit">인정</span> 솔직히 한계를 인정해야 함</span>
+    <span class="legend-item"><span class="tag est">추정</span> 실측 아님 — 어림 계산임을 밝힘</span>
+    <span class="legend-item"><span class="tag hard">중요</span> 실무자가 가장 날카롭게 파고들 질문</span>
+  </div>
+
+  <div class="cols">
+
+  <nav class="index" aria-label="질문 목차">
+    <h2>목차</h2>
+    <p class="grp">모델·벤더 선택</p>
+    <ol>
+      <li><a href="#q1"><span class="n">01</span><span>왜 Haiku 4.5인가</span></a></li>
+      <li><a href="#q2"><span class="n">02</span><span>fal.ai FLUX, 문서 밖 동작</span></a></li>
+      <li><a href="#q3"><span class="n">03</span><span>왜 얼굴인식은 브라우저에서</span></a></li>
+      <li><a href="#q4"><span class="n">04</span><span>교차검증이 실제로 잡은 것</span></a></li>
+    </ol>
+    <p class="grp">평가 방법론</p>
+    <ol>
+      <li><a href="#q5"><span class="n">05</span><span>98%, 진짜 믿을 숫자인가</span></a></li>
+      <li><a href="#q6"><span class="n">06</span><span>6.8% 흔들림을 어떻게 다루나</span></a></li>
+      <li><a href="#q7"><span class="n">07</span><span>가중치는 데이터로 검증됐나</span></a></li>
+    </ol>
+    <p class="grp">프라이버시·보안 엔지니어링</p>
+    <ol>
+      <li><a href="#q8"><span class="n">08</span><span>4개 벤더로 나가는 아이 사진</span></a></li>
+      <li><a href="#q9"><span class="n">09</span><span>안전장치를 레드팀했나</span></a></li>
+      <li><a href="#q10"><span class="n">10</span><span>qwerty·단일파일, 보안 수준</span></a></li>
+    </ol>
+    <p class="grp">프로덕션·확장성</p>
+    <ol>
+      <li><a href="#q11"><span class="n">11</span><span>10만 명 규모의 비용·SPOF</span></a></li>
+      <li><a href="#q12"><span class="n">12</span><span>모델 버전 드리프트 대응</span></a></li>
+      <li><a href="#q13"><span class="n">13</span><span>전면 장애 시 실제 동작</span></a></li>
+    </ol>
+    <p class="grp">근본 질문</p>
+    <ol>
+      <li><a href="#q14"><span class="n">14</span><span>이거 진짜 AI 프로젝트인가</span></a></li>
+    </ol>
+  </nav>
+
+  <main class="body">
+
+    <!-- ══════════════ 모델·벤더 선택 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>모델·벤더 선택</h2></div>
+
+      <article class="qa priority" id="q1">
+        <div class="q"><span class="n">01</span><h3>왜 하필 Claude Haiku 4.5입니까? Sonnet이나 GPT-4o, Gemini는 비교해봤나요?</h3></div>
+        <div class="tags"><span class="tag hard">중요</span><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>비용·지연시간이 이 서비스의 UX를 실제로 결정하는 변수라서, <strong>가장 싸고 빠른 축</strong>에서 시작했습니다.
+            사진 1장의 판독+위험도진단+캡션제안 3개 호출을 합쳐도 약 <strong>$0.0095(13원)</strong>이고,
+            그중에서도 위험도 진단 하나가 응답이 길어서(700토큰↑) 전체 비용의 절반 가까이를 차지합니다.
+            그래서 지연시간을 실측한 뒤 <strong>출력 토큰에 제약을 걸어</strong> 평균 782 → 519토큰(−34%), 응답시간 7.07 → 5.23초(−26%)로
+            줄였습니다 — 내용을 다 읽고 비교했을 때 품질 저하는 없었고, 오히려 권장조치가 5~6개에서 3개로 줄며 더 핵심만 남았습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">실측 비용·지연</span>
+          <div class="proof-row"><span>텍스트판독(Vision) 1장</span><span>입력 938 · 출력 329 토큰 → <b>$0.0026</b>(3원 미만), 왕복 2.6~4.1초</span></div>
+          <div class="proof-row"><span>진단+캡션 전체 파이프라인</span><span>얼굴분석→판독→진단+캡션(병렬) 합계 <b>약 14~16초</b> → 토큰제약 후 8.8~10.1초</span></div>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것</span>
+          Sonnet·GPT-4o·Gemini로 <b>동일 사진에 대한 정확도 A/B 테스트는 하지 않았습니다.</b>
+          해커톤 일정상 "충분히 싸고 빠르면서 프롬프트로 다룰 수 있는 모델"을 먼저 골랐고,
+          품질 상한을 알아보는 벤치마크는 다음 단계 과제로 남아 있습니다. 특히 위험도 채점처럼
+          미묘한 판단이 필요한 항목은 더 큰 모델에서 정확도가 유의미하게 오를 가능성이 있습니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q2">
+        <div class="q"><span class="n">02</span><h3>이미지 인페인팅에 fal.ai FLUX Fill을 쓴 이유는? 실제로 붙여보니 문서에 없던 동작이 있었나요?</h3></div>
+        <div class="tags"><span class="tag num">숫자</span><span class="tag show">화면</span></div>
+        <div class="a">
+          <p>"영역 지정 후 그 안만 다시 그리는" 마스크 기반 인페인팅이 필요했는데, FLUX Fill이 상대적으로 저렴하고
+            빠르면서 마스크 준수도가 높았습니다. 다만 <strong>공식 문서에 없는 동작 두 가지를 직접 호출해서 확인해야 했습니다.</strong></p>
+          <p><strong>마스크 방향</strong> — 흰색이 "새로 그릴 영역"인지 "보존할 영역"인지 문서에 명시가 부족해서,
+            768×512 테스트 이미지로 실제 호출해 확인했습니다(마스크 안쪽 변화량 267 vs 바깥쪽 23 — 흰색=재생성 확정).
+            <strong>출력 크기</strong> — "입력=출력이라 비율이 자동 보장된다"고 처음엔 판단했는데 틀렸습니다.
+            테스트 이미지가 우연히 32의 배수 크기(768×512)여서 문제가 안 드러났을 뿐, FLUX Fill은 내부적으로
+            <em>32의 배수로 내림</em>해서 처리하므로 그 배수가 아닌 사진은 비율이 어긋납니다 — 32의 배수로 올려 보내고
+            결과를 원본 크기로 복원하는 단계를 따로 붙였습니다.</p>
+        </div>
+        <div class="demo"><span class="lbl">화면에서</span>
+          "마크만 지우기" 전후 사진을 나란히 보여주세요 — 재킷·단추·파이핑·체크 무늬는 원본 그대로,
+          엠블럼만 사라지고 이음선이 없습니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q3">
+        <div class="q"><span class="n">03</span><h3>왜 얼굴 인식은 서버 Vision API 대신 브라우저 로컬 모델(face-api.js)로 했나요? 정확도 손해를 감수한 이유는?</h3></div>
+        <div class="tags"><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p><strong>구조로 프라이버시를 지키려는 선택</strong>입니다 — 얼굴 좌표를 서버가 계산하려면 원본을 먼저 서버로
+            보내야 하는데, 그 경로 자체를 만들지 않으려고 마스킹을 브라우저 안에서 끝내고 <em>가려진 사진만</em> 내보냅니다.
+            같은 이유로 랜드마크 인식에 구글 비전을 직접 쓰지 않고 Claude에 물어보는 경로도 있습니다 —
+            구글 경로는 원본을 보내지만 진단은 얼굴을 가려서 보내기 때문입니다.</p>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것 — 이 선택의 실제 대가</span>
+          작은 얼굴(프레임 폭의 약 5~20%)·75도 이상 기울어진 얼굴·거울 반사·선글라스류에서
+          <b>검출 실패율이 57%(7개 실패조건 중 4개)</b>까지 올라갑니다. 그리고 <b>아이 얼굴 자체로는 정확도를
+          한 번도 실측하지 못했습니다</b> — face-api.js 공식 샘플이 전부 성인이고, 실제 아이 사진을 인터넷에서
+          구해 테스트하는 것은 이 서비스가 막으려는 것과 같은 종류의 프라이버시 문제라 판단해 시도하지 않았습니다.
+          클라우드 Vision API를 썼다면 이 정확도는 더 높았을 가능성이 큽니다 — <b>프라이버시와 정확도를 맞바꾼
+          결정</b>이고, 그 맞바꿈의 크기를 아이 얼굴 데이터로는 아직 잴 방법이 없습니다.
+        </div>
+      </article>
+
+      <article class="qa priority" id="q4">
+        <div class="q"><span class="n">04</span><h3>서로 다른 벤더 모델로 교차검증한다는데, 그게 실제로 뭘 잡았나요? 그 게이트웨이 의존은 안전한가요?</h3></div>
+        <div class="tags"><span class="tag hard">중요</span><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>3단계 재검증을 <strong>Claude("설명 읽기")와 Gemini 3.5 Flash("사진 보기", 충남대 LLM 게이트웨이 경유)</strong>
+            두 모델이 각각 다른 방식으로 합니다. 이게 그냥 구색이 아니라는 걸 실측으로 확인했습니다 —
+            엠블럼이 남은 사진을 "처리 완료"로 주면, <strong>설명만 읽는 검증은 "통과"</strong>로 속았지만
+            <strong>사진을 직접 보는 검증은 "재검토 필요 — 왼쪽 가슴에 기관을 특정할 수 있는 엠블럼이
+            그대로 남아 있습니다"</strong>라고 정확히 잡아냈습니다. 예전 검증 프롬프트에는 "당신은 이미지를
+            직접 보지 못합니다"라고 대놓고 적혀 있었을 정도였습니다.</p>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것 — 게이트웨이 의존 리스크</span>
+          Gemini 경로가 붙어 있는 <b>충남대 LLM 게이트웨이는 월 5,000 크레딧짜리 학생 계정</b>입니다.
+          프로덕션 SLA가 있는 상용 계약이 아니고, 학교 쪽 사정으로 언제든 막힐 수 있습니다.
+          지금 구조는 "사진을 보는 두 번째 눈"이라는 아이디어의 유효성을 증명한 것이지,
+          그 아이디어를 상용 등급으로 운영할 준비가 된 것은 아닙니다 — 실서비스로 가려면
+          정식 Gemini API 키(또는 동급의 다른 벤더)로 옮겨야 합니다.
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ 평가 방법론 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>평가 방법론</h2></div>
+
+      <article class="qa priority" id="q5">
+        <div class="q"><span class="n">05</span><h3>정확도 98%라고 하셨는데, 그 숫자 진짜 믿을 만합니까? 표본은 어떻게 만들었나요?</h3></div>
+        <div class="tags"><span class="tag hard">중요</span><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>98%만 떼어 말하면 과장입니다. 정확히는 <strong>세 등급으로 나눠 각각 다르게 나옵니다</strong> —
+            팀원이 사진 103장을 손으로 분류한 정답표 기준, 위험한 사진(A) 63장 중 <strong>98% 검출</strong>,
+            사람도 놓치기 쉬운 숨은 위험(B) 8장 중 <strong>5장</strong>, 안전한 사진(C) 32장 중
+            <strong>19장을 위험하다고 오탐</strong>했습니다. "놓쳐서는 안 되는 사진"(A+B, 71장) 기준으로는
+            4장을 놓쳤습니다.</p>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것 — 진짜 문제는 이쪽입니다</span>
+          <b>① 표본이 자체 라벨입니다.</b> 103장을 팀원이 직접 분류했고, 제3자 검수를 거치지 않았습니다.
+          <b>② N=103은 작습니다</b> — 위험 신호가 흔치 않은 등급(B, 8장)일수록 신뢰구간이 넓습니다.
+          <b>③ 홀드아웃이 자기들 손으로 깨졌다고 문서에 명시돼 있습니다</b> — 채점 규칙 수정 중 일부는
+          이 정답표에 대한 출력을 보고 만들었다고 <code>AGENTS.md</code>가 직접 인정합니다("이 규칙이 일부
+          깨져 있습니다. 고침 1·3번은 이 세트의 출력을 보고 만들었습니다"). 즉 이 103장의 일부 지표는
+          진짜 홀드아웃 값이 아니라 <b>그 세트에 맞춰 조정된 값</b>입니다. <b>④ 오탐률이 32장 중 19장,
+          약 59%</b>로 지금 가장 약한 숫자입니다. 저희는 이걸 숨기지 않고 그대로 보고합니다 —
+          측정하고 그 한계까지 같이 말하는 것이 측정을 안 한 것보다 낫다고 생각합니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q6">
+        <div class="q"><span class="n">06</span><h3>같은 사진을 두 번 넣었는데 판정이 달라진다면, 그 지표를 프로덕션에서 어떻게 신뢰합니까?</h3></div>
+        <div class="tags"><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>코드를 안 바꾸고 같은 103장을 두 번 돌리면 <strong>7장(6.8%)의 판정이 뒤집힙니다</strong> — 위 모든
+            숫자에 ±7%p의 흔들림이 섞여 있다는 뜻입니다. 이걸 판정 로직 개선 효과와 분리하려고,
+            <strong>같은 실행의 같은 판독 결과를 옛 규칙/새 규칙 두 가지로 각각 채점</strong>하는 방법을 만들었습니다 —
+            읽기(모델 출력) 자체는 고정되므로 "로직을 고쳐서 나아졌다"와 "그냥 이번엔 운이 좋았다"를
+            구분할 수 있습니다. 이 방법으로 재보니 판정 로직 변경만으로 놓침이 8장 → 4장으로 줄었고
+            오탐 19장은 그대로였다는 걸 확인했습니다(로직 효과가 진짜였다는 뜻).</p>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것</span>
+          이건 <b>측정 방법의 문제이지, 흔들림 자체를 없앤 게 아닙니다.</b> 근본 원인(LLM 응답의 비결정성)은
+          그대로 남아 있습니다. 프로덕션으로 가는 다음 단계로 고려 중인 것: 같은 사진을 여러 번 읽어
+          다수결로 합치는 방법(다만 이러면 오탐도 같이 늘어나는 경향을 실측으로 확인했습니다 — 뒤집히는
+          7장 중 4장이 A·B, 3장이 C), 또는 "두 번 다 찾음 / 한 번만 찾음"을 사용자에게 구분해서 보여주는
+          방법입니다. 아직 둘 다 구현 전입니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q7">
+        <div class="q"><span class="n">07</span><h3>5개 항목의 배점(26/22/18/18/16)은 데이터로 검증됐나요, 아니면 사람이 정한 값인가요?</h3></div>
+        <div class="tags"><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>사람이 정했습니다, 그리고 그렇다고 그대로 말합니다. <strong>순서(어느 항목이 더 위험한가)는 논리로
+            정했고</strong> — 장소를 얼마나 좁히는가 기준으로, 간판 글자 하나가 건물을 특정하니 가장 높고
+            공개 범위는 다른 단서를 증폭시킬 뿐이라 가장 낮습니다 — <strong>절대값(26 대 22)에는 실증 근거가
+            없습니다.</strong> 총점 자체도 모델에게 직접 묻지 않고 <em>항목별 점수를 받아 서버가 더합니다</em> —
+            모델이 총점을 내놓게 두면 같은 사진에 다른 점수가 나오고("왜 62점인가"에 답할 수 없게 됩니다),
+            실제로 첫 실험 라운드에서 같은 72점인데 등급이 "중"/"상"으로 갈리는 비일관성을 발견해서
+            등급 경계(70↑상/45↑중)를 서버가 강제로 고정하도록 바꿨습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지금 상태</span>
+          <div class="proof-row"><span>배점의 순서</span><span>논리적 근거 있음 (장소 특정력 기준)</span></div>
+          <div class="proof-row"><span>배점의 절대값</span><span><b>실증 근거 없음</b> — 103장 규모로는 회귀분석으로 캘리브레이션하기엔 표본이 작음</span></div>
+          <div class="proof-row"><span>등급 경계값</span><span>서버에서 점수 기준으로 강제 확정 (모델 판단과 분리)</span></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ 프라이버시·보안 엔지니어링 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>프라이버시·보안 엔지니어링</h2></div>
+
+      <article class="qa" id="q8">
+        <div class="q"><span class="n">08</span><h3>아이 사진이 최대 4개 다른 벤더(Anthropic·fal.ai·Google·충남대 게이트웨이)로 나갈 수 있는데, 데이터 보존·학습 활용 정책을 어떻게 검증했나요?</h3></div>
+        <div class="tags"><span class="tag show">화면</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>기능마다 나가는지 여부와 나가는 대상이 다르고, 그걸 화면에 그대로 적어뒀습니다. 브라우저 안에서
+            끝나는 경로(배경 흐림·자연스럽게 덮기·옷 색만 바꾸기·EXIF 좌표 확인)는 애초에 이 질문과 무관하고,
+            <strong>원본이 나가는 경로(AI 보정 3종, 이미지 검색)는 기능 카드에 "⚠ 원본 전송" 배지를 상시 표시</strong>하고
+            <strong>누를 때마다 동의 모달</strong>을 띄웁니다. 구글 비전 동의창에는 구글이 문서로 밝힌 방침
+            (디스크에 남기지 않음·학습에 쓰지 않음·제3자 공유 없음·검색 색인 미포함)을 그대로 옮겨 적고,
+            <strong>"이건 약관상 약속이지 기술적 차단이 아니다"</strong>라는 문장을 같이 넣었습니다 — 사용자가
+            오해하지 않도록요.</p>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것</span>
+          이 확인은 <b>각 벤더가 공개한 API 이용약관을 읽는 수준</b>이었지, <b>서명된 DPA(데이터처리계약)나
+          법률 검토를 거친 게 아닙니다.</b> 아동 개인정보라는 민감한 범주를 다루는 서비스가 실제로 운영에
+          들어가려면 국내(개인정보보호법 아동 특례)·해외(COPPA 등) 규정에 맞춘 정식 법률 검토와
+          벤더별 계약이 필요하다는 걸 알고 있습니다 — 지금은 "약관을 읽고 화면에 정직하게 적었다"
+          단계이지 "법적으로 검증됐다" 단계가 아닙니다.
+        </div>
+      </article>
+
+      <article class="qa priority" id="q9">
+        <div class="q"><span class="n">09</span><h3>마스킹이라는 안전장치 자체를 얼마나 체계적으로 레드팀했나요? 실패 사례가 있었나요?</h3></div>
+        <div class="tags"><span class="tag hard">중요</span><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>있었고, 실제로 뚫렸던 구멍을 찾아서 고쳤습니다. 실사진 검증 중 <strong>거울에 비친 인물 2명이 든 사진에서
+            얼굴 검출이 0명으로 실패</strong>했는데, 당시 코드는 얼굴을 못 찾으면 <em>아무것도 가리지 않고 원본을
+            그대로 반환</em>하도록 되어 있었습니다 — "Claude Vision에 보내기 전엔 항상 얼굴을 가린다"는
+            핵심 프라이버시 원칙이 검출 실패 시 지켜지지 않는 구멍이었습니다. 흔한 실패 조건 7가지를
+            합성해서 재현해봤더니 <strong>4개(57%)에서 완전히 검출 실패</strong>했습니다 — 드문 예외가 아니라
+            거울·원거리·기울어진 각도·선글라스류처럼 실제로 자주 마주칠 조건들이었습니다.</p>
+          <p>고친 방식은 "실패하면 열어준다(fail-open)"가 아니라 <strong>"실패하면 멈추고 사용자에게 묻는다
+            (fail-closed)"</strong>입니다 — 얼굴 0개면 자동 전송을 멈추고 [안전 우선: 전송 안 함(기본 추천)] /
+            [그래도 원본으로 분석] 중 사용자가 직접 고르게 합니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">실패조건 재현 실측</span>
+          <div class="proof-row"><span>정면 얼굴(기준)</span><span>✅ 검출 (77%)</span></div>
+          <div class="proof-row"><span>거울 반사 셀카 2인 / 작은 얼굴(20%) / 75도 기울임 / 눈가림</span><span>❌ 4건 전부 검출 0명</span></div>
+          <div class="proof-row"><span>저조도 / 옆모습·프레임 절반 잘림</span><span>✅ 검출 (89% / 82%)</span></div>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것</span>
+          이건 <b>사고 나서 고친 것</b>이지 사전에 설계된 레드팀 프로세스가 아니었습니다. 정식 절차는
+          아직 없습니다. 그리고 <b>마스크 착용(코·입 가림)은 이번에 검증하지 않았습니다</b> — 안전장치
+          자체(실패 시 멈춤)가 이미 있으니 모든 실패 조건을 다 찾는 것보다 그 장치의 존재가 더 중요하다고
+          판단해 범위를 좁혔습니다. 필요하면 추가 검증 가능한 상태입니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q10">
+        <div class="q"><span class="n">10</span><h3>접근 코드가 "qwerty"이고 프론트가 빌드 없는 단일 HTML 파일이라는데, 실제 프로덕션 보안 수준은 어느 정도인가요?</h3></div>
+        <div class="tags"><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>정직하게, <strong>지금은 해커톤 데모 등급이지 프로덕션 등급이 아닙니다.</strong> 팀 저장소의
+            "알려진 구멍" 목록에 접근 코드가 약하다는 것과, 사용자만 바꿀 수 있는 상태라는 것을
+            그대로 순위 매겨 적어뒀습니다. 다만 지켜야 할 것과 아닌 것을 구분해뒀습니다 — <code>server/.env</code>의
+            실제 API 키는 <strong>커밋 전 자동 점검 스크립트</strong>(<code>scripts/check-secrets.sh</code>)로
+            걸러내고, 코드에서 키 값을 출력·로그하지 않는다는 원칙은 지켰습니다. 반면 단일 파일 프론트(약 450KB,
+            빌드 없음)나 약한 접근 코드는 "빠르게 만들고 정직하게 배포"라는 해커톤 목표에 맞춘 선택이었지,
+            그 이상으로 부풀려 설명하지 않습니다.</p>
+        </div>
+        <div class="proof"><span class="lbl">지켜진 것 vs 안 지켜진 것</span>
+          <div class="proof-row"><span>API 키 커밋 방지</span><span>✅ 사전 점검 스크립트, .gitignore, 코드상 process.env로만 접근</span></div>
+          <div class="proof-row"><span>실제 아이 사진(테스트용)</span><span>✅ 파일명으로 .gitignore 등록, 커밋 안 함</span></div>
+          <div class="proof-row"><span>접근 인증</span><span>❌ 고정 문자열 코드 하나("qwerty"), 정식 authn 아님</span></div>
+          <div class="proof-row"><span>프론트 구조</span><span>❌ 코드 분할·번들링·CSP 없음 — 단일 HTML</span></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ 프로덕션·확장성 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>프로덕션·확장성</h2></div>
+
+      <article class="qa priority" id="q11">
+        <div class="q"><span class="n">11</span><h3>사용자가 10만 명 규모로 늘면 비용·지연시간·단일장애점(SPOF)은 어떻게 됩니까?</h3></div>
+        <div class="tags"><span class="tag hard">중요</span><span class="tag est">추정</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>실측 단가에서 출발해 어림해보면, <strong>LLM 비용 자체는 걱정할 규모가 아닙니다.</strong> 진단 1회
+            $0.0095, 사용자당 월 1회로만 잡아도 10만 명이면 월 <strong>약 $950</strong>. 병목은 다른 곳에 있습니다.</p>
+        </div>
+        <div class="estimate"><span class="lbl">back-of-envelope — 실측 아님, 단가×사용량 어림</span>
+          <div class="proof-row"><span>Claude 진단 (10만 MAU × 월 1회)</span><span>약 $950/월 — 문제 없음</span></div>
+          <div class="proof-row"><span>구글 비전 위치확인 (동일 가정)</span><span>무료 한도(월 1,000건)를 <b>즉시 초과</b> → 이후 1,000건당 $3.50, 10만 건이면 <b>약 $350/월</b></span></div>
+          <div class="proof-row"><span>충남대 LLM 게이트웨이 (교차검증)</span><span>학생 계정 <b>월 5,000 크레딧</b> — 10만 MAU의 5%도 못 감당. 정식 계약 없이는 <b>구조적으로 막힘</b></span></div>
+          <div class="proof-row"><span>fal.ai AI 보정 (선택 기능, 20% 사용 가정)</span><span>2만 건 × $0.02~0.04 ≈ 월 $400~800</span></div>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것</span>
+          이건 실측이 아니라 단가에 사용량을 곱한 <b>추정</b>입니다. Vercel Fluid Compute는 함수 실행시간 300초
+          한도가 있어 지금 관측된 최악 케이스(fal.ai AI 보정 22.9~29.3초, 한 번은 30초 타임아웃)에는 여유가
+          있지만, <b>동시 사용자 수백~수천 단위의 부하 테스트는 한 번도 해보지 않았습니다.</b> 가장 실질적인
+          병목은 계산이 아니라 <b>충남대 게이트웨이 같은 무료·학생 등급 의존성</b>입니다 — 이건 스케일 문제가
+          아니라 애초에 상용 서비스에 쓸 수 없는 리소스를 핵심 경로(교차검증)에 넣어둔 구조적 부채입니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q12">
+        <div class="q"><span class="n">12</span><h3>Anthropic이나 Google이 모델을 조용히 업데이트하면 채점 결과가 흔들리지 않나요? 버저닝 전략이 있습니까?</h3></div>
+        <div class="tags"><span class="tag num">숫자</span><span class="tag admit">인정</span></div>
+        <div class="a">
+          <p>모델 문자열을 <code>"latest"</code> 같은 별칭이 아니라 <strong><code>claude-haiku-4-5</code>로 명시 고정</strong>합니다 —
+            벤더가 별칭 뒤의 가중치를 바꿔도 저희 호출은 그 시점에 스냅샷된 버전을 계속 씁니다. 이미 한 번,
+            같은 입력에서 등급이 "중"/"상"으로 갈리는 비일관성을 발견해 등급 확정 로직을 서버로 옮긴 적이
+            있어서, <strong>모델 출력을 그대로 신뢰하지 않고 검증 가능한 최소 단위로 쪼개는 습관</strong>은
+            이미 자리잡혀 있습니다.</p>
+        </div>
+        <div class="caveat"><span class="lbl">인정할 것</span>
+          모델 버전을 고정해도 <b>벤더가 그 버전을 언젠가 폐기(deprecate)하면 강제로 옮겨야 합니다</b> —
+          그때 이번처럼 103장 정답표로 재검증하는 절차가 문서화되어 있지 않고, 지금은 사람이 "뭔가 이상하다"고
+          느껴야 다시 재는 구조입니다. 버전 전환 시 자동으로 회귀 세트를 돌리는 CI 단계는 아직 없습니다.
+        </div>
+      </article>
+
+      <article class="qa" id="q13">
+        <div class="q"><span class="n">13</span><h3>외부 API가 전면 장애를 일으키면 실제로 어떻게 되나요? 시뮬레이션해봤습니까?</h3></div>
+        <div class="tags"><span class="tag num">숫자</span><span class="tag show">화면</span></div>
+        <div class="a">
+          <p>했습니다 — 백엔드를 완전히 꺼서 Claude Vision·위험도진단·캡션제안·스크린샷분석·패턴분석
+            <strong>전부가 동시에 실패하는 상황을 재현</strong>했습니다. 결과: 에러 팝업 없이
+            <strong>Tesseract(로컬 OCR)와 규칙 기반 <code>buildMockDiagnosis()</code>로 자동 전환</strong>되고,
+            콘솔에는 각 실패 사유가 로그로 남습니다. 사용자 눈에는 정확도가 조금 낮은 결과가 나올 뿐,
+            서비스가 멈추지는 않습니다. 이건 UX 배려가 아니라 <strong>얼굴 검출 실패 시 안전장치와 같은
+            철학</strong>입니다 — 외부 의존이 죽어도 프라이버시 원칙(마스킹 우선)은 로컬 규칙으로 계속 지켜집니다.</p>
+        </div>
+        <div class="demo"><span class="lbl">화면에서</span>
+          정상 동작과 비교해서 보여주려면 백엔드를 내린 상태로 진단을 한 번 돌려보세요 — 결과 화면 자체는
+          그대로 뜨고, 다만 텍스트 판독 정확도가 눈에 띄게 낮아집니다(예: "1-10" 정도만 건짐).
+        </div>
+      </article>
+    </section>
+
+    <!-- ══════════════ 근본 질문 ══════════════ -->
+    <section class="group">
+      <div class="group-head"><h2>근본 질문</h2></div>
+
+      <article class="qa priority" id="q14">
+        <div class="q"><span class="n">14</span><h3>솔직히, 이거 진짜 "AI 프로젝트"인가요, 아니면 규칙 기반 로직 위에 LLM 프론트만 얹은 건가요?</h3></div>
+        <div class="tags"><span class="tag hard">중요</span><span class="tag show">화면</span></div>
+        <div class="a">
+          <p>절반은 맞는 지적이고, <strong>의도적으로 그렇게 나눴습니다.</strong> "사실로 확인할 수 있는 것은
+            AI에게 묻지 않는다"가 이 저장소의 명시적 원칙입니다 — EXIF 좌표 존재 여부, 얼굴 개수 비교,
+            항목별 점수의 합산, 옷 색만 바꾸는 처리는 <strong>전부 결정론적 코드</strong>입니다. 반대로
+            사진 속 글자·소속 단서를 읽고 판단하는 것, 위험도를 항목별로 채점하며 근거를 자연어로 설명하는 것,
+            보정 방식을 문맥에 맞춰 추천하는 것, 배경을 자연스럽게 다시 그리는 것은 <strong>규칙으로 쓸 수 없는
+            판단 영역</strong>이라 LLM/생성모델을 씁니다.</p>
+          <p>즉 "AI를 어디에나 쓴 프로젝트"가 아니라 <strong>"AI가 필요한 자리와 필요 없는 자리를 구분한
+            프로젝트"</strong>입니다. 총점을 모델에게 직접 시켰다가 같은 사진에 다른 점수·등급이 나오는 걸
+            실측으로 발견하고 서버 로직으로 옮긴 것 자체가, "모델이 잘하는 것과 못하는 것을 실측으로 나눈"
+            이 프로젝트의 방법론을 그대로 보여주는 사례입니다.</p>
+        </div>
+        <div class="demo"><span class="lbl">화면에서</span>
+          "이 점수는 이렇게 나왔어요" 패널의 합계 식(예: "0 + 22 + 4 + 0 + 16 = 42점")을 보여주세요 —
+          모델이 뱉은 숫자가 아니라 <b>모델이 준 항목별 근거를 서버가 더한 값</b>이라는 게 그 자리에서 보입니다.
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  </div><!-- /.cols -->
+
+  <div class="closing">
+    <h2>이 문서를 쓰는 법</h2>
+    <ul>
+      <li><b>"추정" 태그가 붙은 답은 그렇게 말하세요.</b> 11번(10만 명 규모 비용)은 실측이 아니라 단가×사용량
+        어림입니다. 실측처럼 확신을 담아 말하면 다음 질문 하나로 무너집니다.</li>
+      <li><b>이 문서와 심사 문답(qa.html)은 같은 사실에서 다른 각도로 답합니다.</b> 심사위원은
+        "배점표의 어느 항목을 채우는가"를 보고, 업계 실무자는 "이 선택을 왜 했고 그 대가가 뭔지 아는가"를 봅니다.
+        같은 질문이라도 이 문서 쪽 답이 더 트레이드오프 중심입니다.</li>
+      <li><b>가장 날카로운 질문(5·9·11·14번)일수록 한계부터 인정하고 시작하세요.</b> "저희가 실측으로 이미
+        알고 있는 문제"라는 답이 "완벽합니다"보다 훨씬 신뢰를 줍니다 — 이 프로젝트의 커밋 로그 전체가
+        그 태도로 쓰여 있습니다.</li>
+    </ul>
+    <p class="rule-note">출처: README.md(개발 기록, 16개 단계) · AGENTS.md(현재 상태·알려진 구멍 8개) — 2026-08-31 기준</p>
+  </div>
+
+</div>

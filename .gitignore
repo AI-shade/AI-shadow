@@ -62,3 +62,18 @@ __pycache__/
 # 발표자료 — 슬라이드에 실제 아이 사진이 찍힌 앱 화면이 그대로 들어 있다.
 # 사진 파일과 같은 이유로 커밋하지 않는다 (AGENTS.md 1절 «비밀»).
 docs/*.pptx
+
+# FaceShield GPU 앱(Modal) 배포용 — 대용량 가중치 파일들 (총 260MB+, 전부 재다운로드
+# 가능하므로 git에 안 올림). Note/2026-09-14-FaceShield-Modal-통합작업.md 참고.
+server/faceshield-fal/faceshield_repo/*.pth
+server/faceshield-fal/faceshield_repo/**/*.pth
+server/faceshield-fal/faceshield_repo/**/*.bin
+server/faceshield-fal/faceshield_repo/models/*_checkpoint.tar
+
+# FaceShield 테스트 부산물 — 실제 아이 사진(childphoto.jpeg, 샘플2.jpeg 등)의 base64
+# 페이로드와 그 처리 결과물이 들어 있다. 실제 아이 사진은 커밋 금지(Note/2026-08-26
+# 인계 문서 주의사항)라서 이 폴더 최상단의 json/png/txt 산출물을 전부 제외한다.
+# (faceshield_repo/ 안의 코드는 그대로 추적 대상 — 아래 패턴은 최상단만 잡는다)
+server/faceshield-fal/*.json
+server/faceshield-fal/*.png
+server/faceshield-fal/headers.txt

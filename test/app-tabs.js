@@ -46,7 +46,12 @@ const 보이나 = (page, id) => page.evaluate(i => {
     ok(await 보이나(page, 'appFab'), '가운데 사진 넣기 버튼이 있다');
 
     for (const 탭 of 탭들) {
-      await page.evaluate(t => window.__anshimTest.setTabForTest(t), 탭);
+      // 진단 탭의 첫 화면은 홈(허브)이다 — 도구(#tool)는 사진을 고른 뒤에 보인다(test/home-hub.js가
+      // 그쪽을 잰다). 이 반복은 "탭에 속한 섹션만 보이는가"를 재는 것이라 도구 화면 상태로 잰다.
+      await page.evaluate(t => {
+        document.documentElement.setAttribute('data-view', 'tool');
+        window.__anshimTest.setTabForTest(t);
+      }, 탭);
       await page.waitForTimeout(120);
 
       let 좋음 = true, 상세 = [];

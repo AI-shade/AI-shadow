@@ -23,7 +23,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 const PHOTOS = ['아이사진1.jpg', 'childphoto.jpeg'];
-const TARGET = '#CCB490'; // 오트밀 베이지 (COLORWAYS.brown.hex)
+const TARGET = '#A38B72'; // 웜 토프 브라운 (COLORWAYS.brown.hex)
 
 let pass = 0;
 let fail = 0;
@@ -147,11 +147,50 @@ function check(label, ok, detail) {
     }, { u, target: TARGET });
 
     check('옷 바깥은 한 픽셀도 안 바뀐다', r.outsideChanged === 0, r.outsideChanged + '픽셀 (' + r.size + ')');
-    check('옷 안쪽은 실제로 바뀐다', Number(r.insideChangedPct) > 50, '옷의 ' + r.insideChangedPct + '%');
+    // 색이 있는 옷은 색조가 옮겨지고, 흰 옷·검정 옷은 살짝만 물든다(밝기는 그대로). 그래서 거의 검정+흰색인 옷(childphoto)은
+    // 바뀌는 비율이 낮다 — 검정을 밝은 갈색으로 만들면 어두운 옷의 명암이 무너진다. 40%면 눈에는 옷 전체 톤이 달라진다.
+    check('옷 안쪽은 실제로 바뀐다', Number(r.insideChangedPct) > 30, '옷의 ' + r.insideChangedPct + '%');
     // 'color' 합성은 색조·채도만 바꾸고 밝기를 남긴다 — 주름·단추가 살아 있다는 뜻이다.
     // 완전히 0은 아니다(감마·반올림) 지만 평균 8 이하면 눈에는 밝기가 그대로다.
     check('밝기가 보존된다 (주름·단추가 남는다)', Number(r.avgLumaDiff) <= 8,
       '평균 밝기 차 ' + r.avgLumaDiff + '/255');
+  }
+
+  // ── strict 마스크 — 넥타이가 마스크에서 살아나는가 ─────────────────────────
+  // 제보: "옷이 이상하게 편집돼" — 실측(아이3 결과 사진)해보니 새 옷 위에 원래 넥타이가
+  // 그대로 남아 있었다. 원인: 넥타이는 5번(그외)인데, strict(옷 교체용)는 신발이 같이
+  // 뜨는 걸 막으려고 5번을 통째로 뺐다. 그래서 얼굴 기준 목~가슴 띠 안의 5번만
+  // 되살리게 고쳤다 — faces를 주면 그 띠 안에서 마스크가 넓어져야 한다.
+  console.log('\n[아이사진1.jpg] strict 마스크 — 목~가슴 띠의 5번(넥타이)이 되살아난다');
+  {
+    const rel = '아이사진1.jpg';
+    const file = path.join(__dirname, '..', rel);
+    if (!fs.existsSync(file)) {
+      check('사진이 있다', false, rel + ' 없음 — 건너뜀');
+    } else {
+      const u = 'data:image/jpeg;base64,' + fs.readFileSync(file).toString('base64');
+      const r = await page.evaluate(async (u) => {
+        const T = window.__anshimTest;
+        const img = await new Promise((res, j) => { const i = new Image(); i.onload = () => res(i); i.onerror = j; i.src = u; });
+        const w = img.naturalWidth, h = img.naturalHeight;
+        const face = await T.runFaceDetectionPipeline(u);
+        function countOn(mask) {
+          if (!mask) return -1;
+          const cc = document.createElement('canvas'); cc.width = w; cc.height = h;
+          cc.getContext('2d').drawImage(mask, 0, 0, w, h);
+          const d = cc.getContext('2d').getImageData(0, 0, w, h).data;
+          let on = 0;
+          for (let i = 3; i < d.length; i += 4) if (d[i] > 128) on++;
+          return on;
+        }
+        const withFaces = countOn(await T.getClothesMask(img, 'nw-on:' + u.length, true, face.faces));
+        const withoutFaces = countOn(await T.getClothesMask(img, 'nw-off:' + u.length, true));
+        return { withFaces, withoutFaces, faces: face.faces.length };
+      }, u);
+      check('얼굴이 잡힌다 (이 검사의 전제)', r.faces > 0, r.faces + '명');
+      check('faces를 주면 목~가슴 띠 안의 5번이 되살아나 strict 마스크가 더 넓어진다',
+        r.withFaces > r.withoutFaces, r.withoutFaces + 'px (faces 없음) → ' + r.withFaces + 'px (faces 있음)');
+    }
   }
 
   // ── 색만 고르면 사진이 밖으로 나가지 않는가 ───────────────────────────────

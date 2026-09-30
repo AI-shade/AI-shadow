@@ -153,6 +153,38 @@ async function main() {
   });
   check('힌트가 없으면 빈 배열', empty === 0);
 
+  // Google Vision 매칭 (matchVisionWordsToHint) — 네트워크 없이 합성 단어로 검사한다.
+  // 실측(꽃집간판.jpg)에서 잡은 결함 둘: 같은 글자가 두 군데면 하나로 합쳐 화면 절반을
+  // 덮었고(IoU 0.02), "힌트 근처 단어"를 끌어들여 옆 글자까지 합쳤다(IoU 0.28).
+  console.log('\nGoogle Vision 매칭 (matchVisionWordsToHint)');
+  const vm = await page.evaluate(() => {
+    const t = window.__anshimTest;
+    const W = 960, H = 540;
+    const px = (text, x0, y0, x1, y1) => ({ text, x0, y0, x1, y1 });
+    const words = t.visionWordsToPct([
+      px('꽃집', 236, 170, 376, 265),
+      px('누아', 404, 125, 560, 235),
+      px('블룸', 575, 125, 730, 235),
+      px('1118-1', 182, 302, 240, 324),   // 왼쪽 벽
+      px('1118-1', 636, 499, 666, 509),   // 유리문 — 같은 글자가 두 군데
+      px('1', 244, 302, 252, 324),        // 왼쪽 지번 바로 옆의 한 글자 잡음
+    ], W, H);
+    const box = (text, x, y) => t.matchVisionWordsToHint({ text, xPct: x, yPct: y }, words);
+    return {
+      dupLeft: box('1118-1', 25, 55), dupDoor: box('1118-1', 68, 93),
+      split: box('누아블룸', 60, 37), single: box('꽃집', 32, 37),
+      none: box('전혀다른글자', 50, 50),
+    };
+  });
+  const cx = (b) => b.xPct;
+  check('같은 글자가 두 군데여도 힌트에 가까운 쪽만 (왼쪽)', vm.dupLeft && vm.dupLeft.wPct < 10 && cx(vm.dupLeft) < 30, vm.dupLeft && 'w ' + vm.dupLeft.wPct.toFixed(1) + '%, x ' + cx(vm.dupLeft).toFixed(0) + '%');
+  check('같은 글자가 두 군데여도 힌트에 가까운 쪽만 (유리문)', vm.dupDoor && vm.dupDoor.wPct < 10 && cx(vm.dupDoor) > 60, vm.dupDoor && 'w ' + vm.dupDoor.wPct.toFixed(1) + '%, x ' + cx(vm.dupDoor).toFixed(0) + '%');
+  check('쪼개져 읽힌 조각("누아"+"블룸")은 하나로 합쳐짐', vm.split && vm.split.wPct > 30, vm.split && 'w ' + vm.split.wPct.toFixed(1) + '%');
+  check('옆 글자("꽃집")는 끌려 들어오지 않음', vm.split && vm.split.xPct - vm.split.wPct / 2 > 40, vm.split && '왼쪽 끝 ' + (vm.split.xPct - vm.split.wPct / 2).toFixed(1) + '%');
+  check('한 단어짜리는 그 단어 박스만', vm.single && vm.single.wPct < 20, vm.single && 'w ' + vm.single.wPct.toFixed(1) + '%');
+  check('글자가 안 겹치면 null (옆 단어를 추측해 합치지 않음)', vm.none === null);
+  check('바로 옆 한 글자 잡음("1")은 이어 붙이지 않음', vm.dupLeft && vm.dupLeft.xPct + vm.dupLeft.wPct / 2 <= 25.5, vm.dupLeft && '오른쪽 끝 ' + (vm.dupLeft.xPct + vm.dupLeft.wPct / 2).toFixed(1) + '% (정답 25.0%)');
+
   if (errors.length) {
     console.log('\n  페이지 에러: ' + errors.join(' | '));
     fail++;

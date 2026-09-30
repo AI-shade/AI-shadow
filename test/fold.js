@@ -110,6 +110,37 @@ function ok(cond, name, detail) {
   console.log('\nJS가 죽은 상태');
   ok(무JS, '접기 클래스가 없으면 근거가 펼쳐진 채로 남는다');
 
+  // ── 데스크톱(넓은 화면): 안 눌러도 바로 보인다 ──
+  // 사용자 제보: 진단근거를 보여줄 때 «왜?»를 눌러야만 보이는 게 불편하다 — 웹(넓은 화면)은
+  // 자리가 넉넉하니 처음부터 펼쳐서 보여준다. 폰(좁은 화면)은 위에서 확인한 대로 그대로 접힌다.
+  const dctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'ko-KR' });
+  const dpage = await dctx.newPage();
+  await dpage.goto(URL, { waitUntil: 'load', timeout: 30000 });
+  await dpage.waitForTimeout(900);
+  await dpage.evaluate((a) => {
+    window.__anshimTest.showScreenForTest('result');
+    window.__anshimTest.stopScoreTickerForTest();
+    window.__anshimTest.renderResultForTest(a, { faces: [] }, { words: [], visualClues: [] });
+  }, R);
+  await dpage.waitForTimeout(500);
+  const 데스크톱상태 = await dpage.evaluate(() => {
+    const 보이나 = (el) => { const s = getComputedStyle(el); return s.display !== 'none' && s.visibility !== 'hidden'; };
+    return {
+      foldOn: document.documentElement.classList.contains('fold-on'),
+      단추수: document.querySelectorAll('.why-btn').length,
+      단추보임: Array.from(document.querySelectorAll('.why-btn')).some(보이나),
+      근거보임: Array.from(document.querySelectorAll('.why-body')).every(보이나),
+      점수보임: Array.from(document.querySelectorAll('.sb-score')).every(보이나),
+    };
+  });
+  console.log('\n데스크톱(넓은 화면)');
+  ok(!데스크톱상태.foldOn, 'fold-on이 안 켜진다');
+  ok(데스크톱상태.단추수 === 5, '«왜?» 단추 자체는 여전히 5개 만들어진다', 데스크톱상태.단추수 + '개');
+  ok(!데스크톱상태.단추보임, '«왜?» 단추는 안 보인다 (눌러도 효과 없는 죽은 단추라 숨긴다)');
+  ok(데스크톱상태.근거보임, '근거 산문이 누르지 않아도 바로 보인다');
+  ok(데스크톱상태.점수보임, '점수도 그대로 보인다');
+  await dctx.close();
+
   await browser.close();
   console.log('\n' + pass + '개 통과, ' + fail + '개 실패');
   process.exit(fail ? 1 : 0);
