@@ -1,0 +1,53 @@
+# main에 push하면 버셀에 자동 배포한다.
+#
+# 버셀의 Git 연결은 무료(Hobby) 플랜에서 "비공개 조직(GitHub Organization) 저장소"를 받아주지 않는다.
+# 그 제한은 Git 연결에만 걸리므로, 지금까지 손으로 하던 CLI 배포(vercel deploy --prod)를
+# GitHub Actions가 대신 돌리게 한다. 버셀이 서버에서 빌드하는 방식이라 손으로 하던 것과 같다.
+#
+# 필요한 저장소 Secrets (Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN        버셀 Account Settings → Tokens 에서 만든 토큰
+#   VERCEL_ORG_ID       .vercel/project.json 의 orgId
+#   VERCEL_PROJECT_ID   .vercel/project.json 의 projectId
+# 셋 중 하나라도 비어 있으면 실패하지 않고 경고만 남기고 건너뛴다(Secrets를 넣기 전에 이 파일이
+# 먼저 올라가도 push마다 빨간 불이 켜지지 않게).
+# API 키(ANTHROPIC_API_KEY 등)는 여기가 아니라 버셀 프로젝트의 Environment Variables에 둔다.
+name: Vercel 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Actions 탭에서 손으로도 돌릴 수 있다 (처음 한 번 시험해 볼 때)
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Secrets 확인
+        id: check
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::warning::VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID 중 비어 있는 게 있어 배포를 건너뜁니다. Settings → Secrets and variables → Actions 에서 넣어 주세요."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.check.outputs.ready == 'true'
+        uses: actions/checkout@v4
+      - if: steps.check.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - if: steps.check.outputs.ready == 'true'
+        name: Vercel CLI 설치
+        run: npm install --global vercel@latest
+      - if: steps.check.outputs.ready == 'true'
+        name: 프로덕션 배포
+        run: vercel deploy --prod --yes --token="$VERCEL_TOKEN"
