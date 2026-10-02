@@ -3569,6 +3569,10 @@
           <button type="button" class="ct-undo" id="brushUndo" disabled>↶ 직전 획 취소</button>
         </span>
       </div>
+      <div class="cover-tool-row" id="signAiRow" style="display:none;">
+        <button type="button" class="ghost-link" id="signAiUpgradeBtn">✨ AI로 글자 더 자연스럽게 (유료·사진 일부 전송)</button>
+        <span id="signAiStatus" style="font-size:0.76rem; color:var(--muted);"></span>
+      </div>
     </div>
 
     <div class="blur-strength" id="blurStrength" style="display:none;">
@@ -4112,6 +4116,24 @@
     <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
     <button class="primary" id="fluxConsentAgree">동의하고 진행</button>
     <button class="secondary" id="fluxConsentCancel">취소</button>
+  </div>
+</div>
+
+<!-- 간판 글자 AI 교체 전송 동의 모달: "자연스럽게 덮기"에서 "AI로 더 자연스럽게" 눌렀을 때만 뜸.
+     다른 AI 모달과 달리 원본 전체가 아니라 글자 주변 crop만 보낸다는 걸 분명히 밝힌다. -->
+<div id="signAiConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
+    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 간판 글자 일부 전송 동의</h3>
+    <p class="evidence">바꿔 쓸 글자 <strong>자리 주변만 잘라서</strong> 외부 AI 서비스(fal.ai)로 보내요. 아이 얼굴이 담긴 사진 전체는 전송되지 않아요 — 다른 AI 방식(배경 교체 등)과 다른 점이에요.</p>
+    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">fal.ai가 밝힌 사진 처리 방침</p>
+    <ul class="action-list" style="margin-bottom:0.8rem;">
+      <li>사진에 대한 권리는 그대로 올린 사람에게 있어요</li>
+      <li><strong>AI 모델 학습에는 쓰지 않아요</strong> — 개선에 쓰는 건 익명·집계된 사용 기록뿐이에요</li>
+      <li><strong>다만 “처리 후 바로 삭제”는 약속돼 있지 않아요.</strong> 계정을 닫으면 30일 안에, 2년간 안 쓰면 그때 지운다고만 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
+    </ul>
+    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
+    <button class="primary" id="signAiConsentAgree">동의하고 진행</button>
+    <button class="secondary" id="signAiConsentCancel">취소</button>
   </div>
 </div>
 
@@ -6554,6 +6576,74 @@
       var data = await postJson(FLUX_BACKEND_URL, payload);
       console.log('[AI배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 비용 약 $' + data.estimatedCostUsd, data);
       return data;
+    }
+
+    // ===== 간판 글자를 AI로 더 자연스럽게 바꿔 쓰기 (nano-banana, "자연스럽게 덮기" 업그레이드) =====
+    // 캔버스로 글자를 다시 그리면(paintGenericName) 고정 폰트라 원래 간판체와 달라 합성 티가
+    // 난다(실측: 햇살유치원 사진). 여기는 그 자리만 잘라서 AI로 자연스럽게 다시 그려 받는다.
+    // 프라이버시: AI 배경교체·옷 바꾸기와 달리 사진 전체가 아니라 글자 주변만 crop해서 보낸다.
+    var SIGN_AI_BACKEND_URL = '/api/inpaint-sign-text';
+    var signAiConsentGiven = false;
+
+    function askSignAiConsent() {
+      if (signAiConsentGiven) return Promise.resolve(true);
+      return new Promise(function (resolve) {
+        var modal = document.getElementById('signAiConsentModal');
+        modal.style.display = 'flex';
+        function cleanup(result) {
+          modal.style.display = 'none';
+          agreeBtn.removeEventListener('click', onAgree);
+          cancelBtn.removeEventListener('click', onCancel);
+          resolve(result);
+        }
+        function onAgree() { signAiConsentGiven = true; cleanup(true); }
+        function onCancel() { cleanup(false); }
+        var agreeBtn = document.getElementById('signAiConsentAgree');
+        var cancelBtn = document.getElementById('signAiConsentCancel');
+        agreeBtn.addEventListener('click', onAgree);
+        cancelBtn.addEventListener('click', onCancel);
+      });
+    }
+
+    // applyPatchFill이 실제로 어느 자리를 바꿔 쓸지 그대로 다시 계산한다. applyPatchFill의
+    // 반환값은 집계치(._replaced 등)뿐이라 자리 정보가 없는데, applyPatchFill 내부를 바꾸는
+    // 대신 같은 순수함수(groupAdjacentTexts/genericNameFor)를 그대로 다시 불러 쓴다 —
+    // 입력이 같으면 병합·판정 결과도 항상 같다.
+    function findSignSwapRegions(texts, imgW, imgH) {
+      var groups = groupAdjacentTexts(texts, imgW, imgH);
+      var out = [];
+      groups.forEach(function (t) {
+        if (isGenericOnly(t.text)) return;
+        var generic = genericNameFor(t.text);
+        if (!generic) return;
+        out.push({ box: textWordToPixelBbox(t, imgW, imgH), origText: t.text, newText: generic });
+      });
+      return out;
+    }
+
+    // 글자 자리 하나를 잘라 보내고, 돌아온 결과를 어디에 합성해야 할지와 함께 돌려준다.
+    // 패딩은 글자 높이 기준(폭 기준 아님) — 폭 기준이면 긴 이름일수록 사진을 더 넓게
+    // 잘라 보내게 돼서 프라이버시 원칙(필요한 만큼만)에 안 맞는다.
+    async function runSignTextAiRewrite(cleanImg, imgW, imgH, region) {
+      var b = region.box, h = b.y1 - b.y0;
+      var pad = h * 0.5;
+      var cx0 = Math.max(0, b.x0 - pad), cy0 = Math.max(0, b.y0 - pad);
+      var cx1 = Math.min(imgW, b.x1 + pad), cy1 = Math.min(imgH, b.y1 + pad);
+      var cw = Math.round(cx1 - cx0), ch = Math.round(cy1 - cy0);
+
+      var crop = document.createElement('canvas');
+      crop.width = cw; crop.height = ch;
+      crop.getContext('2d').drawImage(cleanImg, cx0, cy0, cw, ch, 0, 0, cw, ch);
+      var base64 = crop.toDataURL('image/png').split(',')[1];
+
+      var data = await postJson(SIGN_AI_BACKEND_URL, {
+        imageBase64: base64, mediaType: 'image/png',
+        originalText: region.origText, newText: region.newText,
+      });
+      console.log('[간판AI] "' + region.origText + '" → "' + region.newText + '" 완료 — '
+        + Math.round(data.timingMs) + 'ms, 비용 약 $' + data.estimatedCostUsd);
+      var resultImg = await loadImage(falImageDataUrl(data));
+      return { resultImg: resultImg, cx0: cx0, cy0: cy0, cw: cw, ch: ch };
     }
 
     // ===== AI 얼굴인식 방해 (Modal — FaceShield, 실험적 기능) =====
@@ -11624,6 +11714,13 @@
       // 있을 때(hasTargets) 또는 브러시를 쓸 수 있는 방식일 때(brushable) 보여준다.
       tools.style.display = (hasTargets || brushable) ? 'block' : 'none';
       tools.classList.toggle('no-brush', !brushable);
+      // AI 업그레이드 단추는 실제로 바꿔 쓸 자리(기관명 등)가 있을 때만 보인다 —
+      // 모자이크로 덮을 글자(전화번호 등)에는 "자연스럽게 바꿔 쓸 말"이 없어서 해당 없음.
+      var signAiRow = document.getElementById('signAiRow');
+      var pImg = document.getElementById('previewAfter');
+      var signRegions = (brushable && pImg.naturalWidth)
+        ? findSignSwapRegions(getSelectedTexts(), pImg.naturalWidth, pImg.naturalHeight) : [];
+      signAiRow.style.display = signRegions.length > 0 ? 'flex' : 'none';
       // 브러시는 덮기 계열에서만 결과에 반영된다 — 다른 방식으로 옮기면 도형으로 되돌린다
       if (!brushable && coverEditMode === 'brush') {
         coverEditMode = 'shape';
@@ -12342,6 +12439,52 @@
       }, 'image/png');
     });
 
+    document.getElementById('signAiUpgradeBtn').addEventListener('click', async function () {
+      var statusEl = document.getElementById('signAiStatus');
+      var btn = this;
+      var imgEl = document.getElementById('previewAfter');
+      var imgW = imgEl.naturalWidth, imgH = imgEl.naturalHeight;
+      var regions = findSignSwapRegions(getSelectedTexts(), imgW, imgH);
+      if (regions.length === 0 || !currentCorrectionCanvas) return;
+
+      var ready = await checkFluxStatus();
+      if (!ready) {
+        statusEl.textContent = '⚠ 서버 연동 준비 중이에요.';
+        return;
+      }
+      var agreed = await askSignAiConsent();
+      if (!agreed) return;
+
+      btn.disabled = true;
+      try {
+        // 지금까지 쌓인 보정의 기준 사진에서 자른다 — applyPatchFill이 색을 샘플링할 때
+        // 쓰는 것과 같은 "깨끗한" 원본이라, 이미 덮은 자국 위에 다시 자르는 일이 없다.
+        var cleanImg = await loadImage(correctionBaseUrl);
+        var ctx = currentCorrectionCanvas.getContext('2d');
+        var done = 0, failed = 0;
+        for (var i = 0; i < regions.length; i++) {
+          statusEl.textContent = '처리 중… (' + (i + 1) + '/' + regions.length + ')';
+          try {
+            var r = await runSignTextAiRewrite(cleanImg, imgW, imgH, regions[i]);
+            // nano-banana는 보낸 crop과 다른 자체 해상도로 돌려준다(실측: 370x107 보냈는데
+            // 1920x544로 옴) — 원본 전체를 목표 크기로 늘여서 그린다. 부분만 잘라 그리면
+            // (source-rect 지정) 결과 이미지의 구석만 잘려 나온다.
+            ctx.drawImage(r.resultImg, r.cx0, r.cy0, r.cw, r.ch);
+            done++;
+          } catch (e) {
+            console.error('[간판AI] "' + regions[i].origText + '" 실패:', e.message);
+            failed++;
+          }
+        }
+        imgEl.src = currentCorrectionCanvas.toDataURL('image/png');
+        statusEl.textContent = failed === 0
+          ? '✓ ' + done + '곳 더 자연스럽게 바꿨어요'
+          : '✓ ' + done + '곳 완료, ' + failed + '곳 실패(콘솔 참고)';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
     // ===== 3단계: 결과 재검증 (프롬프트 문서 5번) =====
     var VERIFY_BACKEND_URL = '/api/verify-correction';
     var METHOD_LABEL = { blur: '배경 흐림', sticker: '자연스럽게 덮기', outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체' };
@@ -12544,6 +12687,8 @@
       fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
       syncSubmitLabel();
       fluxConsentGiven = false; // 새 사진이면 동의를 다시 받는다
+      signAiConsentGiven = false; // 간판 글자 AI 교체 모달도 "이 사진을 처리하는 동안"이라고 약속했다
+      var signAiStatusEl = document.getElementById('signAiStatus'); if (signAiStatusEl) signAiStatusEl.textContent = '';
       resetBrush();             // 칠한 것과 획 기록도 사진마다 초기화
       brushErasing = false;
       var be = document.getElementById('brushErase'); if (be) be.checked = false;
@@ -12673,6 +12818,8 @@
       computeAlignmentOffset: computeAlignmentOffset,
       matchFacesForTest: matchFaces,
       runFluxBackgroundReplace: runFluxBackgroundReplace, // 실제 fal 호출 검증용 (비용 발생)
+      findSignSwapRegions: findSignSwapRegions, // 비용 0 — 순수 계산만
+      runSignTextAiRewrite: runSignTextAiRewrite, // 실제 fal(nano-banana) 호출 검증용 (비용 발생)
       runLocationCheckPipeline: runLocationCheckPipeline, // 실제 Google Vision 호출 검증용 (무료 한도 내)
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,

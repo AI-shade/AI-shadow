@@ -949,6 +949,74 @@ app.post('/api/replace-background', async (req, res) => {
   }
 });
 
+// ===== nano-banana(Gemini) — 간판 글자를 AI로 자연스럽게 바꿔 쓰기 =====
+// 캔버스로 직접 다시 그리면(paintGenericName) 원래 간판의 폰트·질감과 달라서 합성 티가
+// 난다(실측: "햇살유치원" 사진 — 동글동글한 간판체를 고정 폰트로 바꿔 쓰니 느낌이 달랐음).
+// FLUX 계열(인페인팅·배경교체가 쓰는 모델)은 한글 렌더링이 약해 이 용도로는 못 쓴다
+// (실측: flux-pro/v1/fill로 기관명을 다시 쓰게 했더니 한글이 깨짐).
+//
+// nano-banana 중에서도 **일반판(저가형)은 이 용도로 못 미덥다** — 같은 사진·비슷한
+// 프롬프트로 두 번 실측했는데 "유치치치원"처럼 글자가 중복되거나, 아예 원본 그대로
+// 안 바뀌었다. nano-banana-pro로 올리고 프롬프트를 "정확히 그 글자만, 중복 없이"로
+// 못 박으니 그제서야 "유치원" 세 글자가 원래 폰트·색 그대로 정확히 나왔다(실측 확인).
+// 값은 더 비싸지만($0.04 → $0.15) 검증 안 된 저가형을 쓰는 건 의미가 없어 Pro로 고정.
+//
+// 프라이버시: 사진 전체가 아니라 간판 글자 주변만 crop해서 보낸다. 아이 얼굴이 담긴
+// 원본 전체를 간판 글자 하나 바꾸자고 외부로 보낼 이유가 없다. 결과도 그 crop 영역만
+// 받아서 프런트(runSignTextAiRewrite)가 원래 자리에 합성한다 — 나머지 사진은 기기를
+// 벗어나지 않는다.
+app.post('/api/inpaint-sign-text', async (req, res) => {
+  if (!process.env.FAL_KEY) {
+    return res.status(501).json({ error: '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.', ready: false });
+  }
+  const { imageBase64, mediaType, originalText, newText } = req.body || {};
+  if (!imageBase64) {
+    return res.status(400).json({ error: '이미지(imageBase64)가 없습니다.' });
+  }
+  if (!newText) {
+    return res.status(400).json({ error: '바꿔 쓸 글자(newText)가 없습니다.' });
+  }
+
+  const t0 = Date.now();
+  try {
+    const mt = mediaType || 'image/png';
+    const ext = mt.includes('png') ? 'png' : 'jpg';
+    const file = new File([Buffer.from(imageBase64, 'base64')], 'sign.' + ext, { type: mt });
+    const uploadedUrl = await fal.storage.upload(file, { lifecycle: FAL_INPUT_LIFECYCLE });
+
+    // "exactly"·"each appearing exactly once"·"no repeats/duplicates"를 못 박아야 한다 —
+    // 두루뭉술하게 "바꿔줘"만 적으면 글자가 중복되거나(실측: 유치치치원) 아예 안 바뀌었다.
+    // "Redraw"(다시 그려라)가 "Edit"(고쳐라)보다 낫다 — 많이 줄어드는 이름(7자→4자)에서
+    // "Edit"은 옛 글자 자리의 흔적(실측: "어린"과 "이집" 사이에 가는 세로 획 하나가 남음)을
+    // 가끔 남겼는데, "다시 인쇄된 것처럼" 새로 그리라고 하면 그 흔적이 줄었다.
+    const prompt = 'This is a photo of a sign with Korean text that currently reads "' + originalText + '". '
+      + 'Redraw the sign so it reads exactly "' + newText + '" — only those exact characters, each '
+      + 'appearing exactly once, with nothing else: no stray marks, no partial characters, no extra '
+      + 'strokes, no leftover fragments from the old text. The sign should look like it was always '
+      + 'printed with just "' + newText + '" on it. '
+      + 'Keep the same font style, color, size, position, rotation, and background. Change nothing else.';
+
+    const result = await fal.subscribe('fal-ai/nano-banana-pro/edit', {
+      input: { prompt: prompt, image_urls: [uploadedUrl], sync_mode: FAL_SYNC_MODE },
+    });
+    const output = result.data || result;
+    const outputImage = output.images && output.images[0];
+    if (!outputImage) throw new Error('nano-banana-pro 응답에 이미지가 없습니다.');
+
+    const fetched = await fetchResultImage(outputImage, '간판 글자 바꿔쓰기');
+
+    res.json({
+      imageBase64: fetched.base64,
+      mediaType: fetched.mediaType,
+      timingMs: Date.now() - t0,
+      estimatedCostUsd: 0.15,
+    });
+  } catch (err) {
+    console.error('[server] nano-banana 간판 글자 바꿔쓰기 실패:', err.message);
+    res.status(500).json({ error: '간판 글자 바꿔쓰기 실패: ' + falErrorText(err) });
+  }
+});
+
 // ===== Google Cloud Vision — 위치 특정 확인 (랜드마크 + 역방향 이미지 검색) =====
 // 위치 확인 2단계 중 1단계다(0단계는 브라우저에서 읽는 EXIF 좌표, 2단계는 학교 LLM 추론).
 //

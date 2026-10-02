@@ -113,6 +113,43 @@ function ok(cond, name, detail) {
     ok(r2.replaced.join() === '체육관', '«은하체육관» → «체육관»으로 바꿔 쓴다', r2.replaced.join());
   }
 
+  // AI(nano-banana)로 다시 그릴 자리는 applyPatchFill이 바꿔 쓰는 자리와 같아야 한다 —
+  // 둘이 어긋나면 화면은 "한 곳 바꿨다"는데 AI는 엉뚱한 곳(전화번호·「유치원」뿐인 글자)을
+  // 잘라 보내 돈과 사진 조각만 나간다. 순수 계산이라 AI는 부르지 않는다(비용 0).
+  console.log('\nAI 교체 대상 자리 (findSignSwapRegions)');
+  {
+    const r = await run(() => {
+      const BG = [24, 32, 58], W = 900, H = 220, size = 44, cy = H / 2, th = size * 1.1;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.font = `700 ${size}px "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`;
+      let left = 30;
+      const row = ['청룡', '태권도', '체육관'].map((text) => {
+        const w = ctx.measureText(text).width;
+        const word = { text, xPct: (left + w / 2) / W * 100, yPct: cy / H * 100, wPct: w / W * 100, hPct: th / H * 100 };
+        left += w + th * 0.3;
+        return word;
+      });
+      const merged = window.__anshimTest.findSignSwapRegions(row, W, H);
+      const two = window.__anshimTest.findSignSwapRegions([
+        { text: '새싹유치원', xPct: 30, yPct: 25, wPct: 25, hPct: 12 },
+        { text: '민들레어린이집', xPct: 75, yPct: 70, wPct: 30, hPct: 10 },
+      ], 1000, 400);
+      const none = window.__anshimTest.findSignSwapRegions([
+        { text: '010-1234-5678', xPct: 30, yPct: 25, wPct: 25, hPct: 12 },
+        { text: '유치원', xPct: 75, yPct: 70, wPct: 20, hPct: 10 },
+      ], 1000, 400);
+      return {
+        merged: merged.map((g) => g.origText + '→' + g.newText),
+        two: two.map((g) => g.origText + '→' + g.newText),
+        noneCount: none.length,
+      };
+    });
+    ok(r.merged.join() === '청룡태권도체육관→체육관', '붙어 있는 조각은 한 자리로 묶여 AI에 한 번만 보낸다', r.merged.join());
+    ok(r.two.join() === '새싹유치원→유치원,민들레어린이집→어린이집', '떨어진 두 간판은 각자 한 자리씩 보낸다', r.two.join());
+    ok(r.noneCount === 0, '전화번호·«유치원»뿐인 글자는 바꿔 쓸 말이 없어 아무것도 안 보낸다', String(r.noneCount));
+  }
+
   ok(errs.length === 0, '페이지 에러 없음', errs.join(' | '));
   await browser.close();
   console.log(`\n${pass}개 통과, ${fail}개 실패`);
