@@ -65,6 +65,34 @@ function ok(cond, name, detail) {
         return n;
       },
       px(cv, x, y) { return [...cv.getContext('2d').getImageData(Math.round(x), Math.round(y), 1, 1).data].slice(0, 3); },
+      // 한 영역 안에서 특정 색에 "가까운" 픽셀 수 — diffCount(다르다)의 반대
+      closeCount(cv, x0, y0, x1, y1, target, tol = 60) {
+        const d = cv.getContext('2d').getImageData(Math.max(0, Math.floor(x0)), Math.max(0, Math.floor(y0)),
+          Math.max(1, Math.ceil(x1 - x0)), Math.max(1, Math.ceil(y1 - y0))).data;
+        let n = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          if (Math.abs(d[i] - target[0]) + Math.abs(d[i + 1] - target[1]) + Math.abs(d[i + 2] - target[2]) < tol) n++;
+        }
+        return n;
+      },
+      // 한 간판에 글자색이 두 가지 섞인 경우 흉내(실측: "햇살"은 주황, "유치원"은 남색)
+      makeTwoTone() {
+        const BG = [250, 247, 235], ORANGE = [235, 140, 40], NAVY = [35, 55, 110];
+        const W = 520, H = 130, size = 44, cy = H / 2;
+        const c = document.createElement('canvas'); c.width = W; c.height = H;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = `rgb(${BG})`; ctx.fillRect(0, 0, W, H);
+        ctx.font = `700 ${size}px "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`;
+        ctx.textBaseline = 'middle';
+        let left = 30;
+        ctx.fillStyle = `rgb(${ORANGE})`; ctx.fillText('햇살', left, cy);
+        left += ctx.measureText('햇살').width;
+        ctx.fillStyle = `rgb(${NAVY})`; ctx.fillText('유치원', left, cy);
+        left += ctx.measureText('유치원').width;
+        const th = size * 1.1;
+        const word = { text: '햇살유치원', xPct: (30 + left) / 2 / W * 100, yPct: cy / H * 100, wPct: (left - 30) / W * 100, hPct: th / H * 100 };
+        return { canvas: c, word, W, H, cy, th, ORANGE, NAVY };
+      },
     };
   });
   const run = (fn, args) => page.evaluate(fn, args);
@@ -292,6 +320,46 @@ function ok(cond, name, detail) {
       return { best, th: s.th };
     });
     ok(r.best >= r.th / 2.5, '모자이크 셀은 글자 높이에 맞춰 커진다 (고른 값이 16이어도 큰 글자는 읽히지 않는다)', `가장 긴 같은 색 구간 ${r.best}px / 글자 높이 ${r.th.toFixed(0)}px`);
+  }
+
+  // ── 한 간판에 잉크색이 두 가지 섞인 경우 ──
+  // 실측(햇살 유치원 입학식 사진): "햇살"은 주황, "유치원"은 남색으로 다른 색을 쓰는 간판에서
+  // sampleInkColor가 둘 중 더 튀는 색(남색) 하나만 대표 잉크로 뽑으면, "잉크색에 더 가까운
+  // 픽셀만 획"으로 보는 옛 판정은 주황 "햇살"을 배경으로 오판해 하나도 안 지우고 원래 이름이
+  // 그대로 남았다(이름이 다 가려지지 않는 프라이버시 버그). 배경과 "충분히 다르면" 획으로 보도록
+  // 고친 뒤에는 두 색 다 지워져야 한다.
+  console.log('\n한 간판에 잉크색이 두 가지 섞인 경우');
+  {
+    const r = await run(() => {
+      const T = window.__t;
+      const t = T.makeTwoTone();
+      const out = window.__anshimTest.applyPatchFill(t.canvas, [t.word], t.W, t.H, 'auto', 16, null);
+      const box = [0, t.cy - t.th / 2 - 6, t.W, t.cy + t.th / 2 + 6];
+      return { replaced: out._replaced, orangeLeft: T.closeCount(out, ...box, t.ORANGE, 60) };
+    });
+    ok(r.replaced.join() === '유치원', '«햇살»(주황)+«유치원»(남색) → «유치원»으로 바뀐다', r.replaced.join());
+    ok(r.orangeLeft === 0, '대표 잉크색(남색)과 다른 색이었던 «햇살»도 흔적 없이 지워진다', `주황 흔적 ${r.orangeLeft}px`);
+  }
+  {
+    // 모자이크·주변색은 박스 전체를 통째로 덮어서, 안에 잉크색이 몇 가지든 애초에 상관없다 —
+    // 그래도 실제로 확인해 둔다.
+    const r = await run(() => {
+      const T = window.__t;
+      const t1 = T.makeTwoTone();
+      const colorOut = window.__anshimTest.applyPatchFill(t1.canvas, [t1.word], t1.W, t1.H, 'color', 16, null);
+      const t2 = T.makeTwoTone();
+      const mosaicOut = window.__anshimTest.applyPatchFill(t2.canvas, [t2.word], t2.W, t2.H, 'mosaic', 16, null);
+      const box1 = [0, t1.cy - t1.th / 2 - 6, t1.W, t1.cy + t1.th / 2 + 6];
+      const box2 = [0, t2.cy - t2.th / 2 - 6, t2.W, t2.cy + t2.th / 2 + 6];
+      return {
+        colorOrange: T.closeCount(colorOut, ...box1, t1.ORANGE, 60),
+        colorNavy: T.closeCount(colorOut, ...box1, t1.NAVY, 60),
+        mosaicOrange: T.closeCount(mosaicOut, ...box2, t2.ORANGE, 60),
+        mosaicNavy: T.closeCount(mosaicOut, ...box2, t2.NAVY, 60),
+      };
+    });
+    ok(r.colorOrange === 0 && r.colorNavy === 0, '주변색 모드는 두 잉크색 다 흔적 없이 덮는다', `주황 ${r.colorOrange} · 남색 ${r.colorNavy}`);
+    ok(r.mosaicOrange === 0 && r.mosaicNavy === 0, '모자이크 모드는 두 잉크색 다 흔적 없이 덮는다', `주황 ${r.mosaicOrange} · 남색 ${r.mosaicNavy}`);
   }
 
   // ── 여러 곳 · 가장자리 ──

@@ -8680,13 +8680,19 @@
       var searchPad = Math.max(2 * r, shortfall / 2 + (tight.y1 - tight.y0) * 0.15);
       var cx0 = Math.floor(tight.x0 - x0 - searchPad), cx1 = Math.ceil(tight.x1 - x0 + searchPad);
       var cy0 = Math.floor(tight.y0 - y0 - 2 * r), cy1 = Math.ceil(tight.y1 - y0 + 2 * r);
+      // "잉크색에 더 가까우면 획"으로 고르면, 한 간판에 두 가지 글자색이 섞였을 때
+      // (실측: "햇살유치원" — "햇살"은 주황, "유치원"은 남색) sampleInkColor가 둘 중
+      // 더 튀는 색 하나만 대표색으로 뽑고, 나머지 색 획은 "잉크보다 배경에 더 가깝다"고
+      // 오판해 하나도 안 지워진 채 원래 이름이 그대로 남았다. 배경과 "충분히 다르면" 획으로
+      // 보는 쪽이 안전하다 — 기준은 이 간판의 실제 대비(ink-bg 거리)에 맞춰 상대적으로 잡는다.
+      var inkBgDist = Math.abs(ink[0] - bg[0]) + Math.abs(ink[1] - bg[1]) + Math.abs(ink[2] - bg[2]);
+      var inkThreshold = Math.max(30, inkBgDist * 0.35);
       var mask = new Uint8Array(n), cnt = 0;
       for (var i = 0; i < n; i++) {
         var ax = i % w, ay = (i - ax) / w;
         if (ax < cx0 || ax > cx1 || ay < cy0 || ay > cy1) continue;
         var db = Math.abs(d[i * 4] - bg[0]) + Math.abs(d[i * 4 + 1] - bg[1]) + Math.abs(d[i * 4 + 2] - bg[2]);
-        var di = Math.abs(d[i * 4] - ink[0]) + Math.abs(d[i * 4 + 1] - ink[1]) + Math.abs(d[i * 4 + 2] - ink[2]);
-        if (di < db) { mask[i] = 1; cnt++; }
+        if (db > inkThreshold) { mask[i] = 1; cnt++; }
       }
       if (cnt < n * 0.01) return null;
       var skew = estimateTextSkew(mask, w);
@@ -12405,6 +12411,12 @@
       } else if (result.합의 === '한쪽만') {
         addTag('사진 보기 없음', false);
       }
+      // 다운로드는 항상 캔버스를 거쳐 나가므로(getFinalCanvas) EXIF가 이미 빠져 있다 —
+      // 진단 때 "위치 정보가 박혀있다"고 경고했던 것과 짝을 맞춰, 그 경고가 실제로
+      // 해소됐다고 여기서 확인해 준다. GPS가 애초에 없었으면 보일 이유가 없는 안내다.
+      if (lastExifResult && lastExifResult.hasGps) {
+        addTag('파일 속 위치정보(GPS) 제거됨', true);
+      }
 
       var detailEl = document.getElementById('verifyDetail');
       detailEl.classList.toggle('warn', !pass);
@@ -12704,6 +12716,7 @@
       renderPatternOnly: renderPatternOnly,
       showScreenForTest: showScreen,
       renderResultForTest: renderResult,
+      renderVerifyResultForTest: renderVerifyResult,
       renderLocationChainForTest: renderLocationChain,
       renderPhotoAndPinsForTest: renderPhotoAndPins,
       apiHeadersForTest: apiHeaders,
