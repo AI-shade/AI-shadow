@@ -322,6 +322,55 @@ function ok(cond, name, detail) {
     ok(r.best >= r.th / 2.5, '모자이크 셀은 글자 높이에 맞춰 커진다 (고른 값이 16이어도 큰 글자는 읽히지 않는다)', `가장 긴 같은 색 구간 ${r.best}px / 글자 높이 ${r.th.toFixed(0)}px`);
   }
 
+  // ── 세로 글씨(기둥 간판·소매 글씨) ──
+  // 제보: "글자로 인식되는 부분이 너무 크게 잡혀서 모자이크가 존나 이상하게 되잖아". 실측(태권도장
+  // 사진): 세로로 쓴 «태권도»(52x141)를 가로 글씨처럼 계산해서 여백이 양옆 196px씩, 모자이크 칸이
+  // 100px로 부풀었다 — 사진 폭의 절반이 덮여 옆 유리문·사람 옷까지 뭉개졌고, 허리띠의 세로 글씨
+  // «Taekwondo»(13x104)는 사진 폭 전체를 덮었다. 세로 글씨는 폭이 글자 한 칸의 크기라서 덮는 곳이
+  // 글자 곁에서 멈춰야 한다. 그래도 글자는 전부 덮여야 한다.
+  console.log('\n세로 글씨(기둥 간판) — 덮는 박스가 글자 곁에서 멈춘다');
+  for (const mode of ['mosaic', 'color']) {
+    const r = await run((mode) => {
+      const W = 800, H = 600, size = 50, chars = ['태', '권', '도'];
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const x = c.getContext('2d');
+      // 무늬 있는 배경 — 픽셀이 바뀐 자리로 "어디까지 덮였나"를 알 수 있게 잡음을 깐다(항상 같은 값)
+      const id = x.createImageData(W, H); let seed = 12345;
+      for (let i = 0; i < id.data.length; i += 4) {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        const n = (seed % 61) - 30;
+        id.data[i] = 60 + n; id.data[i + 1] = 90 + n; id.data[i + 2] = 170 + n; id.data[i + 3] = 255;
+      }
+      x.putImageData(id, 0, 0);
+      x.font = `700 ${size}px "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif`;
+      x.textBaseline = 'middle'; x.textAlign = 'center'; x.fillStyle = 'rgb(255,255,255)';
+      const cx = W / 2, top = 200, step = size * 1.1;
+      chars.forEach((ch, i) => x.fillText(ch, cx, top + step * (i + 0.5)));
+      const boxW = size * 1.05, boxH = step * chars.length;
+      const word = { text: chars.join(''), xPct: cx / W * 100, yPct: (top + boxH / 2) / H * 100, wPct: boxW / W * 100, hPct: boxH / H * 100 };
+      const orig = x.getImageData(0, 0, W, H).data;
+      const out = window.__anshimTest.applyPatchFill(c, [word], W, H, mode, 16);
+      const o = out.getContext('2d').getImageData(0, 0, W, H).data;
+      let x0 = W, x1 = -1, y0 = H, y1 = -1, ink = 0;
+      for (let yy = 0; yy < H; yy++) {
+        for (let xx = 0; xx < W; xx++) {
+          const i = (yy * W + xx) * 4;
+          if (Math.abs(o[i] - orig[i]) + Math.abs(o[i + 1] - orig[i + 1]) + Math.abs(o[i + 2] - orig[i + 2]) > 10) {
+            x0 = Math.min(x0, xx); x1 = Math.max(x1, xx); y0 = Math.min(y0, yy); y1 = Math.max(y1, yy);
+          }
+          // 글자(흰색) 자리에 아직 남은 흰 픽셀
+          if (xx >= cx - boxW / 2 && xx <= cx + boxW / 2 && yy >= top && yy <= top + boxH && o[i] > 225 && o[i + 1] > 225 && o[i + 2] > 225) ink++;
+        }
+      }
+      return { boxW, boxH, left: cx - boxW / 2, right: cx + boxW / 2, top, bottom: top + boxH, cover: { x0, x1, y0, y1 }, ink };
+    }, mode);
+    const cw = r.cover.x1 - r.cover.x0 + 1, chh = r.cover.y1 - r.cover.y0 + 1;
+    ok(r.cover.x0 <= r.left && r.cover.x1 >= r.right && r.cover.y0 <= r.top && r.cover.y1 >= r.bottom && r.ink === 0,
+      `«${mode}» 세로 글씨가 전부 덮인다`, `남은 흰 글자 픽셀 ${r.ink}px`);
+    ok(cw <= r.boxW * 2.2, `«${mode}» 덮는 폭이 글자 폭의 2.2배를 넘지 않는다`, `글자 폭 ${r.boxW.toFixed(0)}px → 덮은 폭 ${cw}px`);
+    ok(chh <= r.boxH * 1.6, `«${mode}» 덮는 높이도 글자 높이의 1.6배를 넘지 않는다`, `글자 높이 ${r.boxH.toFixed(0)}px → 덮은 높이 ${chh}px`);
+  }
+
   // ── 한 간판에 잉크색이 두 가지 섞인 경우 ──
   // 실측(햇살 유치원 입학식 사진): "햇살"은 주황, "유치원"은 남색으로 다른 색을 쓰는 간판에서
   // sampleInkColor가 둘 중 더 튀는 색(남색) 하나만 대표 잉크로 뽑으면, "잉크색에 더 가까운
