@@ -357,7 +357,6 @@ ${visualClues}
 [사용자 응답 - 체크리스트]
 - 계정 공개 범위: ${checklist.privacySetting || '미입력'}
 - 업로드 시점: ${checklist.uploadTiming || '미입력'}
-- 함께 나온 사람: ${checklist.companions || '없음'}
 - 배경 특이사항: ${checklist.backgroundNotes || '없음'}
 
 [캡션 텍스트]

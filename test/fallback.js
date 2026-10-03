@@ -25,18 +25,18 @@ const 서버항목 = [
 
 const 상황 = {
   최악: {
-    inputs: { privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '푸른숲 유치원 앞', companions: '', caption: '' },
+    inputs: { privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '푸른숲 유치원 앞', caption: '' },
     ocr: { words: [{ text: '푸른숲유치원', type: '상호명' }, { text: '02-123-4567', type: '전화번호' }],
            visualClues: [{ 종류: '교복', 근거: '교복' }, { 종류: '로고/엠블럼', 근거: '엠블럼' }] },
     face: { faces: [{}, {}] },
   },
   깨끗: {
-    inputs: { privacySetting: '친구공개', uploadTiming: '시간차 업로드', backgroundNotes: '', companions: '', caption: '' },
+    inputs: { privacySetting: '친구공개', uploadTiming: '시간차 업로드', backgroundNotes: '', caption: '' },
     ocr: { words: [], visualClues: [] },
     face: { faces: [] },
   },
   중간: {
-    inputs: { privacySetting: '전체공개', uploadTiming: '시간차 업로드', backgroundNotes: '', companions: '', caption: '' },
+    inputs: { privacySetting: '전체공개', uploadTiming: '시간차 업로드', backgroundNotes: '', caption: '' },
     ocr: { words: [], visualClues: [{ 종류: '교복', 근거: '교복' }] },
     face: { faces: [{}] },
   },
@@ -121,7 +121,7 @@ const 상황 = {
       평범: mk('오늘도 즐거운 하루'),
       위험: mk('오늘 푸른숲어린이집 첫 등원! 매주 화요일 4시에 놀아요'),
     };
-  }, { privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '', companions: '' });
+  }, { privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '' });
   ok(캡션.없음.점수 === 0, '캡션을 안 쓰면 0점이다', String(캡션.없음.점수));
   ok(/쓰지 않으셔서/.test(캡션.없음.근거), '안 썼다는 사실을 근거로 말한다', 캡션.없음.근거);
   ok(캡션.평범.점수 === 0, '평범한 캡션은 0점이다', String(캡션.평범.점수));
@@ -142,7 +142,7 @@ const 상황 = {
 
   const 캡션근거 = await page.evaluate(() => {
     const f = window.__anshimTest.buildMockDiagnosisForTest;
-    const d = f({ privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '', companions: '',
+    const d = f({ privacySetting: '전체공개', uploadTiming: '실시간 업로드', backgroundNotes: '',
       caption: '오늘 푸른숲어린이집 첫 등원! 매주 화요일 4시에 놀아요' }, { words: [], visualClues: [] }, { faces: [] });
     return d.riskFactors.find((x) => x.항목 === '캡션 노출').근거;
   });

@@ -3300,15 +3300,9 @@
       </div>
     </div>
 
-    <div class="row2">
-      <div class="field">
-        <label for="companions">함께 나온 사람</label>
-        <input type="text" id="companions" placeholder="예: 엄마, 친구 가족" />
-      </div>
-      <div class="field">
-        <label for="backgroundNotes">배경 특이사항</label>
-        <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
-      </div>
+    <div class="field">
+      <label for="backgroundNotes">배경 특이사항</label>
+      <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
     </div>
 
     <button class="primary" id="submitBtn">위험도 진단하기</button>
@@ -6205,7 +6199,7 @@
         },
         checklist: {
           privacySetting: inputs.privacySetting, uploadTiming: inputs.uploadTiming,
-          companions: inputs.companions, backgroundNotes: inputs.backgroundNotes,
+          backgroundNotes: inputs.backgroundNotes,
         },
         caption: inputs.caption,
         // Tesseract 폴백 경로에는 시각 단서가 없다(로컬 OCR은 글자만 본다) — 빈 배열로 나감
@@ -9188,7 +9182,6 @@
         ],
         summary: '⚠️ Claude 진단 호출에 실패해서 규칙 기반으로 대략 매긴 점수예요. ' +
           '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
-          (inputs.companions ? '함께 계신 "' + inputs.companions + '"과의 사진이라 신원 특정 위험은 크지 않지만, ' : '') +
           '공개 범위와 업로드 시점 설정에 따라 위치·생활 패턴 노출 위험이 달라질 수 있으니 위 권장 조치를 참고해보세요.',
         // 캡션 제안은 지어내지 않는다. 백엔드(Claude)가 실제 캡션을 보고 다듬은 것만 쓴다.
         // 예전에는 여기서 '오늘 하루도 즐겁게 보냈어요' 같은 고정 문구를 돌려줘서,
@@ -10749,7 +10742,6 @@
         caption: document.getElementById('noCaption').checked ? '' : document.getElementById('captionInput').value,
         privacySetting: document.getElementById('privacySetting').value,
         uploadTiming: document.getElementById('uploadTiming').value,
-        companions: document.getElementById('companions').value,
         backgroundNotes: document.getElementById('backgroundNotes').value,
       };
 
@@ -12563,7 +12555,6 @@
       brushErasing = false;
       var be = document.getElementById('brushErase'); if (be) be.checked = false;
       document.getElementById('captionInput').value = '';
-      document.getElementById('companions').value = '';
       document.getElementById('backgroundNotes').value = '';
       document.getElementById('debugPanel').style.display = 'none';
       patternOnlyInput.value = '';
