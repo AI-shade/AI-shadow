@@ -3657,22 +3657,6 @@
           다른 방식과 달리 원본 사진이 외부(fal.ai)로 전송돼요.
         </div>
       </button>
-      <!-- 실험적 기능: 완전 차단이 아니라 부분적 방어라는 걸 카드 단계에서부터 밝힌다.
-           검증 기록: deepfake/Note/2026-09-14-FaceShield-Colab-실현가능성검증.md,
-           Note/2026-09-14-FaceShield-Modal-통합작업.md 참고. -->
-      <button class="method-card" data-method="faceshield">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 L27 8 V16 C27 23 22 27.5 16 29.5 C10 27.5 5 23 5 16 V8 Z"/></svg> AI 얼굴인식 방해
-          <span class="m-badge" style="background:var(--muted);">실험적</span>
-          <span class="m-badge" id="badge-faceshield-status" style="background:var(--muted);">확인 중</span>
-        </div>
-        <div class="m-reason">
-          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.35rem 0.35rem 0; display:inline-block;">⚠ 원본 전송</span>
-          육안으로는 안 보이는 미세한 노이즈를 심어서, AI가 이 사진 속 얼굴을 다른 곳에
-          가져다 쓰기 어렵게 만들어요. <strong>완전 차단은 아니고 부분적 방어</strong>예요
-          (실측: 얼굴인식 임베딩 크게 이동, 실제 페이스스왑 도구 통과 후에도 효과 일부 유지).
-          처리에 1분 정도 걸려요.
-        </div>
-      </button>
     </div>
 
     <!-- 폰에서 카드 설명을 두 줄로 자르므로 펼 수단이 있어야 한다.
@@ -4134,25 +4118,6 @@
     <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
     <button class="primary" id="signAiConsentAgree">동의하고 진행</button>
     <button class="secondary" id="signAiConsentCancel">취소</button>
-  </div>
-</div>
-
-<!-- AI 얼굴인식 방해(FaceShield, 실험적 기능) 전송 동의 모달.
-     이 기능은 보호 대상이 되는 "그 얼굴 자체"를 처리해야 해서, 다른 방식처럼 얼굴을
-     가리고 보낼 수 없다 — 목적상 원본 얼굴이 꼭 필요하다. -->
-<div id="faceshieldConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-  <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
-    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의 (실험적 기능)</h3>
-    <p class="evidence">AI 얼굴인식 방해는 <strong>원본 사진(얼굴 포함)</strong>이 GPU 서버(Modal)로 전송되어 약 1분간 처리됩니다. 이 기능은 얼굴 자체를 보호 처리하는 게 목적이라 얼굴을 가려서 보낼 수 없어요.</p>
-    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">정직하게 밝히는 한계</p>
-    <ul class="action-list" style="margin-bottom:0.8rem;">
-      <li><strong>완전 차단이 아니라 부분적 방어</strong>예요 — 딥페이크 생성을 100% 막는다고 보장하지 않아요</li>
-      <li>실측: 얼굴인식 모델 기준으로는 크게 다른 사람처럼 보이게 되고, 실제 페이스스왑 도구를 통과한 뒤에도 방어 효과가 일부 남아있음을 확인했어요</li>
-      <li>육안으로는 원본과 거의 구별이 안 돼요</li>
-    </ul>
-    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 검증 기록: Note 폴더의 FaceShield 관련 문서 참고.</p>
-    <button class="primary" id="faceshieldConsentAgree">동의하고 진행</button>
-    <button class="secondary" id="faceshieldConsentCancel">취소</button>
   </div>
 </div>
 
@@ -4895,8 +4860,8 @@
     // Tesseract 힌트 방식(cropRegionForHint 등, 위 참고)은 PSM·이진화 임계값을
     // 아무리 튜닝해도 인식 자체가 자주 틀린다 — Google Vision은 전용 OCR 엔진이라
     // 내용·좌표를 한 번에 정확히 준다. 이걸 1순위로 쓰고, 실패하거나(키 미설정 등)
-    // 매칭 안 되는 힌트만 기존 Tesseract 경로로 폴백한다(runFaceshieldProtect 같은
-    // 이 프로젝트의 다른 폴백들과 같은 정신 — 기능이 끊기지 않게).
+    // 매칭 안 되는 힌트만 기존 Tesseract 경로로 폴백한다(이 프로젝트의
+    // 다른 폴백들과 같은 정신 — 기능이 끊기지 않게).
     var TEXT_DETECT_BACKEND_URL = '/api/text-detect';
 
     // 서버가 준 픽셀 좌표(x0,y0,x1,y1)를 다른 위치 정보들과 같은 퍼센트 좌표로 바꾼다
@@ -6644,58 +6609,6 @@
         + Math.round(data.timingMs) + 'ms, 비용 약 $' + data.estimatedCostUsd);
       var resultImg = await loadImage(falImageDataUrl(data));
       return { resultImg: resultImg, cx0: cx0, cy0: cy0, cw: cw, ch: ch };
-    }
-
-    // ===== AI 얼굴인식 방해 (Modal — FaceShield, 실험적 기능) =====
-    // 프라이버시 예외: AI 배경교체와 같은 카테고리 — 여기서만 마스킹 없는 원본을 그대로
-    // 보낸다. 목적 자체가 "그 얼굴"을 보호 처리하는 것이라 얼굴을 가리면 의미가 없다.
-    // 검증 기록: deepfake/Note/2026-09-14-FaceShield-Colab-실현가능성검증.md,
-    // Note/2026-09-14-FaceShield-Modal-통합작업.md
-    var FACESHIELD_BACKEND_URL = '/api/faceshield-protect';
-    var FACESHIELD_STATUS_URL = '/api/faceshield-status';
-
-    async function checkFaceshieldStatus() {
-      try {
-        var res = await fetch(FACESHIELD_STATUS_URL, { headers: apiHeaders() });
-        var data = await res.json();
-        return !!data.ready;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    var faceshieldConsentGiven = false;
-
-    function askFaceshieldConsent() {
-      if (faceshieldConsentGiven) return Promise.resolve(true);
-      return new Promise(function (resolve) {
-        var modal = document.getElementById('faceshieldConsentModal');
-        modal.style.display = 'flex';
-        function cleanup(result) {
-          modal.style.display = 'none';
-          agreeBtn.removeEventListener('click', onAgree);
-          cancelBtn.removeEventListener('click', onCancel);
-          resolve(result);
-        }
-        function onAgree() { faceshieldConsentGiven = true; cleanup(true); }
-        function onCancel() { cleanup(false); }
-        var agreeBtn = document.getElementById('faceshieldConsentAgree');
-        var cancelBtn = document.getElementById('faceshieldConsentCancel');
-        agreeBtn.addEventListener('click', onAgree);
-        cancelBtn.addEventListener('click', onCancel);
-      });
-    }
-
-    async function runFaceshieldProtect(imgUrl) {
-      var img = await loadImage(imgUrl);
-      var canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      var base64 = canvas.toDataURL('image/png').split(',')[1]; // PNG — 미세 노이즈라 JPEG 재압축으로 스스로 깎아먹으면 안 됨
-
-      var data = await postJson(FACESHIELD_BACKEND_URL, { imageBase64: base64 });
-      console.log('[AI얼굴인식방해] 완료 — ' + Math.round(data.timingMs) + 'ms (GPU 처리 ' + Math.round(data.modalElapsedSeconds) + '초)', data);
-      return data;
     }
 
     // ===== 컬러체인지 프리셋 (구버전 buildOutfitPrompt/COLORWAYS 이식) =====
@@ -11242,14 +11155,6 @@
         });
       });
 
-      var faceshieldStatusBadge = document.getElementById('badge-faceshield-status');
-      faceshieldStatusBadge.textContent = '확인 중';
-      faceshieldStatusBadge.style.background = 'var(--muted)';
-      checkFaceshieldStatus().then(function (ready) {
-        faceshieldStatusBadge.textContent = ready ? '사용 가능' : '준비 중';
-        faceshieldStatusBadge.style.background = ready ? 'var(--risk-low)' : 'var(--muted)';
-      });
-
       // 크롭/스티커는 픽셀 단위 정확한 위치가 필요한데, Claude Vision 위치는 9분할 근사치라
       // bbox 실험(README 참고)에서 텍스트를 완전히 빗나가는 경우가 잦은 걸 확인했음.
       // 그래서 2단계 보정에서는 위치 정보만큼은 Tesseract의 실제 bbox를 다시 계산해서 씀
@@ -11877,7 +11782,7 @@
 
     var METHOD_LABEL = {
       blur: '배경 흐림', sticker: '자연스럽게 덮기',
-      outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체', faceshield: 'AI 얼굴인식 방해'
+      outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체'
     };
 
     function renderAppliedSteps() {
@@ -12173,63 +12078,6 @@
           console.error('[AI배경교체] 실패:', err);
           previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = '⚠ AI 배경교체에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
-          currentCorrectionCanvas = null;
-          lastCorrectionMeta = null;
-        }
-        return;
-      }
-
-      if (method === 'faceshield') {
-        if (!correctionBaseUrl) {
-          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
-          return;
-        }
-        var fsReady = await checkFaceshieldStatus();
-        if (!fsReady) {
-          previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '✨ AI 얼굴인식 방해는 서버 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
-          currentCorrectionCanvas = null;
-          lastCorrectionMeta = null;
-          return;
-        }
-
-        var fsAgreed = await askFaceshieldConsent();
-        if (!fsAgreed) {
-          selectMethod(NO_CONSENT_FALLBACK);
-          return;
-        }
-
-        currentCorrectionCanvas = null;
-        setPreviewBusy('AI 얼굴인식을 방해하는 미세 노이즈를 만드는 중이에요\n1분 정도 걸려요');
-        try {
-          var fsData = await runFaceshieldProtect(correctionBaseUrl);
-          var fsImg = await loadImage(falImageDataUrl(fsData));
-          // attack.py는 512px보다 큰 사진을 512px로 축소해서 처리한다(폰 사진은 거의
-          // 항상 해당) — 그 결과를 그대로 쓰면 "노이즈가 심하다"가 아니라 저해상도를
-          // 늘려본 것처럼 보인다(실사용 제보로 발견). AI 배경교체와 같은 방식으로
-          // 원본 해상도 캔버스에 그려서 비교가 공정하게 되도록 한다.
-          var fsSrcImg = await loadImage(correctionBaseUrl);
-          var fsCanvas = document.createElement('canvas');
-          fsCanvas.width = fsSrcImg.naturalWidth;
-          fsCanvas.height = fsSrcImg.naturalHeight;
-          fsCanvas.getContext('2d').drawImage(fsImg, 0, 0, fsCanvas.width, fsCanvas.height);
-          if (fsImg.naturalWidth !== fsSrcImg.naturalWidth || fsImg.naturalHeight !== fsSrcImg.naturalHeight) {
-            console.log('[AI얼굴인식방해] 서버가 ' + fsImg.naturalWidth + 'x' + fsImg.naturalHeight
-              + '로 축소 처리 — 원본 크기(' + fsCanvas.width + 'x' + fsCanvas.height + ')로 확대해서 표시');
-          }
-          clearPreviewBusy();
-          currentCorrectionCanvas = fsCanvas;
-          previewAfter.src = fsCanvas.toDataURL('image/png');
-          var fsDownscaled = fsImg.naturalWidth < fsSrcImg.naturalWidth || fsImg.naturalHeight < fsSrcImg.naturalHeight;
-          previewCaption.textContent = '✨ 육안으로는 거의 안 보이는 노이즈를 심었어요 — 완전 차단은 아니지만, AI가 이 얼굴을 다른 곳에 가져다 쓰기 어렵게 만들어요. (약 '
-            + Math.round(fsData.modalElapsedSeconds) + '초 처리)'
-            + (fsDownscaled ? ' ⚠ 처리 중 해상도가 일시적으로 낮아져서(내부적으로) 원래보다 살짝 부드럽게 보일 수 있어요.' : '');
-          lastCorrectionMeta = { method: 'faceshield', detail: 'AI 얼굴인식 방해 — 실험적 기능, 완전 차단 아님' + (fsDownscaled ? ' (해상도 축소됨)' : '') };
-        } catch (err) {
-          clearPreviewBusy();
-          console.error('[AI얼굴인식방해] 실패:', err);
-          previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '⚠ AI 얼굴인식 방해 처리에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
         }
