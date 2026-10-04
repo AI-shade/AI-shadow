@@ -6853,11 +6853,18 @@
         + (colors.missing > 0 ? ' (그 밖의 옷은 색을 못 읽어 무난한 색으로)' : '');
     }
 
-    // 모든 옷 프롬프트의 맺음말. 가슴은 매끈하게 이어진 천, 포켓을 골랐을 때만 포켓 문장을 더한다.
+    // 모든 옷 프롬프트의 맺음말. 포켓을 골랐을 때만 포켓 문장을 더한다.
+    //
+    // 예전 맺음말은 «Smooth unbroken fabric across the chest and sleeves, soft natural folds following the pose»였다.
+    // 제보: "남자아이 실루엣에서 가슴같이 실루엣이 조금씩 이상해진다". 폴로 샘플(남자아이 옆모습)을 같은 마스크·같은
+    // 시드로 돌려 보니 «chest»와 «folds» 때문에 옷이 가슴 윤곽이 둥글고 주름이 퍼지게 그려졌다(현재 문구 3번 모두).
+    // «Loose, straight, boxy fit with a flat front … worn by a young child»로 바꾸고 chest·folds를 뺐더니 같은
+    // 시드 2개 모두 가슴이 납작하고 상자형으로 나왔다(문구만 바꾼 A/B, 2026-10-04). 포켓 문장의 «on the chest»는
+    // 포켓을 고른 경우에만 들어가는 자리 지정이라 그대로 둔다.
     function outfitClosing(emblemMode) {
-      return 'Smooth unbroken fabric across the chest and sleeves'
+      return 'Loose, straight, boxy fit with a flat front'
         + (emblemMode === 'pocket' ? ', with ' + EMBLEM_MODES.pocket : '')
-        + ', soft natural folds following the pose, lighting and shadows matching the rest of the photograph, photorealistic photograph.';
+        + ', worn by a young child, lighting and shadows matching the rest of the photograph, photorealistic photograph.';
     }
 
     // 색 이름만 남긴다: "warm taupe brown (#A38B72)" → "warm taupe brown", "solid dark chocolate brown (#483018)" → "dark chocolate brown".

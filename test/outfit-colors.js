@@ -247,6 +247,12 @@ function ok(cond, name, detail) {
   ok(전수['brown/none'].includes('warm taupe brown') && 전수['brown/none'].includes('dark chocolate brown') && 전수['navy/none'].includes('sky blue') && 전수['navy/none'].includes('navy'), '색 바꾸기는 색 이름으로 지정한다(토프/브라운, 스카이/네이비)');
   ok(이름들.filter((k) => /\/none$/.test(k)).every((k) => !/pocket/.test(전수[k])) && 이름들.filter((k) => /\/pocket$/.test(k) && !/^마크/.test(k)).every((k) => /small plain patch pocket on the chest in the same fabric/.test(전수[k])), '포켓은 고른 경우에만, 긍정 서술로 들어간다');
   ok(/exactly the same colour and texture as the surrounding garment/.test(전수['마크지우기/그냥']) && /exactly the same fabric colour and texture as the surrounding garment/.test(전수['마크지우기/포켓']), '마크 지우기는 «주변 천과 똑같이»를 앞세운다 (주변은 모델이 볼 수 있다)');
+  // 제보: "남자아이 실루엣에서 가슴같이 실루엣이 조금씩 이상해진다". «chest»·«folds»가 있는 문구는 같은 마스크·같은 시드에서
+  // 가슴이 둥글고 주름진 윤곽으로 나왔고(폴로 샘플 3번 모두), 뺀 문구는 납작·상자형으로 나왔다(시드 2개 모두).
+  // 포켓 문장의 «on the chest»는 포켓을 고른 경우의 자리 지정이라 제외하고, 마크 지우기 문구는 아직 같은 방식으로 재지 않았다.
+  const 가슴낱말 = 이름들.filter((k) => !/^마크지우기/.test(k) && !/\/pocket$/.test(k) && /chest|fold/i.test(전수[k]));
+  ok(가슴낱말.length === 0, '옷 프롬프트에 chest·folds 낱말이 없다 (남자아이 가슴이 둥글고 주름지게 그려진다)', 가슴낱말.join(', '));
+  ok(이름들.filter((k) => !/^마크지우기/.test(k)).every((k) => /Loose, straight, boxy fit with a flat front/.test(전수[k]) && /worn by a young child/.test(전수[k])), '옷 프롬프트는 «납작한 앞면·상자형 핏·어린이»를 말한다');
 
   ok(errs.length === 0, '페이지 에러 없음', errs.join(' | '));
   await browser.close();
