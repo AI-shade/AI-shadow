@@ -46,20 +46,20 @@ function check(label, ok, detail) {
   await page.goto(BASE_URL + '/index.html', { waitUntil: 'load' });
   await page.waitForFunction(() => !!(window.__anshimTest && window.__anshimTest.buildEmblemMask));
 
-  console.log('\n합쳐진 카드와 선택지');
+  console.log('\n선택지가 없어진 화면');
   const ui = await page.evaluate(() => ({
-    methods: Array.from(document.querySelectorAll('.method-card')).map((c) => c.dataset.method),
-    colors: Array.from(document.querySelectorAll('.cw-btn')).map((b) => b.dataset.cw),
-    emblems: Array.from(document.querySelectorAll('.em-btn')).map((b) => b.dataset.em),
-    emblemDefault: (document.querySelector('.em-btn.selected') || { dataset: {} }).dataset.em,
+    cards: document.querySelectorAll('.method-card').length,
+    presets: document.querySelectorAll('.of-btn').length,
+    outfitPanel: !!document.getElementById('outfitStyle'),
+    aiBtns: ['aiMarkBtn', 'aiBgBtn'].map((id) => !!document.getElementById(id)),
+    defaultChoice: window.__anshimTest.getOutfitChoiceForTest(),
   }));
-  check('옷 카드는 하나다', ui.methods.filter((m) => m === 'outfit').length === 1, ui.methods.join(', '));
-  check('없어진 카드가 되살아나지 않았다',
-    ui.methods.indexOf('emblem') === -1 && ui.methods.indexOf('recolor') === -1);
-  check('교복 티 지우기 선택지 4개', ui.emblems.join(',') === 'keep,pocket,none,all', ui.emblems.join(','));
-  check('색 선택지에 "안 바꾸기"가 있다', ui.colors.indexOf('keep') >= 0, ui.colors.join(','));
-  // 기본값이 "그대로 두기"여야 카드를 고르는 것만으로 사진이 나가지 않는다
-  check('기본 마크 처리는 "그대로 두기"', ui.emblemDefault === 'keep', ui.emblemDefault);
+  check('방식 카드가 없다', ui.cards === 0, ui.cards + '장');
+  check('옷 손보기 선택 줄(색만/마크만/둘 다)이 없다', ui.presets === 0 && ui.outfitPanel === false);
+  check('AI 다듬기 단추 둘이 있다', ui.aiBtns[0] && ui.aiBtns[1], JSON.stringify(ui.aiBtns));
+  // AI 옷 경로의 기본은 «색은 그대로, 마크만». 색은 자동 보정이 바꾼다.
+  check('AI 옷 경로의 기본 색은 "그대로"', ui.defaultChoice.colorway === 'keep', ui.defaultChoice.colorway);
+  check('AI 옷 경로의 기본은 마크 지우기', ui.defaultChoice.emblem === 'none', ui.defaultChoice.emblem);
 
   for (const rel of PHOTOS) {
     const file = path.join(__dirname, '..', rel);

@@ -1,7 +1,15 @@
-// 덮개 위치 조정 + 브러시 획 되돌리기
-// - 위치 상자는 어떤 보정 방식에서든 보여야 한다 (예전엔 덮기 계열에서만 보였다)
-// - 브러시 도구는 결과에 반영되는 방식에서만 보인다
-// - 획 하나씩 되돌릴 수 있다
+// 덮개 위치 조정 — 간판 덮기 화면 단순화 이후
+//
+// 사용법: 이 폴더(test)에서 → node cover-edit.js
+//   프론트가 http://localhost:8000 에서 돌고 있어야 합니다. **AI 호출 없음 (비용 0).**
+//
+// 배경: 멘토 지적(선택지 4개 안쪽)으로 간판 덮기의 선택지를 걷어냈다 —
+//   덮는 방식(자동/주변색/모자이크)·픽셀 크기, 도형/브러시 전환, 붓 굵기·지우개·직전 획 취소.
+//   위치는 상자를 끌어 맞추고, 놓친 곳은 «+ 놓친 곳 추가»로 더한다.
+// 이 테스트가 지키는 것:
+//   ① 위치 상자는 어떤 보정 방식에서든 보인다 (예전엔 덮기 계열에서만 보였다)
+//   ② 없앤 선택지가 화면에 되살아나지 않았다
+//   ③ 남겨 둔 것(놓친 곳 추가 · AI 글자 교체 줄)은 그대로 있다
 const { chromium } = require('playwright');
 const URL = process.env.ANSHIM_URL || 'http://localhost:8000/index.html';
 
@@ -18,29 +26,17 @@ function check(name, cond, detail) {
   else { fail++; console.log('  ✗ ' + name + (detail ? ' — ' + detail : '')); }
 }
 
-async function setup(p, method, mode) {
-  return p.evaluate(async a => {
-    const [m, mo] = a;
+async function setup(p, method) {
+  return p.evaluate(async (m) => {
     const T = window.__anshimTest;
     T.setMethodForTest(m);
-    T.setCoverEditMode(mo);
     T.renderCoverHandles();
     await new Promise(r => setTimeout(r, 120));
-    const tools = document.getElementById('coverTools');
     return {
-      tools: getComputedStyle(tools).display,
-      noBrush: tools.classList.contains('no-brush'),
-      isBrush: tools.classList.contains('is-brush'),
       handles: document.querySelectorAll('#previewFrame .cover-handle').length,
-      layers: document.querySelectorAll('#previewFrame .brush-layer').length,
-      mode: T.getCoverEditMode(),
-      // 브러시 "전환 단추"와 브러시 "조절 도구"는 다르다 —
-      // 조절 도구(굵기·지우개·되돌리기)는 브러시 모드일 때만 나온다.
-      brushBtnShown: getComputedStyle(document.querySelector('[data-edit="brush"]')).display !== 'none',
-      brushCtrlShown: getComputedStyle(document.querySelector('.ct-only-brush')).display !== 'none',
-      undoShown: getComputedStyle(document.getElementById('brushUndo')).display !== 'none',
+      grips: document.querySelectorAll('#previewFrame .cover-grip').length,
     };
-  }, [method, mode]);
+  }, method);
 }
 
 (async () => {
@@ -62,134 +58,42 @@ async function setup(p, method, mode) {
     await new Promise(r => { img.onload = r; setTimeout(r, 800); });
   }, [WORDS, PNG_100]);
 
-  // ── 위치 조정은 모든 방식에서
-  let r = await setup(p, 'blur', 'shape');
-  check('흐림에서도 위치 상자가 보인다', r.handles === 2, '상자 ' + r.handles + '개');
-  check('흐림에서도 덮개 도구줄이 뜬다', r.tools !== 'none', r.tools);
-  check('흐림에서는 브러시 도구를 감춘다', r.noBrush === true && r.brushBtnShown === false,
-    'noBrush=' + r.noBrush + ' brushShown=' + r.brushBtnShown);
+  console.log('위치 상자');
+  for (const [m, label] of [['blur', '흐림'], ['ai', 'AI 배경교체'], ['sticker', '자연스럽게 덮기']]) {
+    const r = await setup(p, m);
+    check(label + '에서도 위치 상자가 보인다', r.handles === 2, '상자 ' + r.handles + '개');
+    check(label + '에서도 크기 손잡이가 붙는다', r.grips === 2, '손잡이 ' + r.grips + '개');
+  }
 
-  r = await setup(p, 'ai', 'shape');
-  check('AI 배경교체에서도 위치 상자가 보인다', r.handles === 2, '상자 ' + r.handles + '개');
-
-  r = await setup(p, 'sticker', 'shape');
-  check('덮기에서는 브러시 전환 단추가 보인다', r.noBrush === false && r.brushBtnShown === true,
-    'noBrush=' + r.noBrush + ' brushBtn=' + r.brushBtnShown);
-  check('도형 모드에서는 붓 조절 도구를 감춘다', r.brushCtrlShown === false, String(r.brushCtrlShown));
-
-  // AI 지우고 메우기는 방식 목록에서 뺐다(큰 간판에 가짜 글씨를 만들어내는 문제).
-  // 브러시가 열리는 방식은 이제 '자연스럽게 덮기' 하나다 — 위에서 이미 검사한다.
-
-  // 브러시 모드에서 다른 방식으로 옮기면 도형으로 되돌아온다
-  r = await setup(p, 'sticker', 'brush');
-  check('덮기 + 브러시면 칠하는 층이 생긴다', r.layers === 1 && r.mode === 'brush',
-    'layers=' + r.layers + ' mode=' + r.mode);
-  check('브러시 모드에서는 붓 조절 도구가 나온다', r.brushCtrlShown === true);
-  check('되돌리기 단추도 붓 조절 도구 안에 있다', r.undoShown === true);
-  r = await setup(p, 'blur', 'brush');
-  check('브러시가 안 먹는 방식으로 옮기면 도형으로 되돌아온다', r.mode === 'shape', r.mode);
-  check('되돌아오면 칠하는 층도 사라진다', r.layers === 0, String(r.layers));
-
-  // ── 붓 커서
-  const cursors = await p.evaluate(() => {
-    const T = window.__anshimTest;
-    const out = {};
-    T.setCoverEditMode('brush');
-    document.getElementById('brushSize').value = '30';
-    document.getElementById('brushSize').dispatchEvent(new Event('input', { bubbles: true }));
-    out.small = T.brushCursorCss();
-    document.getElementById('brushSize').value = '70';
-    document.getElementById('brushSize').dispatchEvent(new Event('input', { bubbles: true }));
-    out.big = T.brushCursorCss();
-    document.getElementById('brushErase').checked = true;
-    document.getElementById('brushErase').dispatchEvent(new Event('change', { bubbles: true }));
-    out.erase = T.brushCursorCss();
-    document.getElementById('brushErase').checked = false;
-    document.getElementById('brushErase').dispatchEvent(new Event('change', { bubbles: true }));
-    return out;
+  console.log('\n없앤 선택지가 되살아나지 않았다');
+  const gone = await p.evaluate(() => {
+    const has = (sel) => !!document.querySelector(sel);
+    return {
+      fillStyle: has('#fillStyle') || has('.fs-btn') || has('#fillPixel'),
+      brushToggle: has('.ct-btn') || has('[data-edit]'),
+      brushTools: has('#brushSize') || has('#brushErase') || has('#brushUndo') || has('.ct-only-brush'),
+      brushLayer: has('.brush-layer'),
+    };
   });
-  check('커서가 원 모양 SVG다', cursors.small.indexOf('circle') !== -1);
-  check('붓 굵기를 키우면 커서도 커진다',
-    cursors.small.indexOf("width='30'") !== -1 && cursors.big.indexOf("width='70'") !== -1,
-    cursors.small.slice(40, 80));
-  check('커서 중심이 원 한가운데다', / 35 35, crosshair$/.test(cursors.big), cursors.big.slice(-24));
-  check('지우개는 점선 원으로 구분된다', cursors.erase.indexOf('stroke-dasharray') !== -1);
-  check('낡은 cell 커서를 더 쓰지 않는다',
-    (await p.evaluate(() => [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => /cursor:\s*cell/.test(r.cssText)) } catch (e) { return false } }))) === false);
+  check('덮는 방식·픽셀 크기가 없다', gone.fillStyle === false);
+  check('도형/브러시 전환이 없다', gone.brushToggle === false);
+  check('붓 굵기·지우개·획 되돌리기가 없다', gone.brushTools === false);
+  check('칠하는 층이 만들어지지 않는다', gone.brushLayer === false);
 
-  // ── 획 되돌리기
-  await setup(p, 'sticker', 'brush');
-  // 히어로가 첫 화면을 꽉 채우게 되면서 도구가 한 화면 아래로 내려갔다.
-  // 마우스로 실제로 칠하려면 칠할 층이 화면 안에 들어와 있어야 한다.
-  await p.evaluate(() => {
-    document.documentElement.style.scrollBehavior = 'auto';
-    document.querySelector('#previewFrame').scrollIntoView({ block: 'center' });
-  });
-  await p.waitForTimeout(400);
-  const box = await p.evaluate(() => {
-    const l = document.querySelector('#previewFrame .brush-layer');
-    const r = l.getBoundingClientRect();
-    return { x: r.left, y: r.top, w: r.width, h: r.height };
-  });
-  check('칠할 층이 화면에 자리를 차지한다', box.w > 10 && box.h > 10, JSON.stringify(box));
-
-  // 층의 화면 좌표는 스크롤에 따라 달라진다 — 칠할 때마다 다시 잰다
-  const stroke = async (dx, dy) => {
-    const b = await p.evaluate(() => {
-      const r = document.querySelector('#previewFrame .brush-layer').getBoundingClientRect();
-      return { x: r.left, y: r.top };
-    });
-    await p.mouse.move(b.x + dx, b.y + dy);
-    await p.mouse.down();
-    await p.mouse.move(b.x + dx + 18, b.y + dy + 12, { steps: 4 });
-    await p.mouse.up();
-    await p.waitForTimeout(350);
-  };
-
-  const undoBtnDisabled = () => p.evaluate(() => document.getElementById('brushUndo').disabled);
-  check('칠하기 전에는 되돌리기 단추가 꺼져 있다', await undoBtnDisabled() === true);
-
-  await stroke(box.w * 0.25, box.h * 0.3);
-  let n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  check('한 획 그으면 획이 하나 기록된다', n === 1, String(n));
-  check('획이 생기면 되돌리기 단추가 켜진다', await undoBtnDisabled() === false);
-
-  await stroke(box.w * 0.6, box.h * 0.6);
-  n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  check('두 번째 획도 따로 기록된다', n === 2, String(n));
-
-  // 되돌리기 한 번 → 두 번째 획만 사라진다
-  await p.evaluate(() => document.getElementById('brushUndo').click());
-  await p.waitForTimeout(400);
-  n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  check('되돌리면 마지막 획만 사라진다', n === 1, String(n));
-  const stillPainted = await p.evaluate(() => {
-    const c = window.__anshimTest.getTargets && document.querySelector('#previewFrame .brush-layer');
-    return !!c;
-  });
-  check('되돌린 뒤에도 칠하는 층은 남아 있다', stillPainted);
-
-  await p.evaluate(() => document.getElementById('brushUndo').click());
-  await p.waitForTimeout(400);
-  n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  check('전부 되돌리면 획이 0이 된다', n === 0, String(n));
-  check('획이 없으면 되돌리기 단추가 다시 꺼진다', await undoBtnDisabled() === true);
-
-  await p.evaluate(() => window.__anshimTest.undoBrushStroke());
-  n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  check('빈 상태에서 더 되돌려도 안전하다', n === 0, String(n));
-
-  // Ctrl+Z
-  await setup(p, 'sticker', 'brush');
-  await p.evaluate(() => document.querySelector('#previewFrame').scrollIntoView({ block: 'center' }));
-  await p.waitForTimeout(400);
-  await stroke(box.w * 0.4, box.h * 0.4);
-  n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  const before = n;
-  await p.keyboard.press('Control+z');
-  await p.waitForTimeout(400);
-  n = await p.evaluate(() => window.__anshimTest.brushStrokeCount());
-  check('Ctrl+Z로도 되돌아간다', before === 1 && n === 0, before + '→' + n);
+  console.log('\n남겨 둔 것');
+  const kept = await p.evaluate(() => ({
+    missedBtn: !!document.getElementById('addMissedBtn'),
+    aiRow: !!document.getElementById('signAiRow'),
+    inAiBox: !!document.querySelector('#aiMore #signAiUpgradeBtn') && !!document.querySelector('#aiMore #signAiRow'),
+    hint: (document.querySelector('.target-picker-head .hint') || {}).textContent || '',
+    oldTools: !!document.getElementById('coverTools') || !!document.querySelector('.cover-hint') || !!document.getElementById('recommendFlow'),
+    subtitle: Array.from(document.querySelectorAll('.correct-left > .evidence')).map(e => e.textContent).join('|'),
+  }));
+  check('«+ 놓친 곳 추가»가 있다', kept.missedBtn);
+  check('AI 글자 교체 줄이 있다', kept.aiRow);
+  check('간판 글자 AI 단추가 «AI로 더 다듬기» 구역 안에 있다', kept.inAiBox);
+  check('안내가 목록 머리 한 곳에만 있고 상자 끌기를 말한다', /끌어/.test(kept.hint), kept.hint.slice(0, 60));
+  check('따로 떠 있던 도구줄·낡은 추천 문구·제목 아래 홍보 문구가 없다', kept.oldTools === false && kept.subtitle === '', kept.subtitle.slice(0, 40));
 
   check('페이지 에러 없음', errs.length === 0, errs.slice(0, 2).join(' / '));
 

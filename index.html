@@ -413,6 +413,8 @@
   ::placeholder { color: var(--muted); opacity: 0.8; }
   textarea { resize: vertical; min-height: 3.6rem; line-height: 1.6; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  /* 업로드 시점 칸을 빼서(10-26) 공개 범위만 남았다 — 반쪽만 차지하지 않게 */
+  #screen-form .row2 { grid-template-columns: 1fr; }
 
   .drop-zone {
     background: var(--soft); border: 1.5px dashed var(--line-strong); border-radius: 18px; padding: 1.4rem 1.2rem;
@@ -420,6 +422,12 @@
     transition: background 0.15s, border-color 0.15s;
   }
   .drop-zone:hover { border-color: var(--accent-2); background: var(--soft-hover); }
+  /* 파일을 끌어 올렸을 때 — 놓을 자리가 어디인지 보이게 한다(입력창이 영역을 덮고 있어 놓기 자체는 이미 된다). */
+  .drop-zone.dragover { border-style: solid; border-color: var(--accent-2); background: var(--soft-hover); }
+  .drop-zone.dragover::after {
+    content: '여기에 놓으세요'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    border-radius: inherit; background: var(--soft-hover); color: var(--ink); font-weight: 600; pointer-events: none;
+  }
   .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .drop-zone .icon { display: block; width: 30px; height: 30px; margin: 0 0 0.7rem; color: var(--ink); font-size: 0; }
   .drop-zone.small { padding: 1rem 1.2rem; }
@@ -506,6 +514,15 @@
   .analyzing-steps p.active { color: var(--ink); font-weight: 600; background: var(--soft); }
   .analyzing-steps p.active::before { content: '● '; color: var(--accent-2); }
   .analyzing-steps p:not(.active)::before { content: '○ '; }
+  .analyzing-steps p.done { color: var(--ink); }
+  .analyzing-steps p.done::before { content: '✓ '; color: var(--accent-2); }
+  .analyzing-eta { margin: 0 0 0.9rem; font-size: 0.82rem; color: var(--muted); }
+  .an-bar { width: min(22rem, 80%); height: 8px; margin: 0 auto 1.1rem; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .an-bar-fill { width: 0%; height: 100%; border-radius: inherit; background: var(--accent-2); transition: width 9s cubic-bezier(.2,.7,.3,1); }
+  @media (prefers-reduced-motion: reduce) { .an-bar-fill { transition: none; } }
+  /* 시안에서 뺀 입력칸·카드 — DOM은 스크립트가 읽어서 남긴다 */
+  .is-gone { display: none !important; }
+  #scheduleCard { display: none !important; }
 
   /* ---- 진단 결과: 핀 (색이 아니라 형태로 구분 — 채움=얼굴, 테두리=텍스트) ---- */
   /* 사진은 카드 안에서 과하게 커지지 않게 높이도 제한한다.
@@ -951,30 +968,28 @@
      무엇을 고칠지는 사용자가 고른다. */
   .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
 
-  .cover-tools { margin-bottom: 0.9rem; }
-  /* 편집 방식 버튼과 붓 조절을 한 줄에 나란히. 안쪽에서 줄바꿈이 일어나면
-     버튼과 라벨의 높이가 어긋나 보인다(실제로 붓 굵기가 버튼보다 위에 떠 있었다). */
-  .cover-tool-row { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; margin-top: 0.6rem; }
-  .cover-tool-row > * { flex: 0 0 auto; }
-  .ct-only-brush { display: none; align-items: center; gap: 0.6rem; flex-wrap: nowrap; }
-  .ct-only-brush .bs-range { flex: 0 1 180px; min-width: 120px; }
-  .ct-only-brush .bs-value { min-width: 2.2rem; }
-  .ct-erase { margin: 0; white-space: nowrap; }
-  /* cursor: cell(굵은 십자+네모)은 붓과 아무 상관 없는 모양이라 뺐다.
-     붓 자리에는 지금 굵기 그대로의 원을 커서로 띄운다 — 어디가 칠해질지 바로 보인다.
-     실제 원은 JS가 붓 굵기에 맞춰 만들어 넣는다(브러시 층 style). */
-  .cover-tools.is-brush .ct-only-brush { display: flex; }
+  /* «+ 놓친 곳 추가»와 «AI로 더 자연스럽게»를 한 줄로 — 둘 다 목록을 고치는 일이라 목록 바로 밑에 둔다 */
+  .picker-actions { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin-top: 0.4rem; }
+  .picker-ai { display: inline-flex; align-items: center; gap: 0.5rem; }
+  /* 자동으로 도는 단계 목록 */
+  .auto-plan { list-style: none; margin: 0 0 1.1rem; padding: 0; display: grid; gap: 0.35rem; }
+  .auto-plan li { font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+  .auto-plan li::before { content: '✓ '; color: var(--accent-2); }
+  .auto-plan li.none { font-weight: 400; color: var(--muted); }
+  .auto-plan li.none::before { content: ''; }
+  /* AI로 더 다듬기 — 자동과 떨어뜨려 «여기서부터는 사진이 나간다»가 읽히게 한다 */
+  .ai-more { margin: 1.2rem 0 1.3rem; padding-top: 1rem; border-top: 1px dashed var(--line-strong); }
+  .ai-more-head { font-size: 0.86rem; font-weight: 600; margin: 0 0 0.6rem; }
+  .ai-more-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .ai-more-btns .secondary { flex: 0 1 auto; width: auto; white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.86rem; }
+  .ai-more-btns .picker-ai { flex-wrap: wrap; }
   /* 도형 모드에서 크기를 조절하는 모서리 손잡이 */
   .cover-grip {
     position: absolute; width: 14px; height: 14px; border-radius: 50%;
     background: var(--card); border: 2px solid var(--accent-2); right: -7px; bottom: -7px;
     cursor: nwse-resize; touch-action: none;
   }
-  /* 브러시로 칠하는 층 */
-  .brush-layer { position: absolute; inset: 0; z-index: 3; cursor: crosshair; touch-action: none; }
-  .brush-layer canvas { width: 100%; height: 100%; display: block; }
 
-  .cover-hint { font-size: 0.82rem; color: var(--muted); margin: 0; line-height: 1.7; }
   /* 자동으로 잡은 위치가 빗나갈 수 있어 사용자가 직접 끌어 맞춘다 */
   /* grab/grabbing은 윈도우에서 두꺼운 장갑 손으로 그려져 촌스럽다.
      상자를 옮기는 것이므로 move(사방 화살표)가 뜻도 맞고 모양도 깔끔하다. */
@@ -1017,15 +1032,15 @@
     font-size: 0.82rem; font-weight: 600; color: var(--ink);
     min-width: 4.5rem; font-variant-numeric: tabular-nums;
   }
-  .bs-btn, .fs-btn, .cw-btn, .em-btn {
+  .bs-btn, .fs-btn, .of-btn {
     border: none; background: transparent; color: var(--muted); cursor: pointer;
     font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px;
     /* 이름을 쪼개지 않는다. «마크를 완전히 지우기»가 «마 / 크 / 를 / …»로 흐르면
        무엇을 고르는 버튼인지 읽을 수 없다. 자리가 모자라면 버튼째 다음 줄로 내려간다. */
     white-space: nowrap;
   }
-  .bs-btn:hover, .fs-btn:hover, .cw-btn:hover, .em-btn:hover { color: var(--ink); }
-  .bs-btn.selected, .fs-btn.selected, .cw-btn.selected, .em-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
+  .bs-btn:hover, .fs-btn:hover, .of-btn:hover { color: var(--ink); }
+  .bs-btn.selected, .fs-btn.selected, .of-btn.selected { background: var(--card); color: var(--ink); box-shadow: var(--shadow-soft); }
 
   .checkline {
     display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem;
@@ -1033,17 +1048,6 @@
   }
   .checkline input { accent-color: var(--ink); margin: 0; }
 
-  .cover-tools .ct-undo {
-    border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
-    border-radius: 999px; padding: 0.28rem 0.7rem; font-size: 0.76rem; font-weight: 600;
-    cursor: pointer; white-space: nowrap;
-  }
-  .cover-tools .ct-undo:hover:not([disabled]) { background: var(--soft-hover); }
-  .cover-tools .ct-undo[disabled] { opacity: 0.45; cursor: default; }
-  /* 브러시는 덮기 계열에서만 결과에 반영된다 — 다른 방식에서는 도구를 감춘다.
-     위치 조정(도형)은 모든 방식에서 쓸 수 있어야 하므로 그것만 남긴다. */
-  .cover-tools.no-brush [data-edit="brush"],
-  .cover-tools.no-brush .ct-only-brush { display: none; }
 
   .target-picker { margin-bottom: 1.1rem; }
   .target-picker-head { font-size: 0.82rem; font-weight: 600; margin: 0 0 0.55rem; }
@@ -1092,6 +1096,17 @@
   }
   .target-picker .t-del:hover { background: var(--card); color: var(--risk-high); }
   .target-picker li.hi label { background: var(--soft-hover); box-shadow: 0 0 0 1.5px var(--accent-2) inset; }
+  /* 찾은 곳을 한 줄 칩으로(사용자 시안, 10-26) — 줄마다 가로 전체를 쓰던 목록이 길었다.
+     종류 표시(작은 글씨·큰 간판)는 칩에서 빼고, «빼기»는 ×로 줄인다. */
+  .target-picker ul { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  /* 안내 문장(뺀 것 알림)은 칩 옆에 붙지 않고 다음 줄 전체를 쓴다 — 칩이 하나일 때 오른쪽에 붙어 떠 보였다 */
+  .target-picker ul > .t-none { flex-basis: 100%; }
+  .target-picker label { align-items: center; gap: 0.35rem; padding: 0.35rem 0.4rem 0.35rem 0.7rem; border-radius: 999px; }
+  .target-picker input[type=checkbox] { margin: 0; }
+  .target-picker .t-edit { flex: 0 1 auto; width: auto; field-sizing: content; min-width: 2.5em; max-width: 14em; }
+  .target-picker .t-kind { display: none; }
+  .target-picker .t-del { font-size: 0; padding: 0.1rem 0.35rem; }
+  .target-picker .t-del::before { content: '×'; font-size: 0.95rem; line-height: 1; }
   /* 목록에서 짚은 항목이 사진 어디인지 보여준다 */
   .cover-handle.hi { box-shadow: 0 0 0 3px var(--accent-2), 0 0 0 9px rgba(217, 122, 79, 0.28); }
   /* 덮개 핸들이 없는 방식(흐림·AI 등)에서도 위치를 확인할 수 있어야 한다 —
@@ -1103,7 +1118,6 @@
   }
   /* 추천 흐름 안내는 카드 폭에 꽉 차게 — 본문 62ch 제한을 받으면 왼쪽에만 붙어
      오른쪽이 휑하게 남는다 */
-  #recommendFlow { max-width: none; }
 
   .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.5rem; }
   .method-card {
@@ -1196,8 +1210,11 @@
     animation: risk-spin 0.8s linear infinite;
   }
   @media (prefers-reduced-motion: reduce) { .busy-spin { animation-duration: 2.4s; } }
-  .busy-text { font-size: 0.9rem; font-weight: 600; color: var(--ink); line-height: 1.6; max-width: 22ch; }
+  .busy-text { font-size: 0.9rem; font-weight: 600; color: var(--ink); line-height: 1.6; max-width: 22ch; white-space: pre-line; }
   .preview-frame.is-busy img { filter: grayscale(0.4) opacity(0.55); }
+  .ai-wait { display: flex; align-items: center; gap: 0.7rem; margin: 0.8rem 0 0; font-size: 0.85rem; font-weight: 600; color: var(--ink); line-height: 1.5; white-space: pre-line; }
+  .ai-wait[hidden] { display: none; }
+  .ai-wait .busy-spin { width: 22px; height: 22px; border-width: 2px; flex: none; }
 
   .compare-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;
@@ -1368,6 +1385,19 @@
     #screen-form > :nth-child(1) .polaroid { margin-top: auto; margin-bottom: auto; }
     #screen-form > :nth-child(n+2) { grid-column: 2; }
     #screen-form .polaroid { max-width: 100%; }
+    /* 입력칸을 줄인 뒤(10-26) 사진을 크게, 진단 버튼은 아래 가로 전체로(사용자 시안) */
+    #screen-form:not([style*="none"]) { grid-template-columns: 1fr; }
+    #screen-form > :nth-child(1) { grid-row: auto; }
+    #screen-form > :nth-child(n+2) { grid-column: 1; }
+    #screen-form > :nth-child(1) .drop-zone { min-height: 220px; }
+    #screen-form > .upload-col .polaroid { width: min(100%, 560px); margin: 0.7rem auto 0; }
+    #screen-form .polaroid img { max-height: 440px; object-fit: contain; }
+    #screen-form > #submitBtn { margin-top: 1.2rem; }
+    /* AI 다듬기 단추를 두 칸 큰 버튼으로(사용자 시안) — 셋째(간판 글자)가 있으면 아래 줄 전체 */
+    #aiMore .ai-more-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem; }
+    #aiMore .ai-more-btns > button { width: 100%; margin: 0; padding: 0.95rem 1rem; font-size: 0.95rem; }
+    #aiMore .ai-more-btns > .picker-ai { grid-column: 1 / -1; }
+    #aiMore .ai-more-btns > .picker-ai > button { width: 100%; padding: 0.95rem 1rem; font-size: 0.95rem; }
 
     /* 진단 결과 — 점수와 감지 카드는 가로 전체, 나머지는 2열 */
     #screen-result:not([style*="none"]) {
@@ -1406,7 +1436,10 @@
     #screen-result > .rcard-score > .score-breakdown {
       margin-top: 0; border-top: none; padding-top: 0.2rem;
     }
-    #screen-result > .rcard-detect { order: 3; grid-column: 1 / -1; }
+    /* PC에서는 «사진에서 감지한 항목»(작은 사진+핀 목록+점수 매핑)을 뺀다(사용자 시안, 10-26) —
+       사진이 작아 핀이 안 읽히고, 점수 내역은 위 «이 점수는 이렇게 나왔어요»가 같은 말을 한다.
+       폰은 사진 위 번호가 쓸모 있어 그대로 둔다. */
+    #screen-result > .rcard-detect { display: none !important; }
     /* 지도가 카드 안에 들어오면서 세로로 너무 길어졌다(사용자 지적) — 가로 전체를 주고
        안을 왼쪽(점수·근거)·오른쪽(지도·역추적)으로 나눈다. 그러면 옆 칸(스케줄 경고)은
        이 카드와 나란히 못 서고 자연히 그 아래로 내려간다(별도 규칙 필요 없음). */
@@ -1428,7 +1461,7 @@
        종합 설명이 항상 혼자 남아 옆 칸이 통째로 빈다(사용자 지적) — 캡션 카드도
        입력 없으면 혼자 남는 건 같다. 둘 다 가로 전체로 주면, 남는 auto-flow 칸은
        스케줄·조치 둘(짝수)뿐이라 항상 나란히 채워지고 빈 반쪽이 안 생긴다. */
-    #screen-result > #summaryCard,
+    /* 스케줄 경고를 빼서(10-26) 남는 건 권장 조치·종합 설명 둘 — 나란히 둔다 */
     #screen-result > .rcard-caption { order: 4; grid-column: 1 / -1; }
     /* .evidence 공통 규칙의 76ch 줄길이 제한이 좁은 칸 기준이라, 종합 설명이 가로
        전체로 넓어진 지금은 글이 카드 왼쪽 절반에만 몰리고 오른쪽이 비어 보인다
@@ -2020,7 +2053,7 @@
   /* 히어로+알약+메뉴를 묶는 구조용 껍데기 — 기본은 박스를 만들지 않는다(있으나 마나).
      폰 홈 화면에서만 flex로 바뀌어 묶음 전체를 세로 가운데 정렬한다. */
   .app-home-wrap { display: contents; }
-  .method-row, .sheet-backdrop, .sheet-close, .sheet-done { display: none; }
+  .method-row, .method-row-list, .sheet-backdrop, .sheet-close, .sheet-done { display: none; }
   .factor-chips, .factor-backdrop, .factor-sheet, .map-backdrop, .map-sheet { display: none; }
   /* 장소 지도 시트 — 내용 규칙은 폰·데스크톱이 같이 쓴다. 원은 "이 안 어딘가"다. 지도는 그림이라 끌거나
      늘리지 못한다(핀을 찍지 않고, 거리 단위까지 들여다보지 못하게 한다). 단계 버튼이 원 크기를 바꾼다. */
@@ -2413,11 +2446,11 @@
       display: block; font-size: 0.78rem; font-weight: 800; color: var(--ink);
       margin: 0.55rem 0 0.35rem;
     }
-    #screen-correct .cw-btn, #screen-correct .em-btn, #screen-correct .fs-btn {
+    #screen-correct .of-btn, #screen-correct .fs-btn {
       font-size: 0.68rem; font-weight: 700; padding: 0.3rem 0.65rem;
       border-radius: 999px; border: 0; background: var(--soft); color: var(--muted);
     }
-    #screen-correct .cw-btn.selected, #screen-correct .em-btn.selected,
+    #screen-correct .of-btn.selected,
     #screen-correct .fs-btn.selected {
       background: var(--ink); color: var(--on-dark); box-shadow: none;
     }
@@ -2921,6 +2954,222 @@
     .app-tabbar, .app-fab { transition: none; }
   }
 
+  /* 폰 홈 — 팀 가이드(aishadow_demo.html, 10-26)의 배치를 따른다: 제목 바 → 다크 히어로 카드
+     (작은 머리말 + 제목 + 카드 안 버튼) → 메뉴 → 가이드 카드. 색은 가이드 것을 쓰지 않는다
+     (사용자 지시 "색상은 적용하지마") — 기존 --card-dark·--accent-bar 그대로다.
+     DOM은 그대로 두고, .app-home을 display:contents로 풀어 히어로와 같은 줄에 세운 뒤
+     order로 순서만 바꾼다. 버튼은 히어로 밑에 두고 음수 여백으로 카드 안에 올려 앉힌다. */
+  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+    :root[data-tab="진단"][data-view="home"] .app-home { display: contents; }
+    /* .app-home의 흰 면이 contents로 풀리면서 사라져 바닥(--soft)이 드러났다 — 감싼 쪽에 다시 깐다 */
+    :root[data-tab="진단"][data-view="home"] .app-home-wrap { background: var(--card); position: relative; z-index: 1; }
+    :root[data-tab="진단"][data-view="home"] .app-home > .app-bar--tab { order: 0; }
+    :root[data-tab="진단"][data-view="home"] header.hero { order: 1; }
+    :root[data-tab="진단"][data-view="home"] .app-pill { order: 2; }
+    :root[data-tab="진단"][data-view="home"] .app-menu { order: 3; padding-top: 1.2rem; }
+    :root[data-tab="진단"][data-view="home"] .app-trust { order: 4; }
+
+    header.hero {
+      margin: 0 1rem; padding: 1.3rem 1.2rem 4.4rem; border-radius: 22px;
+      background: var(--card-dark); color: var(--on-dark);
+    }
+    header.hero .hero-inner { padding: 0; }
+    header.hero .clover-hero { display: none; }
+    header.hero .hero-badge {
+      background: transparent; padding: 0; color: var(--accent-bar);
+      font-size: 0.66rem; font-weight: 800; letter-spacing: 0.02em;
+    }
+    header.hero .hero-title { font-size: 1.32rem; line-height: 1.4; margin: 0.5rem 0 0.6rem; color: var(--on-dark); }
+    header.hero .hero-note { font-size: 0.7rem; line-height: 1.55; color: var(--on-dark); opacity: 0.72; }
+
+    /* 카드 안 버튼 — 알약 모양을 꽉 찬 버튼으로 */
+    .app-pill {
+      position: relative; z-index: 1; justify-content: center;
+      width: calc(100% - 4.4rem); margin: -3.6rem 2.2rem 0; padding: 0.85rem 1rem;
+      border-radius: 13px; background: var(--accent-bar); color: var(--ink);
+      font-size: 0.88rem; font-weight: 800;
+    }
+    .app-pill:hover, .app-pill:active { background: var(--accent-hover); }
+    .app-pill .mono-icon { display: none; }
+    .app-pill-go { order: -1; margin: 0; width: auto; height: auto; background: transparent; }
+
+    /* 가이드 카드 — 아이콘을 작은 네모 칸에 담는다 */
+    .app-trust .app-trust-row { padding: 0.8rem 0.9rem; border-radius: 16px; }
+    .app-trust-row .mono-icon {
+      width: 1.9rem; height: 1.9rem; padding: 0.4rem; border-radius: 10px;
+      background: var(--accent-bar); box-sizing: border-box;
+    }
+
+    /* 진단 결과 — 가이드의 «점 · 이름 · 값» 목록. 가로로 흐르던 칩 줄을 세로 행으로 세운다.
+       누르면 시트가 올라오는 동작·순서(점수 높은 것 먼저)는 그대로다. 점 색은 기존 위험색. */
+    #screen-result .factor-chips {
+      flex-direction: column; gap: 0; overflow: visible; padding: 0.6rem 0 0;
+      border-top: 1px solid var(--line); margin-top: 0.75rem;
+    }
+    #screen-result .factor-chips .factor-chip,
+    #screen-result .factor-chips .map-chip {
+      display: flex; align-items: center; gap: 0.6rem; width: 100%;
+      padding: 0.72rem 0.1rem; border-radius: 0; background: transparent; color: var(--ink);
+      border-bottom: 1px solid var(--line); font-size: 0.82rem; text-align: left;
+    }
+    #screen-result .factor-chips .factor-chip::before {
+      content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--risk-mid);
+    }
+    #screen-result .factor-chips .factor-chip.max::before { background: var(--risk-high); }
+    #screen-result .factor-chips .factor-chip.zero::before { background: var(--line-strong); }
+    #screen-result .factor-chips .factor-chip b { margin-left: auto; font-size: 0.78rem; }
+    #screen-result .factor-chips .factor-chip.max b { color: var(--risk-high); }
+    #screen-result .factor-chips .factor-chip.zero { color: var(--muted); }
+    #screen-result .factor-chips .map-chip { font-weight: 700; }
+    #screen-result .factor-chips .map-chip::after { content: "›"; margin-left: auto; color: var(--muted); font-size: 1.1rem; }
+
+    /* 폰은 스크롤로 길게 내리지 않고 화면이 넘어간다(사용자 요청 "스크롤을 내리는 형태로 길게
+       만들지말고 화면이 넘어가는 형태로", 10-27). 결과 화면 아래로 이어지던 것들은 같은 말을
+       다른 자리에서 이미 한다 — 점수 내역 = 위 항목 목록(누르면 시트로 근거), 권장 조치 = 다음
+       보정 화면, 「어디를」 목록 = 사진 위 번호. 숨기기만 한다(데스크톱은 그대로). */
+    #screen-result > #actionCard,
+    #screen-result .factor-map,
+    #screen-result > .rcard-detect > .rcard-title { display: none; }
+    /* 점수 내역은 JS가 인라인 display:block을 넣는다 — !important라야 이긴다 */
+    #screen-result #scoreBreakdown { display: none !important; }
+    /* 오각형과 등급을 나란히 — 가이드의 «점수 동그라미 + 판정» 줄과 같은 자리. 세로로 쌓으면
+       항목 목록이 바 뒤로 들어간다. */
+    #screen-result .gauge-wrap {
+      display: grid; grid-template-columns: minmax(0, 168px) 1fr; column-gap: 0.8rem; align-items: center;
+    }
+    #screen-result .gauge-wrap > .gauge-ring { grid-column: 1; grid-row: 1 / span 2; max-width: 168px; }
+    #screen-result .gauge-wrap > .gauge-meta { grid-column: 2; align-self: end; justify-content: flex-start; }
+    #screen-result .gauge-wrap > .hero-line { grid-column: 2; align-self: start; text-align: left; margin: 0.4rem 0 0; }
+    #screen-result .gauge-wrap > .factor-chips { grid-column: 1 / -1; }
+    #screen-result .factor-chips .factor-chip,
+    #screen-result .factor-chips .map-chip { padding: 0.42rem 0.1rem; }
+    #screen-result > .rcard-detect { padding-bottom: 0.6rem; }
+    #screen-result .gauge-wrap { padding-bottom: 0; margin-bottom: 0; }
+    #screen-result .risk-photo-wrap { margin: 0 auto; }
+    #screen-result .risk-photo-wrap img { max-height: 18vh; }
+
+    /* 보정 — 가이드처럼 큰 미리보기 한 장. 원본은 «겹쳐서 비교하기»로 본다(편집 손잡이는 처리 후 쪽에 있다). */
+    #compareGrid { grid-template-columns: 1fr; }
+    #compareGrid > div:first-child { display: none; }
+    /* «겹쳐서 비교하기»와 «다운로드»를 미리보기 위 한 줄에 — 따로 한 줄씩이면 단계 목록이 바 뒤로 간다 */
+    #screen-correct > .correct-right { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; padding-bottom: 0.6rem; }
+    #screen-correct > .correct-right > * { flex-basis: 100%; width: 100%; order: 2; }
+    #screen-correct > .correct-right > #compareSliderToggle { flex-basis: auto; width: auto; order: 0; margin: 0; }
+    #screen-correct > .correct-right > #downloadResultBtn { flex-basis: auto; width: auto; order: 1; margin: 0 0 0 auto; }
+    #compareGrid { margin-bottom: 0; margin-top: 0.4rem; }
+    #compareGrid #previewFrame { margin-bottom: 0; }
+    /* 높이 상한은 아래 단계 목록(최대 3줄)까지 액션 바 위에 들어오도록 잰 값이다(test/phone-fit.js) */
+    #compareGrid #previewFrame img { max-height: 36vh; width: 100%; object-fit: contain; }
+
+    /* 보정 내용 — 한 줄 요약 대신 도는 단계를 줄마다 보여준다(renderAutoPlan이 #methodRowList를 채운다).
+       누르면 시트가 올라오는 건 그대로다. */
+    .method-row { flex-wrap: wrap; row-gap: 0; }
+    .method-row .method-row-value { display: none; }
+    .method-row-label::after { content: " · 고치기"; font-weight: 600; }
+    .method-row-go { margin-left: auto; }
+    #screen-correct > .method-row { margin-bottom: 0; padding-bottom: 0.5rem; }
+    .method-row-list {
+      order: 2; display: block; list-style: none; margin: 0 -1rem 8px; padding: 0 1rem 0.3rem;
+      background: var(--card);
+    }
+    .mr-item {
+      display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0; border-top: 1px solid var(--line);
+    }
+    .mr-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    /* 스위치 — 진짜 체크박스(role=switch)에 모양만 입힌다. 켜짐은 기존 강조색. */
+    .mr-switch {
+      appearance: none; -webkit-appearance: none; flex: none; position: relative; margin: 0;
+      width: 2.6rem; height: 1.5rem; border-radius: 99px; background: var(--line-strong); cursor: pointer;
+      transition: background 0.15s ease; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .mr-switch::after {
+      content: ""; position: absolute; top: 3px; left: 3px; width: calc(1.5rem - 6px); height: calc(1.5rem - 6px);
+      border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.25); transition: transform 0.15s ease;
+    }
+    .mr-switch:checked { background: var(--accent); }
+    .mr-switch:checked::after { transform: translateX(1.1rem); }
+    .mr-switch:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .mr-item:has(.mr-switch:not(:checked)) .mr-text { opacity: 0.55; }
+    .mr-item b { font-size: 0.86rem; font-weight: 800; color: var(--ink); }
+    .mr-item small { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* 아래 여백이 두 번 쌓여 있었다 — body 9rem + 화면 9rem. 내용이 한 화면에 들어와도 빈 자리
+       288px만큼 스크롤이 생겼다. 도구 화면에서는 body가 탭바만, 화면이 액션 바만 비운다. */
+    :root[data-tab="진단"][data-view="tool"] body { padding-bottom: 4.2rem; }
+    /* 액션 바(약 111px) + 탭바(body 4.2rem) = 화면 아래 182px. main 아래 여백(17px)까지 더해 딱 맞춘다. */
+    #screen-result, #screen-correct, #screen-verify { padding-bottom: 4.5rem; }
+
+    /* 사진 고른 뒤의 폼 — 올리는 칸을 한 줄로 접고 사진을 줄여, «위험도 진단하기»가 스크롤 없이 보이게.
+       (실측 375x667: 고치기 전 818px로 단추가 화면 밖) */
+    #fileDrop:has(~ #polaroidPreview:not([style*="none"])) {
+      min-height: 0; flex-direction: row; gap: 0.5rem; padding: 0.55rem 0.8rem;
+    }
+    #fileDrop:has(~ #polaroidPreview:not([style*="none"])) .icon { display: none; }
+    #polaroidPreview { margin: 0.6rem auto 0; }
+    #polaroidPreview img { max-height: 25vh; object-fit: contain; }
+    #polaroidPreview .cap { display: none; }
+  }
+
+  /* 낮은 폰(키 760px 이하, 예: 375x667) — 같은 내용을 더 촘촘히. 항목 목록은 두 줄로 나란히,
+     보정 단계는 설명 줄을 접는다. (실측 375x667: 결과 130px · 보정 90px 넘쳤다) */
+  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 760px) {
+    #screen-result .factor-chips { display: grid; grid-template-columns: 1fr 1fr; column-gap: 0.9rem; }
+    #screen-result .factor-chips .factor-chip,
+    #screen-result .factor-chips .map-chip { font-size: 0.76rem; }
+    #screen-result .gauge-wrap { grid-template-columns: minmax(0, 150px) 1fr; }
+    #screen-result .gauge-wrap > .gauge-ring { max-width: 150px; }
+    #compareGrid #previewFrame img { max-height: 25vh; }
+    #screen-result .factor-chips { margin-top: 0.3rem; padding-top: 0.2rem; }
+    .mr-item small { display: none; }
+    .mr-item { padding: 0.45rem 0; }
+  }
+
+  /* 알아보기 쪽 넘기기 (폰 전용) — 섹션 하나가 한 쪽. 쪽 표시 줄은 탭바 바로 위에 붙는다. */
+  .app-pager { display: none; }
+  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+    :root[data-tab="알아보기"] section[data-tab-of="알아보기"]:not([data-page-on]) { display: none; }
+    :root[data-tab="알아보기"] .app-pager {
+      display: flex; align-items: center; gap: 0.6rem; position: fixed; left: 0; right: 0; bottom: 4.1rem;
+      z-index: 550; height: 3rem; padding: 0 0.75rem; background: var(--page); border-top: 1px solid var(--line);
+    }
+    :root[data-tab="알아보기"] body { padding-bottom: 7.05rem; }
+    .app-pager-btn {
+      width: 2.3rem; height: 2.3rem; border: 0; border-radius: 50%; background: var(--soft);
+      color: var(--ink); font: inherit; font-size: 1.3rem; line-height: 1; cursor: pointer;
+      touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    }
+    .app-pager-btn:disabled { opacity: 0.35; cursor: default; }
+    .app-pager-dots { display: flex; gap: 5px; margin: 0 auto; }
+    .app-pager-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); }
+    .app-pager-dots i.on { width: 17px; border-radius: 99px; background: var(--accent); }
+    .app-pager-num { font-size: 0.72rem; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* 첫 쪽(예시 피드)이 한 쪽에 들어가게 — 장식 여백과 피드의 좋아요·시간 줄을 걷는다.
+       (실측 390x844: 956px로 한 쪽 자리 681px를 넘었다) */
+    #selfcheck { padding: 0; margin: 0; min-height: 0; background: var(--card); }
+    #selfcheck .section-inner { padding: 0; }
+    #selfcheck .sc-card { margin: 0; padding: 0.8rem 1rem; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+    #selfcheck .sc-eyebrow, #selfcheck .sc-foot, #selfcheck .ig-acts, #selfcheck .ig-likes, #selfcheck .ig-time { display: none; }
+    #selfcheck .sc-title { font-size: 1.05rem; margin: 0.1rem 0 0.6rem; }
+    #selfcheck .ig-photo { aspect-ratio: 4 / 3; }
+    #selfcheck .sc-credit { font-size: 0.62rem; margin: 0.45rem 0 0; }
+    #selfcheck .sc-cta { margin-top: 0.6rem; }
+
+    /* 과거글 — 설명과 올리는 칸 사이에 빈 자리가 130px 있어 한 화면을 넘었다(952px) */
+    #pattern-check, #pattern-check .pe-card { min-height: 0; }
+    #pattern-check .pe-card { gap: 1rem; justify-content: flex-start; }
+    /* 빈 자리의 정체: .pe-text/.pe-action의 flex-basis 320px가 세로(column)에서는 높이로 먹혔다 */
+    #pattern-check .pe-text, #pattern-check .pe-action { flex: none; }
+    /* 하단 고정 액션 바가 없는 탭 — 탭바 자리만 비운다(기본 9rem은 액션 바 몫까지라 빈 스크롤이 생겼다) */
+    :root[data-tab="과거글"] body, :root[data-tab="문답"] body { padding-bottom: 4.2rem; }
+    section[data-tab-of="알아보기"] { margin-bottom: 0; }
+  }
+  /* 낮은 폰(375x667) — 과거글이 18px 넘쳤다 */
+  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 760px) {
+    #pattern-check .pe-card { gap: 0.5rem; padding-top: 0.7rem; padding-bottom: 0.8rem; }
+
+  }
+
 </style>
 
 <script>
@@ -3265,7 +3514,9 @@
         </div>
       </div>
 
-      <div class="up-part">
+      <!-- 사진 한 장만 올린다(사용자 시안, 10-26). 과거 게시물 패턴은 «과거글» 탭에서 따로 본다.
+           DOM은 남긴다 — 스크립트 여러 곳이 pastInput을 읽는다. -->
+      <div class="up-part is-gone">
         <label for="pastInput">과거 게시물 스크린샷 <span class="hint">선택 · 여러 장</span></label>
         <div class="drop-zone" id="pastDrop">
           <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
@@ -3276,10 +3527,12 @@
       </div>
     </div>
 
-    <div class="field">
+    <!-- 캡션·업로드 시점·배경 특이사항 칸은 뺐다(사용자 시안, 10-26). DOM은 남겨 스크립트가 깨지지 않게 하고,
+         캡션은 «없음», 업로드 시점은 «미입력»(서버가 그렇게 적는다), 배경 특이사항은 빈칸으로 보낸다. -->
+    <div class="field is-gone">
       <label for="captionInput">캡션 <span class="hint">이 사진과 함께 올릴 글</span></label>
       <textarea id="captionInput" placeholder="예: 오늘부터 OO어린이집 다니기 시작했어요! 하원길에 놀이터에서 한 컷"></textarea>
-      <label class="checkline"><input type="checkbox" id="noCaption"> 캡션 없이 사진만 올릴 거예요</label>
+      <label class="checkline"><input type="checkbox" id="noCaption" checked> 캡션 없이 사진만 올릴 거예요</label>
     </div>
 
     <div class="row2">
@@ -3291,16 +3544,17 @@
           <option value="비공개">비공개</option>
         </select>
       </div>
-      <div class="field">
+      <div class="field is-gone">
         <label for="uploadTiming">업로드 시점</label>
         <select id="uploadTiming">
+          <option value="" selected>미입력</option>
           <option value="실시간 업로드">실시간 업로드</option>
           <option value="며칠 지난 후">며칠 지난 후</option>
         </select>
       </div>
     </div>
 
-    <div class="field">
+    <div class="field is-gone">
       <label for="backgroundNotes">배경 특이사항</label>
       <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
     </div>
@@ -3312,6 +3566,9 @@
   <div class="card" id="screen-analyzing" style="display:none;">
     <div class="analyzing">
       <div class="scan-frame"><img id="scanImg" alt="분석 중인 사진" /><div class="scan-line"></div></div>
+      <p class="analyzing-eta">15~20초 정도 걸려요.</p>
+      <!-- 진행 막대 — 단계가 넘어갈 때만 앞으로 간다(시간으로 꾸며 채우지 않는다). -->
+      <div class="an-bar" aria-hidden="true"><div class="an-bar-fill" id="anBarFill"></div></div>
       <div class="analyzing-steps">
         <p id="stepFace">브라우저에서 얼굴 정보 분석 중 (로컬 처리, 외부 전송 없음)</p>
         <p id="stepOcr">사진 속 텍스트 위치·내용 감지 중</p>
@@ -3489,7 +3746,7 @@
          이 상자가 배치에서 사라지고 버튼 둘이 예전 그대로 카드의 직계 자식처럼
          놓인다 — 감싸기만 하고 옮기지 않는다. -->
     <div class="app-actionbar">
-      <button class="primary" id="goCorrectBtn">보정 방식 선택하기 →</button>
+      <button class="primary" id="goCorrectBtn">보정하러 가기 →</button>
       <button class="secondary" id="skipCorrectBtn">보정 없이 마치기</button>
     </div>
 
@@ -3532,85 +3789,25 @@
     <div class="correct-left">
     <!-- 폰 전용: 이 칸 전체가 하단 시트가 된다(배민의 옵션 시트처럼). 데스크톱에서는 CSS가 숨긴다. -->
     <button type="button" class="sheet-close" aria-label="닫기">✕</button>
-    <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.6rem; max-width:22ch; color:var(--ink);">
-      어떻게 보정할지 골라주세요
+    <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.7rem; max-width:22ch; color:var(--ink);">
+      무엇을 바꿀까요?
     </h3>
-    <p class="evidence" style="margin-bottom:1.1rem;">블러를 기본으로 쓰지 않아요 — 위험 유형에 맞는 자연스러운 방식을 골라보세요.</p>
+    <!-- 자동 보정(글자 덮기·교복 색·배경 흐림)·찾은 곳 목록·«+ 놓친 곳 추가»·상자 끌기는 뺐다(10-27 사용자 결정:
+         "자동보정이 빼봐봐 이것떄문에 더 불편한거같아", 놓친 곳 추가·상자 끌기는 "바로바로 반영이 되는것도 아니고
+         로딩시간도 길고 컨트롤이 편한것도 아니라서"). 스크립트가 참조해서 DOM은 남기고 늘 숨긴다(is-gone). -->
+    <ul class="auto-plan is-gone" id="autoPlan" aria-live="polite"></ul>
 
-    <div class="blur-strength" id="fillStyle" style="display:none;">
-      <span class="bs-label">덮는 방식</span>
-      <div class="bs-options" role="group" aria-label="덮는 방식">
-        <button type="button" class="fs-btn selected" data-fill="auto" title="기관 이름은 «어린이집»처럼 일반 이름으로 바꿔 쓰고, 나머지는 주변 배경에 맞춰 덮어요">자동</button>
-        <button type="button" class="fs-btn" data-fill="color">주변색</button>
-        <button type="button" class="fs-btn" data-fill="mosaic">모자이크</button>
-      </div>
-      <label class="bs-label" for="fillPixel">픽셀 크기</label>
-      <input type="range" id="fillPixel" class="bs-range" min="6" max="48" step="2" value="16" />
-      <output class="bs-value" id="fillPixelValue" for="fillPixel">16</output>
-    </div>
-    <div class="cover-tools" id="coverTools" style="display:none;">
-      <p class="cover-hint"><strong>자동으로 찾은 위치예요.</strong> 어긋났으면 직접 맞춰주세요 — 맞춰야 그 자리가 제대로 처리돼요.</p>
-      <div class="cover-tool-row">
-        <div class="bs-options" role="group" aria-label="편집 방식">
-          <button type="button" class="ct-btn selected" data-edit="shape">도형</button>
-          <button type="button" class="ct-btn" data-edit="brush">브러시</button>
-        </div>
-        <span class="ct-only-brush">
-          <label class="bs-label" for="brushSize">붓 굵기</label>
-          <input type="range" id="brushSize" class="bs-range" min="8" max="80" step="2" value="28" />
-          <output class="bs-value" id="brushSizeValue">28</output>
-          <label class="checkline ct-erase"><input type="checkbox" id="brushErase"> 지우개</label>
-          <button type="button" class="ct-undo" id="brushUndo" disabled>↶ 직전 획 취소</button>
-        </span>
-      </div>
-      <div class="cover-tool-row" id="signAiRow" style="display:none;">
-        <button type="button" class="ghost-link" id="signAiUpgradeBtn">✨ AI로 글자 더 자연스럽게 (유료·사진 일부 전송)</button>
-        <span id="signAiStatus" style="font-size:0.76rem; color:var(--muted);"></span>
-      </div>
-    </div>
-
-    <div class="blur-strength" id="blurStrength" style="display:none;">
-      <label class="bs-label" for="blurRange">흐림 정도</label>
-      <input type="range" id="blurRange" class="bs-range" min="2" max="40" step="1" value="18"
-             aria-describedby="blurRangeValue" />
-      <output class="bs-value" id="blurRangeValue" for="blurRange">보통</output>
-    </div>
-
-    <!-- 컬러체인지 / 엠블럼 처리 — 마스크 인페인팅으로 채울 옷 디자인을 고른다.
-         마스크(누구를 지킬지)는 그대로 두고, 이 선택은 프롬프트 문구만 바꾼다. -->
-    <div class="blur-strength" id="outfitStyle" style="display:none; flex-direction: column; align-items: flex-start; gap:0.6rem;">
-      <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
-        <span class="bs-label">옷 색</span>
-        <div class="bs-options" role="group" aria-label="옷 색">
-          <button type="button" class="cw-btn" data-cw="keep" title="색은 그대로 두고 아래에서 고른 마크 처리만 한다">색 안 바꾸기</button>
-          <button type="button" class="cw-btn selected" data-cw="brown" title="상의 웜 토프 · 트림 다크브라운">토프 &amp; 브라운</button>
-          <button type="button" class="cw-btn" data-cw="navy" title="상의 연하늘 · 트림 네이비">스카이 &amp; 네이비</button>
-          <button type="button" class="cw-btn" data-cw="gray" title="상의 웜그레이 · 트림 차콜">그레이 &amp; 차콜</button>
-          <button type="button" class="cw-btn" data-cw="green" title="상의 크림 · 트림 딥그린">크림 &amp; 포레스트</button>
-        </div>
-        <span id="cwSampleTag" style="font-size:0.72rem; color: var(--muted);"></span>
-      </div>
-      <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
-        <span class="bs-label">교복 티 지우기</span>
-        <div class="bs-options" role="group" aria-label="교복 티 지우기">
-          <button type="button" class="em-btn selected" data-em="keep" title="색만 바꾼다 — 사진이 밖으로 나가지 않고 즉시 끝난다">그대로 두기</button>
-          <button type="button" class="em-btn" data-em="pocket" title="가슴만 다시 그린다 · 옷 모양은 그대로 · 원복 느낌 유지">마크를 포켓으로</button>
-          <button type="button" class="em-btn" data-em="none" title="가슴만 다시 그린다 · 옷 모양은 그대로">마크를 완전히 지우기</button>
-          <button type="button" class="em-btn" data-em="all" title="깃·여밈까지 교복이 아닌 모양으로 — 기관 특정을 가장 확실히 끊지만 옷이 달라 보인다">옷 전체 바꾸기</button>
-        </div>
-        <span style="font-size:0.72rem; color: var(--muted);">오른쪽으로 갈수록 확실하지만 원본에서 멀어져요</span>
-      </div>
-    </div>
-
-    <div class="target-picker" id="targetPicker" style="display:none;">
-      <p class="target-picker-head">찾은 것이 맞는지 확인해주세요
-        <span class="hint">체크한 것만 처리해요 · 내용이 다르면 눌러서 고치고, 아예 틀린 건 빼주세요 · 놓친 게 있으면 추가해주세요</span></p>
+    <div class="target-picker is-gone" id="targetPicker" style="display:none;">
+      <p class="target-picker-head">찾은 곳이 맞는지 확인해주세요
+        <span class="hint">체크한 곳만 가려요. 위치가 어긋나면 사진 위 상자를 끌어 맞추세요.</span></p>
       <ul id="targetList"></ul>
       <!-- 예전엔 찾은 것을 빼기만 할 수 있었다 — AI가 놓친 것(예: 배경의 학원 간판)은
            신고할 길이 없었다(AGENTS.md 알려진 구멍 1번, 놓침이 더 나쁜 실패인데 구조가
            거꾸로였다). 빈 상자를 하나 만들어 사진 위로 끌어다 맞추게 한다 — 자동 감지된
            것과 똑같이 체크·고치기·빼기·크기조절이 다 되게(별도 코드 없이 같은 목록에 얹는다). -->
-      <button type="button" class="ghost-link" id="addMissedBtn">+ 놓친 곳 추가</button>
+      <div class="picker-actions">
+        <button type="button" class="ghost-link" id="addMissedBtn">+ 놓친 곳 추가</button>
+      </div>
       <!-- AI 방식은 체크를 고칠 때마다 다시 부르면 요금이 나가고 원본이 또 나간다.
            체크는 체크만 하고, 다시 만드는 건 여기서 직접 누른다. -->
       <div class="target-redo" id="targetRedo" style="display:none;">
@@ -3619,50 +3816,28 @@
       </div>
     </div>
 
-    <div class="method-grid" id="methodGrid">
-      <button class="method-card selected" data-method="blur">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="5"/><circle cx="16" cy="16" r="10" stroke-dasharray="3 4.5"/><circle cx="16" cy="16" r="14.5" stroke-dasharray="2 6"/></svg> 배경 흐림 <span class="m-badge" id="badge-blur" style="display:none;">1순위</span></div>
-        <div class="m-reason" id="reason-blur">인물모드 스타일로, 아이는 선명하게 유지돼요. 얼굴을 못 찾은 사진에서는 전체가 흐려져요.</div>
-      </button>
-      <button class="method-card" data-method="sticker">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="10" rx="2"/><path d="M4 6 h24 M4 26 h24"/></svg> 자연스럽게 덮기 <span class="m-badge" id="badge-sticker" style="display:none;">1순위</span></div>
-        <div class="m-reason" id="reason-sticker">햇살어린이집 같은 기관 이름은 «어린이집»처럼 <strong>일반 이름으로 바꿔 써요</strong> — 덮은 자국이 남지 않아요. 전화번호 같은 그 밖의 글자는 주변 배경에 맞춰 덮고, 주변색·모자이크를 직접 고를 수도 있어요.</div>
-      </button>
-      <!-- 원본을 외부로 보내는 두 방식(AI 옷 바꾸기·AI 배경 교체)을 나란히 묶는다.
-           사용자 피드백: 예전엔 격자에서 대각선으로 떨어져 있어 같은 종류(⚠ 원본 전송)라는
-           게 한눈에 안 들어왔다. -->
-      <button class="method-card" data-method="outfit">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 4 L16 7 L20 4 L27 8 L24 13 L26 28 L6 28 L8 13 L5 8 Z"/></svg> 옷 손보기
-          <span class="m-badge" id="badge-outfit-status" style="background:var(--muted);">확인 중</span>
-        </div>
-        <div class="m-reason">
-          교복·원복이 어느 기관인지 알아볼 수 없게 만들어요. 아래에서 <strong>색</strong>과
-          <strong>교복 티를 지우는 정도</strong>를 따로 고를 수 있어요.
-          색만 바꾸면 브라우저 안에서 끝나서 <strong>사진이 나가지 않고 즉시</strong> 끝나요.
-          마크를 지우거나 옷을 바꾸려면 원본이 전송돼요 — 그때만 따로 물어봐요.
-        </div>
-      </button>
-      <button class="method-card" data-method="ai">
-        <div class="m-title"><svg class="mono-icon m-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19 13 L29.5 16 L19 19 L16 29.5 L13 19 L2.5 16 L13 13 Z"/></svg> AI 배경 교체
-          <span class="m-badge" id="badge-ai-status" style="background:var(--muted);">확인 중</span>
-        </div>
-        <div class="m-reason">
-          <span class="m-badge" style="background:var(--risk-mid); margin:0 0.35rem 0.35rem 0; display:inline-block;">⚠ 원본 전송</span>
-          다른 방식과 달리 원본 사진이 외부(fal.ai)로 전송돼요.
-        </div>
-      </button>
+    <!-- 보정은 이 세 단추뿐이다. 모두 원본이 밖으로 나가므로 누를 때마다 동의를 받는다(askFluxConsent).
+         fal.ai가 준비돼 있을 때만 보인다(goCorrectBtn). 하나를 한 뒤 다른 것을 누르면 그 결과 위에 얹힌다(runAiUpgrade). -->
+    <div class="ai-more" id="aiMore" style="display:none;">
+      <p class="ai-more-head">AI로 바꾸기 <span class="m-badge" style="background:var(--risk-mid);">AI · 유료 · 사진 전송</span></p>
+      <div class="ai-more-btns">
+        <button type="button" class="secondary" id="aiMarkBtn" title="가슴의 로고·마크만 다시 그린다 · 옷 모양과 색은 그대로">로고 지우기</button>
+        <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그린다 · 간판·건물 이름도 같이 사라진다">배경 교체하기</button>
+        <button type="button" class="secondary" id="aiOutfitBtn" title="옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꾼다 · 얼굴·손은 그대로">옷 전체 바꾸기</button>
+      </div>
+      <p class="hint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">«옷 전체 바꾸기»는 칼라·배색처럼 교복 디자인 자체로 어느 학교인지 알아볼 수 있을 때만 쓰세요. 로고만 문제라면 «로고 지우기»가 더 자연스러워요.</p>
+      <div class="is-gone">
+        <!-- 간판 글자 AI는 자동 글자 덮기 결과 위에서만 돈다 — 자동 보정을 빼면서 같이 뺐다. 스크립트가 참조해서 DOM만 남긴다. -->
+        <span class="picker-ai" id="signAiRow" style="display:none;">
+          <button type="button" class="secondary" id="signAiUpgradeBtn" title="기관 이름 같은 큰 간판 글자를 AI가 자연스럽게 바꿔 써요">간판 글자 자연스럽게</button>
+          <span id="signAiStatus" style="font-size:0.76rem; color:var(--muted);"></span>
+        </span>
+      </div>
+      <!-- 사진 위 «처리 중» 안내(previewBusy)는 데스크톱에서 단추보다 위에 있어 누르는 순간 화면 밖으로 나간다 — 누른 자리 아래에도 같은 안내를 띄운다. -->
+      <p class="ai-wait" id="aiWait" role="status" aria-live="polite" hidden><span class="busy-spin" aria-hidden="true"></span><span id="aiWaitText"></span></p>
     </div>
 
-    <!-- 폰에서 카드 설명을 두 줄로 자르므로 펼 수단이 있어야 한다.
-         (옷 손보기 설명이 108자다) 데스크톱에서는 자르지 않으니 이 단추도 안 보인다. -->
-    <button type="button" class="ghost-link clamp-more method-more" id="methodMoreBtn"
-            aria-expanded="false" aria-controls="methodGrid">방식 설명 자세히 보기 ⌄</button>
-
-    <p class="evidence note-bar" id="recommendFlow" style="display:none; margin-bottom:1.3rem;"></p>
-
-
-
-    <button type="button" class="primary sheet-done">이 방식으로 선택</button>
+    <button type="button" class="primary sheet-done">확인</button>
     </div><!-- /.correct-left -->
 
     <div class="correct-right">
@@ -3704,8 +3879,6 @@
     </div>
 
     <div class="stack-box">
-      <button class="primary stack-apply" id="applyStepBtn">＋ 이 보정 적용하고 방식 더 얹기</button>
-      <p class="stack-empty" id="stackEmpty">적용하면 이 결과 위에 다른 방식을 겹쳐 쓸 수 있어요. 예: 배경을 흐린 뒤 간판까지 덮기</p>
       <ol class="stack-list" id="stackList"></ol>
     </div>
 
@@ -3715,16 +3888,18 @@
     <!-- 폰 전용: 지금 고른 보정 방식을 한 줄로 보여주고, 누르면 방식 시트가 올라온다.
          방식 여섯을 세로로 세우면 보정 화면이 1060px이 돼서 한 화면 기준(844px)을 깬다. -->
     <button type="button" class="method-row" id="methodRow" aria-haspopup="dialog" aria-expanded="false">
-      <span class="method-row-label">보정 방식</span>
-      <span class="method-row-value" id="methodRowValue">배경 흐림</span>
+      <span class="method-row-label">보정 내용</span>
+      <span class="method-row-value" id="methodRowValue">자동 보정</span>
       <span class="method-row-go" aria-hidden="true">›</span>
     </button>
+    <!-- 단계 스위치는 단추 밖에 둔다 — 단추 안에 스위치를 넣으면 누르는 곳이 겹친다 -->
+    <ul class="method-row-list is-gone" id="methodRowList" aria-label="자동 보정 단계"></ul>
     <div class="sheet-backdrop" id="sheetBackdrop"></div>
 
     <!-- 이미 상자였으므로 감싸지 않고 클래스만 얹는다. 폰에서 화면 아래에
          고정되고, 데스크톱에서는 .correct-actions 그대로다. -->
     <div class="correct-actions app-actionbar">
-    <button class="primary" id="goVerifyBtn">이 방식으로 보정 완료 → 검증하기</button>
+    <button class="primary" id="goVerifyBtn">보정 완료 → 검증하기</button>
     <button class="secondary" id="backToResultBtn">진단 결과로 돌아가기</button>
     </div><!-- /.correct-actions -->
   </div>
@@ -4014,6 +4189,13 @@
   </div>
 </section>
 
+<!-- 폰 전용: 알아보기 탭을 길게 내리지 않고 한 쪽씩 넘긴다(사용자 요청, 10-27). 데스크톱에서는 CSS가 숨긴다. -->
+<nav class="app-pager" id="appPager" data-tab-of="알아보기" aria-label="알아보기 쪽 넘기기">
+  <button type="button" class="app-pager-btn" id="pagerPrev" aria-label="이전 쪽">‹</button>
+  <span class="app-pager-dots" id="pagerDots" aria-hidden="true"></span>
+  <span class="app-pager-num" id="pagerNum" aria-live="polite"></span>
+  <button type="button" class="app-pager-btn" id="pagerNext" aria-label="다음 쪽">›</button>
+</nav>
 <div class="app-bar app-bar--tab" data-tab-of="문답" aria-hidden="true"><span class="app-bar-title">문답</span></div>
 <section class="site-section pinned-section" id="faq" data-tab-of="문답">
   <div class="pin-track" data-pin="5" data-pin-accumulate="1">
@@ -6517,24 +6699,115 @@
       });
     }
 
-    async function runFluxBackgroundReplace(imgUrl, riskResult, ocrResult) {
-      var img = await loadImage(imgUrl);
-      // 마스킹 없이 원본 그대로 전송 (이 메서드에 한해 기획서에 명시된 의도된 예외)
-      var canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      var base64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+    // ===== 배경 교체 — 사람은 마스크로 막고 배경만 다시 그린다 =====
+    // 예전에는 kontext로 사진 전체를 다시 그리고 "사람은 건드리지 마"라고 부탁한 뒤, 인물 분리로 원본 사람을 덮어씌웠다.
+    // 두 번 실패했다: ① 누운 사진에서 인물 분리가 다리를 놓치자 AI가 그린 청바지가 남았다(팀 제보 "지 맘대로 옷도바꾸고"),
+    // ② kontext가 사람도 살짝 다른 자리·모양으로 다시 그려서, 원본을 덮어씌우면 AI가 그린 사람과 겹쳐 머리·어깨 둘레에
+    // 이중 테두리와 뿌연 테가 생겼다(팀 테스트 10-27, 세 사람 야경 사진: "부자연스럽고 인물의 테두리가 이상해").
+    // 부탁이 아니라 차단으로 바꾼다 — 흰색 = 사람 바깥(다시 그림), 검정 = 사람(보존). 사람을 다시 그리지 않으니 겹칠 것이 없다.
+    //
+    // 사람 마스크는 getFullPersonMask(손·팔·다리까지)를 쓴다 — 2분류 마스크는 몸에서 떨어진 손·팔을 배경으로 봐서
+    // 그 자리가 «다시 그릴 곳»이 된다. 경계는 1~2픽셀 흔들리므로 사람 쪽을 넓혀서 막는다(과소 보호보다 과다 보호).
+    // 얼굴·손은 인물 분리가 놓쳐도 지키도록 마지막에 상자로 한 번 더 검게 덮는다(옷 마스크와 같은 순서).
+    function buildBackgroundMask(faceBoxes, imgW, imgH, personMask, handBoxes) {
+      var c = document.createElement('canvas');
+      c.width = imgW; c.height = imgH;
+      var x = c.getContext('2d');
+      x.fillStyle = '#ffffff';
+      x.fillRect(0, 0, imgW, imgH);
 
-      var payload = {
-        imageBase64: base64, mediaType: 'image/jpeg',
+      var person = null; // 원래 크기 인물 분리 알파 — 얼굴·손이 이 사람의 것인지 가르는 데도 쓴다
+      if (personMask) {
+        var grow = Math.max(3, Math.round(Math.min(imgW, imgH) * 0.012));
+        var p = document.createElement('canvas');
+        p.width = imgW; p.height = imgH;
+        var px = p.getContext('2d');
+        px.drawImage(personMask, 0, 0, imgW, imgH);
+        person = px.getImageData(0, 0, imgW, imgH).data;
+        for (var dy = -grow; dy <= grow; dy += Math.max(1, Math.floor(grow / 3))) {
+          for (var dx = -grow; dx <= grow; dx += Math.max(1, Math.floor(grow / 3))) {
+            if (dx * dx + dy * dy > grow * grow) continue;
+            px.drawImage(personMask, dx, dy, imgW, imgH);
+          }
+        }
+        px.drawImage(personMask, 0, 0, imgW, imgH);
+        // 알파가 조금이라도 있는 자리(경계의 반투명 픽셀)는 전부 사람으로 친다
+        var pd = px.getImageData(0, 0, imgW, imgH);
+        var md = x.getImageData(0, 0, imgW, imgH);
+        for (var i = 0; i < pd.data.length; i += 4) {
+          if (pd.data[i + 3] > 0) { md.data[i] = md.data[i + 1] = md.data[i + 2] = 0; }
+        }
+        x.putImageData(md, 0, 0);
+      }
+
+      // 상자는 바깥쪽 정수 픽셀로 맞춰 칠한다. 소수점 좌표 그대로 칠하면 가장자리가 반투명 회색이 되어
+      // 손 상자 테두리 2픽셀이 «다시 그릴 곳»으로 열렸다(실측: 태권도복 사진).
+      function blackOut(b) {
+        var ax = Math.floor(b.x), ay = Math.floor(b.y);
+        x.fillRect(ax, ay, Math.ceil(b.x + b.width) - ax, Math.ceil(b.y + b.height) - ay);
+      }
+      // 인물 분리가 잡은 사람과 겹치는 얼굴·손만 막는다. 머리 둘레는 인물 분리가 이미 막고 있어서, 얼굴 상자는
+      // 인물 분리가 얼굴을 놓쳤을 때의 받침일 뿐이다 — 그래서 여백 없이 딱 맞게 덮는다. 옷 마스크처럼 넉넉히
+      // 넓혔더니 그 네모에 걸린 «햇살언…» 간판이 원본 그대로 남았고, 배경 포스터 속 얼굴까지 네모로 보존됐다
+      // (마스크를 얹어 눈으로 확인 — test/background-mask.js).
+      function onPerson(b) {
+        if (!person) return true;
+        var n = 0, on = 0;
+        for (var yy = Math.max(0, Math.floor(b.y)); yy < Math.min(imgH, Math.ceil(b.y + b.height)); yy += 2) {
+          for (var xx = Math.max(0, Math.floor(b.x)); xx < Math.min(imgW, Math.ceil(b.x + b.width)); xx += 2) {
+            n++;
+            if (person[(yy * imgW + xx) * 4 + 3] > 128) on++;
+          }
+        }
+        return n > 0 && on / n >= 0.15;
+      }
+      x.fillStyle = '#000000';
+      (faceBoxes || []).filter(onPerson).forEach(blackOut);
+      (handBoxes || []).filter(onPerson).forEach(blackOut);
+      return c;
+    }
+
+    async function runBackgroundFill(img, faces, riskResult, ocrResult) {
+      var ow = img.naturalWidth, oh = img.naturalHeight;
+      // 사람을 못 찾으면 막을 것이 없다 — 보내지 않고 멈춘다. 부탁 방식(kontext)으로 되돌아가지 않는다.
+      var personMask = await getFullPersonMask(img, imageCacheKey('bg', img.src));
+      if (!personMask) {
+        var e = new Error('사진에서 사람을 찾지 못했어요.');
+        e.noPerson = true;
+        throw e;
+      }
+      var send = falSendSize(ow, oh, BG_FAL_MAX_SIDE);
+      var sw = send.w, sh = send.h;
+      var ic = document.createElement('canvas');
+      ic.width = sw; ic.height = sh;
+      ic.getContext('2d').drawImage(img, 0, 0, sw, sh);
+
+      var scale = function (b) { return { x: b.x * sw / ow, y: b.y * sh / oh, width: b.width * sw / ow, height: b.height * sh / oh }; };
+      var scaledFaces = (faces || []).map(function (f) { return scale(f.box); });
+      var handBoxes = (await detectHandBoxes(img)).map(scale);
+      var mask = buildBackgroundMask(scaledFaces, sw, sh, personMask, handBoxes);
+
+      // 마스크 안쪽(옛 배경)을 회색으로 지워 보낸다. 옷 교체에서 지우지 않고 보냈더니 FLUX가 원본 구조를 베껴
+      // 헌 옷 조각이 새 옷에 섞였다(A/B 실측). 배경에서 베끼면 안 되는 것은 간판이다 — 같은 이유로 지운다.
+      // (배경에서는 아직 A/B로 재보지 않았다. 결과가 원본 배경과 너무 동떨어지면 이 줄부터 의심할 것.)
+      var data = await postJson(FLUX_BACKEND_URL, {
+        imageBase64: blankInsideMask(ic, mask, sw, sh).toDataURL('image/jpeg', 0.92).split(',')[1],
+        // 지우지 않은 같은 크기 사진 — 서버에서 Claude가 실내/실외·계절·조명을 보고 새 배경을 정하는 데만 쓴다.
+        // 회색으로 지운 사진만 보면 어떤 장소였는지 알 수 없다.
+        contextImageBase64: ic.toDataURL('image/jpeg', 0.85).split(',')[1],
+        maskBase64: mask.toDataURL('image/png').split(',')[1],
+        mediaType: 'image/jpeg',
         texts: (ocrResult && ocrResult.words || []).map(function (w) {
           return { content: w.text, type: w.type || '', position: w.position || pctToPositionLabel(w.xPct, w.yPct) };
         }),
         grade: riskResult && riskResult.grade, locationEvidence: riskResult && riskResult.locationEvidence,
-      };
-      var data = await postJson(FLUX_BACKEND_URL, payload);
-      console.log('[AI배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 비용 약 $' + data.estimatedCostUsd, data);
-      return data;
+      });
+      var outImg = await loadImage(falImageDataUrl(data));
+      var out = compositeThroughMask(img, outImg, mask, ow, oh);
+      console.log('[배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
+        + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (배경 자리에만 합성, 얼굴 ' + scaledFaces.length
+        + '개·손 ' + handBoxes.length + '개 보존)', data);
+      return { canvas: out, data: data };
     }
 
     // ===== 간판 글자를 AI로 더 자연스럽게 바꿔 쓰기 (nano-banana, "자연스럽게 덮기" 업그레이드) =====
@@ -6746,24 +7019,35 @@
     // 띠 안에서 옷인 픽셀의 중앙값 색. 평균이 아니라 중앙값이라 작은 로고·무늬·그림자에 안 끌린다.
     // 띠가 사진 밖으로 나가면 null — 실측(학교 간판 사진): 가슴 아래가 잘린 사진에서 하의 띠가 사진 맨 아래의
     // 그림자 몇 줄만 걸쳐 「하의 검정」이라고 지어냈다. 띠 넓이의 15%도 옷이 아니면 마찬가지로 근거가 없다.
-    function medianClothesColor(pix, md, w, h, band) {
+    //
+    // notLike(선택): 이 색과 비슷한 픽셀은 빼고 남은 것으로 정한다 — 하의 띠에서 상의 색을 뺄 때 쓴다. 하의 띠는 어깨에서
+    // 얼굴 높이의 2.4~3.6배라는 고정 비율인데, 긴 패딩·코트는 그 띠의 위쪽 절반까지 내려와서 중앙값이 상의 색이 됐다
+    // (팀 테스트 보고서 1쪽 위: 검은 패딩 + 베이지 바지 → «하의 black» → 프롬프트가 검은 바지를 지시). 빼고 남은 것이
+    // 띠 안 옷의 25%도 안 되면 상하의가 같은 색(원피스·단색 체육복)으로 보고 전체 중앙값을 쓴다.
+    function medianClothesColor(pix, md, w, h, band, notLike) {
       if (band.y1 > h || band.y0 < 0) return null;
       var x0 = Math.max(0, Math.floor(band.x0)), x1 = Math.min(w, Math.ceil(band.x1));
       var y0 = Math.max(0, Math.floor(band.y0)), y1 = Math.min(h, Math.ceil(band.y1));
       var area = Math.max(1, (x1 - x0) * (y1 - y0));
       var hist = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)], n = 0;
+      var histO = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)], nO = 0;
       for (var y = y0; y < y1; y++) {
         for (var x = x0; x < x1; x++) {
           var i = (y * w + x) * 4;
           if (md[i + 3] <= 128) continue;
           hist[0][pix[i]]++; hist[1][pix[i + 1]]++; hist[2][pix[i + 2]]++; n++;
+          if (notLike && Math.abs(pix[i] - notLike[0]) + Math.abs(pix[i + 1] - notLike[1]) + Math.abs(pix[i + 2] - notLike[2]) > 60) {
+            histO[0][pix[i]]++; histO[1][pix[i + 1]]++; histO[2][pix[i + 2]]++; nO++;
+          }
         }
       }
       if (n < 25 || n < area * 0.15) return null; // 옷이 거의 없다 — 색을 말할 근거가 없다
+      var useH = notLike && nO >= 25 && nO >= n * 0.25 ? histO : hist;
+      var useN = useH === histO ? nO : n;
       var rgb = [];
       for (var c = 0; c < 3; c++) {
         var acc = 0, v = 0;
-        for (; v < 255; v++) { acc += hist[c][v]; if (acc >= n / 2) break; }
+        for (; v < 255; v++) { acc += useH[c][v]; if (acc >= useN / 2) break; }
         rgb.push(v);
       }
       return rgb;
@@ -6820,9 +7104,11 @@
       placed.forEach(function (q) {
         var top = medianClothesColor(pix, md, w, h, { x0: q.cx - q.fw * 0.95, x1: q.cx + q.fw * 0.95, y0: q.shoulder + q.fh * 0.25, y1: q.shoulder + q.fh * 1.5 });
         if (!top) { unread++; return; }
-        var bottom = medianClothesColor(pix, md, w, h, { x0: q.cx - q.fw * 0.75, x1: q.cx + q.fw * 0.75, y0: q.shoulder + q.fh * 2.4, y1: q.shoulder + q.fh * 3.6 });
+        var bottom = medianClothesColor(pix, md, w, h, { x0: q.cx - q.fw * 0.75, x1: q.cx + q.fw * 0.75, y0: q.shoulder + q.fh * 2.4, y1: q.shoulder + q.fh * 3.6 }, top);
         people.push({ rank: people.length, x: q.cx / w, top: nameColor(top), bottom: bottom ? nameColor(bottom) : null,
-          bottomKind: classifyBottom(md, sd, w, h, q), bottomInfo: q.bottomInfo });
+          bottomKind: classifyBottom(md, sd, w, h, q), bottomInfo: q.bottomInfo,
+          // 하의 띠가 사진 밖에서 시작하면 이 사진에는 하의가 없다(허리 위까지만 찍힘). 하의 칸이 «비었다»(옷이 없는 띠)와는 다르다.
+          noBottom: q.shoulder + q.fh * 2.4 >= h });
       });
       if (!people.length) return null;
       var total = 0, inside = 0;
@@ -6843,7 +7129,15 @@
     // 사람이 여럿이면 왼쪽부터 순서를 붙여 말한다 — 모델이 위치 표현은 이 정도까지만 따른다.
     var PERSON_ORDER_EN = ['first', 'second', 'third', 'fourth'];
     var BOTTOM_WORD = { skirt: 'skirt', shorts: 'shorts', trousers: 'trousers' };
-    function outfitColorPhrase(p, crew) {
+    // shift: 읽은 색 그대로가 아니라 «같은 계열의 살짝 다르고 차분한 톤»으로 말한다(«옷 전체 바꾸기»의 기본).
+    // 사용자 요청 "옷색은 너무 극단적으로 바뀌지만 않았으면 좋겠어" — 정확히 같은 색이면 기관 색으로 알아볼 여지가 남고,
+    // 아주 다른 색이면 사진이 어색해진다. 부정문·«original»은 쓰지 않는다(적으면 그 물체를 불러온다 — outfit-colors.js).
+    function outfitColorPhrase(p, crew, shift) {
+      if (shift) {
+        var near = function (c) { return 'in a slightly different, more muted shade close to ' + c; };
+        return 'a plain cotton' + (crew ? ' crew-neck' : '') + ' top ' + near(p.top.en)
+          + (p.bottom ? ' and plain ' + (BOTTOM_WORD[p.bottomKind] || 'bottoms') + ' ' + near(p.bottom.en) : '');
+      }
       return 'a plain solid ' + p.top.en + (crew ? ' crew-neck' : '') + ' top' + (p.bottom ? ' and plain solid ' + p.bottom.en + ' ' + (BOTTOM_WORD[p.bottomKind] || 'bottoms') : '');
     }
     function outfitColorsKo(colors) {
@@ -6861,10 +7155,15 @@
     // «Loose, straight, boxy fit with a flat front … worn by a young child»로 바꾸고 chest·folds를 뺐더니 같은
     // 시드 2개 모두 가슴이 납작하고 상자형으로 나왔다(문구만 바꾼 A/B, 2026-10-04). 포켓 문장의 «on the chest»는
     // 포켓을 고른 경우에만 들어가는 자리 지정이라 그대로 둔다.
+    //
+    // «worn by a young child»는 같은 날 뺐다. 라이브에서 햇살어린이집 사진(정답표 사진6)의 새 옷 한가운데에 갈색 상의·바지를 입은
+    // 작은 아이가 통째로 그려졌다(그때는 입간판 아랫부분도 구멍이었다). 같은 사진에 옛 문구를 간판 없는 마스크로 2번 돌렸을 때는
+    // 재현되지 않아서 원인이 문구인지 구멍 모양인지 시드인지는 못 가렸다. 사람 낱말은 모델이 사람을 그릴 빌미라 뺐고, 뺀 뒤 3번
+    // 모두 안 나왔다. 위 A/B 크롭은 구멍이 사진 가장자리에 걸려 그릴 자리가 없어서 이런 실패를 못 봤다.
     function outfitClosing(emblemMode) {
       return 'Loose, straight, boxy fit with a flat front'
         + (emblemMode === 'pocket' ? ', with ' + EMBLEM_MODES.pocket : '')
-        + ', worn by a young child, lighting and shadows matching the rest of the photograph, photorealistic photograph.';
+        + ', lighting and shadows matching the rest of the photograph, photorealistic photograph.';
     }
 
     // 색 이름만 남긴다: "warm taupe brown (#A38B72)" → "warm taupe brown", "solid dark chocolate brown (#483018)" → "dark chocolate brown".
@@ -6887,9 +7186,9 @@
       if (cw.keepColors && colors && colors.length) {
         var others = colors.missing > 0;
         var who = colors.length === 1 && !others
-          ? 'A ' + outfitColorPhrase(colors[0], true).replace(/^a /, '')
-          : 'Each person keeps their own colors, every top a plain cotton crew-neck: ' + colors.map(function (p) {
-              return 'the ' + (PERSON_ORDER_EN[p.rank] || 'next') + ' person from the left wears ' + outfitColorPhrase(p);
+          ? 'A ' + outfitColorPhrase(colors[0], true, true).replace(/^a /, '')
+          : 'Each person wears colors close to their own, every top a plain cotton crew-neck: ' + colors.map(function (p) {
+              return 'the ' + (PERSON_ORDER_EN[p.rank] || 'next') + ' person from the left wears ' + outfitColorPhrase(p, false, true);
             }).join('; ') + (others ? '; everyone else wears plain solid muted cotton clothes' : '');
         return who + '. ' + outfitClosing(emblemMode);
       }
@@ -6908,6 +7207,11 @@
       var kinds = (colors || []).map(function (p) { return p.bottomKind; });
       var known = kinds.length > 0 && kinds.every(Boolean) && !(colors.missing > 0);
       var same = known && kinds.every(function (k) { return k === kinds[0]; });
+      // 모두 허리 위까지만 찍혔으면 하의를 적지 않는다. 적으면 구멍(몸통뿐)의 아래쪽에 바지를 그린다 — 사진6을 같은 마스크·같은
+      // 시드로 돌렸을 때 하의 색(진갈색)이 몸통 아래 띠와 소매 한쪽에 나왔고(2번 중 2번), 하의를 뺀 문구는 3번 모두 안 나왔다.
+      if (colors && colors.length && !(colors.missing > 0) && colors.every(function (p) { return p.noBottom; })) {
+        return 'A plain solid ' + topName + ' cotton crew-neck top. ' + outfitClosing(emblemMode);
+      }
       if (known && !same) {
         // 사람마다 하의가 다르면(치마/반바지) 왼쪽부터 말한다
         return 'Each person wears a plain solid ' + topName + ' cotton crew-neck top: ' + colors.map(function (p) {
@@ -6923,7 +7227,7 @@
       var emblem = EMBLEM_MODE_KO[emblemMode] || EMBLEM_MODE_KO.pocket;
       if (emblemMode === 'all') {
         return cw.keepColors
-          ? '색은 그대로 두고 깃·여밈을 교복이 아닌 모양으로 바꿨어요'
+          ? '옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꿨어요'
           : '옷을 «' + cw.label + '» 색상의 다른 옷으로 바꿨어요';
       }
       if (cw.keepColors) {
@@ -6942,11 +7246,15 @@
     // 매겨져서 $0.60까지 간다(실측 기준 1.8MP면 $0.09).
     // 진단에 쓰는 상한(VISION_MAX_SIDE)과 같은 값으로 맞춰 둔다.
     var FAL_MAX_SIDE = 1568;
-    // 옷 교체에서 마스크 안 원본을 회색으로 지워 보낼지(아래 blankInsideMask). A/B로 정한 기본값.
+    // 옷 교체에서 마스크 안 원본을 지워 보낼지. A/B로 정한 기본값.
     // A/B(같은 시드 5장)에서 켠 쪽이 헌 옷 조각(흰 소매·허리띠·블레이저 테두리)이 새 옷에 섞이는 일이 눈에 띄게 줄었다.
+    // 지우는 방식은 2026-10-27에 회색(blankInsideMask)에서 옷끼리만 흐린 원본(blurInsideMask)으로 바꿨다 — 아래 설명.
     var OUTFIT_BLANK_INSIDE_MASK = true;
-    function falSendSize(ow, oh) {
-      var k = Math.min(1, FAL_MAX_SIDE / Math.max(ow, oh));
+    // 배경 교체는 더 작게 보낸다. AI 결과는 배경 자리에만 붙고 사람은 원본 해상도 그대로라 배경이 조금
+    // 덜 선명해도 티가 덜 난다. 1024×768이면 $0.039로 예전 kontext($0.04)와 같은 값이다(1568이면 $0.093).
+    var BG_FAL_MAX_SIDE = 1024;
+    function falSendSize(ow, oh, maxSide) {
+      var k = Math.min(1, (maxSide || FAL_MAX_SIDE) / Math.max(ow, oh));
       return { w: roundUpTo32(Math.round(ow * k)), h: roundUpTo32(Math.round(oh * k)) };
     }
 
@@ -6997,6 +7305,48 @@
     // 그대로 물려받는 것으로 보인다(A/B 실측: 흰 셔츠·리본·멜빵·허리띠·흰 소매가 «새 옷» 안에 그대로 남아 헌 옷과 새 옷이
     // 섞인 옷이 나왔다). 회색으로 지우면 그 구조를 베낄 수 없다. 얼굴·손은 마스크에서 이미 빠져 있어 그대로 남는다.
     // 가장자리는 maskToAlpha가 살짝 흐려서 경계에 회색 테두리가 남지 않는다.
+    // 옷 교체용: 마스크 안쪽을 회색이 아니라 «옷끼리만 강하게 흐린 원본»으로 채운다.
+    // 회색으로 지웠더니 패딩+바지가 목 아래를 다 덮은 아이에서 AI가 회색 사람 모양만 보고 체형·자세·신발까지 새로
+    // 지어냈다(팀 테스트 보고서 «옷.배경교체 결과보고서.pdf» 1쪽 위). 흐린 원본은 몸 윤곽과 대표 색은 남기고 마크·배색은
+    // 지운다. 세기는 짧은 변의 3.5% — 1%·2%·3.5%를 사진 세 장에 얹어 눈으로 골랐다(2%에서는 태권도복의 빨간 V 칼라·
+    // 검은 띠가 색 띠로 남아, 회색으로 지우게 된 원인인 «헌 옷 조각 섞임»이 되살아날 수 있었다).
+    // 옷 바깥(배경·살)이 옷 자리로 번지지 않게 옷 픽셀만 남긴 층을 흐린다 — 캔버스는 알파를 곱한 채로 흐리므로
+    // 투명한 바깥은 색을 보태지 않고, 다시 읽으면 옷 색끼리만 섞인 값이 나온다.
+    var OUTFIT_BLUR_RATIO = 0.035;
+    function blurInsideMask(ic, mask, sw, sh) {
+      var r = Math.max(2, Math.round(Math.min(sw, sh) * OUTFIT_BLUR_RATIO));
+      var alpha = maskToAlpha(mask, sw, sh);
+      var layer = document.createElement('canvas');
+      layer.width = sw; layer.height = sh;
+      var lx = layer.getContext('2d');
+      lx.drawImage(ic, 0, 0);
+      lx.globalCompositeOperation = 'destination-in';
+      lx.drawImage(alpha, 0, 0);
+      var bl = document.createElement('canvas');
+      bl.width = sw; bl.height = sh;
+      var bx = bl.getContext('2d');
+      bx.filter = 'blur(' + r + 'px)';
+      bx.drawImage(layer, 0, 0);
+      bx.filter = 'none';
+      var bd = bx.getImageData(0, 0, sw, sh).data;
+      // 알파를 꽉 채워 둔다 — 아래에서 마스크 알파(가장자리 살짝 흐림)로 원본 위에 얹는다
+      var filled = bx.createImageData(sw, sh);
+      for (var i = 0; i < bd.length; i += 4) {
+        if (bd[i + 3] < 8) { filled.data[i] = filled.data[i + 1] = filled.data[i + 2] = 128; }
+        else { filled.data[i] = bd[i]; filled.data[i + 1] = bd[i + 1]; filled.data[i + 2] = bd[i + 2]; }
+        filled.data[i + 3] = 255;
+      }
+      bx.putImageData(filled, 0, 0);
+      bx.globalCompositeOperation = 'destination-in';
+      bx.drawImage(alpha, 0, 0);
+      var out = document.createElement('canvas');
+      out.width = sw; out.height = sh;
+      var ox = out.getContext('2d');
+      ox.drawImage(ic, 0, 0);
+      ox.drawImage(bl, 0, 0);
+      return out;
+    }
+
     function blankInsideMask(ic, mask, sw, sh) {
       var out = document.createElement('canvas');
       out.width = sw; out.height = sh;
@@ -7048,7 +7398,7 @@
           width: hb.width * sw / ow, height: hb.height * sh / oh,
         };
       });
-      var clothesMask = await getClothesMask(img, imageCacheKey('outfit-strict', img.src), true, faces);
+      var clothesMask = await getClothesMask(img, imageCacheKey('outfit-strict', img.src), true, faces, personMask);
       var mask = buildClothingMask(scaledFaces, sw, sh, personMask, handBoxes, clothesMask);
       console.log('[옷교체] 마스크 — ' + (clothesMask ? '옷 분할 사용' : (personMask ? '인물 분리 + 네모' : '네모만'))
         + ', 손 ' + handBoxes.length + '개 제외');
@@ -7061,7 +7411,7 @@
 
       var blank = opts && opts.blank != null ? !!opts.blank : OUTFIT_BLANK_INSIDE_MASK;
       var data = await postJson(INPAINT_BACKEND_URL, {
-        imageBase64: (blank ? blankInsideMask(ic, mask, sw, sh) : ic).toDataURL('image/png').split(',')[1],
+        imageBase64: (blank ? blurInsideMask(ic, mask, sw, sh) : ic).toDataURL('image/png').split(',')[1],
         maskBase64: mask.toDataURL('image/png').split(',')[1],
         mediaType: 'image/png',
         // 프롬프트를 직접 지정한다 — 서버는 마스크가 '글자'인지 '옷'인지 모른다.
@@ -7112,6 +7462,41 @@
       if (k === 0) { r = c; g = x; b = 0; } else if (k === 1) { r = x; g = c; b = 0; } else if (k === 2) { r = 0; g = c; b = x; }
       else if (k === 3) { r = 0; g = x; b = c; } else if (k === 4) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
       return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+    }
+
+    // ===== 옷 색 «자동» =====
+    // 사진 속 옷 색(describeOutfitColors가 이미 읽는다)과 **색상이 가장 먼** 조합을 고른다.
+    // 색 변경은 밝기를 그대로 두고 색조만 옮기므로, 밝기(L)는 빼고 CIELAB의 a·b(색상·채도)로만 잰다.
+    // 사람이 여럿이면 모두에게서 먼 쪽을 고른다(가장 가까운 사람과의 거리가 큰 조합). 읽지 못하면 null.
+    function chooseColorwayAgainst(read) {
+      if (!read || !read.length) return null;
+      var KEYS = ['brown', 'navy', 'gray', 'green'], best = null;
+      KEYS.forEach(function (k) {
+        var n = parseInt(COLORWAYS[k].hex.slice(1), 16);
+        var t = rgbToLab(n >> 16 & 255, n >> 8 & 255, n & 255);
+        var dist = Infinity;
+        read.forEach(function (p) {
+          var m = parseInt(p.top.hex.slice(1), 16);
+          var o = rgbToLab(m >> 16 & 255, m >> 8 & 255, m & 255);
+          dist = Math.min(dist, Math.sqrt((t[1] - o[1]) * (t[1] - o[1]) + (t[2] - o[2]) * (t[2] - o[2])));
+        });
+        if (!best || dist > best.dist) best = { key: k, dist: dist };
+      });
+      return best;
+    }
+    async function pickAutoColorway(img, faces) {
+      var fallback = { key: 'brown', read: null };
+      try {
+        var clothes = await getClothesMask(img, imageCacheKey('recolor-strict', img.src), true);
+        var read = describeOutfitColors(img, faces, clothes);
+        var best = chooseColorwayAgainst(read);
+        if (!best) return fallback;
+        console.log('[옷색 자동] 원래 옷 ' + outfitColorsKo(read) + ' → ' + COLORWAYS[best.key].label + ' (색상 차이 ' + best.dist.toFixed(1) + ')');
+        return { key: best.key, read: read };
+      } catch (e) {
+        console.warn('[옷색 자동] 옷 색 읽기 실패 — 기본 색으로 진행:', e.message);
+        return fallback;
+      }
     }
 
     async function runOutfitRecolor(img, targetHex) {
@@ -7188,7 +7573,8 @@
     }
 
     // 흰색 = 새로 그릴 자리. 얼굴·손은 마지막에 검게 덮는다(옷 마스크와 같은 순서).
-    function buildEmblemMask(faceBoxes, imgW, imgH, clothesMask, handBoxes) {
+    // heightRatio(선택): 띠 높이를 바꾼다(기본 EMBLEM_BAND.heightRatio). 로고 자리를 «찾는» 범위로 쓸 때 더 길게 준다.
+    function buildEmblemMask(faceBoxes, imgW, imgH, clothesMask, handBoxes, heightRatio) {
       var c = document.createElement('canvas');
       c.width = imgW; c.height = imgH;
       var x = c.getContext('2d');
@@ -7214,7 +7600,7 @@
         if (shoulder < 0) return;
         var bx0 = Math.max(0, Math.round(cx - f.width * EMBLEM_BAND.widthRatio));
         var bx1 = Math.min(imgW, Math.round(cx + f.width * EMBLEM_BAND.widthRatio));
-        var by1 = Math.min(imgH, shoulder + Math.round(f.height * EMBLEM_BAND.heightRatio));
+        var by1 = Math.min(imgH, shoulder + Math.round(f.height * (heightRatio || EMBLEM_BAND.heightRatio)));
         if (bx1 > bx0 && by1 > shoulder) bx.fillRect(bx0, shoulder, bx1 - bx0, by1 - shoulder);
       });
       // 옷이 아닌 곳(맨살·배경·머리)은 빼낸다
@@ -7241,6 +7627,220 @@
     // 그린다. 천 색·질감은 여전히 주변에 맞춰야 이음선이 안 생긴다.
     var EMBLEM_POCKET_PROMPT = 'a small plain patch pocket on the chest with a smooth flat surface, in exactly the same '
       + 'fabric colour and texture as the surrounding garment, natural folds matching the pose, photorealistic photograph';
+
+    // ===== 로고·이름표 자리 찾기 («로고 지우기»가 가슴 띠 전체 대신 그 자리만 열도록) =====
+    // 예전 «로고 지우기»는 로고를 찾지 않고 «어깨선부터 얼굴 높이 1.4배 = 가슴»이라는 띠를 통째로 열었다. 띠에 칼라 여밈·단추·
+    // 소매 테두리까지 들어가 옷이 조금씩 바뀌었고, 원본을 그대로 보내서 AI가 이름표를 보고 글자 무늬가 있는 새 명찰을 그렸다
+    // (팀 테스트 10-27 교복 사진: "로고를 지우긴했는데 왜자꾸 옷도 조금 바뀌고 이상한걸 추가하는지 모르겟어").
+    //
+    // 찾는 법(브라우저 안, 비용 0): 옷 분할 안에서 «주변 천 대표색과 많이 다르고 + 테두리가 날카로운» 픽셀을 모아 덩어리로 묶는다.
+    // 세 번 재서 정했다(docs/실험/logo-find.js, 교복·태권도복·원복 사진):
+    //   색만 보면 남색 천의 빛 반사가 크게 잡혔다 → 날카로움(밝기 − 5×5 평균)을 더했다 → 옷 외곽 가는 선이 엠블럼과 이어져
+    //   한 덩어리가 됐다 → 가는 선을 걷어냈다(열림). 그 뒤 엠블럼·이름표·패치·소매 글자를 모두 찾았다.
+    // 잘못 잡는 것은 칼라 단추·소매 테두리·옷 경계였다 — 그래서 가슴 띠 안에 있고 얼굴 중심에서 얼굴 폭 1배 안쪽인 덩어리만 쓴다
+    // (교복 사진에서 소매 테두리 중심은 얼굴 폭 1.2배, 엠블럼 0.57배, 단추 0.1배 떨어져 있었다).
+    var EMBLEM_LOGO_SEARCH_RATIO = 1.9; // 로고를 «찾는» 띠 높이(어깨선에서 얼굴 높이의 몇 배) — runEmblemRemoval 설명
+    function findLogoRects(ic, sw, sh, clothesMask, bandMask, faceBoxes) {
+      var k = Math.min(1, 1024 / Math.max(sw, sh));
+      var w = Math.max(1, Math.round(sw * k)), h = Math.max(1, Math.round(sh * k)), area = w * h;
+      function grab(src) {
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var x = c.getContext('2d'); x.drawImage(src, 0, 0, w, h);
+        return x.getImageData(0, 0, w, h).data;
+      }
+      var px = grab(ic), cd = grab(clothesMask), bd = grab(bandMask);
+      var isC = new Uint8Array(area), i, x, y;
+      for (i = 0; i < area; i++) isC[i] = cd[i * 4 + 3] > 128 ? 1 : 0;
+
+      // 1) 주변 천 색: 격자 칸마다 옷 픽셀 평균 → 반경 3칸 안 옷 픽셀 전체 평균(로고가 한 칸을 다 차지해도 천 색이 이긴다)
+      var cell = Math.max(8, Math.round(Math.min(w, h) / 40));
+      var gw = Math.ceil(w / cell), gh = Math.ceil(h / cell);
+      var sum = new Float64Array(gw * gh * 3), cnt = new Float64Array(gw * gh);
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        i = y * w + x; if (!isC[i]) continue;
+        var g0 = ((y / cell) | 0) * gw + ((x / cell) | 0);
+        sum[g0 * 3] += px[i * 4]; sum[g0 * 3 + 1] += px[i * 4 + 1]; sum[g0 * 3 + 2] += px[i * 4 + 2]; cnt[g0]++;
+      }
+      var ref = new Float64Array(gw * gh * 3), refOk = new Uint8Array(gw * gh);
+      for (var gy = 0; gy < gh; gy++) for (var gx = 0; gx < gw; gx++) {
+        var s0 = 0, s1 = 0, s2 = 0, n = 0;
+        for (var dy = -3; dy <= 3; dy++) for (var dx = -3; dx <= 3; dx++) {
+          var yy = gy + dy, xx = gx + dx; if (yy < 0 || xx < 0 || yy >= gh || xx >= gw) continue;
+          var g1 = yy * gw + xx; s0 += sum[g1 * 3]; s1 += sum[g1 * 3 + 1]; s2 += sum[g1 * 3 + 2]; n += cnt[g1];
+        }
+        var g = gy * gw + gx;
+        if (n > 0) { ref[g * 3] = s0 / n; ref[g * 3 + 1] = s1 / n; ref[g * 3 + 2] = s2 / n; refOk[g] = 1; }
+      }
+      // 2) 옷 경계에서 짧은 변의 1.2%만큼 안쪽만 본다(경계는 배경·살과 섞여 늘 «다르다»가 된다)
+      var ER = Math.max(2, Math.round(Math.min(w, h) * 0.012));
+      var inner = new Uint8Array(area);
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        if (!isC[y * w + x]) continue;
+        var ok = 1;
+        for (var ey = -ER; ey <= ER && ok; ey += ER) for (var ex = -ER; ex <= ER; ex += ER) {
+          var qy = y + ey, qx = x + ex;
+          if (qy < 0 || qx < 0 || qy >= h || qx >= w || !isC[qy * w + qx]) { ok = 0; break; }
+        }
+        inner[y * w + x] = ok;
+      }
+      // 3) 주변 천 색과 합 50 넘게 다르고, 날카로운(밝기 − 5×5 평균 > 14) 픽셀이 반경 4 안에 4개 이상
+      var lum = new Float32Array(area);
+      for (i = 0; i < area; i++) lum[i] = 0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2];
+      var sharpOn = new Uint8Array(area);
+      for (y = 2; y < h - 2; y++) for (x = 2; x < w - 2; x++) {
+        var s = 0;
+        for (var sy = -2; sy <= 2; sy++) for (var sx = -2; sx <= 2; sx++) s += lum[(y + sy) * w + x + sx];
+        if (Math.abs(lum[y * w + x] - s / 25) > 14) sharpOn[y * w + x] = 1;
+      }
+      var cand = new Uint8Array(area);
+      for (i = 0; i < area; i++) {
+        if (!inner[i]) continue;
+        x = i % w; y = (i / w) | 0;
+        var gi = ((y / cell) | 0) * gw + ((x / cell) | 0);
+        if (!refOk[gi]) continue;
+        var d = Math.abs(px[i * 4] - ref[gi * 3]) + Math.abs(px[i * 4 + 1] - ref[gi * 3 + 1]) + Math.abs(px[i * 4 + 2] - ref[gi * 3 + 2]);
+        if (d <= 50) continue;
+        var near = 0;
+        for (var ny = -4; ny <= 4; ny += 2) for (var nx = -4; nx <= 4; nx += 2) {
+          var py = y + ny, pxx = x + nx; if (py < 0 || pxx < 0 || py >= h || pxx >= w) continue;
+          near += sharpOn[py * w + pxx];
+        }
+        if (near >= 4) cand[i] = 1;
+      }
+      // 3.5) 가는 선을 걷어낸다(열림 반경 2: 깎았다가 되살림) — 옷 외곽·소매 테두리 선이 엠블럼과 이어지지 않게
+      var OR = 2, er = new Uint8Array(area), opened = new Uint8Array(area);
+      for (y = OR; y < h - OR; y++) for (x = OR; x < w - OR; x++) {
+        var all = 1;
+        for (var oy = -OR; oy <= OR && all; oy++) for (var ox = -OR; ox <= OR; ox++) if (!cand[(y + oy) * w + x + ox]) { all = 0; break; }
+        er[y * w + x] = all;
+      }
+      for (y = OR; y < h - OR; y++) for (x = OR; x < w - OR; x++) {
+        if (!er[y * w + x]) continue;
+        for (var ry = -OR; ry <= OR; ry++) for (var rx = -OR; rx <= OR; rx++) opened[(y + ry) * w + x + rx] = 1;
+      }
+      for (i = 0; i < area; i++) cand[i] = cand[i] && opened[i] ? 1 : 0;
+      // 4) 가까운 후보끼리 이어 붙여(팽창) 덩어리로 묶는다. 묶는 거리는 짧은 변의 0.3% — 0.8%로 묶었더니 로고와 칼라·
+      //    단추가 한 덩어리가 돼 큰 네모로 열렸고 태권도복 V 칼라가 통째로 지워졌다(보내는 사진을 가로채 눈으로 확인).
+      var DL = Math.max(1, Math.round(Math.min(w, h) * 0.003)), grown = new Uint8Array(area);
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+        if (!cand[y * w + x]) continue;
+        for (var gy2 = Math.max(0, y - DL); gy2 <= Math.min(h - 1, y + DL); gy2++)
+          for (var gx2 = Math.max(0, x - DL); gx2 <= Math.min(w - 1, x + DL); gx2++) grown[gy2 * w + gx2] = 1;
+      }
+      var lab = new Int32Array(area), stack = new Int32Array(area), rects = [];
+      var fs = (faceBoxes || []).map(function (f) { return { cx: (f.x + f.width / 2) * k, fw: f.width * k }; });
+      for (i = 0; i < area; i++) {
+        if (!grown[i] || lab[i]) continue;
+        var top = 0, id = rects.length + 1, b = { x0: w, y0: h, x1: 0, y1: 0, cand: 0, px: 0 };
+        stack[top++] = i; lab[i] = id;
+        while (top) {
+          var cur = stack[--top], cx = cur % w, cy = (cur / w) | 0;
+          b.px++;
+          if (cand[cur]) b.cand++;
+          if (cx < b.x0) b.x0 = cx; if (cx > b.x1) b.x1 = cx; if (cy < b.y0) b.y0 = cy; if (cy > b.y1) b.y1 = cy;
+          if (cx > 0 && grown[cur - 1] && !lab[cur - 1]) { lab[cur - 1] = id; stack[top++] = cur - 1; }
+          if (cx < w - 1 && grown[cur + 1] && !lab[cur + 1]) { lab[cur + 1] = id; stack[top++] = cur + 1; }
+          if (cur >= w && grown[cur - w] && !lab[cur - w]) { lab[cur - w] = id; stack[top++] = cur - w; }
+          if (cur < area - w && grown[cur + w] && !lab[cur + w]) { lab[cur + w] = id; stack[top++] = cur + w; }
+        }
+        rects.push(b);
+        var bcx = (b.x0 + b.x1) / 2, bcy = (b.y0 + b.y1) / 2;
+        var boxArea = (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1);
+        var inBand = bd[(Math.round(bcy) * w + Math.round(bcx)) * 4] > 128;
+        var face = null;
+        // 얼굴 중심에서 얼굴 폭의 0.7배 안쪽만. 앱 함수로 찍은 값(사진 4장): 로고·이름표 상자 중심 0.30~0.59배, 성인 교복 사진의
+        // 소매 끝 줄무늬 0.82배 — 1배로 두었더니 그 소매가 다시 그려졌다. 가슴 바깥 끝에 붙은 로고는 놓칠 수 있다(알려진 한계).
+        // («옷 비율»로 가르려 했지만 소매 쪽도 상자의 97%가 옷이라 갈리지 않았다.)
+        fs.forEach(function (f) { if (Math.abs(bcx - f.cx) <= f.fw * 0.7 && (!face || Math.abs(bcx - f.cx) < Math.abs(bcx - face.cx))) face = f; });
+        // 모양으로 로고와 옷 디자인을 가른다. 로고·이름표는 꽉 찬 덩어리(동그라미·네모), 칼라·소매 테두리는 속이 빈 V자나 가는 띠다.
+        // 사진 세 장의 덩어리를 재서 정했다 — 로고: 상자 채움 0.55~0.76·길쭉함 1.0~1.2 / 태권도 V 칼라 채움 0.49 · 원복 칼라 0.32 /
+        // 교복 소매 테두리 길쭉함 2.7 · 태권도 소매 글자 3.9. 사진 세 장에서 정한 값이라 V 칼라(0.49)가 기준에 아슬아슬하다.
+        // 교복 칼라 여밈·단추(채움 0.63·길쭉함 1.4)는 모양으로 로고와 갈리지 않는다 — 알려진 한계.
+        var bw0 = b.x1 - b.x0 + 1, bh0 = b.y1 - b.y0 + 1;
+        var compact = b.px / boxArea >= 0.5 && Math.max(bw0, bh0) / Math.min(bw0, bh0) <= 2.5;
+        b.keep = b.cand / area >= 0.0003 && boxArea / area <= 0.06 && inBand && !!face && compact;
+        b.fw = face ? face.fw : 0;
+      }
+      return rects.filter(function (b) { return b.keep; }).map(function (b) {
+        // 둘레를 얼굴 폭의 12%만큼 넓힌다 — 로고 테두리·자수 그림자까지 덮는다
+        var m = Math.max(3, b.fw * 0.12);
+        return { x: (b.x0 - m) / k, y: (b.y0 - m) / k, width: (b.x1 - b.x0 + 1 + m * 2) / k, height: (b.y1 - b.y0 + 1 + m * 2) / k };
+      });
+    }
+
+    // 찾은 로고 상자만 흰색(다시 그림). 옷 바깥(살·배경)은 빼고, 얼굴·손은 마지막에 검게(옷 마스크와 같은 순서).
+    function buildLogoMask(rects, imgW, imgH, clothesMask, faceBoxes, handBoxes) {
+      var c = document.createElement('canvas');
+      c.width = imgW; c.height = imgH;
+      var x = c.getContext('2d');
+      x.fillStyle = '#000000';
+      x.fillRect(0, 0, imgW, imgH);
+      var r = document.createElement('canvas');
+      r.width = imgW; r.height = imgH;
+      var rx = r.getContext('2d');
+      rx.fillStyle = '#ffffff';
+      rects.forEach(function (b) { rx.fillRect(Math.floor(b.x), Math.floor(b.y), Math.ceil(b.width), Math.ceil(b.height)); });
+      rx.globalCompositeOperation = 'destination-in';
+      rx.drawImage(clothesMask, 0, 0, imgW, imgH);
+      x.drawImage(r, 0, 0);
+      x.fillStyle = '#000000';
+      (faceBoxes || []).forEach(function (f) {
+        var padX = f.width * 0.35, padTop = f.height * 0.55, padBottom = f.height * 0.06;
+        x.fillRect(f.x - padX, f.y - padTop, f.width + padX * 2, f.height + padTop + padBottom);
+      });
+      (handBoxes || []).forEach(function (hb) { x.fillRect(hb.x, hb.y, hb.width, hb.height); });
+      return c;
+    }
+
+    // 마스크 안을 «둘레 천의 중앙값 색»으로 미리 칠해서 보낸다. 원본을 그대로 보냈더니 AI가 이름표를 보고 새 명찰을 그렸다.
+    // 작은 로고를 흐리면 흰 글자가 섞인 밝은 얼룩이 남아 AI가 거기에 또 무언가를 그릴 빌미가 된다 — 그래서 단색으로 지운다.
+    // 둘레는 마스크를 반경 R만큼 넓힌 띠 중 옷인 곳이다. 질감·주름은 AI가 주변에 맞춰 다시 그린다(EMBLEM_FILL_PROMPT).
+    function prefillWithSurround(ic, mask, clothesMask, sw, sh) {
+      var R = Math.max(6, Math.round(Math.min(sw, sh) * 0.02));
+      var md = mask.getContext('2d').getImageData(0, 0, sw, sh).data;
+      var cc = document.createElement('canvas'); cc.width = sw; cc.height = sh;
+      var ccx = cc.getContext('2d'); ccx.drawImage(clothesMask, 0, 0, sw, sh);
+      var cd = ccx.getImageData(0, 0, sw, sh).data;
+      var ring = document.createElement('canvas'); ring.width = sw; ring.height = sh;
+      var rgx = ring.getContext('2d');
+      rgx.filter = 'blur(' + R + 'px)';
+      rgx.drawImage(maskToAlpha(mask, sw, sh), 0, 0);
+      rgx.filter = 'none';
+      var rd = rgx.getImageData(0, 0, sw, sh).data;
+      var src = ic.getContext('2d').getImageData(0, 0, sw, sh).data;
+      // 둘레에서 «가장 많은 색»을 쓴다(색마다 32단계로 묶은 칸 중 가장 많은 칸의 평균). 중앙값을 썼더니 흰 도복의 KOREA 패치 둘레에
+      // 빨간 V 칼라가 섞여 옅은 분홍으로 칠해졌다(보내는 사진을 가로채 확인). 칼라는 둘레의 일부라 최빈값에서는 천 색이 이긴다.
+      var bins = new Uint32Array(32768), bsum = new Float64Array(32768 * 3), n = 0, i;
+      for (i = 0; i < md.length; i += 4) {
+        if (md[i] > 128 || rd[i + 3] < 8 || cd[i + 3] <= 128) continue; // 마스크 밖·둘레 안·옷인 곳만
+        var bi = (src[i] >> 3) << 10 | (src[i + 1] >> 3) << 5 | (src[i + 2] >> 3);
+        bins[bi]++; bsum[bi * 3] += src[i]; bsum[bi * 3 + 1] += src[i + 1]; bsum[bi * 3 + 2] += src[i + 2]; n++;
+      }
+      var out = document.createElement('canvas'); out.width = sw; out.height = sh;
+      var ox = out.getContext('2d'); ox.drawImage(ic, 0, 0);
+      if (n < 20) return out; // 둘레 천을 못 읽으면 원본 그대로(예전과 같다)
+      // 칸 하나만 보면 그러데이션·주름 때문에 이웃 칸으로 흩어진다 — 이웃 칸(±1)까지 합친 개수로 가장 많은 자리를 고른다
+      var best = -1, bestN = -1;
+      for (var q = 0; q < 32768; q++) {
+        if (!bins[q]) continue;
+        var r5 = q >> 10, g5 = (q >> 5) & 31, b5 = q & 31, tot = 0;
+        for (var dr = -1; dr <= 1; dr++) for (var dg = -1; dg <= 1; dg++) for (var db = -1; db <= 1; db++) {
+          var rr = r5 + dr, gg = g5 + dg, bb = b5 + db;
+          if (rr < 0 || gg < 0 || bb < 0 || rr > 31 || gg > 31 || bb > 31) continue;
+          tot += bins[rr << 10 | gg << 5 | bb];
+        }
+        if (tot > bestN) { bestN = tot; best = q; }
+      }
+      var rgb = [0, 1, 2].map(function (ch) { return Math.round(bsum[best * 3 + ch] / bins[best]); });
+      var fill = document.createElement('canvas'); fill.width = sw; fill.height = sh;
+      var fx = fill.getContext('2d');
+      fx.fillStyle = 'rgb(' + rgb.join(',') + ')';
+      fx.fillRect(0, 0, sw, sh);
+      fx.globalCompositeOperation = 'destination-in';
+      fx.drawImage(maskToAlpha(mask, sw, sh), 0, 0);
+      ox.drawImage(fill, 0, 0);
+      return out;
+    }
 
     async function runEmblemRemoval(img, faces, riskResult, emblemMode) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
@@ -7269,7 +7869,14 @@
         e.noClothes = true;
         throw e;
       }
-      var mask = buildEmblemMask(scaledFaces, sw, sh, clothesMask, handBoxes);
+      var band = buildEmblemMask(scaledFaces, sw, sh, clothesMask, handBoxes);
+      // 로고·이름표 자리를 찾으면 그 자리만 연다. 못 찾으면 예전처럼 가슴 띠 전체를 연다.
+      // 찾는 범위는 여는 띠(얼굴 높이 1.4배)보다 길게 1.9배로 본다 — 성인 교복 사진(주머니 위 엠블럼, 어깨선에서 약 1.5배)에서
+      // 엠블럼이 띠 밖이라 못 찾고, 대신 엠블럼 없는 위쪽 가슴만 다시 그렸다(팀 테스트 10-27 "로고지우기 했는데 로고가 안지워져").
+      // 찾은 자리만 열기 때문에 범위를 넓혀도 옷이 바뀌지 않는다. 다만 더 넓히면 태권도복 띠 매듭(약 2.1배)이 로고로 잡힌다.
+      var searchBand = buildEmblemMask(scaledFaces, sw, sh, clothesMask, handBoxes, EMBLEM_LOGO_SEARCH_RATIO);
+      var logoRects = findLogoRects(ic, sw, sh, clothesMask, searchBand, scaledFaces);
+      var mask = logoRects.length ? buildLogoMask(logoRects, sw, sh, clothesMask, scaledFaces, handBoxes) : band;
 
       var white = (function () {
         var d = mask.getContext('2d').getImageData(0, 0, sw, sh).data;
@@ -7277,16 +7884,19 @@
         for (var i = 0; i < d.length; i += 4) if (d[i] > 128) n++;
         return n;
       })();
-      console.log('[마크지우기] 마스크 — 가슴만 ' + (white / (sw * sh) * 100).toFixed(1)
-        + '% (손 ' + handBoxes.length + '개 제외)');
+      console.log('[마크지우기] 마스크 — ' + (logoRects.length ? '찾은 로고 ' + logoRects.length + '곳만 ' : '로고를 못 찾아 가슴 띠 ')
+        + (white / (sw * sh) * 100).toFixed(1) + '% (손 ' + handBoxes.length + '개 제외)');
       if (white === 0) {
         var e2 = new Error('가슴 자리를 찾지 못했어요.');
         e2.noClothes = true;
         throw e2;
       }
+      // 보내는 사진에서 연 자리를 미리 지운다 — 원본 그대로 보내면 AI가 이름표를 보고 새 명찰을 그렸다.
+      // 찾은 로고 자리는 둘레 천 색으로, 가슴 띠 전체일 때는 칼라·단추 윤곽을 남기도록 옷끼리만 흐린다(옷 전체 바꾸기와 같은 방식).
+      var sendImg = logoRects.length ? prefillWithSurround(ic, mask, clothesMask, sw, sh) : blurInsideMask(ic, mask, sw, sh);
 
       var data = await postJson(INPAINT_BACKEND_URL, {
-        imageBase64: ic.toDataURL('image/png').split(',')[1],
+        imageBase64: sendImg.toDataURL('image/png').split(',')[1],
         maskBase64: mask.toDataURL('image/png').split(',')[1],
         mediaType: 'image/png',
         promptOverride: emblemMode === 'pocket' ? EMBLEM_POCKET_PROMPT : EMBLEM_FILL_PROMPT,
@@ -7426,11 +8036,6 @@
         var pad = Math.max(2, (b.y1 - b.y0) * 0.15);
         x.fillRect(b.x0 - pad, b.y0 - pad, (b.x1 - b.x0) + pad * 2, (b.y1 - b.y0) + pad * 2);
       });
-
-      // 사용자가 브러시로 칠한 곳도 새로 그릴 영역이다
-      if (brushMaskCanvas && brushMaskHasPaint()) {
-        x.drawImage(brushMaskCanvas, 0, 0, imgW, imgH);
-      }
 
       // 아이 보존영역을 마지막에 덮어써서 텍스트와 겹치더라도 아이 보호가 항상 이기게 함
       x.fillStyle = '#000000';
@@ -7575,6 +8180,79 @@
       });
       return bands;
     }
+    // 옷으로 잡혔지만 «사람 흔적»이 없는 큰 덩어리(입간판·돗자리·천막)는 마스크에서 뺀다. 옷 교체는 마스크 안을 AI가 새로
+    // 그리므로, 사람 아닌 것이 들어 있으면 그 물체가 망가진다 — 햇살어린이집 사진(정답표 사진6)에서 입간판 아랫부분(사진의
+    // 7.7%)이 옷으로 잡혀 «원생 모집» 글씨가 지워지고 회색 얼룩이 남았다.
+    // 사람 흔적 = 인물 분리 안에 30% 넘게 들어 있거나, 머리카락·맨살(1·2·3번)이 가로 길이의 4% 안에 있음.
+    // 3% 미만은 멀리 선 사람의 옷일 수 있어 흔적이 없어도 둔다. 정답표 103장에서 흔적 없는 덩어리는 대부분 작았고(배경 직원·
+    // 옆 아이의 옷) 3%를 넘으면서 흔적이 없는 것은 사진6의 간판 하나뿐이었다.
+    // 낮은 해상도(긴 변 320칸)에서 덩어리를 갈라 판단하고, 버릴 덩어리의 픽셀만 지운다. 지운 픽셀 수를 돌려준다.
+    var OBJECT_CLOTHES = { minArea: 0.03, maxInPerson: 0.3, reach: 0.04 };
+    function dropObjectClothes(px, cls, w, h, person) {
+      var k = Math.min(1, 320 / Math.max(w, h));
+      var lw = Math.max(1, Math.round(w * k)), lh = Math.max(1, Math.round(h * k)), n = lw * lh;
+      var pc = document.createElement('canvas'); pc.width = lw; pc.height = lh;
+      var pcx = pc.getContext('2d'); pcx.drawImage(person, 0, 0, lw, lh);
+      var pd = pcx.getImageData(0, 0, lw, lh).data;
+      var on = new Uint8Array(n), inP = new Uint8Array(n), dist = new Uint8Array(n).fill(255), q = new Int32Array(n);
+      var qh = 0, qt = 0, x, y, i, j;
+      // 칸 안에 옷 픽셀이 하나라도 있으면 그 칸은 옷이다(가운데만 보면 가는 가장자리가 칸에서 빠져 마스크에 선으로 남는다)
+      for (y = 0; y < h; y++) {
+        var row = Math.min(lh - 1, Math.floor(y * k)) * lw;
+        for (x = 0; x < w; x++) {
+          i = row + Math.min(lw - 1, Math.floor(x * k));
+          if (px[(y * w + x) * 4 + 3] > 128) on[i] = 1;
+          if (cls[y * w + x] >= 1 && cls[y * w + x] <= 3 && dist[i] !== 0) { dist[i] = 0; q[qt++] = i; } // 머리카락·몸살·얼굴살
+        }
+      }
+      for (i = 0; i < n; i++) inP[i] = pd[i * 4 + 3] > 128 ? 1 : 0;
+      // 사람 흔적에서 reach칸 안인 칸을 표시한다(8방향 번짐)
+      var reach = Math.max(1, Math.round(lw * OBJECT_CLOTHES.reach));
+      while (qh < qt) {
+        i = q[qh++];
+        if (dist[i] >= reach) continue;
+        x = i % lw; y = (i - x) / lw;
+        for (var dy = -1; dy <= 1; dy++) {
+          for (var dx = -1; dx <= 1; dx++) {
+            if (x + dx < 0 || y + dy < 0 || x + dx >= lw || y + dy >= lh) continue;
+            j = (y + dy) * lw + x + dx;
+            if (dist[j] === 255) { dist[j] = dist[i] + 1; q[qt++] = j; }
+          }
+        }
+      }
+      // 이어진 옷 덩어리(4방향)마다: 넓고(≥3%) 인물 분리 밖(<30%)이고 사람 흔적이 가깝지 않으면 버린다
+      var lab = new Int32Array(n), drop = [false], id = 0, any = false, s;
+      for (s = 0; s < n; s++) {
+        if (!on[s] || lab[s]) continue;
+        var area = 0, inside = 0, near = false;
+        lab[s] = ++id; qh = 0; qt = 0; q[qt++] = s;
+        while (qh < qt) {
+          i = q[qh++]; area++;
+          if (inP[i]) inside++;
+          if (dist[i] !== 255) near = true;
+          if (i % lw > 0 && on[i - 1] && !lab[i - 1]) { lab[i - 1] = id; q[qt++] = i - 1; }
+          if (i % lw < lw - 1 && on[i + 1] && !lab[i + 1]) { lab[i + 1] = id; q[qt++] = i + 1; }
+          if (i >= lw && on[i - lw] && !lab[i - lw]) { lab[i - lw] = id; q[qt++] = i - lw; }
+          if (i < n - lw && on[i + lw] && !lab[i + lw]) { lab[i + lw] = id; q[qt++] = i + lw; }
+        }
+        var gone = area / n >= OBJECT_CLOTHES.minArea && inside / area < OBJECT_CLOTHES.maxInPerson && !near;
+        drop.push(gone);
+        if (gone) any = true;
+      }
+      if (!any) return 0;
+      var removed = 0;
+      for (y = 0; y < h; y++) {
+        var ly = Math.min(lh - 1, Math.floor(y * k));
+        for (x = 0; x < w; x++) {
+          var a = (y * w + x) * 4 + 3;
+          if (!px[a]) continue;
+          var l = lab[ly * lw + Math.min(lw - 1, Math.floor(x * k))];
+          if (l && drop[l]) { px[a] = 0; removed++; }
+        }
+      }
+      return removed;
+    }
+
     // 옷이 있는 곳만 흰색인 마스크 캔버스를 돌려준다. 실패하거나 미더우면 null.
     // strict: 4번(옷)만(+얼굴 기준 목~가슴 띠 안의 5번). 옷 교체(AI가 마스크 안을 새로 그린다)는
     // strict로 부른다 — 5번(그외)을 통째로 넣으면 신발까지 «옷»으로 다시 그려졌다(A/B 실측:
@@ -7582,12 +8260,18 @@
     // 빠져서 새 옷 위에 원본 넥타이가 그대로 남았다(실측: 아이3 결과 사진, 목 밑 넥타이가 안 바뀜).
     // faces를 주면 그 목~가슴 띠 안의 5번만 되살린다(신발·머리 장식이 있는 자리는 그대로 뺀다).
     // 색 바꾸기(로컬)·위험 지도는 흰 옷이 4번에서 새는 것을 5번이 받쳐 주므로 예전 그대로 4+5를 쓴다.
-    async function getClothesMask(img, cacheKey, strict, faces) {
+    // strict일 때는 사람 흔적이 없는 큰 덩어리(입간판 등)를 뺀다(아래 dropObjectClothes). personMask는 이미 구했으면
+    // 넘겨 받는다(null이면 인물 분리를 못 쓰는 것이라 거르지 않는다, 안 주면 여기서 구한다).
+    async function getClothesMask(img, cacheKey, strict, faces, personMask) {
       if (cacheKey && clothesMaskCache.key === cacheKey && clothesMaskCache.canvas) {
         return clothesMaskCache.canvas;
       }
       var seg = await getClothesSegmenter();
       if (!seg) return null;
+      var person = null;
+      if (strict) {
+        try { person = personMask !== undefined ? personMask : await getPersonMask(img, cacheKey && 'person:' + cacheKey); } catch (e) { person = null; }
+      }
       var out = null;
       try {
         var res = seg.segment(img);
@@ -7623,6 +8307,13 @@
           idata.data[i * 4 + 1] = 255;
           idata.data[i * 4 + 2] = 255;
           idata.data[i * 4 + 3] = on;
+        }
+        if (person) {
+          var removed = dropObjectClothes(idata.data, data, w, h, person);
+          if (removed) {
+            clothes -= removed;
+            console.log('[옷분할] 사람 흔적이 없는 큰 덩어리를 마스크에서 뺐어요(입간판 등) — ' + (removed / data.length * 100).toFixed(1) + '%');
+          }
         }
         ctx.putImageData(idata, 0, 0);
         skx.putImageData(sdata, 0, 0);
@@ -7767,7 +8458,103 @@
       return out;
     }
 
-    function clearPersonMaskCache() { personMaskCache = { key: null, canvas: null }; }
+    function clearPersonMaskCache() { personMaskCache = { key: null, canvas: null }; fullPersonMaskCache = { key: null, canvas: null }; }
+
+    // ===== 팔·다리까지 포함한 인물 마스크 (배경 흐림·AI 배경 교체 전용) =====
+    // 멘토 시연에서 "손이나 팔이 잘린다". 원인(2026-10-06 실측, 사진 103장): getPersonMask의 2분류 모델은
+    // 몸에서 떨어진 손·팔·다리를 배경으로 본다 — 마스크가 쓸 만했던 98장 중 33장에서 맨살의 3% 넘게,
+    // 20장에서 10% 넘게 사람 밖으로 빠졌다(브이 한 손·붓 든 손·발차기 다리). 배경 흐림은 그 부분을 흐리고,
+    // AI 배경 교체는 원본으로 되돌리지 않아 AI가 다시 그린 채 남는다.
+    // 옷 분할 모델은 사람을 머리·몸살·얼굴살·옷·그외(1~5)로 가르므로 «배경(0)이 아닌 곳»이 팔다리까지 담는다.
+    // 다만 전부 합치면 배경의 사과·행인까지 사람이 되므로, **2분류 마스크와 실제로 겹치는 덩어리만** 합친다.
+    // 다른 호출부(옷 교체·옷 분할의 입간판 거르기)는 getPersonMask 그대로 쓴다 — 거기는 좁은 마스크를 전제로 튜닝돼 있다.
+    var fullPersonMaskCache = { key: null, canvas: null };
+    async function getFullPersonMask(img, cacheKey) {
+      if (cacheKey && fullPersonMaskCache.key === cacheKey && fullPersonMaskCache.canvas) return fullPersonMaskCache.canvas;
+      var base = await getPersonMask(img, cacheKey);
+      if (!base) return null; // 2분류가 미덥지 않으면 예전처럼 얼굴 기준 도형으로 간다
+      var out = base;
+      try {
+        var seg = await getClothesSegmenter();
+        if (!seg) return base;
+        var res = seg.segment(img);
+        var cat = res.categoryMask;
+        var cw = cat.width, ch = cat.height, data = cat.getAsUint8Array();
+        // 축소 격자에서 덩어리를 센다(긴 변 640) — 원본 해상도로 하면 400만 픽셀을 훑어야 한다.
+        var k = Math.min(1, 640 / Math.max(cw, ch));
+        var sw = Math.max(1, Math.round(cw * k)), sh = Math.max(1, Math.round(ch * k)), N = sw * sh;
+        var body = new Uint8Array(N);
+        for (var y = 0; y < sh; y++) {
+          var sy = Math.min(ch - 1, Math.floor((y + 0.5) / k));
+          for (var x = 0; x < sw; x++) {
+            if (data[sy * cw + Math.min(cw - 1, Math.floor((x + 0.5) / k))] !== 0) body[y * sw + x] = 1;
+          }
+        }
+        cat.close();
+        var pc = document.createElement('canvas'); pc.width = sw; pc.height = sh;
+        var pcx = pc.getContext('2d'); pcx.drawImage(base, 0, 0, sw, sh);
+        var pd = pcx.getImageData(0, 0, sw, sh).data;
+        var person = new Uint8Array(N), personArea = 0;
+        for (var i = 0; i < N; i++) { if (pd[i * 4 + 3] > 128) { person[i] = 1; personArea++; } }
+
+        // 4방향 연결 덩어리. 사람 마스크와 겹침이 덩어리의 절반(최소 20픽셀) 이상이면 사람의 일부로 본다.
+        // 처음에는 10%로 했다가 사진6(햇살어린이집 간판)에서 간판 아랫부분이 «사람»으로 딸려 들어와 글자가 선명하게 남는 것을
+        // 눈으로 확인하고 높였다 — 옷 분할이 간판을 사람 덩어리로 보고 2분류가 그 일부를 사람으로 잘못 잡은 경우다.
+        // 몸에 붙은 팔·다리는 몸과 한 덩어리라 겹침이 크다. 별개 물체는 절반을 넘기 어렵다.
+        var label = new Uint8Array(N), keep = new Uint8Array(N), order = new Int32Array(N);
+        var keptComps = 0;
+        for (var s0 = 0; s0 < N; s0++) {
+          if (!body[s0] || label[s0]) continue;
+          var head = 0, tail = 0, overlap = 0;
+          order[tail++] = s0; label[s0] = 1;
+          while (head < tail) {
+            var cur = order[head++];
+            if (person[cur]) overlap++;
+            var cx0 = cur % sw;
+            if (cx0 > 0 && body[cur - 1] && !label[cur - 1]) { label[cur - 1] = 1; order[tail++] = cur - 1; }
+            if (cx0 < sw - 1 && body[cur + 1] && !label[cur + 1]) { label[cur + 1] = 1; order[tail++] = cur + 1; }
+            if (cur >= sw && body[cur - sw] && !label[cur - sw]) { label[cur - sw] = 1; order[tail++] = cur - sw; }
+            if (cur < N - sw && body[cur + sw] && !label[cur + sw]) { label[cur + sw] = 1; order[tail++] = cur + sw; }
+          }
+          if (overlap >= Math.max(20, tail * 0.5)) {
+            for (var j = 0; j < tail; j++) keep[order[j]] = 1;
+            keptComps++;
+          }
+        }
+        // 한 칸 부풀린다 — 분할 경계가 살을 한 겹 덜 잡는 것을 받쳐 준다(아래 호출부가 가장자리를 또 흐린다)
+        var grown = new Uint8Array(N), added = 0;
+        for (var g = 0; g < N; g++) {
+          if (!keep[g]) {
+            var gx = g % sw;
+            if (!((gx > 0 && keep[g - 1]) || (gx < sw - 1 && keep[g + 1]) || (g >= sw && keep[g - sw]) || (g < N - sw && keep[g + sw]))) continue;
+          }
+          grown[g] = 1;
+          if (!person[g]) added++;
+        }
+        var total = personArea + added;
+        // 합친 결과가 사진 거의 전체면 믿지 않는다(2분류와 같은 기준)
+        if (total / N > 0.95) { console.warn('[인물분할] 팔다리 합치기 결과가 너무 넓어 버립니다 — ' + (total / N * 100).toFixed(1) + '%'); return base; }
+        var oc = document.createElement('canvas'); oc.width = base.width; oc.height = base.height;
+        var ox = oc.getContext('2d');
+        ox.drawImage(base, 0, 0);
+        var lc = document.createElement('canvas'); lc.width = sw; lc.height = sh;
+        var lx = lc.getContext('2d'), li = lx.createImageData(sw, sh);
+        for (var q = 0; q < N; q++) {
+          if (!grown[q]) continue;
+          li.data[q * 4] = 255; li.data[q * 4 + 1] = 255; li.data[q * 4 + 2] = 255; li.data[q * 4 + 3] = 255;
+        }
+        lx.putImageData(li, 0, 0);
+        ox.drawImage(lc, 0, 0, base.width, base.height);
+        oc._limbs = { addedPct: +(added / N * 100).toFixed(2), personPct: +(personArea / N * 100).toFixed(2), components: keptComps };
+        console.log('[인물분할] 팔·다리 합침 — 2분류 ' + oc._limbs.personPct + '% + 추가 ' + oc._limbs.addedPct + '% (덩어리 ' + keptComps + '개)');
+        out = oc;
+      } catch (e) {
+        console.warn('[인물분할] 팔·다리 합치기 실패 — 2분류 마스크로 진행:', e.message);
+        return base;
+      }
+      if (cacheKey) fullPersonMaskCache = { key: cacheKey, canvas: out };
+      return out;
+    }
 
     function computeSubjectRegion(faceBox, imgW, imgH) {
       var cx = faceBox.x + faceBox.width / 2;
@@ -8563,6 +9350,24 @@
       return GENERIC_ONLY_RE.test(String(text || '').replace(/\s+/g, ''));
     }
 
+    // ===== 덮지 않아도 되는 글자(안내 문구) =====
+    // «원생 모집»·«신입생 모집»·«환영합니다»처럼 어느 곳인지 알려 주는 낱말이 하나도 없는 글자는 덮어도 얻을 것이 없고,
+    // 간판 한가운데가 지워져 사진만 어색해진다. 덮을 대상의 기본 선택에서 뺀다(목록에는 남고, 체크하면 덮는다).
+    // 판정은 보수적이다 — 글자 하나하나가 아래 낱말·조사로 다 설명될 때만 안내 문구로 본다. 이름·지역·전화·숫자·영문 이름이
+    // 한 글자라도 남으면 아니다: «청룡태권도 원생모집»은 이름이 있어서, «원생모집 042-…»는 전화가 있어서 그대로 덮는다.
+    // 낱말은 모집·할인·환영 같은 홍보·인사말뿐이다(이름 속에 들어갈 일이 거의 없는 것). 어느 사진에 맞춰 늘린 목록이 아니다.
+    var GENERIC_WORDING = ['원생', '신입생', '수강생', '회원', '학생', '모집', '모집중', '접수', '접수중', '등록', '상담', '문의', '예약', '마감', '선착순',
+      '할인', '이벤트', '무료', '체험', '오픈', '신규', '영업', '영업중', '휴무', '준비중', '환영', '축하', '감사', '합니다', '하세요', '어서오세요',
+      '여러분', '새내기', '입학', '졸업', 'open', 'welcome', 'sale', 'event'];
+    var GENERIC_WORDING_RE = new RegExp(GENERIC_WORDING.slice().sort(function (a, b) { return b.length - a.length; }).join('|'), 'g');
+    function isGenericWording(text) {
+      var t = String(text || '').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase(); // 공백·기호는 버리고 글자와 숫자만 본다
+      if (!t) return false;
+      var hit = 0;
+      t = t.replace(GENERIC_WORDING_RE, function () { hit++; return ''; });
+      return hit > 0 && t.replace(/[을를은는이가의에로도와과]/g, '') === '';
+    }
+
     // 상자 안을 네 변 바깥의 색을 이어서 채운다(쿤스 패치). 단색으로 칠하면 무늬 있는 간판에서 얼룩처럼 뜨고,
     // 모자이크 위에 글자를 쓰면 지저분하다. 네 변에서 안쪽으로 색이 번지므로 나무결·그러데이션에서도 덜 튄다.
     // 이미지 가장자리라 바깥이 없는 변은 마주 보는 변을, 둘 다 없으면 주변 대표색(fallback)을 쓴다.
@@ -8964,8 +9769,8 @@
     var droppedNoiseCount = 0; // 뜻을 이루지 않아 검수 목록에서 뺀 개수 (숨겼다는 사실은 알려준다)
 
     // 옷 수정(outfit) 방식에서 고른 컬러체인지 / 엠블럼 처리 — buildOutfitFillPrompt에서 씀
-    var outfitColorway = 'brown';
-    var outfitEmblem = 'keep';
+    var outfitColorway = 'keep'; // 색은 자동 보정이 바꾼다 — AI 옷 경로(마크 지우기)는 색을 건드리지 않는다
+    var outfitEmblem = 'none';
 
 
 
@@ -10353,6 +11158,21 @@
       void faces;
     }
 
+    // ===== 끌어다 놓기: 놓을 자리 강조 =====
+    // 파일 입력창이 드롭 영역을 덮고 있어 놓기 자체는 브라우저가 처리한다. 여기서는 표시만 한다.
+    // 영역 밖에 놓으면 브라우저가 그 사진을 새로 열어 서비스를 떠나게 되므로 그것만 막는다.
+    (function () {
+      function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+      function zoneOf(e) { return e.target && e.target.closest ? e.target.closest('.drop-zone') : null; }
+      document.querySelectorAll('.drop-zone').forEach(function (z) {
+        ['dragenter', 'dragover'].forEach(function (t) { z.addEventListener(t, function () { z.classList.add('dragover'); }); });
+        ['dragleave', 'drop'].forEach(function (t) { z.addEventListener(t, function () { z.classList.remove('dragover'); }); });
+      });
+      ['dragover', 'drop'].forEach(function (t) {
+        window.addEventListener(t, function (e) { if (hasFiles(e) && !zoneOf(e)) e.preventDefault(); });
+      });
+    })();
+
     // ===== #3/#4: 위험도 판단 대기 중 스켈레톤 + 회전 문구 =====
     var RISK_PENDING_TIPS = [
       '체크리스트 정보 종합 중…',
@@ -10624,9 +11444,10 @@
       var idx = 0;
       tipEl.textContent = RISK_PENDING_TIPS[0];
       if (riskTipTimer) clearInterval(riskTipTimer);
+      var pendingSince = Date.now(); // 보통 8~10초 걸린다(실측) — 얼마나 지났는지 보여 준다
       riskTipTimer = setInterval(function () {
         idx = (idx + 1) % RISK_PENDING_TIPS.length;
-        tipEl.textContent = RISK_PENDING_TIPS[idx];
+        tipEl.textContent = RISK_PENDING_TIPS[idx] + ' · ' + Math.round((Date.now() - pendingSince) / 1000) + '초 (보통 10초 안팎)';
       }, 1400);
     }
 
@@ -10761,10 +11582,14 @@
       var stepIds = ['stepFace', 'stepOcr'];
       var steps = stepIds.map(function (id) { return document.getElementById(id); });
 
+      var anFill = document.getElementById('anBarFill');
       function activateStep(idx) {
-        steps.forEach(function (s) { s.classList.remove('active'); });
+        steps.forEach(function (s, i) { s.classList.remove('active'); s.classList.toggle('done', i < idx); });
         if (steps[idx]) steps[idx].classList.add('active');
+        // 단계마다 정해진 지점까지만 천천히 간다 — 끝(100%)은 결과 화면으로 넘어갈 때뿐이다
+        if (anFill) anFill.style.width = (idx === 0 ? 35 : 85) + '%';
       }
+      if (anFill) { anFill.style.transition = 'none'; anFill.style.width = '0%'; void anFill.offsetWidth; anFill.style.transition = ''; }
 
       var submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
@@ -10870,90 +11695,18 @@
       })();
     });
 
-    var methodCards = document.querySelectorAll('.method-card');
+    var methodCards = document.querySelectorAll('#aiMore button'); // 위치 계산 중에 막아 둘 단추들
     var previewCaption = document.getElementById('previewCaption');
     var editInstruction = document.getElementById('editInstruction');
-    var recommendFlowEl = document.getElementById('recommendFlow');
     // 보정 대상 선택 — 감지에 오탐이 섞일 수 있으므로 사용자가 직접 고른다.
     // null이면 "아직 목록을 만들지 않았다"는 뜻이고 그 땐 전체가 대상이다.
     var selectedTargetIds = null; // 선택된 항목의 고유 번호 목록 (인덱스가 아니다 — 지우면 밀린다)
-    var currentBlurPx = 18;   // 흐림 강도 — 화면에서 고른다
-    var currentFill = 'auto'; // 덮는 방식 — 자동 / 주변색 / 모자이크
-    var currentFillPx = 16;   // 모자이크 픽셀 크기
-    var coverEditMode = 'shape'; // 'shape'(도형) | 'brush'(직접 칠하기)
-    var brushSizePx = 28;
-    var brushErasing = false; // 지우개 모드 — 칠한 곳을 다시 걷어낸다
-    var brushMaskCanvas = null;  // 원본 해상도의 흑백 마스크 — 흰색이 칠한 곳
-
-    // 획 단위로 되돌리려면 지나간 상태를 알아야 한다. 그런데 마스크는 원본 해상도라
-    // (3000x4000이면 한 장에 48MB) 스냅샷을 쌓으면 금방 메모리가 터진다.
-    // 그래서 픽셀이 아니라 "지나간 점들"만 기록하고, 되돌릴 때 다시 그린다.
-    // 점 하나는 좌표 두 개라 획 수십 개를 쌓아도 부담이 없고, 결과도 정확히 같다.
-    var brushStrokes = [];  // [{ erasing, r(원본 픽셀 반지름), pts: [[x,y], ...] }]
-
-    function replayBrushStrokes(mask) {
-      var ctx = mask.getContext('2d');
-      ctx.clearRect(0, 0, mask.width, mask.height);
-      ctx.fillStyle = '#ffffff';
-      brushStrokes.forEach(function (st) {
-        // 지우개 획도 순서대로 다시 적용해야 결과가 같아진다
-        ctx.globalCompositeOperation = st.erasing ? 'destination-out' : 'source-over';
-        st.pts.forEach(function (pt) {
-          ctx.beginPath();
-          ctx.arc(pt[0], pt[1], st.r, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      });
-      ctx.globalCompositeOperation = 'source-over';
-    }
-
-    function syncBrushUndoBtn() {
-      var btn = document.getElementById('brushUndo');
-      if (btn) btn.disabled = brushStrokes.length === 0;
-    }
-
-    function undoBrushStroke() {
-      if (brushStrokes.length === 0 || !brushMaskCanvas) return;
-      brushStrokes.pop();
-      replayBrushStrokes(brushMaskCanvas);
-      syncBrushUndoBtn();
-      selectMethod(currentMethod); // 되돌린 대로 미리보기를 다시 만든다
-    }
-
-    function resetBrush() {
-      brushMaskCanvas = null;
-      brushStrokes = [];
-      syncBrushUndoBtn();
-    }
-
-    // 붓 자리에 지금 굵기 그대로의 원을 띄운다. 어디가 칠해질지 커서만 보고 알 수 있다.
-    // 흰 테두리를 한 겹 깔아야 어두운 사진 위에서도 원이 보인다.
-    function brushCursorCss() {
-      var d = Math.max(10, Math.min(96, brushSizePx));
-      var half = d / 2, r = half - 2;
-      var ring = brushErasing ? '%231a1a1a' : '%23d97a4f';
-      var dash = brushErasing ? "%20stroke-dasharray='4%203'" : '';
-      var svg = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='" + d + "'%20height='" + d + "'%3E"
-        + "%3Ccircle%20cx='" + half + "'%20cy='" + half + "'%20r='" + r + "'%20fill='none'%20stroke='white'%20stroke-width='3'/%3E"
-        + "%3Ccircle%20cx='" + half + "'%20cy='" + half + "'%20r='" + r + "'%20fill='none'%20stroke='" + ring + "'%20stroke-width='1.5'" + dash + "/%3E"
-        + "%3C/svg%3E";
-      return 'url("' + svg + '") ' + half + ' ' + half + ', crosshair';
-    }
-
-    function ensureBrushMask(w, h) {
-      if (!brushMaskCanvas || brushMaskCanvas.width !== w || brushMaskCanvas.height !== h) {
-        brushMaskCanvas = document.createElement('canvas');
-        brushMaskCanvas.width = w; brushMaskCanvas.height = h;
-      }
-      return brushMaskCanvas;
-    }
-
-    function brushMaskHasPaint() {
-      if (!brushMaskCanvas) return false;
-      var d = brushMaskCanvas.getContext('2d').getImageData(0, 0, brushMaskCanvas.width, brushMaskCanvas.height).data;
-      for (var i = 3; i < d.length; i += 40) { if (d[i] > 10) return true; }
-      return false;
-    }
+    var currentBlurPx = 18;   // 흐림 강도 — 고정(슬라이더는 없앴다)
+    // 덮는 방식은 «자동» 하나로 고정했다(2026-10-07, 멘토 지적: 선택지 줄이기). 주변색·모자이크·픽셀 크기와
+    // 브러시(굵기·지우개·획 되돌리기)는 화면에서 뺐다 — 위치는 상자를 끌어 맞추고 놓친 곳은 «+ 놓친 곳 추가»로 더한다.
+    // applyPatchFill은 mode·cellPx·brushMask 인자를 그대로 받으므로(테스트가 쓴다) 다시 열려면 화면만 되살리면 된다.
+    var currentFill = 'auto';
+    var currentFillPx = 16;
 
     // 항목마다 고유 번호를 붙인다. 목록에서 지우면 배열 인덱스가 밀려서,
     // 인덱스로 선택 상태를 들고 있으면 엉뚱한 항목이 선택된 것으로 바뀐다.
@@ -10993,12 +11746,6 @@
       frame.appendChild(peek);
     }
 
-    // 브러시는 덮기·인페인팅에서만 뜬다. 안내에서 브러시를 언급하기 전에 확인한다 —
-    // 없는 도구를 쓰라고 하면 사용자가 화면을 뒤지게 된다.
-    function brushAvailable() {
-      return currentMethod === 'sticker';
-    }
-
     // 목록에서 무엇을 고를지는 흐림·덮기처럼 브라우저 안에서 끝나는 방식에만 바로 반영한다.
     // AI 방식(옷 바꾸기 · 배경 교체)은 한 번 부를 때마다 요금이 나가고 원본이 또
     // 밖으로 나가므로, 체크만으로는 부르지 않고 "다시 만들기"를 눌렀을 때만 부른다.
@@ -11032,7 +11779,7 @@
         var p = document.createElement('p');
         p.className = 't-none';
         p.textContent = '글자처럼 보였지만 뜻을 이루지 않는 ' + droppedNoiseCount + '곳은 목록에서 뺐어요.'
-          + (brushAvailable() ? ' 가려야 할 자리가 남았다면 브러시로 직접 칠해주세요.' : '');
+          + ' 가려야 할 자리가 남았다면 «+ 놓친 곳 추가»를 눌러주세요.';
         return p;
       }
 
@@ -11040,8 +11787,6 @@
         selectedTargetIds = [];
         var none = document.createElement('p');
         none.className = 't-none';
-        // 목록이 비면 브러시 도구까지 통째로 숨는다(coverTools). 그러니 여기서는
-        // 방식과 무관하게 브러시를 언급하지 않는다 — 화면에 없는 것이다.
         none.textContent = droppedNoiseCount > 0
           ? '읽을 만한 텍스트를 찾지 못했어요 — 잘못 읽은 ' + droppedNoiseCount + '곳은 뺐어요.'
           : '위치를 아는 텍스트를 찾지 못했어요 — 텍스트를 지우는 방식은 쓸 수 없어요.';
@@ -11050,7 +11795,8 @@
       }
 
       if (!keepSelection || !selectedTargetIds) {
-        selectedTargetIds = all.map(function (w) { return w._tid; }); // 기본은 전체 선택
+        // 기본은 전체 선택 — 다만 «원생 모집» 같은 안내 문구는 뺀다(어느 곳인지 알려 주지 않아 덮어도 얻을 것이 없다)
+        selectedTargetIds = all.filter(function (w) { return !isGenericWording(w.text); }).map(function (w) { return w._tid; });
       }
 
       all.forEach(function (w) {
@@ -11085,7 +11831,7 @@
 
         var kind = document.createElement('span');
         kind.className = 't-kind' + (w.approximate ? ' rough' : '');
-        kind.textContent = w.userAdded ? '직접 추가' : (w.approximate ? '위치 대략' : (isSignboardText(w) ? '큰 간판' : '작은 글씨'));
+        kind.textContent = w.userAdded ? '직접 추가' : (isGenericWording(w.text) ? '안내 문구' : (w.approximate ? '위치 대략' : (isSignboardText(w) ? '큰 간판' : '작은 글씨')));
 
         var del = document.createElement('button');
         del.type = 'button';
@@ -11118,6 +11864,21 @@
 
       var 안내 = 뺀것안내();
       if (안내) list.appendChild(안내);
+
+      // 안내 문구를 기본에서 뺀 것도 조용히 하지 않는다 — 왜 안 덮이는지 목록에서 읽을 수 있어야 한다
+      if (all.some(function (w) { return !w.userAdded && isGenericWording(w.text); })) {
+        var 문구안내 = document.createElement('p');
+        문구안내.className = 't-none';
+        문구안내.textContent = '“원생 모집”처럼 어느 곳인지 알려 주지 않는 안내 문구는 덮지 않게 빼 뒀어요. 덮고 싶으면 체크해 주세요.';
+        list.appendChild(문구안내);
+      }
+    }
+
+    // 목록에 있지만 안내 문구라서 덮지 않기로 한 글자 수(사용자가 체크했으면 세지 않는다)
+    function leftWordingCount() {
+      return (correctionTextWords || []).filter(function (w) {
+        return !w.userAdded && isGenericWording(w.text) && (selectedTargetIds || []).indexOf(w._tid) === -1;
+      }).length;
     }
 
     // AI가 놓친 것을 사용자가 직접 신고한다 — 빈 상자를 하나 만들어 목록에 얹으면,
@@ -11141,9 +11902,9 @@
     // 원본 전송 동의가 필요한 방식들 — 취소했을 때 여기로 되돌리면 안 된다
     // 원본을 외부로 보내는 방식 — 고를 때마다 동의를 받는다
     var CONSENT_METHODS = ['ai', 'outfit'];
-    var NO_CONSENT_FALLBACK = 'blur';
+    var NO_CONSENT_FALLBACK = null; // 자동 보정을 뺐다(10-27) — 거절하면 «아무것도 안 고른 상태»로
 
-    var currentMethod = 'blur';
+    var currentMethod = null;
     // 3단계 검증(재검증)용 상태 — 보정을 실제로 적용했는지, 어떤 방식/설명이었는지 기록
     var correctionApplied = false;
     var lastCorrectionMeta = null; // { method, detail }
@@ -11153,139 +11914,28 @@
       // 이전 사진의 처리 결과가 잠깐 보였다가 바뀌는 게 거슬린다는 지적.
       // 새 결과를 만들기 전에 비워둔다.
       var pv = document.getElementById('previewAfter');
-      pv.removeAttribute('src');
+      // 비워 두면 깨진 이미지와 «처리 결과» 글자가 떴다 — 이번 사진의 원본을 흐리게 깔고 처리 중 표시를 얹는다
+      pv.src = uploadedPhotoUrl;
       currentCorrectionCanvas = null;
       // 새 사진이면 쌓아둔 보정도 처음부터 다시
       correctionBaseUrl = uploadedPhotoUrl;
       appliedSteps = [];
       baseHistory = [];
+      autoOff = {};
+      // 자동 보정·찾은 곳 목록을 뺐으므로(10-27) 들어올 때 글자 위치를 다시 계산하지 않는다 — 그 계산(구글 비전·
+      // Tesseract)이 보정 화면에 들어올 때 기다리게 하던 «로딩»이었다. 세 AI 단추는 글자 위치를 쓰지 않는다.
+      correctionTextWords = [];
+      droppedNoiseCount = 0;
       renderAppliedSteps();
       showScreen('correct');
 
-      // AI 배경교체 카드 상태 배지 — fal.ai 키 연동 여부를 물어서 표시 (결과 대기 없이 비동기로)
-      var aiStatusBadge = document.getElementById('badge-ai-status');
-      aiStatusBadge.textContent = '확인 중';
-      aiStatusBadge.style.background = 'var(--muted)';
-      var outfitStatusBadge = document.getElementById('badge-outfit-status');
-      outfitStatusBadge.textContent = '확인 중';
-      outfitStatusBadge.style.background = 'var(--muted)';
-      checkFluxStatus().then(function (ready) {
-        [aiStatusBadge, outfitStatusBadge].forEach(function (b) {
-          b.textContent = ready ? '사용 가능' : '준비 중';
-          b.style.background = ready ? 'var(--risk-low)' : 'var(--muted)';
-        });
-      });
+      // AI 단추 구역은 fal.ai가 준비돼 있을 때만 보인다 (결과 대기 없이 비동기로)
+      var aiMoreBox = document.getElementById('aiMore');
+      aiMoreBox.style.display = 'none';
+      checkFluxStatus().then(function (ready) { aiMoreBox.style.display = ready ? 'block' : 'none'; });
 
-      // 크롭/스티커는 픽셀 단위 정확한 위치가 필요한데, Claude Vision 위치는 9분할 근사치라
-      // bbox 실험(README 참고)에서 텍스트를 완전히 빗나가는 경우가 잦은 걸 확인했음.
-      // 그래서 2단계 보정에서는 위치 정보만큼은 Tesseract의 실제 bbox를 다시 계산해서 씀
-      // (텍스트 내용 판독 정확도는 Claude Vision보다 낮을 수 있음 — 이 트레이드오프는 의도된 것).
-      // 계산이 끝나기 전에 사용자가 다른 방식을 눌러서 빈 목록으로 처리되는 걸 막기 위해
-      // 계산 중엔 방식 카드를 비활성화함 (실측으로 이 레이스 컨디션을 실제로 확인함).
-      document.getElementById('previewCaption').textContent = '정확한 위치 계산 중…';
-    methodCards.forEach(function (c) { c.disabled = true; });
-    try {
-      // 글자 위치는 Google Vision이 준 조각을 줄로 묶어 바로 쓴다(위 「visionLinesToTargets」).
-      // Tesseract 전체 스캔은 한글 간판에서 깨진 줄·넓은 상자를 만들어서, Vision이 실패했을 때
-      // (키 미설정·네트워크)만 예전처럼 쓴다 — 그때도 기능이 끊기지 않는다. 진단이 이미 Vision을
-      // 불렀으면 기억해 둔 결과를 그대로 쓰므로 호출은 늘지 않는다.
-      var faces0 = (lastFaceResult && lastFaceResult.faces) || [];
-      var visionAll = await fetchVisionWords(uploadedPhotoUrl, faces0);
-      var claudeWords = (lastOcrResult && lastOcrResult.words) || [];
-      if (visionAll) {
-        correctionTextWords = visionLinesToTargets(visionAll, claudeWords);
-        console.log('[2단계보정] Google Vision 조각 ' + visionAll.length + '개 → 글자 줄 ' + correctionTextWords.length +
-          '개 (Tesseract 전체 스캔은 건너뜀)');
-      } else {
-        var localOcr = await runOcrPipeline(uploadedPhotoUrl);
-        correctionTextWords = localOcr.words;
-      }
-
-      // Tesseract 전체 스캔이 놓친 텍스트를, Claude가 준 근사 위치를 단서로 다시 찾는다.
-      // (예전에는 여기서 "위치를 몰라 처리 못 함"이라고 경고만 찍고 포기했다)
-      // 1순위는 Google Vision(TEXT_DETECTION, 전용 OCR이라 더 정확) — 매칭 안 되거나
-      // Vision 자체가 실패한 힌트만 기존 Tesseract 힌트 경로로 폴백한다.
-      var missing = pickUnlocatedHints(claudeWords, correctionTextWords);
-      if (missing.length > 0) {
-        console.log('[2단계보정] Claude가 읽은 ' + claudeWords.length + '개 중 ' + missing.length +
-          '개는 전체 스캔이 위치를 못 찾음 — 근사 위치를 단서로 재탐색합니다:',
-          missing.map(function (w) { return '"' + w.text + '"'; }).join(', '));
-        try {
-          var faces = (lastFaceResult && lastFaceResult.faces) || [];
-          var visionWords = await fetchVisionWords(uploadedPhotoUrl, faces);
-          var recovered = [];
-          var stillMissing = missing;
-          if (visionWords) {
-            stillMissing = [];
-            missing.forEach(function (hint) {
-              var box = matchVisionWordsToHint(hint, visionWords);
-              if (box) {
-                recovered.push({
-                  text: hint.text, type: hint.type, confidence: hint.confidence,
-                  xPct: box.xPct, yPct: box.yPct, wPct: box.wPct, hPct: box.hPct,
-                  approximate: false,
-                });
-              } else {
-                stillMissing.push(hint);
-              }
-            });
-            console.log('[2단계보정] Google Vision으로 ' + recovered.length + '개 위치 확정' +
-              (stillMissing.length ? ', ' + stillMissing.length + '개는 Tesseract로 재시도' : ''));
-          }
-          if (stillMissing.length > 0) {
-            recovered = recovered.concat(await locateTextsByHints(uploadedPhotoUrl, stillMissing));
-          }
-          correctionTextWords = correctionTextWords.concat(recovered);
-        } catch (e) {
-          console.warn('[2단계보정] 재탐색 실패 — 전체 스캔 결과만으로 진행:', e.message);
-        }
-      }
-      // 뜻을 이루지 않는 것은 목록에서 뺀다. 예전에는 "개  a 4°" 같은 것이
-      // 체크된 채로 올라와서, 사용자가 매번 직접 빼줘야 했다(실사용 확인).
-      var 읽힌수 = correctionTextWords.length;
-      correctionTextWords = correctionTextWords.filter(function (w) { return looksLikeText(w.text); });
-      droppedNoiseCount = 읽힌수 - correctionTextWords.length;
-      if (droppedNoiseCount > 0) {
-        console.log('[2단계보정] 뜻을 이루지 않아 뺀 것 ' + droppedNoiseCount + '개');
-      }
-      console.log('[2단계보정] 보정에 쓸 텍스트 최종 ' + correctionTextWords.length + '개');
-    } catch (e) {
-      console.warn('[2단계보정] 위치 재계산 실패 — 빈 목록으로 진행:', e.message);
-      correctionTextWords = [];
-      droppedNoiseCount = 0;
-    } finally {
-      methodCards.forEach(function (c) { c.disabled = false; });
-      // 목록은 반드시 위치 계산이 끝난 뒤에 그린다. 화면 진입 직후에 그렸더니
-      // correctionTextWords가 아직 비어 있어 늘 "텍스트를 찾지 못했다"가 떴다.
-      renderTargetPicker();
-    }
-    
-      // 데모는 컬러체인지 기능을 보여주는 게 목적이라 옷 방식을 기본으로 연다.
-      // 실제 진단 흐름은 기존과 동일하게 블러가 기본값.
-      selectMethod('blur');
-
-      // Claude에게 실제 위험요소 위치를 주고 처리 방식을 추천받음 (실패해도 크롭이 기본값이라 진행에 지장 없음)
-      // 데모는 업로드도 진단도 하지 않은 가짜 결과이므로, 여기서까지 실제 Claude 호출을 하지 않는다.
-      if (lastRiskResult && lastOcrResult) {
-        runRecommendCorrectionPipeline(lastRiskResult, lastOcrResult).then(function (rec) {
-          ['blur', 'sticker'].forEach(function (m) { document.getElementById('badge-' + m).style.display = 'none'; });
-          (rec.추천처리 || []).forEach(function (item) {
-            var methodKey = { '배경 흐림': 'blur', '스티커 덮기': 'sticker', '자연스럽게 덮기': 'sticker' }[item['1순위']];
-            if (methodKey) {
-              var badge = document.getElementById('badge-' + methodKey);
-              if (badge) badge.style.display = 'inline-block';
-              var reason = document.getElementById('reason-' + methodKey);
-              if (reason && item.이유) reason.textContent = item.이유;
-            }
-          });
-          if (rec.전체권장흐름) {
-            recommendFlowEl.textContent = '💡 ' + rec.전체권장흐름;
-            recommendFlowEl.style.display = 'block';
-          }
-        }).catch(function (e) {
-          console.warn('[처리방식추천] 실패 — 기본값(크롭 1순위) 유지:', e.message);
-        });
-      }
+      // 아무것도 자동으로 하지 않는다 — 세 단추 모두 원본이 나가고 돈이 들어서, 누를 때만 돈다.
+      selectMethod(null);
     });
 
     document.getElementById('skipCorrectBtn').addEventListener('click', function () {
@@ -11531,10 +12181,17 @@
       document.getElementById('previewBusyText').textContent = text;
       busy.hidden = false;
       frame.classList.add('is-busy');
+      // AI 단추(옷·배경)를 눌러 기다릴 때만 단추 아래에도 같은 안내를 보인다 — 자동 보정은 곧 끝나서 필요 없다.
+      if (currentMethod === 'outfit' || currentMethod === 'ai') setAiWait(text);
     }
     function clearPreviewBusy() {
       document.getElementById('previewBusy').hidden = true;
       document.getElementById('previewFrame').classList.remove('is-busy');
+      setAiWait('');
+    }
+    function setAiWait(text) {
+      document.getElementById('aiWaitText').textContent = text;
+      document.getElementById('aiWait').hidden = !text;
     }
 
     // ===== 전후 비교 슬라이더(겹쳐서 손잡이로 비교) =====
@@ -11632,14 +12289,7 @@
       // 예전에는 덮기 계열에서만 상자가 보여서, 진단 직후 위치가 어긋난 걸 알아도
       // 방식을 바꿔야만 고칠 수 있었다. 이제 어떤 방식에서든 상자가 보인다.
       var hasTargets = (correctionTextWords || []).length > 0;
-      var brushable = currentMethod === 'sticker';
-      var tools = document.getElementById('coverTools');
-      // 예전엔 자동으로 찾은 글자가 하나도 없으면 도구 전체(브러시 포함)를 숨겼다.
-      // 그런데 브러시는 자동 감지와 무관하게 손으로 직접 칠하는 도구라, 감지가
-      // 비었다고 브러시까지 못 쓰게 막을 이유가 없다(사용자 제보) — 자동 감지 결과가
-      // 있을 때(hasTargets) 또는 브러시를 쓸 수 있는 방식일 때(brushable) 보여준다.
-      tools.style.display = (hasTargets || brushable) ? 'block' : 'none';
-      tools.classList.toggle('no-brush', !brushable);
+      var brushable = currentMethod === 'sticker' || currentMethod === 'auto'; // 덮는 방식에서만 «AI로 더 자연스럽게»가 뜬다
       // AI 업그레이드 단추는 실제로 바꿔 쓸 자리(기관명 등)가 있을 때만 보인다 —
       // 모자이크로 덮을 글자(전화번호 등)에는 "자연스럽게 바꿔 쓸 말"이 없어서 해당 없음.
       var signAiRow = document.getElementById('signAiRow');
@@ -11647,94 +12297,12 @@
       var signRegions = (brushable && pImg.naturalWidth)
         ? findSignSwapRegions(getSelectedTexts(), pImg.naturalWidth, pImg.naturalHeight) : [];
       signAiRow.style.display = signRegions.length > 0 ? 'flex' : 'none';
-      // 브러시는 덮기 계열에서만 결과에 반영된다 — 다른 방식으로 옮기면 도형으로 되돌린다
-      if (!brushable && coverEditMode === 'brush') {
-        coverEditMode = 'shape';
-        document.querySelectorAll('.ct-btn').forEach(function (btn) {
-          btn.classList.toggle('selected', btn.dataset.edit === 'shape');
-        });
-      }
-      tools.classList.toggle('is-brush', coverEditMode === 'brush');
-      frame.querySelectorAll('.brush-layer').forEach(function (b) { b.remove(); });
-      // 아래는 두 갈래로 나뉜다 — 브러시 층 생성(coverEditMode==='brush')과 자동 감지
-      // 상자 생성(그 아래, texts.forEach). 감지 결과가 없어도 브러시 모드라면 칠하는
-      // 층은 그려야 하므로 여기서 막지 않는다 — 상자 쪽은 이후 texts.length===0 검사가 막는다.
-      if (!hasTargets && !(brushable && coverEditMode === 'brush')) return;
+      if (!hasTargets) return;
 
       var img = document.getElementById('previewAfter');
       if (!img.naturalWidth) return;
       var rect0 = img.getBoundingClientRect();
       var fRect0 = frame.getBoundingClientRect();
-
-      if (coverEditMode === 'brush') {
-        var layer = document.createElement('div');
-        layer.className = 'brush-layer' + (brushErasing ? ' is-erasing' : '');
-        layer.style.left = (rect0.left - fRect0.left) + 'px';
-        layer.style.top = (rect0.top - fRect0.top) + 'px';
-        layer.style.width = rect0.width + 'px';
-        layer.style.height = rect0.height + 'px';
-        layer.style.right = 'auto'; layer.style.bottom = 'auto';
-
-        var view = document.createElement('canvas');
-        view.width = Math.round(rect0.width); view.height = Math.round(rect0.height);
-        layer.appendChild(view);
-        frame.appendChild(layer);
-
-        var mask = ensureBrushMask(img.naturalWidth, img.naturalHeight);
-        var mctx = mask.getContext('2d');
-        var vctx = view.getContext('2d');
-        var scale = img.naturalWidth / rect0.width;
-
-        // 칠한 자국을 계속 덮어두면 정작 모자이크가 어떻게 되고 있는지 안 보인다.
-        // 칠하는 동안에만 옅은 코랄로 표시하고, 손을 떼면 지워서 실제 결과를 보여준다.
-        var repaint = function (show) {
-          vctx.clearRect(0, 0, view.width, view.height);
-          if (!show) return;
-          vctx.globalAlpha = 0.85;
-          vctx.drawImage(mask, 0, 0, view.width, view.height);
-          vctx.globalCompositeOperation = 'source-in';
-          vctx.fillStyle = 'rgba(217, 122, 79, 0.5)';
-          vctx.fillRect(0, 0, view.width, view.height);
-          vctx.globalCompositeOperation = 'source-over';
-          vctx.globalAlpha = 1;
-        };
-        repaint(false);
-
-        layer.style.cursor = brushCursorCss();
-
-        var painting = false;
-        var stroke = null;
-        var paintAt = function (ev) {
-          var b = view.getBoundingClientRect();
-          var x = (ev.clientX - b.left) * scale, y = (ev.clientY - b.top) * scale;
-          if (stroke) stroke.pts.push([x, y]);
-          // 지우개면 칠한 흔적을 걷어낸다(destination-out)
-          mctx.globalCompositeOperation = brushErasing ? 'destination-out' : 'source-over';
-          mctx.fillStyle = '#ffffff';
-          mctx.beginPath();
-          mctx.arc(x, y, brushSizePx * scale / 2, 0, Math.PI * 2);
-          mctx.fill();
-          mctx.globalCompositeOperation = 'source-over';
-          repaint(true);
-        };
-        layer.addEventListener('pointerdown', function (ev) {
-          ev.preventDefault(); painting = true;
-          // 누른 순간부터 뗄 때까지가 한 획이다 — 되돌리기의 단위
-          stroke = { erasing: brushErasing, r: brushSizePx * scale / 2, pts: [] };
-          brushStrokes.push(stroke);
-          syncBrushUndoBtn();
-          layer.setPointerCapture(ev.pointerId); paintAt(ev);
-        });
-        layer.addEventListener('pointermove', function (ev) { if (painting) paintAt(ev); });
-        layer.addEventListener('pointerup', function (ev) {
-          painting = false;
-          stroke = null;
-          if (layer.releasePointerCapture) layer.releasePointerCapture(ev.pointerId);
-          repaint(false);                // 표시를 걷어 실제 결과가 보이게 한다
-          selectMethod(currentMethod);   // 칠한 대로 다시 그린다
-        });
-        return;
-      }
 
       var texts = getSelectedTexts();
       if (texts.length === 0) return;
@@ -11802,16 +12370,14 @@
     }
 
     var METHOD_LABEL = {
-      blur: '배경 흐림', sticker: '자연스럽게 덮기',
-      outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체'
+      auto: '자동 보정', blur: '배경 흐림', sticker: '자연스럽게 덮기',
+      outfit: 'AI 마크 지우기', ai: 'AI 배경교체'
     };
 
     function renderAppliedSteps() {
       var list = document.getElementById('stackList');
-      var empty = document.getElementById('stackEmpty');
       if (!list) return;
       list.innerHTML = '';
-      empty.style.display = appliedSteps.length === 0 ? 'block' : 'none';
       appliedSteps.forEach(function (st, i) {
         var li = document.createElement('li');
         var txt = document.createElement('span');
@@ -11843,8 +12409,6 @@
       appliedSteps.push(lastCorrectionMeta);
       currentCorrectionCanvas = null;
       lastCorrectionMeta = null;
-      // 칠한 자국은 이미 사진에 박혔다. 남겨두면 다음 방식에서 또 칠해진다.
-      resetBrush();
       document.getElementById('previewAfter').src = correctionBaseUrl;
       previewCaption.textContent = '여기까지 적용했어요 (' + appliedSteps.length + '단계). '
         + '다른 방식을 고르면 이 결과 위에 얹혀요.';
@@ -11858,7 +12422,6 @@
       appliedSteps.pop();
       currentCorrectionCanvas = null;
       lastCorrectionMeta = null;
-      resetBrush();
       document.getElementById('previewAfter').src = correctionBaseUrl;
       previewCaption.textContent = appliedSteps.length === 0
         ? '적용한 보정을 모두 되돌렸어요 — 원본 상태예요.'
@@ -11892,7 +12455,111 @@
       };
     }
 
+    // ===== 자동 보정 =====
+    // 사용자가 방식을 고르지 않는다(멘토 지적 + 이후 정리). 이 사진에 무엇이 필요한지는 이미 읽은 값으로 정한다:
+    //   글자 덮기   고른 글자가 있을 때 (목록에서 체크한 것)
+    //   교복 색     소속 단서(교복·명찰·마크)가 읽혔을 때 — 판정은 점수와 같은 hasBelongClue를 쓴다
+    //   배경 흐림   덮을 글자는 없는데 지도에 찍을 수 있는 장소 단서(scoredLandmarks)가 있을 때만
+    // 모두 브라우저 안에서 끝난다. 원본이 나가는 보정은 여기에 섞지 않는다(아래 «AI로 더 다듬기»가 따로, 누를 때마다 동의).
+    // 사용자가 스위치로 끈 단계(폰 보정 화면). 앱이 고른 단계를 빼기만 한다 — 없는 단계를 켤 수는 없다.
+    var autoOff = {};
+    function planAutoCorrection(texts, ocrResult, faces) {
+      var cover = (texts || []).length > 0;
+      var uniform = hasBelongClue(ocrResult && ocrResult.visualClues) && (faces || []).length > 0;
+      var blur = !cover && scoredLandmarks(ocrResult && ocrResult.landmarks).length > 0;
+      return { cover: cover, coverN: (texts || []).length, uniform: uniform, blur: blur };
+    }
+
+    function renderAutoPlan(plan) {
+      var ul = document.getElementById('autoPlan');
+      var row = document.getElementById('methodRowValue');
+      var items = [], short = [];
+      if (plan.cover) { items.push('글자·간판 ' + plan.coverN + '곳 덮기'); short.push('글자 ' + plan.coverN + '곳'); }
+      if (plan.uniform) { items.push('교복 색 바꾸기'); short.push('교복 색'); }
+      if (plan.blur) { items.push('배경 흐리기 (글자는 없지만 장소가 알아볼 만해요)'); short.push('배경 흐림'); }
+      if (ul) {
+        ul.innerHTML = '';
+        if (items.length === 0) {
+          var none = document.createElement('li');
+          none.className = 'none';
+          none.textContent = '자동으로 가릴 곳을 찾지 못했어요';
+          ul.appendChild(none);
+        } else {
+          items.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+        }
+      }
+      if (row) row.textContent = short.length ? short.join(' · ') : '가릴 곳 없음';
+      // 폰 보정 화면의 단계 목록(가이드 배치) — 제목 + 무엇을 하는지 한 줄 + 켜고 끄는 스위치.
+      // 끄면 그 단계만 빼고 자동 보정을 다시 돌린다(selectMethod('auto')).
+      var list = document.getElementById('methodRowList');
+      if (list) {
+        var rows = [];
+        if (plan.cover) rows.push(['cover', '글자·간판 ' + plan.coverN + '곳 덮기', '주변 배경에 맞춰 글자가 안 보이게 해요']);
+        if (plan.uniform) rows.push(['uniform', '교복 색 바꾸기', '옷으로 소속이 드러나지 않게 해요']);
+        if (plan.blur) rows.push(['blur', '배경 흐리기', '아이는 그대로 두고 장소만 흐리게 해요']);
+        list.innerHTML = '';
+        if (!rows.length) rows.push([null, '가릴 곳 없음', '자동으로 가릴 곳을 찾지 못했어요']);
+        rows.forEach(function (r) {
+          var it = document.createElement('li'); it.className = 'mr-item';
+          var txt = document.createElement('span'); txt.className = 'mr-text';
+          var b = document.createElement('b'); b.textContent = r[1];
+          var s = document.createElement('small'); s.textContent = r[2];
+          txt.appendChild(b); txt.appendChild(s); it.appendChild(txt);
+          if (r[0]) {
+            var sw = document.createElement('input');
+            sw.type = 'checkbox'; sw.className = 'mr-switch'; sw.setAttribute('role', 'switch');
+            sw.setAttribute('aria-label', r[1]); sw.checked = !autoOff[r[0]]; sw.dataset.step = r[0];
+            sw.addEventListener('change', function () {
+              autoOff[sw.dataset.step] = !sw.checked;
+              selectMethod('auto');
+            });
+            it.appendChild(sw);
+          }
+          list.appendChild(it);
+        });
+      }
+    }
+
+    // 덮은 결과를 말로 옮긴다. 기관 이름을 바꿔 쓴 것은 원래 이름을 적지 않는다 — 이 문장이 3단계 재검증으로 넘어가는데,
+    // 지운 이름을 다시 적으면 검증하는 쪽에 답을 알려 주는 셈이다. 글자를 적지 않는다.
+    function coverSentences(canvas, texts) {
+      var howText = '주변 배경에 맞춰';
+      var swapped = canvas._replaced || [];
+      var keptN = canvas._kept || 0;
+      var coveredN = texts.length - swapped.length - keptN;
+      var swapText = swapped.length > 0
+        ? '기관 이름 ' + swapped.length + '곳을 “' + swapped.filter(function (g, i) { return swapped.indexOf(g) === i; }).join('·')
+          + '”처럼 일반 이름으로 바꿔 썼어요.'
+        : '';
+      var coverText = coveredN > 0 ? '글자 ' + coveredN + '곳을 ' + howText + ' 덮었어요.' : '';
+      var keptText = keptN > 0 ? '“어린이집”처럼 이미 일반 이름인 글자는 그대로 뒀어요.' : '';
+      var leftN = leftWordingCount();
+      var leftText = leftN > 0 ? '어느 곳인지 알려 주지 않는 안내 문구 ' + leftN + '곳은 그대로 뒀어요.' : '';
+      return { swapText: swapText, coverText: coverText, keptText: keptText, leftText: leftText };
+    }
+
+    // 세 AI 단추(로고 지우기 'mark' · 배경 교체하기 'ai' · 옷 전체 바꾸기 'outfit'). 앞서 만든 결과가 있으면 먼저
+    // 확정해서 그 위에 얹는다(보정 쌓기 — 배경을 바꾼 뒤 로고까지 지우기). 동의를 취소하면 확정했던 것을 되돌린다.
+    // 자동 보정은 10-27에 뺐다 — 그 전에는 자동 결과(배경 흐림 포함) 위에서 시작해 배경 교체가 뿌옇게 나왔다
+    // (팀 테스트 "자동보정된 결과를 기준으로 바껴서 뿌옇게 보이는거같아"). 이제 원본 또는 앞선 AI 결과에서만 시작한다.
+    async function runAiUpgrade(kind) {
+      var committed = false;
+      if (currentCorrectionCanvas && lastCorrectionMeta) { applyStep(); committed = true; }
+      var target = kind === 'mark' || kind === 'outfit' ? 'outfit' : 'ai'; // 배경은 버튼이 'ai', 테스트가 'bg'로 부른다
+      if (kind === 'mark') { outfitColorway = 'keep'; outfitEmblem = 'none'; } // 가슴만 다시 그린다(runEmblemRemoval)
+      if (kind === 'outfit') { outfitColorway = 'keep'; outfitEmblem = 'all'; } // 옷 전체, 원래와 비슷한 차분한 색
+      await selectMethod(target);
+      if (currentMethod !== target) {         // 동의 취소·준비 안 됨 — selectMethod가 «안 고른 상태»로 되돌렸다
+        if (committed) undoStep();
+        await selectMethod(null);
+      }
+    }
+
+    // 방식을 바꿀 때마다 하나씩 올라가는 번호. 기다리는 동안 다른 방식이 골라졌으면 늦게 끝난 쪽이 결과를 덮어쓰지 못하게 한다.
+    var methodSeq = 0;
+
     async function selectMethod(method) {
+      var mySeq = ++methodSeq;
       showTargetRedo(false);
       var previousMethod = currentMethod;
       currentMethod = method;
@@ -11901,14 +12568,107 @@
       // 굳이 볼 필요 없는 디버그 정보라 껐다. editPrompt 자체는 여전히 응답에 있고
       // console.log로는 남는다(검증 필요할 때 개발자도구로 확인 가능).
       editInstruction.style.display = 'none';
-      document.getElementById('blurStrength').style.display = method === 'blur' ? 'flex' : 'none';
-      document.getElementById('fillStyle').style.display = method === 'sticker' ? 'flex' : 'none';
-      document.getElementById('outfitStyle').style.display = method === 'outfit' ? 'flex' : 'none';
 
       clearPreviewBusy();
       var previewAfter = document.getElementById('previewAfter');
 
-      // ── 옷 손보기 — 색(로컬)과 교복 티 지우기(AI)를 조합한다.
+      // ── 아무것도 안 고른 상태 — 보정 화면에 들어왔을 때·동의를 거절했을 때. 지금까지 쌓은 결과(없으면 원본)를 보여준다.
+      if (method == null) {
+        if (correctionBaseUrl) previewAfter.src = correctionBaseUrl;
+        previewCaption.textContent = appliedSteps.length
+          ? '여기까지 바꿨어요. 더 바꿀 게 있으면 아래 단추를 눌러주세요.'
+          : '아래에서 바꿀 것을 골라주세요. 누를 때마다 사진이 AI(fal.ai)로 전송돼요.';
+        currentCorrectionCanvas = null; lastCorrectionMeta = null;
+        return;
+      }
+
+      // ── 자동 보정 — 브라우저 안에서만. 계획은 planAutoCorrection이 정한다.
+      // (10-27 화면에서 뺐다 — 부르는 곳이 없다. 코드는 다시 쓸 수 있게 남긴다.)
+      if (method === 'auto') {
+        if (!correctionBaseUrl || !lastFaceResult) {
+          previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
+          return;
+        }
+        var aFaces = lastFaceResult.faces || [];
+        var aTexts = getSelectedTexts();
+        var plan = planAutoCorrection(aTexts, lastOcrResult, aFaces);
+        renderAutoPlan(plan);
+        currentCorrectionCanvas = null; lastCorrectionMeta = null;
+        var 찾은게있음 = plan.cover || plan.uniform || plan.blur;
+        plan = { cover: plan.cover && !autoOff.cover, coverN: plan.coverN,
+                 uniform: plan.uniform && !autoOff.uniform, blur: plan.blur && !autoOff.blur };
+        if (찾은게있음 && !plan.cover && !plan.uniform && !plan.blur) {
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = '모든 단계를 껐어요 — 원본 그대로예요.';
+          return;
+        }
+        if (!plan.cover && !plan.uniform && !plan.blur) {
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = '자동으로 가릴 곳을 찾지 못했어요. «+ 놓친 곳 추가»로 직접 지정하거나, 아래 «AI로 더 다듬기»를 써보세요.';
+          return;
+        }
+        setPreviewBusy('자동으로 보정하는 중이에요\n사진은 밖으로 나가지 않아요');
+        try {
+          var aImg = await loadImage(correctionBaseUrl);
+          var aw = aImg.naturalWidth, ah = aImg.naturalHeight;
+          var aCanvas = null, coverTxt = '', colorTxt = '', blurTxt = '';
+          // ① 옷 색 — 원본 기준으로 옷 영역을 읽으므로 가장 먼저 한다(진단 때 만든 옷 마스크 캐시를 그대로 쓴다)
+          if (plan.uniform) {
+            try {
+              var pk = await pickAutoColorway(aImg, aFaces);
+              if (mySeq !== methodSeq) return;
+              aCanvas = await runOutfitRecolor(aImg, COLORWAYS[pk.key].hex);
+              colorTxt = '교복 색을 «' + COLORWAYS[pk.key].label + '»으로 바꿨어요'
+                + (pk.read ? '(원래 옷 색: ' + outfitColorsKo(pk.read) + ').' : '.');
+              if (plan.cover || plan.blur) aImg = await loadImage(aCanvas.toDataURL('image/png'));
+            } catch (re) {
+              if (!re.noClothes) throw re;
+              colorTxt = '교복 색은 옷 영역을 찾지 못해 건너뛰었어요.';
+            }
+          }
+          // ② 글자 덮기
+          if (plan.cover) {
+            aCanvas = applyPatchFill(aImg, aTexts, aw, ah, currentFill, currentFillPx, null);
+            var cs = coverSentences(aCanvas, aTexts);
+            coverTxt = [cs.swapText, cs.coverText, cs.keptText, cs.leftText].filter(Boolean).join(' ');
+          }
+          // ③ 배경 흐림 — 글자가 없을 때만. 사람을 못 갈라내고 얼굴도 없으면 사진 전체가 흐려지므로 하지 않는다.
+          if (plan.blur) {
+            var bMask = await getFullPersonMask(aImg, correctionBaseUrl);
+            if (mySeq !== methodSeq) return;
+            if (bMask || aFaces.length > 0) {
+              aCanvas = applyBackgroundBlur(aImg, aFaces, aw, ah, currentBlurPx, bMask);
+              blurTxt = '글자는 없지만 사진 속 장소가 알아볼 만해서 배경을 흐렸어요'
+                + (bMask && bMask._limbs ? '(손·팔·다리는 선명하게).' : '.');
+            } else {
+              blurTxt = '배경을 흐리려 했지만 사람을 찾지 못해 건너뛰었어요.';
+            }
+          }
+          if (mySeq !== methodSeq) return;
+          if (!aCanvas) {
+            previewAfter.src = correctionBaseUrl;
+            previewCaption.textContent = [colorTxt, blurTxt].filter(Boolean).join(' ') + ' 바뀐 곳이 없어요 — «+ 놓친 곳 추가»나 «AI로 더 다듬기»를 써보세요.';
+            return;
+          }
+          currentCorrectionCanvas = aCanvas;
+          previewAfter.src = aCanvas.toDataURL('image/png');
+          previewAfter.onload = renderCoverHandles;
+          previewCaption.textContent = [coverTxt, colorTxt, blurTxt].filter(Boolean).join(' ');
+          lastCorrectionMeta = { method: 'auto', detail: previewCaption.textContent };
+        } catch (err) {
+          console.error('[자동 보정] 실패:', err);
+          if (mySeq === methodSeq) {
+            previewAfter.src = correctionBaseUrl;
+            previewCaption.textContent = '⚠ 자동 보정에 실패했어요 (' + err.message + '). «AI로 더 다듬기»를 써보세요.';
+            currentCorrectionCanvas = null; lastCorrectionMeta = null;
+          }
+        } finally {
+          if (mySeq === methodSeq) clearPreviewBusy();
+        }
+        return;
+      }
+
+      // ── 옷 손보기 — 이제 AI 마크 지우기 경로로만 온다(runAiUpgrade('mark')). 색은 자동 보정이 한다.
       // 카드가 셋이던 것을 하나로 합쳤다(요청): 색만 바꾸기·마크만 지우기가 각각
       // 카드 안의 선택지와 같은 일을 하고 있었다.
       if (method === 'outfit') {
@@ -11916,14 +12676,22 @@
           previewCaption.textContent = '진단을 먼저 완료해야 미리보기를 만들 수 있어요.';
           return;
         }
-        var cwSel = COLORWAYS[outfitColorway] || COLORWAYS.brown;
+        var cwKey = outfitColorway, autoNote = '';
+        if (cwKey === 'auto') {
+          var au = await pickAutoColorway(await loadImage(correctionBaseUrl), (lastFaceResult && lastFaceResult.faces) || []);
+          cwKey = au.key;
+          autoNote = au.read
+            ? ' — 원래 옷 색(' + outfitColorsKo(au.read) + ')을 읽어 가장 달라 보이는 색으로 골랐어요'
+            : ' — 옷 색을 읽지 못해 기본 색으로 했어요';
+        }
+        var cwSel = COLORWAYS[cwKey] || COLORWAYS.brown;
         var emSel = outfitEmblem || 'keep';
         var wantColor = !cwSel.keepColors && !!cwSel.hex;
         var wantAi = emSel !== 'keep';
 
         if (!wantColor && !wantAi) {
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '색도 그대로, 마크도 그대로라 바뀌는 게 없어요. 위에서 색이나 마크 처리를 골라주세요.';
+          previewCaption.textContent = '바뀌는 게 없어요. 위에서 «색만 바꾸기», «마크만 지우기», «색 + 마크» 중에서 골라주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
         }
@@ -11934,7 +12702,7 @@
           if (!(await checkFluxStatus())) {
             previewAfter.src = correctionBaseUrl;
             previewCaption.textContent = '마크 지우기·옷 바꾸기는 fal.ai 연동 준비 중이에요. '
-              + '지금은 "교복 티 지우기"를 «그대로 두기»로 두고 색만 바꿔보세요.';
+              + '지금은 «색만 바꾸기»를 골라보세요.';
             currentCorrectionCanvas = null; lastCorrectionMeta = null;
             return;
           }
@@ -11970,7 +12738,7 @@
             currentCorrectionCanvas = reOut;
             baseUrl = reOut.toDataURL('image/png');
             didColor = true;
-            요약.push('색을 «' + cwSel.label + '»으로 바꿨어요(브라우저 안에서, 전송 없음)');
+            요약.push('색을 «' + cwSel.label + '»으로 바꿨어요(브라우저 안에서, 전송 없음)' + autoNote);
           }
 
           // ② 교복 티 — AI
@@ -11979,10 +12747,10 @@
               ? 'AI가 색은 그대로 두고 옷 모양을 바꾸는 중이에요\n10~20초 정도 걸려요'
               : 'AI가 옷을 ' + cwSel.label + ' 옷으로 바꾸는 중이에요\n10~20초 정도 걸려요');
             var ofImg = await loadImage(baseUrl);
-            var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult, outfitColorway, 'none');
+            var of = await runOutfitSwap(ofImg, ofFaces, lastRiskResult, cwKey, 'none');
             clearPreviewBusy();
             currentCorrectionCanvas = of.canvas;
-            요약.push(buildOutfitSummaryKo(outfitColorway, 'all')
+            요약.push(buildOutfitSummaryKo(cwKey, 'all')
               + (of.colors ? ' — 원래 옷 색을 사진에서 읽어 지정했어요(' + outfitColorsKo(of.colors) + ')'
                 : (cwSel.keepColors ? ' — 옷 색을 읽지 못해 AI가 무난한 색으로 그렸어요' : ''))
               + ' (약 $' + Number(of.data.estimatedCostUsd || 0).toFixed(2)
@@ -12005,7 +12773,7 @@
             : (wantAi
               ? ' 마크가 소매나 모자에 있었다면 남아 있을 수 있으니 꼭 눈으로 확인해주세요.'
               : ' 색이 있는 옷은 색조가 옮겨지고, 흰 옷·검정 옷은 살짝만 물들어요(밝기와 무늬 명암은 그대로). ⚠ 밝은 색 옷은 배경과 비슷해서 일부만 잡힐 수 있어요 — 안 바뀐 부분이 없는지 확인해주세요.'
-                + ' 가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, 위에서 «마크를 포켓으로»를 골라주세요.');
+                + ' 가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, 위에서 «색 + 마크»를 골라주세요.');
           previewCaption.textContent = '✨ ' + 요약.join(' 그리고 ') + '.' + 꼬리;
           lastCorrectionMeta = {
             method: 'outfit',
@@ -12041,64 +12809,32 @@
           return;
         }
 
-        previewCaption.textContent = 'AI가 배경을 새로 그리는 중이에요.';
-        setPreviewBusy('AI가 배경을 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요'); 
+        previewCaption.textContent = 'AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요.';
+        setPreviewBusy('AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요');
         editInstruction.textContent = '';
         currentCorrectionCanvas = null;
         try {
-          var fluxData = await runFluxBackgroundReplace(correctionBaseUrl, lastRiskResult, lastOcrResult);
-          var outImg = await loadImage(falImageDataUrl(fluxData));
-          // 비율 가드: kontext는 출력 해상도를 모델이 정하므로 원본과 달라질 수 있다.
-          // "처리 후에도 사진 비율은 원본과 같아야 한다"를 지키려고 원본 크기로 되돌린다.
-          var srcImg = await loadImage(correctionBaseUrl);
-          var outCanvas = document.createElement('canvas');
-          outCanvas.width = srcImg.naturalWidth;
-          outCanvas.height = srcImg.naturalHeight;
-          outCanvas.getContext('2d').drawImage(outImg, 0, 0, outCanvas.width, outCanvas.height);
-          // kontext가 원본에 없던 아이를 다른 자리에 하나 더 그려내는 경우가 있다 —
-          // 원본 아이를 다시 덮어쓰기 전, AI가 만든 순수한 결과만 있는 지금 검출해야
-          // "어디가 새로 생긴 자리인지"가 깨끗하게 보인다.
-          var origFaces = (lastFaceResult && lastFaceResult.faces) || [];
-          var hallucCheck = await removeHallucinatedPeople(outCanvas, origFaces,
-            outCanvas.width, outCanvas.height);
-          // kontext는 같은 아이도 원본과 완전히 같은 자리에 그려주지 않는다(실사용 제보 —
-          // 인물이 살짝 옆으로 밀려 그려짐). 아이가 둘 이상이면 서로 다른 방향으로 밀릴
-          // 수 있어서(실사용 확인 — 한 명만 맞추면 다른 한 명은 계속 이중 인화로 남음),
-          // 평균 하나로 뭉치지 않고 얼굴마다 자기 짝의 어긋남을 따로 잰다.
-          var facePairs = matchFaces(origFaces, hallucCheck.resultFaces).pairs;
-          var alignOffsets = origFaces.map(function (of) {
-            var pair = facePairs.filter(function (p) { return p.of === of; })[0];
-            if (!pair) return { dx: 0, dy: 0 };
-            var ocx = of.box.x + of.box.width / 2, ocy = of.box.y + of.box.height / 2;
-            var rcx = pair.rf.box.x + pair.rf.box.width / 2, rcy = pair.rf.box.y + pair.rf.box.height / 2;
-            return { dx: rcx - ocx, dy: rcy - ocy };
-          });
-          if (alignOffsets.some(function (o) { return Math.abs(o.dx) > 1 || Math.abs(o.dy) > 1; })) {
-            console.log('[AI배경교체] 인물 위치 어긋남 보정 — ' + alignOffsets.map(function (o, i) {
-              return (i + 1) + '번: dx=' + Math.round(o.dx) + ' dy=' + Math.round(o.dy);
-            }).join(', '));
-          }
-          // 프롬프트로 부탁하는 것과 별개로, 인물 영역은 원본으로 되돌려 확실히 막는다.
-          // 픽셀 단위 마스크를 쓰면 사람만 정확히 되돌아온다 — 도형으로 덮던 때는
-          // 사진의 57%가 원본이 되어 AI가 한 일이 거의 안 보였다.
-          var aiMask = await getPersonMask(srcImg, correctionBaseUrl);
-          restorePersonFromOriginal(outCanvas, srcImg, origFaces,
-            outCanvas.width, outCanvas.height, aiMask, alignOffsets);
-          if (outImg.naturalWidth !== srcImg.naturalWidth || outImg.naturalHeight !== srcImg.naturalHeight) {
-            console.log('[AI배경교체] 크기 보정 — ' + outImg.naturalWidth + 'x' + outImg.naturalHeight
-              + ' -> ' + outCanvas.width + 'x' + outCanvas.height);
-          }
+          // 예전 kontext 경로의 후처리(원본에 없던 아이 지우기·인물 어긋남 맞추기·원본 인물 덮어쓰기·비율 가드)는
+          // 필요 없다 — fill은 마스크 바깥(사람)을 바꾸지 않고 출력 크기도 입력과 같다(2026-08-21 실측).
+          // 그 덮어쓰기가 이중 테두리의 원인이었다(위 buildBackgroundMask 설명).
+          var bgImg = await loadImage(correctionBaseUrl);
+          var bg = await runBackgroundFill(bgImg, (lastFaceResult && lastFaceResult.faces) || [], lastRiskResult, lastOcrResult);
+          if (mySeq !== methodSeq) return;
           clearPreviewBusy();
-          currentCorrectionCanvas = outCanvas;
-          previewAfter.src = outCanvas.toDataURL('image/png');
-          previewCaption.textContent = '✨ AI가 위험 배경을 새로 그렸어요 — 아이 영역은 원본을 그대로 덮어써서 지켰어요. (약 $' + fluxData.estimatedCostUsd.toFixed(2) + ', ' + Math.round(fluxData.timingMs / 1000) + '초)';
-          editInstruction.textContent = '사용된 편집 지시(영문): ' + fluxData.editPrompt;
-          lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 편집 지시: ' + fluxData.editPrompt };
+          currentCorrectionCanvas = bg.canvas;
+          previewAfter.src = bg.canvas.toDataURL('image/png');
+          previewCaption.textContent = '✨ 사람은 원본 그대로 두고 배경만 새로 그렸어요. 간판·건물 이름이 남아 있지 않은지 꼭 눈으로 확인해주세요. (약 $'
+            + Number(bg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(bg.data.timingMs / 1000) + '초)';
+          editInstruction.textContent = '사용된 배경 지시(영문): ' + bg.data.editPrompt;
+          lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 사람은 마스크로 보존, 배경 지시: ' + bg.data.editPrompt };
         } catch (err) {
+          if (mySeq !== methodSeq) return;
           clearPreviewBusy();
-          console.error('[AI배경교체] 실패:', err);
+          console.error('[배경교체] 실패:', err);
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '⚠ AI 배경교체에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
+          previewCaption.textContent = err.noPerson
+            ? '⚠ 사진에서 사람을 찾지 못해서 배경을 안전하게 바꿀 수 없어요.'
+            : '⚠ AI 배경교체에 실패했어요 (' + err.message + ').';
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
         }
@@ -12121,49 +12857,34 @@
         // 사람을 픽셀 단위로 갈라낸다. 처음 한 번은 모델을 받느라 1초쯤 걸린다.
         var blurMask = null;
         try {
-          if (!personMaskCache.canvas || personMaskCache.key !== correctionBaseUrl) {
-            setPreviewBusy('사람과 배경을 갈라내는 중이에요\n처음 한 번만 잠깐 걸려요');
+          if (!fullPersonMaskCache.canvas || fullPersonMaskCache.key !== correctionBaseUrl) {
+            setPreviewBusy('사람(손·팔·다리까지)과 배경을 갈라내는 중이에요\n처음 한 번은 모델을 받느라 조금 더 걸려요');
           }
-          blurMask = await getPersonMask(img, correctionBaseUrl);
+          blurMask = await getFullPersonMask(img, correctionBaseUrl);
         } finally {
-          clearPreviewBusy();
+          if (mySeq === methodSeq) clearPreviewBusy();
         }
+        // 마스크를 기다리는 사이 다른 방식을 골랐으면 그쪽 결과를 덮어쓰지 않는다. 옷 분할 모델(16MB)을 처음 받을 때는
+        // 이 기다림이 몇 초가 될 수 있어서, 들어서자마자 기본 방식(흐림)이 늦게 끝나 방금 고른 방식의 미리보기를 지우는 일이 있었다.
+        if (mySeq !== methodSeq) return;
         canvas = applyBackgroundBlur(img, faces, img.naturalWidth, img.naturalHeight, currentBlurPx, blurMask);
         // 안내는 실제로 무엇을 기준으로 남겼는지 그대로 말해야 한다.
         // 예전에는 얼굴을 못 찾아 사진 전체가 흐려졌는데도 "배경만 흐려진다"고 적혀 있었다.
         previewCaption.textContent = blurMask
-          ? '사람 윤곽을 그대로 따라 배경만 흐렸어요. 팔이나 다리가 잘렸으면 흐림 정도를 낮추거나 다른 방식을 써주세요.'
+          ? (blurMask._limbs
+            ? '사람 윤곽(손·팔·다리 포함)을 따라 배경만 흐렸어요.'
+            : '사람 윤곽을 따라 배경만 흐렸어요. 팔이나 다리가 잘렸으면 흐림 정도를 낮추거나 다른 방식을 써주세요.')
           : (faces.length > 0
             ? '사람을 정확히 갈라내지 못해 얼굴 기준으로 대략 남겼어요 — 인물 주변 배경도 함께 선명할 수 있어요.'
             : '사람을 찾지 못해서 사진 전체가 흐려졌어요. 지금은 글자를 가리는 용도로만 쓸 수 있어요.');
       } else if (method === 'sticker') {
-        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx,
-          brushMaskHasPaint() ? brushMaskCanvas : null);
-        // 처리 내역에는 브러시로 칠한 것도 반드시 들어가야 한다. 예전에는 글자 개수만
-        // 보고 "찾지 못해 원본 그대로"라고 적었는데, 그 문장이 3단계 재검증으로 그대로
-        // 넘어가서 브러시로 엠블럼을 가려도 "전혀 처리되지 않았다"는 판정이 나왔다.
-        var painted = brushMaskHasPaint();
-        var howText = currentFill === 'mosaic' ? '모자이크로'
-          : currentFill === 'color' ? '주변 배경색으로' : '주변 배경에 맞춰';
-        // 기관 이름을 바꿔 쓴 것은 원래 이름을 적지 않는다 — 이 문장이 3단계 재검증으로 넘어가는데,
-        // 지운 이름을 다시 적으면 검증하는 쪽에 답을 알려 주는 셈이다.
-        var swapped = canvas._replaced || [];
-        var keptN = canvas._kept || 0;
-        var coveredN = texts.length - swapped.length - keptN;
-        var doneParts = [];
-        if (coveredN > 0) doneParts.push('글자 ' + coveredN + '곳');
-        if (painted) doneParts.push('직접 칠한 영역');
-        var swapText = swapped.length > 0
-          ? '기관 이름 ' + swapped.length + '곳을 “' + swapped.filter(function (g, i) { return swapped.indexOf(g) === i; }).join('·')
-            + '”처럼 일반 이름으로 바꿔 썼어요.'
-          : '';
-        var coverText = doneParts.length > 0 ? doneParts.join('과 ') + '을 ' + howText + ' 덮었어요.' : '';
-        var keptText = keptN > 0 ? '“어린이집”처럼 이미 일반 이름인 글자는 그대로 뒀어요.' : '';
-        previewCaption.textContent = (swapText || coverText || keptText)
-          ? [swapText, coverText, keptText].filter(Boolean).join(' ')
-          : (brushAvailable()
-            ? '아직 덮은 곳이 없어요 — 위 목록에서 항목을 고르거나 브러시로 직접 칠해보세요.'
-            : '아직 덮은 곳이 없어요 — 위 목록에서 처리할 항목을 골라주세요.');
+        canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx, null);
+        var cs2 = coverSentences(canvas, texts);
+        previewCaption.textContent = (cs2.swapText || cs2.coverText || cs2.keptText)
+          ? [cs2.swapText, cs2.coverText, cs2.keptText, cs2.leftText].filter(Boolean).join(' ')
+          : (cs2.leftText
+            ? '덮을 만한 글자가 없었어요. ' + cs2.leftText + ' 덮고 싶으면 위 목록에서 체크해 주세요.'
+            : '아직 덮은 곳이 없어요 — 위 목록에서 처리할 항목을 고르거나 «+ 놓친 곳 추가»를 눌러주세요.');
       }
 
       currentCorrectionCanvas = canvas;
@@ -12171,64 +12892,9 @@
         previewAfter.onload = renderCoverHandles;
       lastCorrectionMeta = { method: method, detail: previewCaption.textContent };
     }
-    methodCards.forEach(function (card) {
-      card.addEventListener('click', function () { selectMethod(card.dataset.method); });
-    });
-    document.getElementById('applyStepBtn').addEventListener('click', applyStep);
-
-    document.querySelectorAll('.ct-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.ct-btn').forEach(function (b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
-        coverEditMode = btn.dataset.edit;
-        renderCoverHandles();
-      });
-    });
-
-    var brushSizeEl = document.getElementById('brushSize');
-    var brushSizeValueEl = document.getElementById('brushSizeValue');
-    brushSizeEl.addEventListener('input', function () {
-      brushSizePx = Number(brushSizeEl.value);
-      brushSizeValueEl.textContent = brushSizePx;
-      var layer = document.querySelector('#previewFrame .brush-layer');
-      if (layer) layer.style.cursor = brushCursorCss(); // 커서도 같은 굵기로
-    });
-
-    document.getElementById('brushErase').addEventListener('change', function () {
-      brushErasing = this.checked;
-      renderCoverHandles(); // 커서 모양을 바꾸기 위해 다시 그린다
-    });
-
-    document.getElementById('brushUndo').addEventListener('click', undoBrushStroke);
-    // 그림 도구에서 Ctrl+Z는 당연히 되어야 한다. 입력칸에 있을 때는 글자 되돌리기가
-    // 우선이므로 가로채지 않는다.
-    document.addEventListener('keydown', function (ev) {
-      if (!(ev.ctrlKey || ev.metaKey) || String(ev.key).toLowerCase() !== 'z' || ev.shiftKey) return;
-      if (coverEditMode !== 'brush' || brushStrokes.length === 0) return;
-      var t = ev.target;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-      ev.preventDefault();
-      undoBrushStroke();
-    });
-
-    var fillPixelEl = document.getElementById('fillPixel');
-    var fillPixelValueEl = document.getElementById('fillPixelValue');
-    var fillPixelTimer = null;
-    fillPixelEl.addEventListener('input', function () {
-      currentFillPx = Number(fillPixelEl.value);
-      fillPixelValueEl.textContent = currentFillPx;
-      clearTimeout(fillPixelTimer);
-      fillPixelTimer = setTimeout(function () { selectMethod('sticker'); }, 140);
-    });
-
-    document.querySelectorAll('.fs-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.fs-btn').forEach(function (b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
-        currentFill = btn.dataset.fill;
-        selectMethod('sticker');
-      });
-    });
+    document.getElementById('aiMarkBtn').addEventListener('click', function () { runAiUpgrade('mark'); });
+    document.getElementById('aiBgBtn').addEventListener('click', function () { runAiUpgrade('ai'); });
+    document.getElementById('aiOutfitBtn').addEventListener('click', function () { runAiUpgrade('outfit'); });
 
     // "고른 것으로 다시 만들기" — AI 방식에서 체크를 고친 뒤 직접 누를 때만 돈이 나간다
     (function () {
@@ -12245,50 +12911,6 @@
       if (!btn) return;
       btn.addEventListener('click', addMissedTarget);
     })();
-
-    // 컬러체인지 / 엠블럼 처리 버튼 — 고르면 옷 방식 미리보기를 그 자리에서 다시 만든다
-    document.querySelectorAll('.cw-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.cw-btn').forEach(function (b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
-        outfitColorway = btn.dataset.cw;
-        var cwTag = document.getElementById('cwSampleTag');
-        if (cwTag) {
-          var cwd = COLORWAYS[outfitColorway];
-          cwTag.textContent = '';
-        }
-        if (currentMethod === 'outfit') selectMethod('outfit');
-      });
-    });
-    document.querySelectorAll('.em-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.em-btn').forEach(function (b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
-        outfitEmblem = btn.dataset.em;
-        if (currentMethod === 'outfit') selectMethod('outfit');
-      });
-    });
-
-    var blurRangeEl = document.getElementById('blurRange');
-    var blurValueEl = document.getElementById('blurRangeValue');
-    var blurRenderTimer = null;
-
-    function blurLabelFor(px) {
-      if (px <= 8) return '약하게 ' + px;
-      if (px <= 14) return '조금 ' + px;
-      if (px <= 24) return '보통 ' + px;
-      if (px <= 33) return '강하게 ' + px;
-      return '아주 강하게 ' + px;
-    }
-
-    blurRangeEl.addEventListener('input', function () {
-      currentBlurPx = Number(blurRangeEl.value);
-      blurValueEl.textContent = blurLabelFor(currentBlurPx); // 라벨은 즉시 반응
-      // 미리보기는 손을 멈춘 뒤에 그린다 — 매 픽셀마다 다시 그리면 큰 사진에서 버벅인다
-      clearTimeout(blurRenderTimer);
-      blurRenderTimer = setTimeout(function () { selectMethod('blur'); }, 140);
-    });
-    blurValueEl.textContent = blurLabelFor(Number(blurRangeEl.value));
 
     document.getElementById('downloadResultBtn').addEventListener('click', async function () {
       var out = await getFinalCanvas();
@@ -12332,7 +12954,8 @@
         var ctx = currentCorrectionCanvas.getContext('2d');
         var done = 0, failed = 0;
         for (var i = 0; i < regions.length; i++) {
-          statusEl.textContent = '처리 중… (' + (i + 1) + '/' + regions.length + ')';
+          statusEl.textContent = '';
+          setAiWait('AI가 간판 글자를 바꾸는 중이에요 (' + (i + 1) + '/' + regions.length + ')\n곳마다 시간이 걸려요');
           try {
             var r = await runSignTextAiRewrite(cleanImg, imgW, imgH, regions[i]);
             // nano-banana는 보낸 crop과 다른 자체 해상도로 돌려준다(실측: 370x107 보냈는데
@@ -12351,12 +12974,13 @@
           : '✓ ' + done + '곳 완료, ' + failed + '곳 실패(콘솔 참고)';
       } finally {
         btn.disabled = false;
+        setAiWait('');
       }
     });
 
     // ===== 3단계: 결과 재검증 (프롬프트 문서 5번) =====
     var VERIFY_BACKEND_URL = '/api/verify-correction';
-    var METHOD_LABEL = { blur: '배경 흐림', sticker: '자연스럽게 덮기', outfit: 'AI 옷 바꾸기', ai: 'AI 배경교체' };
+    var METHOD_LABEL = { auto: '자동 보정', blur: '배경 흐림', sticker: '자연스럽게 덮기', outfit: 'AI 마크 지우기', ai: 'AI 배경교체' };
 
     // 여러 얼굴 중 가장 큰(주요) 얼굴 기준으로 개수/크기/각도 요약 — 원본·처리후 비교용
     function pickPrimaryFaceStats(faces) {
@@ -12558,9 +13182,6 @@
       fluxConsentGiven = false; // 새 사진이면 동의를 다시 받는다
       signAiConsentGiven = false; // 간판 글자 AI 교체 모달도 "이 사진을 처리하는 동안"이라고 약속했다
       var signAiStatusEl = document.getElementById('signAiStatus'); if (signAiStatusEl) signAiStatusEl.textContent = '';
-      resetBrush();             // 칠한 것과 획 기록도 사진마다 초기화
-      brushErasing = false;
-      var be = document.getElementById('brushErase'); if (be) be.checked = false;
       document.getElementById('captionInput').value = '';
       document.getElementById('backgroundNotes').value = '';
       document.getElementById('debugPanel').style.display = 'none';
@@ -12671,6 +13292,12 @@
       describeOutfitColors: describeOutfitColors,
       runWidthAt: runWidthAt, // 옆 아이 몸까지 폭에 잡히는지 검증용
       outfitColorsKo: outfitColorsKo,
+      chooseColorwayAgainstForTest: chooseColorwayAgainst, // 옷 색 «자동» 선택 로직(순수 함수) 검증용
+      setFaceForTest: function (f) { lastFaceResult = f; }, // 자동 보정 흐름을 API 없이 구동하는 테스트용
+      planAutoCorrectionForTest: planAutoCorrection, // 자동 보정이 어떤 단계를 돌릴지(순수 함수)
+      renderAutoPlanForTest: renderAutoPlan,
+      runAiUpgradeForTest: runAiUpgrade,
+      pickAutoColorwayForTest: pickAutoColorway, // 사진에서 옷 색을 읽어 «자동» 조합을 고르는 전체 경로(비용 0)
       emblemPromptsForTest: function () { return { fill: EMBLEM_FILL_PROMPT, pocket: EMBLEM_POCKET_PROMPT }; },
       colorwaysForTest: function () { return Object.keys(COLORWAYS); },
       falSendSizeForTest: falSendSize,
@@ -12685,18 +13312,21 @@
       faceBoxOverlapRatioForTest: faceBoxOverlapRatio,
       computeAlignmentOffset: computeAlignmentOffset,
       matchFacesForTest: matchFaces,
-      runFluxBackgroundReplace: runFluxBackgroundReplace, // 실제 fal 호출 검증용 (비용 발생)
+      runBackgroundFill: runBackgroundFill, // 실제 fal 호출 검증용 (비용 발생) — 사람이 없으면 보내기 전에 멈춘다
+      buildBackgroundMask: buildBackgroundMask,
       findSignSwapRegions: findSignSwapRegions, // 비용 0 — 순수 계산만
       runSignTextAiRewrite: runSignTextAiRewrite, // 실제 fal(nano-banana) 호출 검증용 (비용 발생)
       runLocationCheckPipeline: runLocationCheckPipeline, // 실제 Google Vision 호출 검증용 (무료 한도 내)
       computeSubjectRegion: computeSubjectRegion,
       applyBackgroundBlur: applyBackgroundBlur,
       getPersonMask: getPersonMask,
+      getFullPersonMask: getFullPersonMask, // 팔·다리까지 포함한 인물 마스크(배경 흐림·AI 배경 교체)
       readExifGps: readExifGps,
       locationCardValuesForTest: locationCardValues,
       setExifForTest: function (v) { lastExifResult = v; },
       parseExifBuffer: parseExifBuffer,
       getClothesMask: getClothesMask,
+      dropObjectClothesForTest: dropObjectClothes, // 사람 흔적 없는 큰 옷 덩어리 거르기(합성 배열로 검증)
       isPlaceWord: isPlaceWord,  // 장소 글자 판정 — 세 곳이 공유하는 단일 자리
       landmarkPoints: landmarkPoints,      // 알아볼 수 있는 장소가 위치를 좁히는 정도
       scoredLandmarks: scoredLandmarks,
@@ -12707,6 +13337,7 @@
       clearPersonMaskCache: clearPersonMaskCache,
       applyPatchFill: applyPatchFill,
       genericNameFor: genericNameFor,
+      isGenericWordingForTest: isGenericWording, // 덮지 않아도 되는 안내 문구 판정
       visionLinesToTargets: visionLinesToTargets,
       refineWordsWithVisionLines: refineWordsWithVisionLines,
       sampleBoxSurround: sampleBoxSurround,
@@ -12716,6 +13347,10 @@
       runOutfitRecolor: runOutfitRecolor, // 옷 색만 바꾸기 (비용 0)
       consentMethodsForTest: CONSENT_METHODS,
       buildEmblemMask: buildEmblemMask,   // 가슴 마스크 검증용 (비용 0)
+      findLogoRects: findLogoRects,       // 로고·이름표 자리 찾기 검증용 (비용 0)
+      buildLogoMask: buildLogoMask,
+      prefillWithSurround: prefillWithSurround,
+      runEmblemRemovalForTest: runEmblemRemoval, // 보내는 사진·마스크를 가로채 보는 검증용 (요청은 테스트가 막는다)
       cropChestZoomed: cropChestZoomed,   // 가슴 확대 조각 (비용 0)
       hasBelongClue: hasBelongClue,
       isBelongClue: isBelongClue,          // 소속 단서 판정 — 세 곳이 공유하는 단일 자리
@@ -12769,7 +13404,6 @@
         renderAppliedSteps();
       },
       stackPending: function (canvas, meta) { currentCorrectionCanvas = canvas; lastCorrectionMeta = meta; },
-      brushStrokeCount: function () { return brushStrokes.length; },
       setMethodForTest: function (m) { currentMethod = m; },
       // 핀 고정 단계 검증용
       stepsState: function () {
@@ -12802,10 +13436,6 @@
         };
       },
       renderCoverHandles: renderCoverHandles,
-      setCoverEditMode: function (m) { coverEditMode = m; },
-      getCoverEditMode: function () { return coverEditMode; },
-      undoBrushStroke: undoBrushStroke,
-      brushCursorCss: brushCursorCss,
       applyStep: applyStep,
       undoStep: undoStep,
       getFinalCanvas: getFinalCanvas,
@@ -12818,29 +13448,16 @@
   /* 폰 전용 인터랙션 두 가지. 큰 스크립트와 따로 둔 이유: 이 요소들이 없거나 데스크톱이면
      아무 일도 안 하고, 큰 스크립트가 어디서 깨져도 이쪽은 살아 있게 하려는 것. */
   (function () {
-    // 1) 보정 방식 시트
+    // 1) 보정 내용 시트 (폰에서만 아래에서 올라온다 — 데스크톱에서는 그냥 왼쪽 칸이다)
     var screen = document.getElementById('screen-correct');
     var row = document.getElementById('methodRow');
-    var val = document.getElementById('methodRowValue');
-    var grid = document.getElementById('methodGrid');
     var sheet = screen && screen.querySelector('.correct-left');
-    if (screen && row && val && grid && sheet) {
-      var nameOf = function (card) {
-        var t = card && card.querySelector('.m-title');
-        if (!t) return '';
-        var out = '';
-        t.childNodes.forEach(function (n) { if (n.nodeType === 3) out += n.textContent; });
-        return out.replace(/\s+/g, ' ').trim();
-      };
-      var refresh = function () {
-        var n = nameOf(grid.querySelector('.method-card.selected'));
-        if (n) val.textContent = n;
-      };
+    if (screen && row && sheet) {
       var setOpen = function (open) {
         screen.classList.toggle('sheet-open', open);
         row.setAttribute('aria-expanded', open ? 'true' : 'false');
         // 시트일 때만 대화상자다 — 데스크톱에서는 그냥 왼쪽 칸이라 역할을 붙이면 거짓이 된다
-        if (open) { sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', '보정 방식 선택'); }
+        if (open) { sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-label', '보정 내용'); }
         else { sheet.removeAttribute('role'); sheet.removeAttribute('aria-modal'); sheet.removeAttribute('aria-label'); }
         var target = open ? sheet.querySelector('.sheet-close') : row;
         if (target && target.focus) target.focus({ preventScroll: true });
@@ -12853,13 +13470,10 @@
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && screen.classList.contains('sheet-open')) setOpen(false);
       });
-      // 방식은 프런트가 클래스로 고른다(동의 취소로 blur로 되돌아갈 때도) — 그걸 지켜본다
-      new MutationObserver(refresh).observe(grid, { subtree: true, attributes: true, attributeFilter: ['class'] });
       // 화면이 닫히면(다른 단계로 가면) 시트도 닫는다 — 안 그러면 돌아왔을 때 열려 있다
       new MutationObserver(function () {
         if (screen.style.display === 'none') screen.classList.remove('sheet-open');
       }).observe(screen, { attributes: true, attributeFilter: ['style'] });
-      refresh();
     }
 
     // 4) 위험 항목 칩 + 시트. 칩은 점수 내역 행(#sbList li)에서 만들고, 시트도 그 행에서 읽는다 —
@@ -13281,7 +13895,55 @@
         var to = a.getAttribute('data-menu');
         var target = to === '진단' ? document.getElementById('appFab') : document.querySelector('.app-tab[data-goto="' + to + '"]');
         if (target) target.click();
+        // 알아보기의 특정 쪽(#why 등)을 가리키면 그 쪽을 연다
+        var id = (a.getAttribute('href') || '').replace('#', '');
+        if (to === '알아보기' && id) 쪽으로(id);
       });
     });
+
+    // 3) 알아보기 쪽 넘기기 — 섹션 하나가 한 쪽이다. 폰 CSS가 data-page-on이 없는 섹션을 숨긴다
+    //    (데스크톱에는 그 규칙이 없어서 다 보인다). 버튼·점·옆으로 밀기로 넘긴다.
+    var 쪽들 = Array.prototype.slice.call(document.querySelectorAll('section[data-tab-of="알아보기"]'));
+    var 지금쪽 = 0;
+    var dots = document.getElementById('pagerDots');
+    function 쪽보이기(i) {
+      if (!쪽들.length) return;
+      지금쪽 = Math.max(0, Math.min(쪽들.length - 1, i));
+      쪽들.forEach(function (s, k) { if (k === 지금쪽) s.setAttribute('data-page-on', ''); else s.removeAttribute('data-page-on'); });
+      if (dots) dots.innerHTML = 쪽들.map(function (_, k) { return '<i' + (k === 지금쪽 ? ' class="on"' : '') + '></i>'; }).join('');
+      var num = document.getElementById('pagerNum');
+      if (num) num.textContent = (지금쪽 + 1) + ' / ' + 쪽들.length;
+      document.getElementById('pagerPrev').disabled = 지금쪽 === 0;
+      document.getElementById('pagerNext').disabled = 지금쪽 === 쪽들.length - 1;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    function 쪽으로(id) {
+      var k = 쪽들.findIndex(function (s) { return s.id === id || s.querySelector('#' + id); });
+      쪽보이기(k < 0 ? 0 : k);
+    }
+    if (쪽들.length && document.getElementById('appPager')) {
+      쪽보이기(0);
+      document.getElementById('pagerPrev').addEventListener('click', function () { 쪽보이기(지금쪽 - 1); });
+      document.getElementById('pagerNext').addEventListener('click', function () { 쪽보이기(지금쪽 + 1); });
+      var 알아보기탭 = document.querySelector('.app-tab[data-goto="알아보기"]');
+      if (알아보기탭) 알아보기탭.addEventListener('click', function () { 쪽보이기(0); });
+      // 옆으로 밀기. 예시 피드처럼 자기도 옆으로 넘기는 칸 안에서 시작한 밀기는 그 칸 몫이다.
+      var x0 = null, y0 = 0;
+      document.addEventListener('touchstart', function (e) {
+        x0 = null;
+        if (document.documentElement.getAttribute('data-tab') !== '알아보기') return;
+        for (var el = e.target; el && el !== document.body; el = el.parentElement) {
+          var ox = getComputedStyle(el).overflowX;
+          if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth) return;
+        }
+        x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+      }, { passive: true });
+      document.addEventListener('touchend', function (e) {
+        if (x0 === null) return;
+        var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        x0 = null;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) 쪽보이기(지금쪽 + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+    }
   })();
 </script>

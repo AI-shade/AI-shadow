@@ -36,8 +36,7 @@ const MAKE = `(function (r, g, bl) {
 
   let st = await p.evaluate(() => window.__anshimTest.stackState());
   check('처음엔 쌓인 게 없다', st.steps.length === 0 && st.history === 0);
-  check('처음엔 안내문이 보인다',
-    await p.evaluate(() => getComputedStyle(document.getElementById('stackEmpty')).display) === 'block');
+  // «겹쳐 쓸 수 있어요» 안내와 «방식 더 얹기» 단추는 없앴다(자동 보정 + AI 더 다듬기가 같은 일을 한다). 쌓인 단계 목록과 되돌리기는 남아 있다.
 
   // 적용할 결과가 없으면 아무 일도 없어야 한다
   p.once('dialog', d => d.dismiss());
@@ -55,8 +54,7 @@ const MAKE = `(function (r, g, bl) {
   check('1단계가 쌓인다', st.steps.length === 1 && st.steps[0].method === 'blur', JSON.stringify(st.steps));
   check('기준 사진이 1단계 결과로 바뀐다', st.base !== white && st.base.indexOf('data:image/png') === 0);
   check('되돌리기용 이전 사진이 보관된다', st.history === 1, String(st.history));
-  check('쌓인 뒤엔 안내문이 사라진다',
-    await p.evaluate(() => getComputedStyle(document.getElementById('stackEmpty')).display) === 'none');
+  check('겹쳐 쓰기 안내·단추가 없다', !(await p.evaluate(() => !!document.getElementById('stackEmpty') || !!document.getElementById('applyStepBtn'))));
 
   const rows1 = await p.evaluate(() => [...document.querySelectorAll('#stackList li')].map(li => ({
     text: li.querySelector('.st-text').textContent,

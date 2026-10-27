@@ -37,6 +37,10 @@ flux검증_클로즈업_인물.png
 childphoto.jpeg
 wed.jpg
 아이사진*.jpg
+# 카톡으로 받은 실제 학생 사진(로고 찾기 실험용)과, 실제 사람 사진이 든 테스트 결과 보고서
+KakaoTalk_*
+*버그 보고서.pdf
+*결과보고서.pdf
 # test/background-replace-live.js가 childphoto.jpeg에서 만들어내는 얼굴 검출 기준
 # 사진(test/hallucinated-people.js가 읽음) — 같은 아이 얼굴이 그대로 담겨 있다.
 test/real-face-fixture.png

@@ -115,6 +115,33 @@ async function main() {
     edge.낮은얼굴.y1 <= IMG.h && edge.낮은얼굴.y0 >= 0,
     'y ' + Math.round(edge.낮은얼굴.y0) + '~' + Math.round(edge.낮은얼굴.y1));
 
+  // 옷 분할이 사람 아닌 것(입간판·돗자리)을 옷으로 잡으면 옷 교체가 그 물체를 다시 그려 망가뜨린다 —
+  // 햇살어린이집 사진(정답표 사진6)에서 입간판 아랫부분(사진의 7.7%)이 옷으로 잡혀 «원생 모집»이 지워졌다.
+  // 사람 흔적(인물 분리 안 30% 이상 · 머리카락/맨살이 가까이)이 없는 큰(≥3%) 덩어리만 뺀다. 합성 배열로 잰다(모델 없음).
+  console.log('\n사람 흔적 없는 큰 옷 덩어리는 마스크에서 뺀다');
+  const drop = await page.evaluate(() => {
+    const W = 640, H = 360, T = window.__anshimTest;
+    const cls = new Uint8Array(W * H), px = new Uint8ClampedArray(W * H * 4);
+    const fill = (c, x0, y0, x1, y1) => { for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { cls[y * W + x] = c; if (c === 4) px[(y * W + x) * 4 + 3] = 255; } };
+    fill(1, 300, 40, 340, 70); fill(3, 300, 70, 340, 110); fill(4, 290, 112, 350, 260);   // 사람: 머리카락·얼굴·몸통(8,880px = 3.9%)
+    fill(4, 30, 200, 210, 340);                                                          // 입간판: 25,200px = 10.9%, 사람 흔적 없음
+    fill(4, 500, 300, 540, 330);                                                         // 작은 물체(0.5%) — 멀리 선 사람일 수 있다
+    fill(4, 400, 60, 520, 150);                                                          // 큰 덩어리지만 인물 분리 안에 있다
+    fill(4, 30, 20, 130, 110); fill(2, 130, 60, 150, 90);                                // 큰 덩어리 + 바로 옆에 맨살
+    const person = document.createElement('canvas'); person.width = W; person.height = H;
+    const pc = person.getContext('2d'); pc.fillStyle = '#fff';
+    pc.fillRect(290, 40, 60, 220); pc.fillRect(400, 60, 120, 90);
+    const removed = T.dropObjectClothesForTest(px, cls, W, H, person);
+    const a = (x, y) => px[(y * W + x) * 4 + 3];
+    return { removed, 간판: a(120, 270), 사람몸통: a(320, 180), 작은물체: a(520, 315), 인물분리안: a(460, 100), 맨살옆: a(80, 60), 간판가장자리: a(31, 201) + a(209, 339) };
+  });
+  check('입간판 모양 덩어리(사람 흔적 없음, 10.9%)는 뺀다', drop.간판 === 0 && drop.간판가장자리 === 0, '가운데 ' + drop.간판 + ' · 가장자리 ' + drop.간판가장자리);
+  check('사람 몸통(머리카락·얼굴 바로 아래)은 그대로 둔다', drop.사람몸통 === 255);
+  check('3% 미만 작은 덩어리는 흔적이 없어도 둔다 (멀리 선 사람의 옷일 수 있다)', drop.작은물체 === 255);
+  check('인물 분리 안에 든 큰 덩어리는 둔다', drop.인물분리안 === 255);
+  check('맨살이 바로 옆에 있는 큰 덩어리는 둔다', drop.맨살옆 === 255);
+  check('뺀 픽셀 수는 간판 하나분(25,200)이다', drop.removed >= 25000 && drop.removed <= 25400, String(drop.removed));
+
   if (errors.length) {
     console.log('\n  페이지 에러: ' + errors.join(' | '));
     fail++;

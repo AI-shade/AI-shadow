@@ -87,7 +87,10 @@ const 폭들 = [390, 430, 560];
       // 예전 검사는 #screen-result 전체가 844px에 들어가는지 봤는데, 그 기준으로는
       // 사진을 숨겨야만 통과한다 — 사진이 이 화면의 주인공이라 기준 쪽이 틀렸다.
       const 사진 = document.querySelector('#screen-result > .rcard-detect');
-      const 히어로 = document.querySelector('#screen-result .gauge-wrap');
+      // 히어로 = 오각형 + 등급 + 결론 한 줄. 그 밑의 항목 목록(가이드 배치, 10-27)은 스크롤로 이어진다 —
+      // .gauge-wrap 전체로 재면 목록까지 첫 화면에 넣으라는 말이 된다.
+      const 히어로 = [document.getElementById('riskLine'), document.querySelector('#screen-result .gauge-meta')]
+        .find((e) => e && e.getClientRects().length && e.getBoundingClientRect().height > 0);
       return {
         높이: Math.round(el.getBoundingClientRect().height),
         // sticky든 fixed든 "화면 아래에 붙어 있다"가 요구사항이다
@@ -118,9 +121,7 @@ const 폭들 = [390, 430, 560];
 
     const 보정 = await page.evaluate(() => {
       const el = document.getElementById('screen-correct');
-      const cards = [...document.querySelectorAll('.method-card')]
-        .filter((c) => getComputedStyle(c).display !== 'none');
-      const grid = document.querySelector('.method-grid');
+      const row = document.getElementById('methodRow');
       const bar = el.querySelector('.app-actionbar');
       const tab = document.querySelector('.app-tabbar');
       const 아래여백 = parseFloat(getComputedStyle(el).paddingBottom) || 0;
@@ -129,24 +130,15 @@ const 폭들 = [390, 430, 560];
       const preview = document.getElementById('compareGrid');
       return {
         높이: Math.round(el.getBoundingClientRect().height),
-        가장큰카드: cards.length ? Math.max(...cards.map(
-          (c) => Math.round(c.getBoundingClientRect().height))) : 0,
-        두열: grid
-          ? getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length === 2
-          : false,
-        // 미리보기가 방식 목록보다 위에 있는가. DOM은 안 옮기고 order로만 바꾸므로
-        // 실제로 그려진 자리를 잰다.
-        미리보기가위: !!preview && !!grid
-          && preview.getBoundingClientRect().top < grid.getBoundingClientRect().top,
+        행보임: !!row && getComputedStyle(row).display !== 'none',
+        행글: row ? row.textContent.replace(/\s+/g, ' ').trim() : '',
         내용: Math.round(el.getBoundingClientRect().height - 아래여백),
         자리: Math.round(window.innerHeight - 탭높이 - 바높이),
         바있음: !!bar,
       };
     });
     ok(보정.높이 <= 844, '보정 화면이 한 화면에 들어간다', 보정.높이 + 'px');
-    ok(보정.가장큰카드 <= 150, '방식 카드가 150px를 넘지 않는다', 보정.가장큰카드 + 'px');
-    ok(보정.두열, '방식이 2열 타일이다');
-    ok(보정.미리보기가위, '원본/처리 후가 방식 목록보다 위에 있다');
+    ok(보정.행보임, '보정 내용 행이 있다(누르면 목록·AI 다듬기 시트가 올라온다)', 보정.행글);
     ok(보정.바있음 && 보정.내용 <= 보정.자리, '액션 바가 글자를 덮지 않는다',
       '내용 ' + 보정.내용 + 'px / 바 위 자리 ' + 보정.자리 + 'px');
 

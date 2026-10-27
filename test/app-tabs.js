@@ -58,7 +58,9 @@ const 보이나 = (page, id) => page.evaluate(i => {
       for (const [이름, ids] of Object.entries(섹션)) {
         for (const id of ids) {
           const v = await 보이나(page, id);
-          const 기대 = 이름 === 탭;
+          // 알아보기는 폰에서 한 쪽(섹션)씩 넘긴다(test/phone-pages.js) — 그 탭 것 중 지금 쪽만 보인다
+          const 쪽 = 이름 === '알아보기' ? await page.evaluate(i => { const e = document.getElementById(i); return !e || e.tagName !== 'SECTION' || e.hasAttribute('data-page-on'); }, id) : true;
+          const 기대 = 이름 === 탭 && 쪽;
           if (v !== 기대) { 좋음 = false; 상세.push(`#${id} ${v ? '보임' : '숨음'}`); }
         }
       }

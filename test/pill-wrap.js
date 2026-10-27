@@ -43,8 +43,8 @@ function ok(cond, name, detail) {
   console.log('소스');
   ok(/\.bs-options\s*\{[^}]*flex-wrap:\s*wrap/.test(src),
      '.bs-options가 줄바꿈을 허용한다');
-  ok(/\.bs-btn,\s*\.fs-btn,\s*\.cw-btn,\s*\.em-btn\s*\{[^}]*white-space:\s*nowrap/.test(src),
-     '버튼 이름이 쪼개지지 않는다 (white-space: nowrap)');
+  ok(/\.ai-more-btns \.secondary\s*\{[^}]*white-space:\s*nowrap/.test(src),
+     'AI 다듬기 단추 이름이 쪼개지지 않는다 (white-space: nowrap)');
 
   const browser = await chromium.launch();
 
@@ -58,21 +58,27 @@ function ok(cond, name, detail) {
       // 보정 화면과 옷 패널은 흐름을 타야 열린다. 여기서는 크기만 재면 되므로 강제로 띄운다.
       const sc = document.getElementById('screen-correct');
       if (sc) sc.style.display = 'flex';
-      const os = document.getElementById('outfitStyle');
-      if (os) os.style.display = 'flex';
-      return Array.from(document.querySelectorAll('.cw-btn, .em-btn')).map(b => {
+      const am = document.getElementById('aiMore');
+      if (am) am.style.display = 'block';
+      // 보이는 AI 단추만 잰다(10-27: 로고 지우기·배경 교체하기·옷 전체 바꾸기). 간판 글자 단추는 자동 보정과 함께 빠져
+      // DOM만 숨겨 남아 있다(.is-gone) — 세면 4개가 된다.
+      return Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button')).map(b => {
         const r = b.getBoundingClientRect();
         // 픽셀 하한만 재면 글자 크기를 바꿀 때마다 거짓으로 깨진다.
         // 진짜 요구사항은 «이름이 넘치지 않는다»이므로 넘침을 직접 잰다.
-        return { 글: b.textContent.trim(), 폭: Math.round(r.width), 높이: Math.round(r.height),
+        // 줄 수는 글자 상자가 몇 줄에 걸쳤는지로 잰다 — 높이로 재면 단추를 일부러 크게 만들었을 때
+        // (PC의 AI 다듬기 두 칸 큰 버튼, 10-26) 한 줄인데도 두 줄로 잡혔다.
+        const rg = document.createRange(); rg.selectNodeContents(b);
+        const 줄 = new Set(Array.from(rg.getClientRects()).filter(x => x.width > 0).map(x => Math.round(x.top))).size;
+        return { 글: b.textContent.trim(), 폭: Math.round(r.width), 높이: Math.round(r.height), 줄,
                  넘침: b.scrollWidth - b.clientWidth };
       });
     });
 
     console.log('\n폭 ' + w + 'px — 버튼 ' + 잰값.length + '개');
-    ok(잰값.length === 9, '버튼 9개를 찾았다', 잰값.length + '개');
+    ok(잰값.length === 3, '버튼 3개를 찾았다', 잰값.length + '개');
 
-    const 두줄 = 잰값.filter(b => b.높이 > 한줄한계);
+    const 두줄 = 잰값.filter(b => b.줄 > 1);
     ok(두줄.length === 0, '모든 버튼이 한 줄이다',
        두줄.length ? 두줄.map(b => `${b.글} ${b.폭}x${b.높이}`).join(', ') : `가장 높은 것 ${Math.max(...잰값.map(b => b.높이))}px`);
 

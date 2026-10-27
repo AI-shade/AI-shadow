@@ -59,7 +59,8 @@ async function 새로열기(browser, viewport, hash) {
   {
     const { ctx, page, errs } = await 새로열기(browser, { width: 390, height: 844 });
     ok((await 속성(page, 'data-view')) === 'home', '처음엔 홈이다');
-    ok(await 보이나(page, '.app-home'), '제목 바·알약·메뉴가 보인다');
+    // .app-home 자체는 폰 홈에서 display:contents라 상자가 없다(가이드 배치, 10-26) — 안의 것을 잰다
+    ok(await 보이나(page, '.app-home > .app-bar--tab') && await 보이나(page, '.app-menu'), '제목 바·알약·메뉴가 보인다');
     ok(await 보이나(page, '#appPill'), '알약 입력창이 보인다');
     // 예전엔 4개였는데, 바로 위 알약이 이미 "사진 진단"이라 첫 칸과 문구·행동이 겹쳤다
     // (UX 감사 지적) — 그 칸을 빼서 3개(과거글·알아보기·문답)만 남았다.
@@ -138,6 +139,9 @@ async function 새로열기(browser, viewport, hash) {
   {
     const { ctx, page } = await 새로열기(browser, { width: 390, height: 844 });
     await page.click('.app-menu-item[data-menu="알아보기"]');
+    await page.waitForTimeout(200);
+    // 메뉴의 «알아보기»는 #steps 쪽을 연다. 자가 점검은 그 탭의 첫 쪽이다(쪽 넘기기, 10-27)
+    await page.click('.app-tab[data-goto="알아보기"]');
     await page.waitForTimeout(200);
     ok(await 보이나(page, '#selfcheck'), '자가 점검은 알아보기 탭에서 볼 수 있다 (진단 탭에서 옮겨 왔다)');
     await ctx.close();

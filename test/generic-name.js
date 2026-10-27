@@ -113,6 +113,60 @@ function ok(cond, name, detail) {
   };
   for (const [t, g] of 표) ok(g === 기대[t], `«${t}» → ${g === null ? '(안 바꿈)' : '«' + g + '»'}`, g === 기대[t] ? '' : '기대: ' + 기대[t]);
 
+  // ── 덮지 않아도 되는 글자(안내 문구) ──
+  // «원생 모집»처럼 어느 곳인지 알려 주는 낱말이 없는 글자는 덮어도 얻을 것이 없고 간판만 어색해진다 → 덮을 대상의 기본 선택에서 뺀다.
+  // 판정은 보수적이다: 글자 하나하나가 안내 낱말·조사로 다 설명될 때만. 이름·지역·전화·숫자·영문이 남으면 그대로 덮는다.
+  console.log('\n안내 문구 가르기 — 이름·지역·전화가 한 글자라도 섞이면 덮는다');
+  const 문구 = await run(() => {
+    const g = window.__anshimTest.isGenericWordingForTest;
+    const 안내 = ['원생 모집', '원생모집', '신입생 모집', '모집', '상담 문의', '환영합니다', '무료 체험 접수중', '신입생 모집 중!', '입학을 환영합니다!', 'OPEN', '졸업을 축하합니다', '★ 원생모집 ★'];
+    const 덮기 = ['햇살어린이집', '햇살어린이집 원생모집', '청룡태권도 원생 모집', '유성구 원생 모집', '원생모집 042-123-4567', '010-1234-5678', '신입생 모집 새롬유치원',
+      '', '(판독 불가)', 'ABC 원생 모집', '5세~초등학반 신입생 모집', '제23회 입학식', '새롬 모집', '이가', '꿈나무 모집', '중', 'Welcome Bakery', '원생 모집 3월'];
+    return { 안내: 안내.map((t) => [t, g(t)]), 덮기: 덮기.map((t) => [t, g(t)]) };
+  });
+  for (const [t, v] of 문구.안내) ok(v === true, `«${t}» → 안내 문구(덮지 않는다)`);
+  for (const [t, v] of 문구.덮기) ok(v === false, `«${t}» → 덮는다`);
+
+  // ── 목록: 안내 문구는 기본 선택에서 빠지고, 체크하면 덮는다 ──
+  console.log('\n덮을 대상 목록 — 안내 문구는 체크가 꺼진 채 올라온다');
+  const 목록 = await run(() => {
+    const T = window.__anshimTest;
+    const mk = (text, y) => ({ text, type: '', xPct: 50, yPct: y, wPct: 30, hPct: 8, approximate: false });
+    T.setTargets([mk('햇살어린이집', 20), mk('원생 모집', 40), mk('042-123-4567', 60), mk('환영합니다', 80)]);
+    T.renderTargetPicker();
+    const rows = [...document.querySelectorAll('#targetList li')].map((li) => ({
+      text: li.querySelector('.t-edit').value, kind: li.querySelector('.t-kind').textContent, checked: li.querySelector('input[type=checkbox]').checked,
+    }));
+    const 고른것 = T.getSelectedTexts().map((w) => w.text);
+    const 안내문 = (document.querySelector('#targetList .t-none') || {}).textContent || '';
+    const 센수 = [...document.querySelectorAll('#targetList li')].length;
+    // 체크하면 덮는다
+    const cb = document.querySelectorAll('#targetList input[type=checkbox]')[1];
+    cb.checked = true; cb.dispatchEvent(new Event('change'));
+    const 체크뒤 = T.getSelectedTexts().map((w) => w.text);
+    // 다시 그려도(빼기 등) 사용자가 고른 선택은 그대로다
+    T.renderTargetPicker(true);
+    const 다시그림 = T.getSelectedTexts().map((w) => w.text);
+    // 안내 문구뿐인 사진 — 아무것도 선택되지 않는다
+    T.setTargets([mk('원생 모집', 40)]);
+    T.renderTargetPicker();
+    const 문구뿐 = T.getSelectedTexts().length;
+    // 안내 문구가 없는 사진에는 설명 줄이 없다
+    T.setTargets([mk('햇살어린이집', 20)]);
+    T.renderTargetPicker();
+    const 문구없음 = !document.querySelector('#targetList .t-none');
+    return { rows, 고른것, 안내문, 센수, 체크뒤, 다시그림, 문구뿐, 문구없음 };
+  });
+  ok(목록.센수 === 4, '안내 문구도 목록에는 남는다(빼는 것이 아니라 기본 선택에서만 뺀다)', 목록.센수 + '줄');
+  ok(목록.고른것.join() === '햇살어린이집,042-123-4567', '기본 선택은 이름·전화만이다 — «원생 모집»·«환영합니다»는 덮지 않는다', 목록.고른것.join(' / '));
+  ok(목록.rows[1].kind === '안내 문구' && 목록.rows[3].kind === '안내 문구' && 목록.rows[0].kind !== '안내 문구' && 목록.rows[2].kind !== '안내 문구', '안내 문구에만 «안내 문구» 표시가 붙는다', 목록.rows.map((r) => r.kind).join(' / '));
+  ok(목록.rows[1].checked === false && 목록.rows[3].checked === false && 목록.rows[0].checked && 목록.rows[2].checked, '안내 문구의 체크는 꺼져 있다', 목록.rows.map((r) => r.checked).join(' / '));
+  ok(/안내 문구/.test(목록.안내문) && /체크/.test(목록.안내문), '왜 빠졌는지·덮으려면 어떻게 하는지 목록 아래에 적는다', 목록.안내문);
+  ok(목록.체크뒤.includes('원생 모집'), '체크하면 안내 문구도 덮는다', 목록.체크뒤.join(' / '));
+  ok(목록.다시그림.includes('원생 모집') && 목록.다시그림.length === 3, '목록을 다시 그려도 사용자가 고른 선택은 그대로다', 목록.다시그림.join(' / '));
+  ok(목록.문구뿐 === 0, '안내 문구뿐인 사진은 아무것도 선택되지 않는다', String(목록.문구뿐));
+  ok(목록.문구없음, '안내 문구가 없으면 설명 줄이 없다');
+
   // ── 단색 간판: 이름이 바뀐다 ──
   console.log('\n단색 간판 — 원래 이름의 흔적이 안 남고 새 글자가 그려진다');
   {

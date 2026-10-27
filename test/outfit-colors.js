@@ -71,9 +71,9 @@ function ok(cond, name, detail) {
     const topOnly = T.describeOutfitColors(half, [faces[1]], hm);
     return {
       twoMissing: two && two.missing, oneMissing: one && one.missing,
-      two: two && two.map((p) => ({ x: Math.round(p.x * 100), top: p.top.en, bottom: p.bottom && p.bottom.en })),
+      two: two && two.map((p) => ({ x: Math.round(p.x * 100), top: p.top.en, bottom: p.bottom && p.bottom.en, noBottom: p.noBottom })),
       one: one && one.map((p) => ({ top: p.top.en, bottom: p.bottom && p.bottom.en })),
-      topOnly: topOnly && topOnly.map((p) => ({ top: p.top.en, bottom: p.bottom })),
+      topOnly: topOnly && topOnly.map((p) => ({ top: p.top.en, bottom: p.bottom, noBottom: p.noBottom })),
       ghostFace: (() => { const r = T.describeOutfitColors(img, [faces[0], { box: { x: 20, y: 60, width: 40, height: 40 } }, faces[1]], mask); return r && { n: r.length, missing: r.missing, ranks: r.map((q) => q.rank).join() }; })(),
       faceless: (() => {
         // 얼굴이 안 잡힌 사람의 옷(마스크에는 들어 있다): 어떤 얼굴 밑에도 없는 옷이 15%를 넘으면 알려야 한다
@@ -89,12 +89,33 @@ function ok(cond, name, detail) {
         cx.fillStyle = '#111'; cx.fillRect(100, 322, 160, 8);
         const mm = document.createElement('canvas'); mm.width = 640; mm.height = 330;
         const mmx = mm.getContext('2d'); mmx.fillStyle = '#fff'; mmx.fillRect(110, 150, 150, 120); mmx.fillRect(100, 322, 160, 8);
-        const r = T.describeOutfitColors(cc, [faces[1]], mm); return r && { top: r[0].top.en, bottom: r[0].bottom };
+        const r = T.describeOutfitColors(cc, [faces[1]], mm); return r && { top: r[0].top.en, bottom: r[0].bottom, noBottom: r[0].noBottom };
+      })(),
+      longTop: (() => {
+        // 긴 패딩: 상의가 하의 띠(어깨 아래 얼굴 2.4~3.6배)의 위쪽 절반을 덮는다. 팀 테스트 보고서(1쪽 위)에서 검은
+        // 패딩 + 베이지 바지 아이의 하의가 «black»으로 읽혀 프롬프트가 검은 바지를 지시했다.
+        const cc = document.createElement('canvas'); cc.width = 640; cc.height = 480;
+        const cx = cc.getContext('2d'); cx.fillStyle = 'rgb(210,200,190)'; cx.fillRect(0, 0, 640, 480);
+        const mm = document.createElement('canvas'); mm.width = 640; mm.height = 480;
+        const mmx = mm.getContext('2d'); mmx.fillStyle = '#fff';
+        cx.fillStyle = '#16171b'; cx.fillRect(105, 150, 160, 250); mmx.fillRect(105, 150, 160, 250);   // 검은 패딩 150~400
+        cx.fillStyle = '#d9c3a0'; cx.fillRect(125, 400, 120, 75); mmx.fillRect(125, 400, 120, 75);     // 베이지 바지 400~475
+        const r = T.describeOutfitColors(cc, [faces[1]], mm);
+        // 같은 색 상하의(원피스·단색 체육복): 하의는 상의와 같은 색으로 읽혀야 한다
+        const sc = document.createElement('canvas'); sc.width = 640; sc.height = 480;
+        const sx = sc.getContext('2d'); sx.fillStyle = 'rgb(210,200,190)'; sx.fillRect(0, 0, 640, 480);
+        sx.fillStyle = '#1F2A55'; sx.fillRect(105, 150, 160, 320);
+        const sm = document.createElement('canvas'); sm.width = 640; sm.height = 480;
+        const smx = sm.getContext('2d'); smx.fillStyle = '#fff'; smx.fillRect(105, 150, 160, 320);
+        const s = T.describeOutfitColors(sc, [faces[1]], sm);
+        return { top: r && r[0].top.en, bottom: r && r[0].bottom && r[0].bottom.en, sameTop: s && s[0].top.en, sameBottom: s && s[0].bottom && s[0].bottom.en };
       })(),
       none: T.describeOutfitColors(img, [], mask), noMask: T.describeOutfitColors(img, faces, null),
       noShoulder: T.describeOutfitColors(img, [{ box: { x: 5, y: 400, width: 30, height: 30 } }], mask),
     };
   });
+  ok(합성.longTop.top === 'black' && 합성.longTop.bottom === 'beige', '긴 패딩 아래 바지: 하의 띠에 걸친 패딩 아랫단이 아니라 바지 색을 읽는다', JSON.stringify(합성.longTop));
+  ok(합성.longTop.sameTop === 'navy' && 합성.longTop.sameBottom === 'navy', '상하의가 같은 색이면 하의도 그 색이다', JSON.stringify(합성.longTop));
   ok(합성.two && 합성.two.length === 2, '두 아이를 따로 읽는다', JSON.stringify(합성.two));
   ok(합성.two && 합성.two[0].top === 'green' && 합성.two[0].bottom === 'navy', '왼쪽 아이: 초록 상의 · 남색 하의 (얼굴 목록 순서와 상관없이 왼쪽부터)', JSON.stringify(합성.two && 합성.two[0]));
   ok(합성.two && 합성.two[1].top === 'red' && 합성.two[1].bottom === 'gray', '오른쪽 아이: 빨강 상의 · 회색 하의', JSON.stringify(합성.two && 합성.two[1]));
@@ -105,6 +126,8 @@ function ok(cond, name, detail) {
   ok(합성.twoMissing === 0, '얼굴마다 옷이 다 읽히면 «그 밖의 옷»은 없다');
   ok(합성.oneMissing === 1, '얼굴이 한 명만 잡히면 다른 아이의 옷은 «그 밖의 옷»이다 (마스크에는 그 옷도 들어 있다)');
   ok(합성.cutBottom && 합성.cutBottom.top === 'green' && 합성.cutBottom.bottom === null, '사진이 잘려 하의 띠가 사진 밖이면 맨 아래 그림자로 하의 색을 지어내지 않는다', JSON.stringify(합성.cutBottom));
+  ok(합성.cutBottom && 합성.cutBottom.noBottom === true, '하의 띠가 사진 밖에서 시작하면 «하의가 없다»(noBottom)고 표시한다', JSON.stringify(합성.cutBottom));
+  ok(합성.topOnly && 합성.topOnly[0].noBottom === false && 합성.two.every((p) => p.noBottom === false), '하의 띠가 사진 안이면(옷이 없는 띠여도) noBottom이 아니다 — 하의가 있을 수 있어 예전 문구 그대로 간다', JSON.stringify(합성.topOnly));
   ok(합성.none === null && 합성.noMask === null, '얼굴이 없거나 옷 마스크가 없으면 null (호출부가 예전 문구로 간다)');
   ok(합성.noShoulder === null, '옷이 안 잡히는 사람은 건너뛴다(색을 지어내지 않는다)');
 
@@ -122,6 +145,12 @@ function ok(cond, name, detail) {
     // 두 번째 사람만 읽고 첫 번째는 못 읽은 경우 — 순서는 얼굴 전체 기준이어야 한다
     const partial = [{ rank: 1, x: 0.7, top: nm([198, 40, 40]), bottom: null }];
     partial.missing = 1;
+    // 허리 위까지만 찍힌 사진(noBottom) — 색을 바꾸는 선택에서도 하의를 적으면 몸통 아래에 바지를 그린다
+    const topOnly = [{ rank: 0, x: 0.3, top: nm([62, 155, 79]), bottom: null, bottomKind: null, noBottom: true }];
+    topOnly.missing = 0;
+    const topOnlyOthers = [topOnly[0]]; topOnlyOthers.missing = 1;   // 그 밖의 옷(색을 못 읽은 옷)이 있으면 하의가 있을 수 있다
+    const topOnlyMixed = [topOnly[0], { rank: 1, x: 0.7, top: nm([198, 40, 40]), bottom: null, bottomKind: null, noBottom: false }];
+    topOnlyMixed.missing = 0;                                        // 한 명이라도 하의가 보이면 하의를 적는다
     return {
       one: T.buildOutfitFillPrompt('keep', 'none', one),
       onePocket: T.buildOutfitFillPrompt('keep', 'pocket', one),
@@ -133,23 +162,31 @@ function ok(cond, name, detail) {
       fallbackEmpty: T.buildOutfitFillPrompt('keep', 'none', []),
       brown: T.buildOutfitFillPrompt('brown', 'none', one),
       brownNoColors: T.buildOutfitFillPrompt('brown', 'none'),
+      brownTopOnly: T.buildOutfitFillPrompt('brown', 'none', topOnly),
+      brownTopOnlyOthers: T.buildOutfitFillPrompt('brown', 'none', topOnlyOthers),
+      brownTopOnlyMixed: T.buildOutfitFillPrompt('brown', 'none', topOnlyMixed),
       ko: [T.outfitColorsKo(one), T.outfitColorsKo(two)],
     };
   });
   const 금지어 = /\b(no|not|uniform|logo|logos|badge|badges|crest|emblem|lettering|illustration)\b/i;
-  ok(/plain solid green crew-neck top and plain solid navy bottoms/.test(프롬프트.one), '한 명: «green crew-neck top and navy bottoms»로 색 이름을 적는다', 프롬프트.one.slice(0, 90) + '…');
+  // 2026-10-27부터 읽은 색 «그대로»가 아니라 «그 색에 가까운, 살짝 다르고 차분한 톤»으로 적는다(«옷 전체 바꾸기»).
+  // 사용자 요청 "옷색은 너무 극단적으로 바뀌지만 않았으면 좋겠어". 색 이름을 실어 나르는 것은 같다 — 모델은 색을 이름으로 알아듣는다.
+  ok(/crew-neck top in a slightly different, more muted shade close to green and plain bottoms in a slightly different, more muted shade close to navy/.test(프롬프트.one), '한 명: 상의 green·하의 navy를 색 이름으로 적는다(가까운 톤으로)', 프롬프트.one.slice(0, 90) + '…');
   ok(!금지어.test(프롬프트.one) && !금지어.test(프롬프트.two), '읽은 색 프롬프트에는 부정문·uniform·logo 낱말이 없다 (적으면 그 물체를 불러온다)');
   ok(!/keeping the exact same colors|already worn/.test(프롬프트.one), '모델이 볼 수 없는 «원래 옷»을 가리키는 문장이 없다');
-  ok(/first person from the left wears a plain solid green top and plain solid navy bottoms; the second person from the left wears a plain solid red top and plain solid gray bottoms/.test(프롬프트.two),
+  ok(/first person from the left wears a plain cotton top in a slightly different, more muted shade close to green and plain bottoms in a slightly different, more muted shade close to navy; the second person from the left wears a plain cotton top in a slightly different, more muted shade close to red and plain bottoms in a slightly different, more muted shade close to gray/.test(프롬프트.two),
     '두 명: 왼쪽부터 «first / second person from the left»로 각자의 색을 적는다', 프롬프트.two.slice(0, 120) + '…');
   ok(/every top a plain cotton crew-neck/.test(프롬프트.two), '두 명이어도 상의는 crew-neck이라고 말한다');
-  ok(/the second person from the left wears a plain solid red top/.test(프롬프트.partial) && /everyone else wears plain solid muted cotton clothes/.test(프롬프트.partial) && !/A plain solid red crew-neck/.test(프롬프트.partial),
+  ok(/the second person from the left wears a plain cotton top in a slightly different, more muted shade close to red/.test(프롬프트.partial) && /everyone else wears plain solid muted cotton clothes/.test(프롬프트.partial) && !/^A plain cotton crew-neck top/.test(프롬프트.partial),
     '일부만 읽었으면 «몇 번째 사람»을 얼굴 전체 기준으로 말하고, 나머지는 무난한 색으로 둔다', 프롬프트.partial.slice(0, 150) + '…');
   ok(/2번째\(왼쪽부터\) 상의 빨강/.test(프롬프트.partialKo) && /그 밖의 옷은 색을 못 읽어/.test(프롬프트.partialKo), '화면 안내에도 못 읽은 사람을 밝힌다', 프롬프트.partialKo);
   ok(!/bottoms/.test(프롬프트.noBottom), '하의를 못 읽었으면 하의를 말하지 않는다', 프롬프트.noBottom.slice(0, 80));
   ok(/small plain patch pocket on the chest/.test(프롬프트.onePocket) && !/small plain patch pocket/.test(프롬프트.one), '포켓 선택일 때만 가슴 포켓을 말한다(긍정 서술로)');
   ok(/muted natural colors/.test(프롬프트.fallback) && 프롬프트.fallback === 프롬프트.fallbackEmpty && !금지어.test(프롬프트.fallback), '색을 못 읽었으면 «무난한 색»으로 간다 — 모델이 볼 수 없는 원래 색을 지키라고 하지 않는다 (기능은 끊기지 않는다)');
   ok(프롬프트.brown === 프롬프트.brownNoColors && /warm taupe brown/.test(프롬프트.brown), '색을 바꾸는 선택(오트밀 등)은 읽은 색과 상관없이 그대로다');
+  ok(/^A plain solid warm taupe brown cotton crew-neck top\. Loose/.test(프롬프트.brownTopOnly) && !/bottoms|trousers|skirt|shorts/.test(프롬프트.brownTopOnly),
+    '허리 위까지만 찍힌 사진은 색을 바꾸는 선택에서도 하의를 적지 않는다 (적으면 몸통 아래에 바지를 그린다)', 프롬프트.brownTopOnly.slice(0, 110));
+  ok(/bottoms/.test(프롬프트.brownTopOnlyOthers) && /bottoms/.test(프롬프트.brownTopOnlyMixed), '그 밖의 옷이 있거나 한 명이라도 하의가 보이면 하의를 그대로 적는다');
   ok(프롬프트.ko[0] === '상의 초록 · 하의 남색' && /1번째\(왼쪽부터\) 상의 초록 · 하의 남색, 2번째\(왼쪽부터\) 상의 빨강 · 하의 회색/.test(프롬프트.ko[1]), '화면에는 한국어 색 이름으로 알린다', 프롬프트.ko.join(' / '));
 
   // ── 하의 모양(치마·반바지·긴바지) ──
@@ -252,7 +289,13 @@ function ok(cond, name, detail) {
   // 포켓 문장의 «on the chest»는 포켓을 고른 경우의 자리 지정이라 제외하고, 마크 지우기 문구는 아직 같은 방식으로 재지 않았다.
   const 가슴낱말 = 이름들.filter((k) => !/^마크지우기/.test(k) && !/\/pocket$/.test(k) && /chest|fold/i.test(전수[k]));
   ok(가슴낱말.length === 0, '옷 프롬프트에 chest·folds 낱말이 없다 (남자아이 가슴이 둥글고 주름지게 그려진다)', 가슴낱말.join(', '));
-  ok(이름들.filter((k) => !/^마크지우기/.test(k)).every((k) => /Loose, straight, boxy fit with a flat front/.test(전수[k]) && /worn by a young child/.test(전수[k])), '옷 프롬프트는 «납작한 앞면·상자형 핏·어린이»를 말한다');
+  // 라이브에서 햇살어린이집 사진(정답표 사진6)의 새 옷 한가운데에 상의·바지를 입은 작은 아이가 통째로 그려졌다. 원인이
+  // «worn by a young child»인지는 못 가렸지만(옛 문구를 새 마스크로 2번 돌렸을 땐 재현 안 됨) 사람 낱말은 모델이 사람을 그릴
+  // 빌미라 뺐다. 핏은 «납작한 앞면·상자형»만 말한다.
+  const 옷프롬프트들 = 이름들.filter((k) => !/^마크지우기/.test(k));
+  ok(옷프롬프트들.every((k) => /Loose, straight, boxy fit with a flat front/.test(전수[k])), '옷 프롬프트는 «납작한 앞면·상자형 핏»을 말한다');
+  const 사람낱말 = 옷프롬프트들.filter((k) => /\b(child|children|kid|kids|boy|girl|baby|person|people)\b/i.test(전수[k]));
+  ok(사람낱말.length === 0, '옷 프롬프트에 사람 낱말(child·boy·person 등)이 없다 (적으면 구멍 안에 사람을 그린다)', 사람낱말.join(', '));
 
   ok(errs.length === 0, '페이지 에러 없음', errs.join(' | '));
   await browser.close();

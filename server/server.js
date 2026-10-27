@@ -834,24 +834,27 @@ app.post('/api/recommend-correction', async (req, res) => {
 // 보인다. 그래서 이제 Claude에게 사진을 직접 보여주고, "알아서 골라라"를 flux-kontext-pro에게
 // 떠넘기지 않고 Claude가 실내/실외·계절·조도를 보고 **구체적인 배경을 직접 정해서** 프롬프트에
 // 박아 넣게 시켰다. 인물·옷을 건드리지 않는 절대 규칙은 그대로 유지된다.
-const FLUX_PROMPT_SYSTEM = `당신은 flux-kontext-pro 이미지 편집 API에 보낼 영어 프롬프트를 작성하는
-어시스턴트입니다. 이 편집은 **배경만** 바꾸는 기능입니다. 사진을 직접 보고 판단하세요.
+// 2026-10-27: kontext(사진 전체를 다시 그리고 "사람은 건드리지 마"라고 부탁)에서 FLUX Fill(마스크 안쪽만)로
+// 바꿨다. 팀 제보 "지 맘대로 옷도바꾸고"(바지가 청바지로), "부자연스럽고 인물의 테두리가 이상해"(다시 그린 사람과
+// 원본 사람이 겹친 이중 테두리). 이제 사람은 마스크에서 빠져 있어 모델이 손댈 수 없고, 이 프롬프트는 비워둔 배경
+// 자리를 «무엇으로 채울지»만 묘사한다.
+const FLUX_PROMPT_SYSTEM = `당신은 FLUX Fill 인페인팅 API에 보낼 영어 프롬프트를 작성하는
+어시스턴트입니다. 사진 속 사람은 마스크로 이미 보호돼 있고, 사람을 뺀 **배경 전체**를 새로
+그립니다. 이 프롬프트는 그 배경 자리를 무엇으로 채울지 묘사합니다. 사진을 직접 보고 판단하세요.
 
 절대 규칙 — 어기면 아이 사진이 훼손됩니다:
-- **인물에 관한 지시를 절대 쓰지 마세요.** 옷·교복·명찰·머리·얼굴·체형·성별·나이를
-  바꾸거나 지우거나 가리라는 말을 한 마디도 넣지 마세요.
-  ("replace the uniform", "remove the badge" 같은 문장은 금지입니다.)
+- **인물에 관한 묘사를 절대 쓰지 마세요.** 옷·교복·명찰·머리·얼굴·체형·성별·나이를
+  언급하지 마세요. 사람은 이 편집의 대상이 아닙니다.
 - 입력으로 받은 위험요소 중 교복·원복·명찰처럼 **인물이 입거나 달고 있는 것은 무시하세요.**
-  그건 이 기능이 다루는 대상이 아닙니다.
-- 배경에 있는 것(간판, 표지판, 건물 이름, 차량번호판, 주소 표기 등)만 다루세요.
-- 인물은 그대로 두라고 강하게 명시하세요
-  ("do not modify the person in any way", "preserve the person with pixel-level accuracy").
+- 새 배경에 글자·간판·로고·사람이 생기면 안 됩니다. 프롬프트에 반드시
+  "no text, no letters, no signage, no logos, no other people"을 넣으세요.
 
 사진을 보고 실내/실외, 계절, 조도, 옷차림을 직접 확인한 뒤 **구체적인 배경을 당신이 직접
-정해서** 프롬프트에 박아 넣으세요. "옷차림에 어울리는 배경을 골라라"처럼 flux-kontext-pro에게
+정해서** 프롬프트에 박아 넣으세요. "옷차림에 어울리는 배경을 골라라"처럼 모델에게
 판단을 떠넘기지 마세요 — 그런 지시는 실행하기 애매해서 매번 특징 없는 빈 방으로 수렴하는
 문제가 실측으로 확인됐습니다. 예: 실내에서 반팔을 입은 사진이면
 "a sunlit living room with a bookshelf and a potted plant" 처럼 구체적인 명사로 묘사하세요.
+조명 방향과 밝기는 원래 사진과 맞추라고 쓰세요(사람은 원본 그대로 남으므로).
 단, 묘사가 구체적이되 **실재하는 특정 장소로 알아볼 수 있으면 안 됩니다** — 공원·거실·카페처럼
 일반적인 장소 종류와 계절·조명·가구 같은 일반적인 특징만 쓰고, 상호명·랜드마크·고유한
 건축물처럼 특정 지점을 가리키는 단어는 쓰지 마세요.
@@ -871,7 +874,7 @@ function buildFluxPromptUserPrompt(body) {
 위험요소 목록:
 ${riskInfo}
 
-이 위험요소를 해결하기 위해 flux-kontext-pro 이미지 편집 API에 보낼 영어 프롬프트를 작성해주세요.`;
+이 위험요소가 사라지도록 사람을 뺀 배경 전체를 새로 채울 FLUX Fill 영어 프롬프트를 작성해주세요.`;
 }
 
 async function generateFluxPrompt(body, imageBase64, mediaType) {
@@ -881,44 +884,58 @@ async function generateFluxPrompt(body, imageBase64, mediaType) {
   return String(result.parsed.prompt || '').trim();
 }
 
-// ===== flux-kontext-pro 배경교체 =====
-// 프라이버시 예외: 이 엔드포인트만 마스킹 없는 원본 이미지를 그대로 받는다 (기획서 0번
-// 원칙에 명시된 대로, 사용자가 "AI 배경교체"를 명시적으로 선택했을 때만 호출됨).
+// ===== 배경 교체 — FLUX Fill, 사람은 마스크로 보존 =====
+// 프라이버시: 원본(얼굴 포함)을 받는다 — 사용자가 «배경 새로 그리기»를 누르고 동의했을 때만 호출된다.
+// 마스크 규약은 /api/inpaint-regions와 같다: 흰색 = 새로 그릴 자리(사람 바깥), 검은색 = 보존(사람).
+// 마스크가 없으면 거절한다 — 사진 전체를 다시 그리는 길(예전 kontext)로 새면 사람을 막는 장치가 사라진다.
+//
+// 이미지는 두 장 온다. imageBase64는 마스크 안쪽(옛 배경)을 회색으로 지운 것 — fal에 보낸다(옛 간판 구조를
+// 베끼지 않게). contextImageBase64는 지우지 않은 같은 크기 원본 — Claude가 실내/실외·계절·조명을 보고
+// 배경을 정하는 데만 쓴다. 회색 배경만 보면 어떤 장소였는지 알 수 없다.
 app.post('/api/replace-background', async (req, res) => {
   if (!process.env.FAL_KEY) {
     return res.status(501).json({ error: '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.', ready: false });
   }
-  const { imageBase64, mediaType, texts, grade, locationEvidence, seed } = req.body || {};
+  const { imageBase64, contextImageBase64, maskBase64, mediaType, texts, grade, locationEvidence, seed } = req.body || {};
   if (!imageBase64) {
     return res.status(400).json({ error: '이미지(imageBase64)가 없습니다.' });
+  }
+  if (!maskBase64) {
+    return res.status(400).json({ error: '마스크(maskBase64)가 없습니다. 사람은 검은색, 다시 그릴 배경은 흰색인 마스크가 필요해요.' });
   }
 
   const t0 = Date.now();
   try {
-    const editPrompt = await generateFluxPrompt({ texts, grade, locationEvidence }, imageBase64, mediaType);
-
     const mt = mediaType || 'image/jpeg';
-    const buffer = Buffer.from(imageBase64, 'base64');
-    const ext = mt.includes('png') ? 'png' : 'jpg';
-    const file = new File([buffer], 'photo.' + ext, { type: mt });
-    const uploadedUrl = await fal.storage.upload(file, { lifecycle: FAL_INPUT_LIFECYCLE });
+    const editPrompt = await generateFluxPrompt({ texts, grade, locationEvidence }, contextImageBase64 || imageBase64, mt);
 
-    // flux-pro/kontext는 flux-pro/v1/fill과 같은 모델 계열이라 같은 안전 필터를 쓴다
-    // (/api/inpaint-regions에서 실측된 has_nsfw_concepts 오탐·재시도 패턴을 그대로 옮김).
-    // 시드를 안 보내면(평소) 매 시도가 자연히 새 난수라 재시도만으로 오탐을 피할 수 있다.
+    const ext = mt.includes('png') ? 'png' : 'jpg';
+    // 마스크는 흑백 경계가 뭉개지면 안 되므로 항상 PNG로 올린다 (JPEG 압축 금지)
+    const [imageUrl, maskUrl] = await Promise.all([
+      fal.storage.upload(new File([Buffer.from(imageBase64, 'base64')], 'photo.' + ext, { type: mt }), { lifecycle: FAL_INPUT_LIFECYCLE }),
+      fal.storage.upload(new File([Buffer.from(maskBase64, 'base64')], 'mask.png', { type: 'image/png' }), { lifecycle: FAL_INPUT_LIFECYCLE }),
+    ]);
+
+    // 안전 필터 오탐(has_nsfw_concepts)은 시드를 바꾸면 대개 사라진다 — /api/inpaint-regions와 같은 재시도.
     const MAX_FILL_ATTEMPTS = 3;
     let output = null, attempts = 0, filtered = true;
     while (attempts < MAX_FILL_ATTEMPTS && filtered) {
-      const result = await fal.subscribe('fal-ai/flux-pro/kontext', {
+      const result = await fal.subscribe('fal-ai/flux-pro/v1/fill', {
         input: {
-          prompt: editPrompt, image_url: uploadedUrl, sync_mode: FAL_SYNC_MODE,
+          prompt: editPrompt, image_url: imageUrl, mask_url: maskUrl,
+          sync_mode: FAL_SYNC_MODE,
           ...(Number.isInteger(seed) ? { seed: seed + attempts } : {}),
+          safety_tolerance: '4',
+          output_format: 'png',
         },
       });
       output = result.data || result;
       attempts++;
       filtered = Array.isArray(output.has_nsfw_concepts) && output.has_nsfw_concepts.some(Boolean);
-      if (filtered) console.warn('[server] flux-kontext-pro 안전 필터가 결과를 가렸습니다 (' + attempts + '/' + MAX_FILL_ATTEMPTS + '번째)');
+      if (filtered) console.warn('[server] 배경 교체(flux-fill) 안전 필터가 결과를 가렸습니다 (' + attempts + '/' + MAX_FILL_ATTEMPTS + '번째)');
+      if (output.prompt && output.prompt !== editPrompt) {
+        console.log('[server] 배경 교체 enhance_prompt가 바꾼 프롬프트:', output.prompt);
+      }
     }
     if (filtered) {
       return res.status(422).json({
@@ -928,9 +945,9 @@ app.post('/api/replace-background', async (req, res) => {
     }
 
     const outputImage = output.images && output.images[0];
-    if (!outputImage) throw new Error('flux-kontext-pro 응답에 이미지가 없습니다.');
+    if (!outputImage) throw new Error('flux-fill 응답에 이미지가 없습니다.');
 
-    const fetched = await fetchResultImage(outputImage, 'AI 배경교체');
+    const fetched = await fetchResultImage(outputImage, '배경 교체');
 
     res.json({
       imageBase64: fetched.base64,
@@ -938,12 +955,13 @@ app.post('/api/replace-background', async (req, res) => {
       width: outputImage.width,
       height: outputImage.height,
       editPrompt: editPrompt,
+      usedPrompt: output.prompt || null,
       timingMs: Date.now() - t0,
-      estimatedCostUsd: 0.04 * attempts,
+      estimatedCostUsd: estimateFillCostUsd(outputImage.width, outputImage.height) * attempts,
       attempts: attempts, usedSeed: output.seed == null ? null : output.seed,
     });
   } catch (err) {
-    console.error('[server] flux-kontext-pro 호출 실패:', err.message);
+    console.error('[server] 배경 교체(flux-fill) 호출 실패:', err.message);
     res.status(500).json({ error: 'AI 배경교체 실패: ' + falErrorText(err) });
   }
 });
