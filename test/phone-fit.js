@@ -131,14 +131,16 @@ const 폭들 = [390, 430, 560];
       return {
         높이: Math.round(el.getBoundingClientRect().height),
         행보임: !!row && getComputedStyle(row).display !== 'none',
-        행글: row ? row.textContent.replace(/\s+/g, ' ').trim() : '',
+        방식칸: getComputedStyle(el.querySelector('.correct-left')).position,
         내용: Math.round(el.getBoundingClientRect().height - 아래여백),
         자리: Math.round(window.innerHeight - 탭높이 - 바높이),
         바있음: !!bar,
       };
     });
     ok(보정.높이 <= 844, '보정 화면이 한 화면에 들어간다', 보정.높이 + 'px');
-    ok(보정.행보임, '보정 내용 행이 있다(누르면 목록·AI 다듬기 시트가 올라온다)', 보정.행글);
+    // 예전엔 «보정 내용 · 고치기 ›»를 눌러야 방식 시트가 올라왔다. 제보(10-28) "그냥 바로 보정방식이 떳으면" —
+    // 이제 방식 칸이 사진 아래 흐름 안에 있다(시트가 아니다).
+    ok(!보정.행보임 && 보정.방식칸 !== 'fixed', '보정 방식이 시트가 아니라 사진 아래에 바로 있다', '행 ' + 보정.행보임 + ' · ' + 보정.방식칸);
     ok(보정.바있음 && 보정.내용 <= 보정.자리, '액션 바가 글자를 덮지 않는다',
       '내용 ' + 보정.내용 + 'px / 바 위 자리 ' + 보정.자리 + 'px');
 
