@@ -10,6 +10,7 @@ import express from 'express';
 import cors from 'cors';
 import Anthropic from '@anthropic-ai/sdk';
 import { fal } from '@fal-ai/client';
+import sharp from 'sharp';
 import { estimateFillCostUsd } from './fill-cost.js';
 import { resolvePostDate } from './schedule-date.js';
 import path from 'node:path';
@@ -125,6 +126,112 @@ if (!process.env.FAL_KEY) {
       headers: { ...(request.headers || {}), 'x-fal-store-io': '0' },
     }),
   });
+}
+
+// ===== 마스크 보정 엔진 — fal.ai(FLUX Fill) 또는 OpenAI(GPT Image 2.5 Flare) =====
+// 옷 바꾸기·마크 지우기·배경 교체(/api/inpaint-regions, /api/replace-background)가 쓰는 엔진이다.
+// 간판 글자 바꿔쓰기(/api/inpaint-sign-text)는 한글을 실측으로 확인한 nano-banana-pro(fal)에 그대로 둔다.
+// IMAGE_EDIT_PROVIDER=fal|openai 로 고른다. 비우면 OPENAI_API_KEY가 있을 때 openai.
+// 되돌리기: server/.env에 IMAGE_EDIT_PROVIDER=fal 한 줄.
+//
+// 얼굴 보존은 엔진과 상관없다 — 프런트(compositeThroughMask)가 결과에서 마스크 안쪽만 원본 위에 얹는다.
+// GPT Image는 문서에 "마스킹은 프롬프트 기반이라 모양을 정확히 따르지 않을 수 있다"고 적혀 있어
+// 마스크 바깥을 바꿀 수 있지만, 그 픽셀은 화면에 나오지 않는다.
+const IMAGE_EDIT_PROVIDER = (process.env.IMAGE_EDIT_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'fal')).trim().toLowerCase();
+const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2.5-flare';
+function imageEditReady() {
+  return IMAGE_EDIT_PROVIDER === 'openai' ? !!process.env.OPENAI_API_KEY : !!process.env.FAL_KEY;
+}
+function imageEditNotReadyText() {
+  return IMAGE_EDIT_PROVIDER === 'openai'
+    ? '준비 중입니다. OpenAI API 키 연동 후 지원 예정이에요.'
+    : '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.';
+}
+console.log('[server] 마스크 보정 엔진: ' + (IMAGE_EDIT_PROVIDER === 'openai' ? 'OpenAI ' + OPENAI_IMAGE_MODEL : 'fal.ai flux-pro/v1/fill')
+  + (imageEditReady() ? '' : ' (키 없음 — 준비 중으로 동작)'));
+
+// OpenAI 이미지 편집 규격(2026-10 문서): 가로·세로 16의 배수, 총 픽셀 655,360 이상, 긴 변 3840 이하.
+// 프런트는 FLUX에 맞춰 긴 변 1024·32의 배수로 보내므로 1024x576(589,824) 같은 사진은 모자란다 —
+// 비율을 지킨 채 키워 보낸다. 결과는 프런트가 원본 크기로 맞춰 합성하므로 크기가 달라도 된다.
+const OPENAI_MIN_PIXELS = 655360;
+function roundUpTo16(n) { return Math.max(16, Math.ceil(n / 16) * 16); }
+
+function openaiErrorText(err) {
+  const code = String((err && err.code) || '');
+  const raw = String((err && err.message) || '');
+  if (err && err.status === 401) return 'OpenAI 키가 올바르지 않아요. server/.env의 OPENAI_API_KEY를 확인해주세요.';
+  if (/insufficient_quota|billing/i.test(code + ' ' + raw)) {
+    return 'OpenAI 크레딧이 없어요. platform.openai.com 의 Billing에서 충전하면 다시 됩니다. (그동안 흐림·덮기·크롭은 그대로 쓸 수 있어요)';
+  }
+  if (err && err.status === 429) return 'OpenAI 요청이 몰렸어요. 잠시 뒤 다시 시도해주세요.';
+  if (/model_not_found|does not exist/i.test(code + ' ' + raw)) {
+    return 'OpenAI 계정에서 ' + OPENAI_IMAGE_MODEL + ' 모델을 쓸 수 없어요. (조직 인증이 필요한 모델일 수 있어요)';
+  }
+  return raw || '알 수 없는 오류';
+}
+function imageEditErrorText(err) {
+  return IMAGE_EDIT_PROVIDER === 'openai' ? openaiErrorText(err) : falErrorText(err);
+}
+
+// 마스크 규약을 바꿔 보낸다. 우리 마스크: 흰색 = 새로 그릴 곳, 검은색 = 보존(불투명 흑백).
+// OpenAI 마스크: 알파 채널로 받고, 투명한 곳(알파 0)을 고친다. → 알파 = 255 - 밝기.
+// 안전 필터에 걸리면 err.filtered = true 로 던진다(fal의 has_nsfw_concepts와 같은 자리).
+async function openaiFill(imageBase64, maskBase64, prompt) {
+  const imgBuf = Buffer.from(imageBase64, 'base64');
+  const meta = await sharp(imgBuf).metadata();
+  const k = Math.max(1, Math.sqrt(OPENAI_MIN_PIXELS / (meta.width * meta.height)));
+  const w = roundUpTo16(meta.width * k), h = roundUpTo16(meta.height * k);
+
+  const image = await sharp(imgBuf).resize(w, h, { fit: 'fill' }).removeAlpha().png().toBuffer();
+  const lum = await sharp(Buffer.from(maskBase64, 'base64'))
+    .resize(w, h, { fit: 'fill' }).removeAlpha().greyscale().raw().toBuffer({ resolveWithObject: true });
+  const ch = lum.info.channels;
+  const alpha = Buffer.alloc(w * h);
+  for (let i = 0; i < alpha.length; i++) alpha[i] = 255 - lum.data[i * ch];
+  const mask = await sharp({ create: { width: w, height: h, channels: 3, background: '#000000' } })
+    .joinChannel(alpha, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
+
+  const form = new FormData();
+  form.append('model', OPENAI_IMAGE_MODEL);
+  form.append('image', new Blob([image], { type: 'image/png' }), 'photo.png');
+  form.append('mask', new Blob([mask], { type: 'image/png' }), 'mask.png');
+  form.append('prompt', prompt);
+  form.append('size', w + 'x' + h);
+  form.append('quality', 'high');
+  form.append('output_format', 'png');
+  form.append('n', '1');
+
+  const resp = await fetch('https://api.openai.com/v1/images/edits', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + process.env.OPENAI_API_KEY },
+    body: form,
+  });
+  const json = await resp.json().catch(() => null);
+  if (!resp.ok) {
+    const e = new Error((json && json.error && json.error.message) || ('OpenAI HTTP ' + resp.status));
+    e.status = resp.status;
+    e.code = json && json.error && json.error.code;
+    e.filtered = e.code === 'moderation_blocked';
+    throw e;
+  }
+  const b64 = json && json.data && json.data[0] && json.data[0].b64_json;
+  if (!b64) throw new Error('OpenAI 응답에 이미지가 없습니다.');
+  const out = Buffer.from(b64, 'base64');
+  const kind = sniffImageType(out);
+  if (!kind) throw new Error('OpenAI 결과가 이미지가 아닙니다.');
+  const outMeta = await sharp(out).metadata();
+
+  // 토큰 과금(모델 문서: 이미지 입력 $8/1M, 이미지 출력 $30/1M). 글자 입력 단가는 문서에 없어
+  // 이미지 입력 단가로 같이 셈한다 — 프롬프트는 수백 토큰이라 차이가 1원도 안 된다.
+  const usage = (json && json.usage) || {};
+  const costUsd = ((usage.input_tokens || 0) * 8 + (usage.output_tokens || 0) * 30) / 1e6;
+  return {
+    base64: b64, mediaType: 'image/' + kind,
+    width: outMeta.width, height: outMeta.height,
+    sentWidth: w, sentHeight: h,
+    costUsd: Math.round(costUsd * 10000) / 10000,
+    usage: usage,
+  };
 }
 
 const anthropic = new Anthropic(); // ANTHROPIC_API_KEY 환경변수에서 자동으로 읽음
@@ -893,8 +1000,8 @@ async function generateFluxPrompt(body, imageBase64, mediaType) {
 // 베끼지 않게). contextImageBase64는 지우지 않은 같은 크기 원본 — Claude가 실내/실외·계절·조명을 보고
 // 배경을 정하는 데만 쓴다. 회색 배경만 보면 어떤 장소였는지 알 수 없다.
 app.post('/api/replace-background', async (req, res) => {
-  if (!process.env.FAL_KEY) {
-    return res.status(501).json({ error: '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.', ready: false });
+  if (!imageEditReady()) {
+    return res.status(501).json({ error: imageEditNotReadyText(), ready: false });
   }
   const { imageBase64, contextImageBase64, maskBase64, mediaType, texts, grade, locationEvidence, seed } = req.body || {};
   if (!imageBase64) {
@@ -908,6 +1015,18 @@ app.post('/api/replace-background', async (req, res) => {
   try {
     const mt = mediaType || 'image/jpeg';
     const editPrompt = await generateFluxPrompt({ texts, grade, locationEvidence }, contextImageBase64 || imageBase64, mt);
+
+    if (IMAGE_EDIT_PROVIDER === 'openai') {
+      const out = await openaiFill(imageBase64, maskBase64, editPrompt);
+      return res.json({
+        imageBase64: out.base64, mediaType: out.mediaType,
+        width: out.width, height: out.height,
+        editPrompt: editPrompt, usedPrompt: null,
+        timingMs: Date.now() - t0, estimatedCostUsd: out.costUsd,
+        attempts: 1, usedSeed: null,
+        provider: 'openai', model: OPENAI_IMAGE_MODEL, sentSize: out.sentWidth + 'x' + out.sentHeight, usage: out.usage,
+      });
+    }
 
     const ext = mt.includes('png') ? 'png' : 'jpg';
     // 마스크는 흑백 경계가 뭉개지면 안 되므로 항상 PNG로 올린다 (JPEG 압축 금지)
@@ -961,8 +1080,11 @@ app.post('/api/replace-background', async (req, res) => {
       attempts: attempts, usedSeed: output.seed == null ? null : output.seed,
     });
   } catch (err) {
-    console.error('[server] 배경 교체(flux-fill) 호출 실패:', err.message);
-    res.status(500).json({ error: 'AI 배경교체 실패: ' + falErrorText(err) });
+    console.error('[server] 배경 교체(' + IMAGE_EDIT_PROVIDER + ') 호출 실패:', err.message);
+    if (err.filtered) {
+      return res.status(422).json({ error: 'AI 안전 필터가 요청을 막았어요(정상 사진에서도 가끔 있는 오탐이에요). 잠시 뒤 다시 눌러 주세요.', filtered: true, attempts: 1 });
+    }
+    res.status(500).json({ error: 'AI 배경교체 실패: ' + imageEditErrorText(err) });
   }
 });
 
@@ -1490,8 +1612,8 @@ async function generateInpaintPrompt(body) {
 }
 
 app.post('/api/inpaint-regions', async (req, res) => {
-  if (!process.env.FAL_KEY) {
-    return res.status(501).json({ error: '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.', ready: false });
+  if (!imageEditReady()) {
+    return res.status(501).json({ error: imageEditNotReadyText(), ready: false });
   }
   const { imageBase64, maskBase64, mediaType, texts, grade, locationEvidence, promptOverride, seed } = req.body || {};
   if (!imageBase64) {
@@ -1507,6 +1629,19 @@ app.post('/api/inpaint-regions', async (req, res) => {
     // 달라지는데, 서버는 마스크 모양을 모른다. 그래서 호출부가 필요하면 직접 지정할 수 있게 열어둠.
     // (지정하지 않으면 위험요소 목록을 보고 Claude가 생성)
     const editPrompt = promptOverride || await generateInpaintPrompt({ texts, grade, locationEvidence });
+
+    // OpenAI는 시드를 받지 않는다 — 프롬프트 A/B를 같은 시드로 재는 방법(아래 fal 경로)은 여기선 안 된다.
+    if (IMAGE_EDIT_PROVIDER === 'openai') {
+      const out = await openaiFill(imageBase64, maskBase64, editPrompt);
+      return res.json({
+        imageBase64: out.base64, mediaType: out.mediaType,
+        width: out.width, height: out.height,
+        editPrompt: editPrompt, usedPrompt: null,
+        timingMs: Date.now() - t0, estimatedCostUsd: out.costUsd,
+        attempts: 1, usedSeed: null,
+        provider: 'openai', model: OPENAI_IMAGE_MODEL, sentSize: out.sentWidth + 'x' + out.sentHeight, usage: out.usage,
+      });
+    }
 
     const mt = mediaType || 'image/jpeg';
     const ext = mt.includes('png') ? 'png' : 'jpg';
@@ -1579,14 +1714,19 @@ app.post('/api/inpaint-regions', async (req, res) => {
       attempts: attempts, usedSeed: output.seed == null ? null : output.seed,
     });
   } catch (err) {
-    console.error('[server] flux-fill 호출 실패:', err.message);
-    res.status(500).json({ error: 'AI 인페인팅 실패: ' + falErrorText(err) });
+    console.error('[server] 인페인팅(' + IMAGE_EDIT_PROVIDER + ') 호출 실패:', err.message);
+    if (err.filtered) {
+      return res.status(422).json({ error: 'AI 안전 필터가 요청을 막았어요(정상 사진에서도 가끔 있는 오탐이에요). 잠시 뒤 다시 눌러 주세요.', filtered: true, attempts: 1 });
+    }
+    res.status(500).json({ error: 'AI 인페인팅 실패: ' + imageEditErrorText(err) });
   }
 });
 
-// 프론트에서 실제 비용이 드는 호출을 하기 전에 "준비됐는지"만 가볍게 확인하는 용도
+// 프론트에서 실제 비용이 드는 호출을 하기 전에 "준비됐는지"만 가볍게 확인하는 용도.
+// provider는 동의창 문구를 고르는 데 쓴다 — 원본이 실제로 가는 곳을 적어야 한다.
+// 간판 글자 바꿔쓰기는 엔진과 상관없이 fal이라 따로 알린다.
 app.get('/api/flux-status', (req, res) => {
-  res.json({ ready: !!process.env.FAL_KEY });
+  res.json({ ready: imageEditReady(), provider: IMAGE_EDIT_PROVIDER, signReady: !!process.env.FAL_KEY });
 });
 
 // ===== 5. 결과 재검증 프롬프트 (아이사진_SNS위험진단_프롬프트.md 5번, 3단계) =====

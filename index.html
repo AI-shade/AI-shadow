@@ -4324,6 +4324,17 @@
 <div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
   <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
     <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의</h3>
+    <!-- 서버의 마스크 보정 엔진(/api/flux-status의 provider)에 맞춰 둘 중 하나만 보인다(applyAiProviderText). -->
+    <div id="fluxConsentOpenai" style="display:none;">
+    <p class="evidence">AI 방식(옷 바꾸기 · 배경 교체)은 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(OpenAI)로 전송됩니다. 배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요.</p>
+    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">OpenAI가 밝힌 API 데이터 처리 방침</p>
+    <ul class="action-list" style="margin-bottom:0.8rem;">
+      <li><strong>AI 모델 학습에는 쓰지 않아요</strong> — API로 보낸 데이터는 따로 허락하지 않으면 학습에 안 쓴다고 밝혀요</li>
+      <li><strong>다만 “처리 후 바로 삭제”는 아니에요.</strong> 남용 감시 기록으로 최대 30일 보관하고, 법적으로 필요하면 더 길어질 수 있다고 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
+    </ul>
+    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer">API 데이터 처리</a> · <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a></p>
+    </div>
+    <div id="fluxConsentFal">
     <p class="evidence">AI 방식(옷 바꾸기 · 배경 교체)은 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다. 배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요.</p>
     <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">fal.ai가 밝힌 사진 처리 방침</p>
     <ul class="action-list" style="margin-bottom:0.8rem;">
@@ -4332,6 +4343,7 @@
       <li><strong>다만 “처리 후 바로 삭제”는 약속돼 있지 않아요.</strong> 계정을 닫으면 30일 안에, 2년간 안 쓰면 그때 지운다고만 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
     </ul>
     <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
+    </div>
     <button class="primary" id="fluxConsentAgree">동의하고 진행</button>
     <button class="secondary" id="fluxConsentCancel">취소</button>
   </div>
@@ -6733,10 +6745,22 @@
     var INPAINT_BACKEND_URL = '/api/inpaint-regions';
     var FLUX_STATUS_URL = '/api/flux-status';
 
-    async function checkFluxStatus() {
+    // 서버가 고른 마스크 보정 엔진('fal' | 'openai'). 동의창·안내 문구에 원본이 실제로 가는 곳을 적는 데 쓴다.
+    var aiEditProvider = 'fal';
+    function aiProviderLabel() { return aiEditProvider === 'openai' ? 'OpenAI' : 'fal.ai'; }
+    function applyAiProviderText() {
+      var isOpenai = aiEditProvider === 'openai';
+      document.getElementById('fluxConsentOpenai').style.display = isOpenai ? 'block' : 'none';
+      document.getElementById('fluxConsentFal').style.display = isOpenai ? 'none' : 'block';
+    }
+
+    // kind === 'sign': 간판 글자 바꿔쓰기는 엔진과 상관없이 fal(nano-banana-pro)이라 따로 본다.
+    async function checkFluxStatus(kind) {
       try {
         var res = await fetch(FLUX_STATUS_URL, { headers: apiHeaders() });
         var data = await res.json();
+        if (data.provider) { aiEditProvider = data.provider; applyAiProviderText(); }
+        if (kind === 'sign') return data.signReady == null ? !!data.ready : !!data.signReady;
         return !!data.ready;
       } catch (e) {
         return false;
@@ -12681,7 +12705,7 @@
         if (correctionBaseUrl) previewAfter.src = correctionBaseUrl;
         previewCaption.textContent = appliedSteps.length
           ? '여기까지 바꿨어요. 더 바꿀 게 있으면 아래 단추를 눌러주세요.'
-          : '아래에서 바꿀 것을 골라주세요. 누를 때마다 사진이 AI(fal.ai)로 전송돼요.';
+          : '아래에서 바꿀 것을 골라주세요. 누를 때마다 사진이 AI(' + aiProviderLabel() + ')로 전송돼요.';
         currentCorrectionCanvas = null; lastCorrectionMeta = null;
         return;
       }
@@ -12805,7 +12829,7 @@
         if (wantAi) {
           if (!(await checkFluxStatus())) {
             previewAfter.src = correctionBaseUrl;
-            previewCaption.textContent = '마크 지우기·옷 바꾸기는 fal.ai 연동 준비 중이에요. '
+            previewCaption.textContent = '마크 지우기·옷 바꾸기는 ' + aiProviderLabel() + ' 연동 준비 중이에요. '
               + '지금은 «색만 바꾸기»를 골라보세요.';
             currentCorrectionCanvas = null; lastCorrectionMeta = null;
             return;
@@ -12899,7 +12923,7 @@
         var ready = await checkFluxStatus();
         if (!ready) {
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '✨ AI 배경교체는 fal.ai 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
+          previewCaption.textContent = '✨ AI 배경교체는 ' + aiProviderLabel() + ' 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
           editInstruction.textContent = '';
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
@@ -13070,7 +13094,7 @@
       var regions = findSignSwapRegions(getSelectedTexts(), imgW, imgH);
       if (regions.length === 0 || !currentCorrectionCanvas) return;
 
-      var ready = await checkFluxStatus();
+      var ready = await checkFluxStatus('sign');
       if (!ready) {
         statusEl.textContent = '⚠ 서버 연동 준비 중이에요.';
         return;
