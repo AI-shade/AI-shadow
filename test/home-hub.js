@@ -1,5 +1,5 @@
 /*
- * 폰 진단 탭의 홈(허브) 검사 — 스크롤 없는 한 화면, 그리고 홈 ↔ 도구 화면 전환.
+ * 폰 진단 탭의 홈(허브) 검사 — 다 보이는 홈(넘치면 스크롤), 그리고 홈 ↔ 도구 화면 전환.
  *
  * 배경: 진단 탭이 소개 문단·예시 피드·입력 폼을 한 페이지에 길게 이어 놓아서 한 화면이
  * 아니었다. 이제 첫 화면은 제목 바 + 알약 + 아이콘 메뉴 + 짧은 소개까지만이고, 사진을
@@ -39,18 +39,28 @@ async function 새로열기(browser, viewport, hash) {
 (async () => {
   const browser = await chromium.launch();
 
-  // ── 1) 홈은 스크롤 없이 한 화면 ──
-  console.log('홈은 한 화면이다 (스크롤 없음, 히어로가 탭바에 안 가려짐)');
-  // 320x568(아주 옛 폰)은 일부러 뺐다 — 29px 넘친다. 알려진 한계.
-  for (const [w, h] of [[390, 844], [430, 932], [360, 740], [375, 667], [360, 640]]) {
+  // ── 1) 홈은 다 보이고, 넘치면 스크롤한다 ──
+  // 예전엔 "스크롤 없는 한 화면"이라 키 660·760px 이하에서 신뢰 카드·예시 타일을 숨겼다. 실제 폰은
+  // 브라우저 막대 때문에 거의 다 그 밑이라(갤럭시 S22+ 삼성 인터넷 384x653) 둘 다 숨고 빈칸만 남았다
+  // (제보 11-02: "갤럭시 22인데 화면이 다 안떠"). 이제 숨기지 않는다.
+  console.log('홈은 다 보인다 (신뢰 카드·예시 타일, 끝까지 내리면 탭바에 안 가려짐)');
+  for (const [w, h] of [[390, 844], [430, 932], [360, 740], [375, 667], [360, 640], [384, 653], [393, 659]]) {
     const { ctx, page } = await 새로열기(browser, { width: w, height: h });
     const r = await page.evaluate(() => {
       const hero = document.querySelector('header.hero').getBoundingClientRect();
       const tab = document.getElementById('appTabbar').getBoundingClientRect();
-      return { sh: document.documentElement.scrollHeight, ih: innerHeight, heroBottom: Math.round(hero.bottom), tabTop: Math.round(tab.top) };
+      const shown = (q) => { const e = document.querySelector(q); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0; };
+      return { heroBottom: Math.round(hero.bottom), tabTop: Math.round(tab.top), trust: shown('.app-trust'), examples: shown('.app-examples') };
     });
-    ok(r.sh <= r.ih, `${w}x${h} 스크롤이 없다`, `문서 ${r.sh}px / 화면 ${r.ih}px`);
+    ok(r.trust && r.examples, `${w}x${h} 신뢰 카드·예시 타일이 보인다`, `신뢰 ${r.trust} · 예시 ${r.examples}`);
     ok(r.heroBottom <= r.tabTop, `${w}x${h} 소개가 탭바에 안 가린다`, `${r.heroBottom} ≤ ${r.tabTop}`);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(150);
+    const end = await page.evaluate(() => ({
+      ex: Math.round(document.querySelector('.app-examples').getBoundingClientRect().bottom),
+      tab: Math.round(document.getElementById('appTabbar').getBoundingClientRect().top),
+    }));
+    ok(end.ex <= end.tab, `${w}x${h} 끝까지 내리면 예시 타일이 탭바 위에 다 보인다`, `${end.ex} ≤ ${end.tab}`);
     await ctx.close();
   }
 

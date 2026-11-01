@@ -30,7 +30,9 @@ function ok(cond, name, detail) {
     await page.waitForTimeout(800);
     const 높이 = () => page.evaluate(() => document.documentElement.scrollHeight);
 
-    ok((await 높이()) <= h + 2, '홈이 한 화면이다', (await 높이()) + 'px');
+    // 홈은 11-02부터 신뢰 카드·예시 타일을 숨기지 않고 넘치면 스크롤한다(home-hub.js가 잰다).
+    // 다만 끝없이 길어지면 안 된다 — 한 화면 반을 넘지 않게만 막는다.
+    ok((await 높이()) <= h * 1.5, '홈이 한 화면 반 안이다', (await 높이()) + 'px / ' + Math.round(h * 1.5) + 'px');
     for (const t of ['과거글', '문답']) {
       await page.click(`.app-tab[data-goto="${t}"]`);
       await page.waitForTimeout(300);

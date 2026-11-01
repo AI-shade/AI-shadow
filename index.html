@@ -2946,12 +2946,10 @@
     :root[data-tab="진단"][data-view="home"] header.hero .hero-sub { display: none; }
   }
 
-  /* 신뢰 포인트(.app-trust) 두 줄은 375x667까지는 한 화면에 들어간다(실측 664px/667px,
-     여유 없이 딱 맞음). 360x640에서만 18px 넘친다 — 그 밑에서만 뺀다. 640과 667 사이라면
-     아무 값이나 되지만, 실측 두 값 사이에 넉넉히 걸치도록 660으로 잡았다. */
-  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 660px) {
-    :root[data-tab="진단"][data-view="home"] .app-trust { display: none; }
-  }
+  /* 신뢰 포인트(.app-trust)와 예시 타일(.app-examples)을 키 660px·760px 이하에서 숨겼었다 — 한 화면에
+     맞추려고. 실제 폰은 브라우저 막대가 높이를 먹어서 거의 다 그 밑이다(11-02 실측: 갤럭시 S22+ 삼성
+     인터넷 384x653, 아이폰 15 사파리 393x659). 둘 다 숨고 탭바 위에 154·160px가 비었다. 제보: "갤럭시
+     22인데 화면이 다 안떠". 이제 숨기지 않고, 넘치면 스크롤한다. */
 
   /* 진단 결과의 항목 칩이 하단 고정 바에 가리지 않게, 낮은 폰에서는 사진과 오각형을 더 줄인다.
      실측: 360x740에서 20vh/190px로는 칩이 48px 가렸다. 아주 낮은 폰(667 이하)은 그래도 조금
@@ -3141,8 +3139,6 @@
     #screen-result .factor-chips .factor-chip,
     #screen-result .factor-chips .map-chip { font-size: 0.76rem; }
     #screen-result .gauge-wrap > .gauge-ring { max-width: 150px; }
-    /* 키 760px 이하에서는 홈 예시 타일까지 넣을 자리가 없다 */
-    :root[data-tab="진단"][data-view="home"] .app-examples { display: none; }
     #compareGrid #previewFrame img { max-height: 25vh; }
     #screen-result .factor-chips { margin-top: 0.3rem; padding-top: 0.2rem; }
     .mr-item small { display: none; }
@@ -3188,6 +3184,13 @@
     /* 하단 고정 액션 바가 없는 탭 — 탭바 자리만 비운다(기본 9rem은 액션 바 몫까지라 빈 스크롤이 생겼다) */
     :root[data-tab="과거글"] body, :root[data-tab="문답"] body { padding-bottom: 4.2rem; }
     section[data-tab-of="알아보기"] { margin-bottom: 0; }
+    /* 이 세 탭은 내용이 흰 상자 하나라, 짧으면 그 아래부터 탭바까지 바닥(--soft) 회색 띠가 드러났다
+       (11-02 실측 360x800: 과거글 116px · 알아보기 149px · 문답 274px). 제보: "아래에 여백이 너무 많은거같아".
+       바닥을 상자와 같은 색으로 맞춰 앱 화면처럼 한 면으로 이어지게 한다. */
+    :root[data-tab="과거글"] body, :root[data-tab="알아보기"] body, :root[data-tab="문답"] body { background: var(--card); }
+    /* 바닥에 깐 입자(.page-grain)는 흰 상자 밖에서만 보여 상자 끝이 여전히 선처럼 남는다. 이 탭들엔
+       입자가 지울 그라데이션 띠도 없다. */
+    :root[data-tab="과거글"] .page-grain, :root[data-tab="알아보기"] .page-grain, :root[data-tab="문답"] .page-grain { display: none; }
   }
   /* 낮은 폰(375x667) — 과거글이 18px 넘쳤다 */
   @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 760px) {
