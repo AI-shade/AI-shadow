@@ -3126,10 +3126,20 @@
     #fileDrop:has(~ #polaroidPreview:not([style*="none"])) .icon { display: none; }
     #polaroidPreview { margin: 0.6rem auto 0; }
     #polaroidPreview img { max-height: 25vh; object-fit: contain; }
+    /* 사진 말고 나머지(앱바·사진 칸·돌리기·공개 범위·단추·탭바)가 약 483px다(11-02 실측 360x610: 단추 끝 555 −
+       사진 152 = 403, 탭바 자리 72, 여유 8). 키 작은 폰(갤럭시 S22 삼성 인터넷 360x610)에서는 25vh로도 단추가
+       탭바에 17px 가렸다 — 화면 키에서 그만큼 뺀 높이까지만 쓴다. dvh는 브라우저 막대를 뺀 실제 키다. */
+    @supports (height: 100dvh) {
+      #polaroidPreview img { max-height: clamp(96px, calc(100dvh - 483px), 25vh); }
+    }
     #polaroidPreview .cap { display: none; }
     /* 사진 돌리기 — 사진 바로 밑 한 줄. 설명 줄은 단추 글자가 같은 말을 해서 뺀다(375x667에서 1px 남았다) */
     #rotateRow { margin: 0.45rem 0 0; }
     #rotateRow .hint { display: none; }
+    /* «계정 공개 범위» 아래 .field 여백(1.35rem)은 옆 칸(업로드 시점)과 띄우려던 것인데 그 칸은 폰에서 숨는다 —
+       여백만 남아 단추 위에 «여백 24px + 단추 위 26px» 빈칸이 생겼다. 제보: "갤럭시 22+ 진단 누르면 여전히
+       짤려서 안보여" — 11-02 실측 384x653(S22+ 삼성 인터넷)에서 «위험도 진단하기» 끝 589px, 탭바 위 581px. */
+    #screen-form .row2 > .field { margin-bottom: 0; }
   }
 
   /* 낮은 폰(키 760px 이하, 예: 375x667) — 같은 내용을 더 촘촘히. 항목 목록은 두 줄로 나란히,

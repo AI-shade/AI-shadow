@@ -63,7 +63,8 @@ const 보임 = (page, sel) => page.evaluate((s) => {
 (async () => {
   const browser = await chromium.launch();
 
-  for (const [w, h] of [[390, 844], [375, 667]]) {
+  // 384x653·360x610 — 갤럭시 S22+·S22 삼성 인터넷(주소창·도구 막대를 뺀 키). 제보 11-02 "진단 누르면 여전히 짤려서 안보여"
+  for (const [w, h] of [[390, 844], [375, 667], [384, 653], [360, 610]]) {
     console.log('\n진단 결과 ' + w + 'x' + h);
     const { page, errs } = await open(browser, w, h);
     await page.evaluate((a) => {

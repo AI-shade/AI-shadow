@@ -115,6 +115,9 @@ async function run(browser, name, ctxOpts) {
   await run(browser, '데스크톱 1280x800', { viewport: { width: 1280, height: 800 } });
   await run(browser, '폰 393x852', { viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
   await run(browser, '낮은 폰 375x667', { viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  // 삼성 인터넷은 위 주소창·아래 도구 막대가 키를 먹는다 — 제보 11-02 "갤럭시 22+ 진단 누르면 여전히 짤려서 안보여"
+  await run(browser, '갤럭시 S22+ 삼성 인터넷 384x653', { viewport: { width: 384, height: 653 }, isMobile: true, hasTouch: true });
+  await run(browser, '갤럭시 S22 삼성 인터넷 360x610', { viewport: { width: 360, height: 610 }, isMobile: true, hasTouch: true });
   await browser.close();
   console.log('\n' + pass + '개 통과, ' + fail + '개 실패');
   if (fail > 0) process.exitCode = 1;
