@@ -9840,6 +9840,7 @@
 
     var uploadedPhotoUrl = null;
     var originalPhotoUrl = null; // 올린 파일 그대로 — 사진을 돌려도 EXIF는 여기서 읽는다
+    var photoReady = Promise.resolve(); // 올린 사진을 작업 크기로 줄이는 중이면 끝날 때까지 기다린다(shrinkForWork)
     var pastCount = 0;
     // 패턴 전용 화면(#screen-pattern)의 "그래도 포함해서 다시 분석"·"사진도 함께
     // 진단하기" 버튼이 쓸, 지금 화면에 떠 있는 결과를 만든 실제 파일 목록.
@@ -9876,6 +9877,12 @@
       originalPhotoUrl = uploadedPhotoUrl = URL.createObjectURL(file);
       lastExifResult = null;
       photoPreview.src = uploadedPhotoUrl;
+      var mine = originalPhotoUrl;
+      photoReady = shrinkForWork(mine).then(function (u) {
+        if (originalPhotoUrl !== mine) return; // 줄이는 사이에 다른 사진을 골랐다
+        uploadedPhotoUrl = u;
+        photoPreview.src = u;
+      }).catch(function () {}); // 못 줄이면 원본 그대로 간다 — 예전과 같다
       polaroidPreview.style.display = 'block';
       document.getElementById('rotateRow').style.display = '';
       var upPart = polaroidPreview.closest('.up-part');
@@ -9883,6 +9890,27 @@
       fileDropLabel.textContent = file.name;
       syncPastHint();
     });
+
+    // 아이폰 사진을 원본 크기로 보정하면 iOS가 탭을 다시 띄운다(«보정하다 튕겨요» — 갤럭시에서는 안 남).
+    // iOS는 크롬·네이버·카톡 안 브라우저도 전부 웹킷이라 캔버스 합계 약 384MB, 한 장 16,777,216화소를 넘으면 죽는다.
+    // 11-02 실측(배경 교체 + 옷 전체, AI는 가짜 응답): 2400만 화소(아이폰 15·16) 761MB·한도 넘는 캔버스 14장,
+    // 1200만 화소 386MB. 그래서 올리는 순간 긴 변 2560px로 한 번 줄인다 — AI로 보내는 크기(1568)보다 크고,
+    // SNS가 다시 줄이는 크기보다도 크다. EXIF 좌표는 originalPhotoUrl(올린 파일 그대로)에서 읽으니 잃지 않는다.
+    var WORK_MAX_SIDE = 2560;
+    async function shrinkForWork(url) {
+      var img = await loadImage(url);
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var k = WORK_MAX_SIDE / Math.max(w, h);
+      if (k >= 1) return url;
+      var c = document.createElement('canvas');
+      c.width = Math.round(w * k); c.height = Math.round(h * k);
+      var x = c.getContext('2d');
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(img, 0, 0, c.width, c.height);
+      var blob = await new Promise(function (res) { c.toBlob(res, 'image/jpeg', 0.92); });
+      c.width = 0; c.height = 0; // iOS는 캔버스를 늦게 치운다 — 바로 비운다
+      return blob ? URL.createObjectURL(blob) : url;
+    }
 
     // 시계방향 90°로 돌린 사진을 새 object URL로 돌려준다. 캔버스를 거치므로 EXIF는 사라진다 —
     // 좌표는 originalPhotoUrl(올린 파일 그대로)에서 읽는다.
@@ -9904,6 +9932,7 @@
       var btn = this;
       btn.disabled = true;
       try {
+        await photoReady;
         var prev = uploadedPhotoUrl;
         uploadedPhotoUrl = await rotatePhoto90(prev);
         photoPreview.src = uploadedPhotoUrl;
@@ -11678,7 +11707,8 @@
       }
     }
 
-    document.getElementById('submitBtn').addEventListener('click', function () {
+    document.getElementById('submitBtn').addEventListener('click', async function () {
+      await photoReady; // 큰 사진을 줄이는 중이면 줄인 사진으로 진단한다
       // 사진이 없어도 과거 게시물 스크린샷만 있으면 패턴은 볼 수 있다.
       // 얼굴·글자 검출과 보정은 올릴 사진이 있어야 뜻이 있으니 그때만 돈다.
       if (!photoInput.files[0]) {
@@ -13519,6 +13549,7 @@
       uploadedPhotoUrlForTest: function () { return uploadedPhotoUrl; },
       originalPhotoUrlForTest: function () { return originalPhotoUrl; },
       rotatePhoto90: rotatePhoto90,
+      shrinkForWork: shrinkForWork, // 아이폰 큰 사진을 작업 크기로 줄이기(test/photo-shrink.js)
       setLocCluesForTest: function (o) {
         lastOcrResult = o.ocr || null;
         lastExifResult = o.exif || null;
