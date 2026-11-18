@@ -62,6 +62,20 @@ __pycache__/
 사진 100장 분석/*.png
 사진 100장 분석/*.jpg
 사진 100장 분석/*.jpeg
+# 위 세 줄은 최상단만 잡는다 — 하위 폴더(예: 테스트 ai 사진/)의 사진도 막는다
+사진 100장 분석/**/*.png
+사진 100장 분석/**/*.jpg
+사진 100장 분석/**/*.jpeg
+사진 100장 분석/**/*.heic
+사진 100장 분석/**/*.webp
+
+# 팀 자료 — 직접 찍은 사진 503장(마스킹작업), 회의록, 팀원 작업물.
+# 아이 사진이 섞여 있을 수 있어 폴더째 커밋하지 않는다 (AGENTS.md 7절).
+팀자료/
+
+# 압축 파일 — 팀원이 보낸 자료 묶음. 풀어 둔 폴더가 따로 있고 용량만 크다.
+*.zip
+__MACOSX/
 
 # 발표자료 — 슬라이드에 실제 아이 사진이 찍힌 앱 화면이 그대로 들어 있다.
 # 사진 파일과 같은 이유로 커밋하지 않는다 (AGENTS.md 1절 «비밀»).
@@ -81,3 +95,7 @@ server/faceshield-fal/faceshield_repo/models/*_checkpoint.tar
 server/faceshield-fal/*.json
 server/faceshield-fal/*.png
 server/faceshield-fal/headers.txt
+
+# 마크 찾기 모델(RF-DETR int8, 41MB) — 저장소 5MB 제한을 넘어 커밋하지 않는다. 로컬 개발용 사본만 여기에 두고,
+# 배포본은 나중에 외부(Supabase)에서 받는다. 파일이 없으면 앱은 예전 방식으로 동작한다.
+public/models/
