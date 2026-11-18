@@ -83,7 +83,9 @@ function check(label, ok, detail) {
     blurSlider: !!document.getElementById('blurRange'),
     outfitRow: !!document.getElementById('outfitStyle') || document.querySelectorAll('.of-btn').length > 0,
     stackBtn: !!document.getElementById('applyStepBtn'),
-    aiBtns: Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button')).map((b) => b.textContent.trim()),
+    // 보이는 단추만 센다. «배경 전체 바꾸기»(11-18)는 «배경 교체하기»가 간판만 바꿨을 때만 나타난다.
+    aiBtns: Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button')).filter((b) => b.style.display !== 'none').map((b) => b.textContent.trim()),
+    bgFullHidden: document.getElementById('aiBgFullBtn').style.display === 'none',
     title: (document.querySelector('.correct-left h3') || {}).textContent.trim(),
     autoHidden: getComputedStyle(document.getElementById('autoPlan')).display === 'none'
       && getComputedStyle(document.getElementById('targetPicker')).display === 'none',
@@ -93,6 +95,7 @@ function check(label, ok, detail) {
   // 10-27 사용자 결정으로 자동 보정·찾은 곳 목록을 화면에서 뺐다("자동보정이 빼봐봐 이것떄문에 더 불편한거같아").
   // 위 자동 보정 검사는 함수(planAutoCorrection·selectMethod('auto'))가 남아 있어 그대로 두지만, 화면에서는 부르지 않는다.
   check('AI 단추는 로고 지우기·배경 교체하기·옷 전체 바꾸기 셋이다', gone.aiBtns.join(',') === '로고 지우기,배경 교체하기,옷 전체 바꾸기', gone.aiBtns.join(','));
+  check('«배경 전체 바꾸기»는 처음에는 숨어 있다 (간판만 바꾼 뒤에만 보인다)', gone.bgFullHidden);
   check('제목이 무엇을 바꿀지 묻는다', gone.title === '무엇을 바꿀까요?', gone.title);
   check('자동 보정 단계 목록·찾은 곳 목록은 화면에 없다', gone.autoHidden);
 

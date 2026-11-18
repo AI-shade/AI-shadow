@@ -3912,6 +3912,8 @@
         <button type="button" class="secondary" id="aiMarkBtn" title="가슴의 로고·마크만 다시 그린다 · 옷 모양과 색은 그대로">로고 지우기</button>
         <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그린다 · 간판·건물 이름도 같이 사라진다">배경 교체하기</button>
         <button type="button" class="secondary" id="aiOutfitBtn" title="옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꾼다 · 얼굴·손은 그대로">옷 전체 바꾸기</button>
+        <!-- «배경 교체하기»가 간판 자리만 바꿨을 때만 보인다. 누르면 그 결과 위에서 배경 전체를 새로 그린다. -->
+        <button type="button" class="secondary" id="aiBgFullBtn" style="display:none;" title="간판만이 아니라 사람 뒤 배경 전체를 새로 그린다">배경 전체 바꾸기</button>
       </div>
       <p class="hint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">«옷 전체 바꾸기»는 칼라·배색처럼 교복 디자인 자체로 어느 학교인지 알아볼 수 있을 때만 쓰세요. 로고만 문제라면 «로고 지우기»가 더 자연스러워요.</p>
       <div class="is-gone">
@@ -8093,6 +8095,206 @@
         for (var y = Math.floor(y0); y < y1; y += 2) for (var xx = Math.floor(x0); xx < x1; xx += 2) { n++; if (cd[(y * imgW + xx) * 4 + 3] > 128) on++; }
         return n > 0 && on / n >= MARK_RULE.minClothes;
       });
+    }
+
+    // ===== 배경 교체 «간판 자리만» =====
+    // 배경 전체를 다시 그리면 사진의 분위기까지 바뀐다. 아이와 장소를 잇는 고리는 대개 간판 하나라서 그 자리만 다시 그린다.
+    // 모델은 «어디에 글자판이 있는지»만 알고 글자를 못 읽는다. 진단(Claude)은 글자를 읽지만 위치를 9칸으로만 안다.
+    // 그래서 짝을 짓는다: 모델 상자에 번호를 그려 얼굴을 가린 사진을 Claude에 보내 «번호마다 무슨 글자인지»만 받는다.
+    // 위험한지는 Claude가 정하지 않는다 — 앱의 장소 글자 판정(isPlaceWord) 한 곳이 정한다(판정은 한 곳에만).
+    var SIGN_READ_URL = '/api/read-sign-boxes';
+    // maxBoxes: 처음 12였다 — 거리 사진은 간판이 12개를 넘어, 시험 87장에서 모델이 찾은 정답 간판 425개 중 101개가 거르기·12개 제한에서 빠졌다.
+    // 조각 모음(drawCropSheet)은 한 장에 30개가 들어가서 30으로 올렸다.
+    var SIGN_RULE = { maxPerson: 0.5, maxArea: 0.5, maxBoxes: 30, overlap: 0.6, pad: 0.06 };
+    // 빈 간판으로 채운다(글자를 새로 쓰게 하지 않는다 — AI가 그린 한글은 «쉘붇라옵»처럼 깨지고, 말이 되는 이름은
+    // 실제 있는 다른 곳을 가리킬 수 있다). 부탁 대신 보내기 전에 간판 바탕색으로 미리 칠해 둔다(prefillWithSurround).
+    var SIGN_BLANK_PROMPT = 'plain blank signboard surface in exactly the same colour, material and lighting as its surroundings, '
+      + 'continuing the board edges and perspective seamlessly, photorealistic photograph';
+
+    // 모델 상자 중 «사람 밖의 글자판»만 남긴다. 옷 위의 로고는 «로고 지우기»가 맡는다.
+    // boxes·faceBoxes는 원본 좌표, personMask는 getFullPersonMask(없으면 null — 사람 겹침은 안 본다).
+    function signRectsOffPerson(boxes, faceBoxes, personMask, imgW, imgH) {
+      var pd = null;
+      if (personMask) {
+        var c = document.createElement('canvas'); c.width = imgW; c.height = imgH;
+        var x = c.getContext('2d'); x.drawImage(personMask, 0, 0, imgW, imgH);
+        pd = x.getImageData(0, 0, imgW, imgH).data;
+      }
+      var kept = (boxes || []).filter(function (b) {
+        var x0 = Math.max(0, b.x), y0 = Math.max(0, b.y), x1 = Math.min(imgW, b.x + b.width), y1 = Math.min(imgH, b.y + b.height);
+        if (x1 - x0 < 4 || y1 - y0 < 4) return false;
+        if ((x1 - x0) * (y1 - y0) > imgW * imgH * SIGN_RULE.maxArea) return false;
+        for (var i = 0; i < (faceBoxes || []).length; i++) {
+          var f = faceBoxes[i], fcx = f.x + f.width / 2, fcy = f.y + f.height / 2;
+          if (fcx >= x0 && fcx <= x1 && fcy >= y0 && fcy <= y1) return false; // 사람 전체 상자
+        }
+        if (!pd) return true;
+        var n = 0, on = 0, st = Math.max(1, Math.round(Math.min(x1 - x0, y1 - y0) / 20));
+        for (var y = Math.floor(y0); y < y1; y += st) for (var xx = Math.floor(x0); xx < x1; xx += st) { n++; if (pd[(y * imgW + xx) * 4 + 3] > 128) on++; }
+        return n > 0 && on / n < SIGN_RULE.maxPerson;
+      }).sort(function (a, b) { return (b.confidence || 0) - (a.confidence || 0); });
+      // 같은 간판을 겹쳐 잡은 상자는 하나만(작은 쪽 넓이의 60% 넘게 겹치면 확신이 높은 쪽)
+      var out = [];
+      kept.forEach(function (b) {
+        var dup = out.some(function (o) {
+          var ix = Math.max(0, Math.min(o.x + o.width, b.x + b.width) - Math.max(o.x, b.x));
+          var iy = Math.max(0, Math.min(o.y + o.height, b.y + b.height) - Math.max(o.y, b.y));
+          return ix * iy > SIGN_RULE.overlap * Math.min(o.width * o.height, b.width * b.height);
+        });
+        if (!dup && out.length < SIGN_RULE.maxBoxes) out.push(b);
+      });
+      return out;
+    }
+
+    // 얼굴을 가린 사진(진단과 같은 maskFaces)에 상자와 번호를 그린다. 번호는 1부터.
+    function drawNumberedBoxes(img, faces, boxes) {
+      var c = maskFaces(img, faces), x = c.getContext('2d');
+      var lw = Math.max(2, Math.round(Math.max(c.width, c.height) / 300));
+      var fs = Math.max(14, Math.round(Math.max(c.width, c.height) / 45));
+      x.font = 'bold ' + fs + 'px sans-serif';
+      x.textBaseline = 'top';
+      boxes.forEach(function (b, i) {
+        x.strokeStyle = '#ff00ff'; x.lineWidth = lw;
+        x.strokeRect(b.x, b.y, b.width, b.height);
+        var label = String(i + 1), tw = x.measureText(label).width + fs * 0.5;
+        var ly = b.y - fs * 1.2 >= 0 ? b.y - fs * 1.2 : b.y; // 상자 위에 붙이되, 사진 밖이면 상자 안쪽 위
+        x.fillStyle = '#ff00ff'; x.fillRect(b.x, ly, tw, fs * 1.2);
+        x.fillStyle = '#ffffff'; x.fillText(label, b.x + fs * 0.25, ly + fs * 0.1);
+      });
+      return c;
+    }
+
+    // 상자마다 잘라서 키운 조각을 번호와 함께 한 장에 모은다(돋보기). 얼굴은 자르기 전에 maskFaces로 가린다.
+    // 사진 전체에 번호만 그려 보냈더니(drawNumberedBoxes) 작은 간판이 뭉개져, 시험 87장에서 후보 324개 중 103개가
+    // «판독 불가»였다(2026-11-18). 조각은 긴 변 SIGN_CROP_SIDE까지 키우고(최대 4배), 둘레 15%를 같이 잘라 글자가 잘리지 않게 한다.
+    var SIGN_CROP_SIDE = 220, SIGN_SHEET_W = 1400;
+    function drawCropSheet(img, faces, boxes) {
+      var src = maskFaces(img, faces), W = src.width, H = src.height;
+      var GAP = 10, BAND = 26, cells = [];
+      boxes.forEach(function (b, i) {
+        var mx = b.width * 0.15, my = b.height * 0.15;
+        var x0 = Math.max(0, Math.floor(b.x - mx)), y0 = Math.max(0, Math.floor(b.y - my));
+        var x1 = Math.min(W, Math.ceil(b.x + b.width + mx)), y1 = Math.min(H, Math.ceil(b.y + b.height + my));
+        var cw = x1 - x0, ch = y1 - y0;
+        if (cw < 2 || ch < 2) { cells.push(null); return; }
+        var s = Math.min(4, SIGN_CROP_SIDE / Math.max(cw, ch));
+        cells.push({ n: i + 1, x0: x0, y0: y0, cw: cw, ch: ch, w: Math.max(1, Math.round(cw * s)), h: Math.max(1, Math.round(ch * s)) });
+      });
+      // 선반 쌓기: 왼쪽부터 채우고 넘치면 다음 줄
+      var x = GAP, y = GAP, rowH = 0;
+      cells.forEach(function (c) {
+        if (!c) return;
+        var cellW = Math.max(c.w, 40);
+        if (x + cellW + GAP > SIGN_SHEET_W && x > GAP) { x = GAP; y += rowH + GAP; rowH = 0; }
+        c.px = x; c.py = y;
+        x += cellW + GAP; rowH = Math.max(rowH, c.h + BAND);
+      });
+      var out = document.createElement('canvas');
+      out.width = SIGN_SHEET_W; out.height = y + rowH + GAP;
+      var g = out.getContext('2d');
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, out.width, out.height);
+      g.imageSmoothingQuality = 'high';
+      g.font = 'bold 20px sans-serif'; g.textBaseline = 'top';
+      cells.forEach(function (c) {
+        if (!c) return;
+        g.fillStyle = '#ff00ff'; g.fillRect(c.px, c.py, Math.max(c.w, 40), BAND - 4);
+        g.fillStyle = '#ffffff'; g.fillText(String(c.n), c.px + 6, c.py + 2);
+        g.drawImage(src, c.x0, c.y0, c.cw, c.ch, c.px, c.py + BAND, c.w, c.h);
+      });
+      return out;
+    }
+
+    // 번호마다 읽은 글자를 받는다. [{ n, text, type }] — n은 1부터.
+    async function readSignBoxes(img, faces, boxes) {
+      var c = fitForVision(drawCropSheet(img, faces, boxes));
+      var data = await postJson(SIGN_READ_URL, {
+        imageBase64: c.toDataURL('image/jpeg', 0.88).split(',')[1], mediaType: 'image/jpeg', count: boxes.length,
+      });
+      return (data.상자 || []).map(function (r) { return { n: Number(r.번호), text: String(r.내용 || ''), type: String(r.유형 || '') }; })
+        .filter(function (r) { return r.n >= 1 && r.n <= boxes.length; });
+    }
+
+    // 읽은 글자 중 장소 글자(isPlaceWord)인 상자만 고른다.
+    function pickPlaceSigns(boxes, reads) {
+      var out = [];
+      reads.forEach(function (r) {
+        if (isPlaceWord({ text: r.text, type: r.type }) && out.every(function (o) { return o.n !== r.n; })) {
+          out.push({ n: r.n, box: boxes[r.n - 1], text: r.text, type: r.type });
+        }
+      });
+      return out;
+    }
+
+    // 고른 간판 상자만 흰색. 사람·얼굴·손은 buildBackgroundMask가 검게 막은 것을 그대로 따른다 —
+    // 상자와 «배경 마스크»가 둘 다 흰 곳만 열기 때문에, 얼굴을 막는 것이 마지막 단계라는 순서가 그대로 지켜진다.
+    function buildSignMask(rects, bgMask, imgW, imgH) {
+      var c = document.createElement('canvas'); c.width = imgW; c.height = imgH;
+      var x = c.getContext('2d'); x.fillStyle = '#000000'; x.fillRect(0, 0, imgW, imgH);
+      var r = document.createElement('canvas'); r.width = imgW; r.height = imgH;
+      var rx = r.getContext('2d'); rx.fillStyle = '#ffffff';
+      rects.forEach(function (b) {
+        var px = Math.max(3, b.width * SIGN_RULE.pad), py = Math.max(3, b.height * SIGN_RULE.pad);
+        var ax = Math.floor(b.x - px), ay = Math.floor(b.y - py);
+        rx.fillRect(ax, ay, Math.ceil(b.x + b.width + px) - ax, Math.ceil(b.y + b.height + py) - ay);
+      });
+      // 겹치기는 픽셀마다 직접 한다. maskToAlpha는 가장자리를 흐려서, 얼굴을 막은 경계가 회색으로 반쯤 열린다.
+      var rd = rx.getImageData(0, 0, imgW, imgH).data;
+      var bd = bgMask.getContext('2d').getImageData(0, 0, imgW, imgH).data;
+      var out = x.getImageData(0, 0, imgW, imgH);
+      for (var i = 0; i < rd.length; i += 4) {
+        if (rd[i + 3] > 128 && bd[i] > 128) out.data[i] = out.data[i + 1] = out.data[i + 2] = 255;
+      }
+      x.putImageData(out, 0, 0);
+      return c;
+    }
+
+    // 흰 = 사람 밖(배경 마스크)을 알파로. prefillWithSurround가 «둘레 색을 읽어도 되는 곳»으로 쓴다(옷 마스크 자리).
+    function hardAlpha(mask, w, h) {
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      var x = c.getContext('2d');
+      var src = mask.getContext('2d').getImageData(0, 0, w, h).data, im = x.createImageData(w, h);
+      for (var i = 0; i < src.length; i += 4) { im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = src[i] > 128 ? 255 : 0; }
+      x.putImageData(im, 0, 0);
+      return c;
+    }
+
+    // 간판 자리만 다시 그린다. 고칠 간판이 없으면 { none: true, ... }를 돌려주고 보내지 않는다(호출부가 배경 전체로 넘어간다).
+    async function runSignReplace(img, faces, riskResult) {
+      var ow = img.naturalWidth, oh = img.naturalHeight;
+      var boxes = await detectMarkBoxes(img);
+      if (!boxes.length) return { none: true, why: 'model' };
+      var personMask = await getFullPersonMask(img, imageCacheKey('bg', img.src));
+      var faceBoxes = (faces || []).map(function (f) { return f.box; });
+      var cand = signRectsOffPerson(boxes, faceBoxes, personMask, ow, oh);
+      if (!cand.length) return { none: true, why: 'nobox' };
+      var reads = await readSignBoxes(img, faces, cand);
+      var picked = pickPlaceSigns(cand, reads);
+      console.log('[간판만] 후보 ' + cand.length + '곳 · 읽음 ' + reads.length + ' · 장소 글자 ' + picked.length + '곳', reads);
+      if (!picked.length) return { none: true, why: 'noplace', reads: reads };
+
+      var send = falSendSize(ow, oh);
+      var sw = send.w, sh = send.h;
+      var ic = document.createElement('canvas'); ic.width = sw; ic.height = sh;
+      ic.getContext('2d').drawImage(img, 0, 0, sw, sh);
+      var scale = function (b) { return { x: b.x * sw / ow, y: b.y * sh / oh, width: b.width * sw / ow, height: b.height * sh / oh }; };
+      var handBoxes = (await detectHandBoxes(img)).map(scale);
+      var bgMask = buildBackgroundMask(faceBoxes.map(scale), sw, sh, personMask, handBoxes);
+      var mask = buildSignMask(picked.map(function (p) { return scale(p.box); }), bgMask, sw, sh);
+      var md = mask.getContext('2d').getImageData(0, 0, sw, sh).data, white = 0;
+      for (var i = 0; i < md.length; i += 4) if (md[i] > 128) white++;
+      if (!white) return { none: true, why: 'covered', reads: reads };
+      console.log('[간판만] 마스크 ' + (white / (sw * sh) * 100).toFixed(1) + '% — ' + picked.map(function (p) { return p.text; }).join(', '));
+
+      var data = await postJson(INPAINT_BACKEND_URL, {
+        imageBase64: prefillWithSurround(ic, mask, hardAlpha(bgMask, sw, sh), sw, sh).toDataURL('image/png').split(',')[1],
+        maskBase64: mask.toDataURL('image/png').split(',')[1],
+        mediaType: 'image/png',
+        promptOverride: SIGN_BLANK_PROMPT,
+        grade: riskResult && riskResult.grade,
+        locationEvidence: riskResult && riskResult.locationEvidence,
+      });
+      var outImg = await loadImage(falImageDataUrl(data));
+      return { canvas: compositeThroughMask(img, outImg, mask, ow, oh), data: data, signs: picked, reads: reads };
     }
 
     async function runEmblemRemoval(img, faces, riskResult, emblemMode) {
@@ -12872,10 +13074,13 @@
     // 확정해서 그 위에 얹는다(보정 쌓기 — 배경을 바꾼 뒤 로고까지 지우기). 동의를 취소하면 확정했던 것을 되돌린다.
     // 자동 보정은 10-27에 뺐다 — 그 전에는 자동 결과(배경 흐림 포함) 위에서 시작해 배경 교체가 뿌옇게 나왔다
     // (팀 테스트 "자동보정된 결과를 기준으로 바껴서 뿌옇게 보이는거같아"). 이제 원본 또는 앞선 AI 결과에서만 시작한다.
+    // 'bgfull': «배경 전체 바꾸기» — 간판만 바꾼 결과 위에서 배경 전체를 다시 그린다(간판 단계를 건너뛴다).
+    var bgFullNext = false;
     async function runAiUpgrade(kind) {
       var committed = false;
       if (currentCorrectionCanvas && lastCorrectionMeta) { applyStep(); committed = true; }
-      var target = kind === 'mark' || kind === 'outfit' ? 'outfit' : 'ai'; // 배경은 버튼이 'ai', 테스트가 'bg'로 부른다
+      bgFullNext = kind === 'bgfull';
+      var target = kind === 'mark' || kind === 'outfit' ? 'outfit' : 'ai'; // 배경은 버튼이 'ai'·'bgfull', 테스트가 'bg'로 부른다
       if (kind === 'mark') { outfitColorway = 'keep'; outfitEmblem = 'none'; } // 가슴만 다시 그린다(runEmblemRemoval)
       if (kind === 'outfit') { outfitColorway = 'keep'; outfitEmblem = 'all'; } // 옷 전체, 원래와 비슷한 차분한 색
       await selectMethod(target);
@@ -12891,6 +13096,8 @@
     async function selectMethod(method) {
       var mySeq = ++methodSeq;
       showTargetRedo(false);
+      var wantBgFull = bgFullNext; bgFullNext = false;
+      document.getElementById('aiBgFullBtn').style.display = 'none';
       var previousMethod = currentMethod;
       currentMethod = method;
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
@@ -13148,12 +13355,44 @@
           // 필요 없다 — fill은 마스크 바깥(사람)을 바꾸지 않고 출력 크기도 입력과 같다(2026-08-21 실측).
           // 그 덮어쓰기가 이중 테두리의 원인이었다(위 buildBackgroundMask 설명).
           var bgImg = await loadImage(correctionBaseUrl);
+          var bgFaces = (lastFaceResult && lastFaceResult.faces) || [];
+          // 먼저 «간판 자리만». 간판을 못 찾거나(모델 없음·장소 글자 없음) 읽기가 실패하면 예전처럼 배경 전체를 바꾼다.
+          // 이름 댈 수 있는 장소(랜드마크)가 보여도 간판부터 바꾸고, 간판 없이도 알아볼 수 있다고 알린 뒤 «배경 전체 바꾸기»를 내민다.
+          // 예전에는 랜드마크가 있으면 바로 배경 전체로 갔다 — 폰 테스트(11-18, 삿포로 스스키노 거리) «B 간판이 다사라졌어»:
+          // 거리가 통째로 다른 곳이 되어 쓸 수 없는 사진이 됐다. 더 가릴지는 부모가 고른다.
+          var landmarkNames = ((lastOcrResult && lastOcrResult.landmarks) || [])
+            .map(function (l) { return String((l && (l.이름 || l.name)) || '').trim(); }).filter(Boolean);
+          var sg = null, sgWhy = '';
+          if (!wantBgFull) {
+            setPreviewBusy('위치를 알려 주는 간판을 찾는 중이에요\n찾으면 그 자리만 바꿔요');
+            try { sg = await runSignReplace(bgImg, bgFaces, lastRiskResult); }
+            catch (se) { console.warn('[간판만] 실패 — 배경 전체로 바꿉니다:', se.message); sgWhy = '간판을 읽지 못해서'; }
+            if (mySeq !== methodSeq) return;
+          }
+          if (sg && !sg.none) {
+            clearPreviewBusy();
+            currentCorrectionCanvas = sg.canvas;
+            previewAfter.src = sg.canvas.toDataURL('image/png');
+            var sgNames = sg.signs.map(function (p) { return '«' + p.text + '»'; }).join(', ');
+            previewCaption.textContent = '✨ 위치를 알려 주는 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 바꿨어요. '
+              + '사람과 나머지 배경은 원본 그대로예요. '
+              + (landmarkNames.length
+                ? '⚠ 다만 이곳은 간판이 없어도 «' + landmarkNames.join(', ') + '»(으)로 알아볼 수 있어요. 더 가리려면 «배경 전체 바꾸기»를 눌러주세요. '
+                : '다른 간판·글자가 남아 있으면 «배경 전체 바꾸기»를 눌러주세요. ')
+              + '(약 $' + Number(sg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(sg.data.timingMs / 1000) + '초)';
+            lastCorrectionMeta = { method: 'ai', detail: 'AI 간판 교체 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
+              + (landmarkNames.length ? ' (알아볼 수 있는 장소 «' + landmarkNames.join(', ') + '»는 남음)' : '') };
+            document.getElementById('aiBgFullBtn').style.display = '';
+            return;
+          }
+          if (sg && sg.none) sgWhy = sg.why === 'noplace' ? '위치를 알려 주는 간판을 찾지 못해서' : '간판 자리를 찾지 못해서';
+          setPreviewBusy('AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요');
           var bg = await runBackgroundFill(bgImg, (lastFaceResult && lastFaceResult.faces) || [], lastRiskResult, lastOcrResult);
           if (mySeq !== methodSeq) return;
           clearPreviewBusy();
           currentCorrectionCanvas = bg.canvas;
           previewAfter.src = bg.canvas.toDataURL('image/png');
-          previewCaption.textContent = '✨ 사람은 원본 그대로 두고 배경만 새로 그렸어요. 간판·건물 이름이 남아 있지 않은지 꼭 눈으로 확인해주세요. (약 $'
+          previewCaption.textContent = '✨ ' + (sgWhy ? sgWhy + ' 배경 전체를 바꿨어요. ' : '') + '사람은 원본 그대로 두고 배경만 새로 그렸어요. 간판·건물 이름이 남아 있지 않은지 꼭 눈으로 확인해주세요. (약 $'
             + Number(bg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(bg.data.timingMs / 1000) + '초)';
           editInstruction.textContent = '사용된 배경 지시(영문): ' + bg.data.editPrompt;
           lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 사람은 마스크로 보존, 배경 지시: ' + bg.data.editPrompt };
@@ -13225,6 +13464,7 @@
     document.getElementById('aiMarkBtn').addEventListener('click', function () { runAiUpgrade('mark'); });
     document.getElementById('aiBgBtn').addEventListener('click', function () { runAiUpgrade('ai'); });
     document.getElementById('aiOutfitBtn').addEventListener('click', function () { runAiUpgrade('outfit'); });
+    document.getElementById('aiBgFullBtn').addEventListener('click', function () { runAiUpgrade('bgfull'); });
 
     // "고른 것으로 다시 만들기" — AI 방식에서 체크를 고친 뒤 직접 누를 때만 돈이 나간다
     (function () {
@@ -13798,6 +14038,10 @@
       buildLogoMask: buildLogoMask,
       detectMarkBoxes: detectMarkBoxes,       // 마크 찾기 모델 (브라우저 안, 비용 0) — 모델 파일이 없으면 []
       markRectsOnClothes: markRectsOnClothes, // 모델 상자 중 옷 위 로고·이름표만 남기기
+      // 배경 교체 «간판 자리만» 검증용
+      signRectsOffPerson: signRectsOffPerson, drawNumberedBoxes: drawNumberedBoxes, drawCropSheet: drawCropSheet, pickPlaceSigns: pickPlaceSigns,
+      buildSignMask: buildSignMask, buildBackgroundMask: buildBackgroundMask, getFullPersonMask: getFullPersonMask,
+      runSignReplace: runSignReplace,
       prefillWithSurround: prefillWithSurround,
       runEmblemRemovalForTest: runEmblemRemoval, // 보내는 사진·마스크를 가로채 보는 검증용 (요청은 테스트가 막는다)
       cropChestZoomed: cropChestZoomed,   // 가슴 확대 조각 (비용 0)
