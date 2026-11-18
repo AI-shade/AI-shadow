@@ -6909,6 +6909,92 @@
       return c;
     }
 
+    // 사람 둘레 «넓혀서 막은 띠»에 남은 옛 배경을 새 배경 색으로 채운다(합성 뒤, 브라우저 안).
+    // buildBackgroundMask는 경계가 흔들려도 사람을 다시 그리지 않도록 사람을 넓혀 막는다. 그 띠는 원본 그대로라서 옛 배경 —
+    // 간판의 초록·빨강 — 이 사람 테두리에 남았다(폰 테스트 11-18, 삿포로 거리: 어깨 옆 초록·빨간 얼룩, 띠 두께 원본 약 40px).
+    // 띠를 없애면 AI가 사람 테두리를 다시 그리므로 띠는 그대로 막고, 그 안의 색만 바깥 새 배경에서 안쪽으로 번져 채운다.
+    // 확실한 사람(알파 250 이상)·얼굴 상자·손 상자는 건드리지 않는다. 반투명 가장자리는 알파만큼 원본과 섞는다.
+    function fillHaloFromBackground(canvas, personMask, sendMask, faceBoxes, handBoxes, w, h) {
+      if (!personMask || !sendMask) return 0;
+      var x = canvas.getContext('2d');
+      var im = x.getImageData(0, 0, w, h), d = im.data;
+      var pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+      var px = pc.getContext('2d'); px.drawImage(personMask, 0, 0, w, h);
+      var pa = px.getImageData(0, 0, w, h).data;
+      var keep = new Uint8Array(w * h); // 1 = 손대지 않음(확실한 사람·얼굴·손)
+      var i, xx, yy;
+      for (i = 0; i < w * h; i++) if (pa[i * 4 + 3] >= 250) keep[i] = 1;
+      // 얼굴·손 상자는 실제보다 넓어서, 상자 안 배경이 옛 모습 그대로 네모로 남았다(테스트 사진: 얼굴 옆 대문·지붕).
+      // 사람 분리가 그 상자를 절반 넘게 잡았으면(= 이 얼굴·손을 찾았다) 상자 안이라도 사람 아닌 곳(알파 0)은 채운다.
+      // 못 잡았으면 상자가 유일한 보호라서 통째로 지킨다.
+      (faceBoxes || []).concat(handBoxes || []).forEach(function (b) {
+        var y0 = Math.max(0, Math.floor(b.y)), y1 = Math.min(h, Math.ceil(b.y + b.height));
+        var x0 = Math.max(0, Math.floor(b.x)), x1 = Math.min(w, Math.ceil(b.x + b.width));
+        var n = 0, on = 0;
+        for (yy = y0; yy < y1; yy += 2) for (xx = x0; xx < x1; xx += 2) { n++; if (pa[(yy * w + xx) * 4 + 3] > 128) on++; }
+        var found = n > 0 && on / n >= 0.5;
+        for (yy = y0; yy < y1; yy++) for (xx = x0; xx < x1; xx++) {
+          if (!found || pa[(yy * w + xx) * 4 + 3] > 0) keep[yy * w + xx] = 1;
+        }
+      });
+      // 채울 곳 = 보낸 마스크가 검게 막아 원본이 남은 자리(넓히기 띠·얼굴/손 상자의 배경 부분). «사람 둘레 거리 R»로 잡았더니
+      // 얼굴 상자 안 배경이 R보다 멀어서 네모로 남았다 — 마스크 자체로 잡는다.
+      var mc = document.createElement('canvas'); mc.width = w; mc.height = h;
+      var mx = mc.getContext('2d'); mx.drawImage(sendMask, 0, 0, w, h);
+      var md = mx.getImageData(0, 0, w, h).data;
+      // 합성(compositeThroughMask)은 마스크 경계를 흐려 섞는다 — 경계 바로 바깥 «새 배경»에도 옛 색이 섞여 있다. 거기서 번지면
+      // 옛 색이 테두리에 다시 점선으로 남았다(측정). 그래서 막은 자리를 흐림 폭 + 2px만큼 넓혀서 깨끗한 새 배경에서 번지게 한다.
+      var F = Math.round(Math.max(w, h) * 0.004) * 2 + 2;
+      var blk = new Uint8Array(w * h), near = new Uint8Array(w * h), tmp = new Uint8Array(w * h);
+      for (i = 0; i < w * h; i++) if (md[i * 4] < 128) blk[i] = 1;
+      for (yy = 0; yy < h; yy++) {
+        var last = -1e9;
+        for (xx = 0; xx < w; xx++) { if (blk[yy * w + xx]) last = xx; if (xx - last <= F) tmp[yy * w + xx] = 1; }
+        last = 1e9;
+        for (xx = w - 1; xx >= 0; xx--) { if (blk[yy * w + xx]) last = xx; if (last - xx <= F) tmp[yy * w + xx] = 1; }
+      }
+      for (xx = 0; xx < w; xx++) {
+        var lst = -1e9;
+        for (yy = 0; yy < h; yy++) { if (tmp[yy * w + xx]) lst = yy; if (yy - lst <= F) near[yy * w + xx] = 1; }
+        lst = 1e9;
+        for (yy = h - 1; yy >= 0; yy--) { if (tmp[yy * w + xx]) lst = yy; if (lst - yy <= F) near[yy * w + xx] = 1; }
+      }
+      var ring = [], state = new Uint8Array(w * h); // 0 = 새 배경(알려진 색), 1 = 채울 띠, 2 = 손대지 않음
+      var orig = new Uint8ClampedArray(d);
+      for (i = 0; i < w * h; i++) {
+        if (keep[i]) state[i] = 2;
+        else if (near[i]) { state[i] = 1; ring.push(i); }
+      }
+      // 바깥(새 배경)에서 안쪽으로 한 겹씩 번진다 — 이웃 중 알려진 색의 평균
+      var left = ring, pass = 0;
+      while (left.length && pass < 400) {
+        var next = [], done = [];
+        for (var k = 0; k < left.length; k++) {
+          var p = left[k], px0 = p % w, py0 = (p / w) | 0, r = 0, g = 0, bl = 0, n = 0;
+          for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+            var qx = px0 + dx, qy = py0 + dy; if (qx < 0 || qy < 0 || qx >= w || qy >= h) continue;
+            var q = qy * w + qx; if (state[q] !== 0) continue;
+            r += d[q * 4]; g += d[q * 4 + 1]; bl += d[q * 4 + 2]; n++;
+          }
+          if (n) { d[p * 4] = r / n; d[p * 4 + 1] = g / n; d[p * 4 + 2] = bl / n; done.push(p); } else next.push(p);
+        }
+        for (k = 0; k < done.length; k++) state[done[k]] = 0;
+        if (!done.length) break;
+        left = next; pass++;
+      }
+      // 반투명 가장자리: 알파만큼 원본 사람과 섞는다(딱딱한 오린 선이 생기지 않게)
+      for (k = 0; k < ring.length; k++) {
+        var p2 = ring[k], a = pa[p2 * 4 + 3] / 255;
+        if (a <= 0) continue;
+        d[p2 * 4] = d[p2 * 4] * (1 - a) + orig[p2 * 4] * a;
+        d[p2 * 4 + 1] = d[p2 * 4 + 1] * (1 - a) + orig[p2 * 4 + 1] * a;
+        d[p2 * 4 + 2] = d[p2 * 4 + 2] * (1 - a) + orig[p2 * 4 + 2] * a;
+      }
+      x.putImageData(im, 0, 0);
+      console.log('[배경교체] 막아 둔 띠 ' + ring.length + '픽셀을 새 배경 색으로 채움 (' + pass + '겹, 못 채움 ' + left.length + ')');
+      return ring.length;
+    }
+
     async function runBackgroundFill(img, faces, riskResult, ocrResult) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
       // 사람을 못 찾으면 막을 것이 없다 — 보내지 않고 멈춘다. 부탁 방식(kontext)으로 되돌아가지 않는다.
@@ -6926,7 +7012,8 @@
 
       var scale = function (b) { return { x: b.x * sw / ow, y: b.y * sh / oh, width: b.width * sw / ow, height: b.height * sh / oh }; };
       var scaledFaces = (faces || []).map(function (f) { return scale(f.box); });
-      var handBoxes = (await detectHandBoxes(img)).map(scale);
+      var handBoxesO = await detectHandBoxes(img);
+      var handBoxes = handBoxesO.map(scale);
       var mask = buildBackgroundMask(scaledFaces, sw, sh, personMask, handBoxes);
 
       // 마스크 안쪽(옛 배경)을 회색으로 지워 보낸다. 옷 교체에서 지우지 않고 보냈더니 FLUX가 원본 구조를 베껴
@@ -6946,6 +7033,7 @@
       });
       var outImg = await loadImage(falImageDataUrl(data));
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
+      fillHaloFromBackground(out, personMask, mask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
       console.log('[배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (배경 자리에만 합성, 얼굴 ' + scaledFaces.length
         + '개·손 ' + handBoxes.length + '개 보존)', data);
