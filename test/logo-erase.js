@@ -49,6 +49,9 @@ function check(label, ok, detail) {
     last = r.request().postDataJSON();
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ imageBase64: PNG1, mediaType: 'image/png', width: 1, height: 1, editPrompt: 'x', timingMs: 1, estimatedCostUsd: 0, attempts: 1 }) });
   });
+  // 마크 찾기 모델은 막는다 — 이 테스트는 findLogoRects(가슴 로고 찾기)가 좁게 여는지를 본다.
+  // 모델이 소매 글자를 더하면 3.3%가 된다. 모델을 더한 경로는 mark-model.js가 따로 본다.
+  await page.route('**/public/models/**', (r) => r.fulfill({ status: 404, body: '' }));
   await page.goto(BASE_URL + '/index.html', { waitUntil: 'load' });
   await page.waitForFunction(() => !!(window.__anshimTest && window.__anshimTest.runEmblemRemovalForTest));
 
