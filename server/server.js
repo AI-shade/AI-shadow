@@ -132,13 +132,14 @@ if (!process.env.FAL_KEY) {
 // ===== 마스크 보정 엔진 — fal.ai(FLUX Fill) 또는 OpenAI(GPT Image 2.5 Flare) =====
 // 옷 바꾸기·마크 지우기·배경 교체(/api/inpaint-regions, /api/replace-background)가 쓰는 엔진이다.
 // 간판 글자 바꿔쓰기(/api/inpaint-sign-text)는 한글을 실측으로 확인한 nano-banana-pro(fal)에 그대로 둔다.
-// IMAGE_EDIT_PROVIDER=fal|openai 로 고른다. 비우면 OPENAI_API_KEY가 있을 때 openai.
-// 되돌리기: server/.env에 IMAGE_EDIT_PROVIDER=fal 한 줄.
+// (예전엔 IMAGE_EDIT_PROVIDER=fal|openai로 골랐다 — 아래에서 fal로 고정. OpenAI 경로 코드는 되돌릴 때를 위해 남겨 둠)
 //
 // 얼굴 보존은 엔진과 상관없다 — 프런트(compositeThroughMask)가 결과에서 마스크 안쪽만 원본 위에 얹는다.
 // GPT Image는 문서에 "마스킹은 프롬프트 기반이라 모양을 정확히 따르지 않을 수 있다"고 적혀 있어
 // 마스크 바깥을 바꿀 수 있지만, 그 픽셀은 화면에 나오지 않는다.
-const IMAGE_EDIT_PROVIDER = (process.env.IMAGE_EDIT_PROVIDER || (process.env.OPENAI_API_KEY ? 'openai' : 'fal')).trim().toLowerCase();
+// 2026-11-19 사용자 결정: 옷 바꾸기·배경 교체는 fal의 나노바나나 2.1로 고정한다(고르는 기능 없음).
+// 배포(버셀)에 OPENAI_API_KEY가 있어도 OpenAI로 새지 않도록 환경변수로 고르지 않는다.
+const IMAGE_EDIT_PROVIDER = 'fal';
 const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2.5-flare';
 function imageEditReady() {
   return IMAGE_EDIT_PROVIDER === 'openai' ? !!process.env.OPENAI_API_KEY : !!process.env.FAL_KEY;
@@ -148,7 +149,7 @@ function imageEditNotReadyText() {
     ? '준비 중입니다. OpenAI API 키 연동 후 지원 예정이에요.'
     : '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.';
 }
-console.log('[server] 마스크 보정 엔진: ' + (IMAGE_EDIT_PROVIDER === 'openai' ? 'OpenAI ' + OPENAI_IMAGE_MODEL : 'fal.ai (모델은 아래 FAL_EDIT_MODEL)')
+console.log('[server] 마스크 보정 엔진: ' + (IMAGE_EDIT_PROVIDER === 'openai' ? 'OpenAI ' + OPENAI_IMAGE_MODEL : 'fal.ai')
   + (imageEditReady() ? '' : ' (키 없음 — 준비 중으로 동작)'));
 
 // OpenAI 이미지 편집 규격(2026-10 문서): 가로·세로 16의 배수, 총 픽셀 655,360 이상, 긴 변 3840 이하.
@@ -235,40 +236,17 @@ async function openaiFill(imageBase64, maskBase64, prompt) {
   };
 }
 
-// ===== fal에서 고르는 편집 모델 — IMAGE_EDIT_PROVIDER=fal 일 때 =====
+// ===== 옷 바꾸기·배경 교체 편집 모델 — fal 나노바나나 2.1 고정 =====
 // 멘토링 2회차(11-01): GPT 플레어 잔상 → "개선 방법을 먼저 찾고, 안 되면 다른 모델을 찾거나 롤백".
-// 팀이 직접 비교할 수 있게 fal 키 하나로 여러 모델을 갈아 끼운다. server/.env에 한 줄:
-//   FAL_EDIT_MODEL=flux-fill | gpt-2.5-flare | gpt-2.6-flare | gpt-2.6-sunburst | nano-banana-pro | nano-banana-2.1
-//   (목록에 없는 fal 엔드포인트 id를 그대로 적어도 된다 — 예: openai/gpt-image-2.5/sunburst/edit)
-// 비우면 flux-fill(예전 그대로). 바꾼 뒤에는 서버를 다시 띄워야 한다.
-// 입력 규격은 fal 문서(11-11)에서 확인했다: GPT 계열은 mask_url(흰색 = 고칠 곳, 우리 마스크와 같은 규약),
-// 나노바나나 계열은 마스크 칸이 없다.
+// 로컬에서 나노바나나 2.1로 폰 시험을 해 왔고, 2026-11-19 이걸로 고정하기로 했다(FAL_EDIT_MODEL 고르기 제거).
+// 나노바나나는 마스크 칸이 없다 — 마스크를 두 번째 사진으로 보내고 말로 짚는다(falModelFill).
+// 사진은 fal을 거쳐 Google 모델로 간다 → via를 동의창에 적는다.
 //
 // 얼굴 보존은 모델과 상관없다 — 프런트(compositeThroughMask)가 결과에서 마스크 안쪽만 원본 위에 얹는다.
 // 그래서 마스크를 못 받는 나노바나나도 얼굴·손이 바뀐 픽셀은 화면에 나오지 않는다.
-const FAL_EDIT_MODELS = {
-  'flux-fill': { id: 'fal-ai/flux-pro/v1/fill', kind: 'flux', via: '' },
-  'gpt-2.5-flare': { id: 'openai/gpt-image-2.5/flare/edit', kind: 'gpt', via: 'OpenAI' },
-  'gpt-2.6-flare': { id: 'openai/gpt-image-2.6/flare/edit', kind: 'gpt', via: 'OpenAI' },
-  'gpt-2.6-sunburst': { id: 'openai/gpt-image-2.6/sunburst/edit', kind: 'gpt', via: 'OpenAI' },
-  'nano-banana-pro': { id: 'fal-ai/nano-banana-pro/edit', kind: 'banana', via: 'Google' },
-  'nano-banana-2.1': { id: 'google/nano-banana-2.1/edit', kind: 'banana', via: 'Google' },
-};
-function resolveFalEditModel(raw) {
-  const name = String(raw || '').trim();
-  if (!name) return { name: 'flux-fill', ...FAL_EDIT_MODELS['flux-fill'] };
-  if (FAL_EDIT_MODELS[name]) return { name, ...FAL_EDIT_MODELS[name] };
-  if (name.includes('/')) {
-    const kind = name.startsWith('openai/') ? 'gpt' : /nano-banana|gemini/.test(name) ? 'banana' : name.includes('fill') ? 'flux' : null;
-    if (kind) return { name, id: name, kind, via: kind === 'gpt' ? 'OpenAI' : kind === 'banana' ? 'Google' : '' };
-  }
-  console.warn('[server] ⚠ FAL_EDIT_MODEL="' + name + '"을 모르겠어요 — flux-fill로 돌립니다. 고를 수 있는 것: ' + Object.keys(FAL_EDIT_MODELS).join(', '));
-  return { name: 'flux-fill', ...FAL_EDIT_MODELS['flux-fill'] };
-}
-const FAL_EDIT = resolveFalEditModel(process.env.FAL_EDIT_MODEL);
-if (IMAGE_EDIT_PROVIDER === 'fal') {
-  console.log('[server] fal 편집 모델: ' + FAL_EDIT.name + ' (' + FAL_EDIT.id + ')');
-}
+// 속도는 이유가 아니다 — 11-19 폰에서 같은 사진 간판 비우기: 나노바나나 28.6초 · flux-fill 33.6초(각 1회).
+const FAL_EDIT = { name: 'nano-banana-2.1', id: 'google/nano-banana-2.1/edit', kind: 'banana', via: 'Google' };
+console.log('[server] 편집 모델: ' + FAL_EDIT.name + ' (' + FAL_EDIT.id + ')');
 
 // 나노바나나는 aspect_ratio를 정해진 값 중에서만 받는다 — 사진 비율에 가장 가까운 것을 고른다.
 const BANANA_RATIOS = ['21:9', '16:9', '3:2', '4:3', '5:4', '1:1', '4:5', '3:4', '2:3', '9:16'];
@@ -365,6 +343,13 @@ const app = express();
 // 로컬 개발에서 프런트를 다른 포트로 띄우는 경우만 허용해준다.
 app.use(cors({ origin: /^http:\/\/localhost(:\d+)?$/ }));
 app.use(express.json({ limit: '15mb' })); // 마스킹된 이미지(base64)가 들어있어 넉넉하게
+// 요청마다 걸린 시간을 남긴다 — «간판 비우는 데 1분» 제보(11-19)에서 어느 단계가 느린지 재려고.
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api/') || req.method !== 'POST') return next();
+  const t0 = Date.now();
+  res.on('finish', () => console.log('[time] ' + req.path + ' ' + ((Date.now() - t0) / 1000).toFixed(1) + '초 (HTTP ' + res.statusCode + ')'));
+  next();
+});
 
 // ── 팀원만 쓰게 하는 공유 접근 코드 ──────────────────────────────────────────
 // 배포하면 주소를 아는 사람은 누구나 이 API를 부를 수 있고, 그 비용은 우리가 낸다.
