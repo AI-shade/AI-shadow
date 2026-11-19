@@ -4384,6 +4384,7 @@
     </div>
     <div id="fluxConsentFal">
     <p class="evidence">AI 방식(옷 바꾸기 · 배경 교체)은 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다. 배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요.</p>
+    <p class="evidence" id="fluxConsentVia" style="display:none;"></p>
     <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">fal.ai가 밝힌 사진 처리 방침</p>
     <ul class="action-list" style="margin-bottom:0.8rem;">
       <li>사진에 대한 권리는 그대로 올린 사람에게 있어요</li>
@@ -6795,11 +6796,18 @@
 
     // 서버가 고른 마스크 보정 엔진('fal' | 'openai'). 동의창·안내 문구에 원본이 실제로 가는 곳을 적는 데 쓴다.
     var aiEditProvider = 'fal';
+    var aiEditVia = '';
     function aiProviderLabel() { return aiEditProvider === 'openai' ? 'OpenAI' : 'fal.ai'; }
     function applyAiProviderText() {
       var isOpenai = aiEditProvider === 'openai';
       document.getElementById('fluxConsentOpenai').style.display = isOpenai ? 'block' : 'none';
       document.getElementById('fluxConsentFal').style.display = isOpenai ? 'none' : 'block';
+      // fal을 거쳐 OpenAI·Google 모델이 그리면 사진이 그 회사에도 간다 — «fal.ai로 전송»만 적으면 사실보다 좁다.
+      var via = document.getElementById('fluxConsentVia');
+      if (via) {
+        via.textContent = aiEditVia ? 'fal.ai는 이 사진을 ' + aiEditVia + '의 이미지 모델로 넘겨 처리해요. 그 회사의 데이터 처리 방침도 함께 적용돼요.' : '';
+        via.style.display = aiEditVia && !isOpenai ? 'block' : 'none';
+      }
     }
 
     // kind === 'sign': 간판 글자 바꿔쓰기는 엔진과 상관없이 fal(nano-banana-pro)이라 따로 본다.
@@ -6807,7 +6815,7 @@
       try {
         var res = await fetch(FLUX_STATUS_URL, { headers: apiHeaders() });
         var data = await res.json();
-        if (data.provider) { aiEditProvider = data.provider; applyAiProviderText(); }
+        if (data.provider) { aiEditProvider = data.provider; aiEditVia = data.via || ''; applyAiProviderText(); }
         if (kind === 'sign') return data.signReady == null ? !!data.ready : !!data.signReady;
         return !!data.ready;
       } catch (e) {

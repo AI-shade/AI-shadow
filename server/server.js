@@ -14,6 +14,7 @@ import sharp from 'sharp';
 import { estimateFillCostUsd } from './fill-cost.js';
 import { resolvePostDate } from './schedule-date.js';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -147,7 +148,7 @@ function imageEditNotReadyText() {
     ? '준비 중입니다. OpenAI API 키 연동 후 지원 예정이에요.'
     : '준비 중입니다. fal.ai API 키 연동 후 지원 예정이에요.';
 }
-console.log('[server] 마스크 보정 엔진: ' + (IMAGE_EDIT_PROVIDER === 'openai' ? 'OpenAI ' + OPENAI_IMAGE_MODEL : 'fal.ai flux-pro/v1/fill')
+console.log('[server] 마스크 보정 엔진: ' + (IMAGE_EDIT_PROVIDER === 'openai' ? 'OpenAI ' + OPENAI_IMAGE_MODEL : 'fal.ai (모델은 아래 FAL_EDIT_MODEL)')
   + (imageEditReady() ? '' : ' (키 없음 — 준비 중으로 동작)'));
 
 // OpenAI 이미지 편집 규격(2026-10 문서): 가로·세로 16의 배수, 총 픽셀 655,360 이상, 긴 변 3840 이하.
@@ -231,6 +232,129 @@ async function openaiFill(imageBase64, maskBase64, prompt) {
     sentWidth: w, sentHeight: h,
     costUsd: Math.round(costUsd * 10000) / 10000,
     usage: usage,
+  };
+}
+
+// ===== fal에서 고르는 편집 모델 — IMAGE_EDIT_PROVIDER=fal 일 때 =====
+// 멘토링 2회차(11-01): GPT 플레어 잔상 → "개선 방법을 먼저 찾고, 안 되면 다른 모델을 찾거나 롤백".
+// 팀이 직접 비교할 수 있게 fal 키 하나로 여러 모델을 갈아 끼운다. server/.env에 한 줄:
+//   FAL_EDIT_MODEL=flux-fill | gpt-2.5-flare | gpt-2.6-flare | gpt-2.6-sunburst | nano-banana-pro | nano-banana-2.1
+//   (목록에 없는 fal 엔드포인트 id를 그대로 적어도 된다 — 예: openai/gpt-image-2.5/sunburst/edit)
+// 비우면 flux-fill(예전 그대로). 바꾼 뒤에는 서버를 다시 띄워야 한다.
+// 입력 규격은 fal 문서(11-11)에서 확인했다: GPT 계열은 mask_url(흰색 = 고칠 곳, 우리 마스크와 같은 규약),
+// 나노바나나 계열은 마스크 칸이 없다.
+//
+// 얼굴 보존은 모델과 상관없다 — 프런트(compositeThroughMask)가 결과에서 마스크 안쪽만 원본 위에 얹는다.
+// 그래서 마스크를 못 받는 나노바나나도 얼굴·손이 바뀐 픽셀은 화면에 나오지 않는다.
+const FAL_EDIT_MODELS = {
+  'flux-fill': { id: 'fal-ai/flux-pro/v1/fill', kind: 'flux', via: '' },
+  'gpt-2.5-flare': { id: 'openai/gpt-image-2.5/flare/edit', kind: 'gpt', via: 'OpenAI' },
+  'gpt-2.6-flare': { id: 'openai/gpt-image-2.6/flare/edit', kind: 'gpt', via: 'OpenAI' },
+  'gpt-2.6-sunburst': { id: 'openai/gpt-image-2.6/sunburst/edit', kind: 'gpt', via: 'OpenAI' },
+  'nano-banana-pro': { id: 'fal-ai/nano-banana-pro/edit', kind: 'banana', via: 'Google' },
+  'nano-banana-2.1': { id: 'google/nano-banana-2.1/edit', kind: 'banana', via: 'Google' },
+};
+function resolveFalEditModel(raw) {
+  const name = String(raw || '').trim();
+  if (!name) return { name: 'flux-fill', ...FAL_EDIT_MODELS['flux-fill'] };
+  if (FAL_EDIT_MODELS[name]) return { name, ...FAL_EDIT_MODELS[name] };
+  if (name.includes('/')) {
+    const kind = name.startsWith('openai/') ? 'gpt' : /nano-banana|gemini/.test(name) ? 'banana' : name.includes('fill') ? 'flux' : null;
+    if (kind) return { name, id: name, kind, via: kind === 'gpt' ? 'OpenAI' : kind === 'banana' ? 'Google' : '' };
+  }
+  console.warn('[server] ⚠ FAL_EDIT_MODEL="' + name + '"을 모르겠어요 — flux-fill로 돌립니다. 고를 수 있는 것: ' + Object.keys(FAL_EDIT_MODELS).join(', '));
+  return { name: 'flux-fill', ...FAL_EDIT_MODELS['flux-fill'] };
+}
+const FAL_EDIT = resolveFalEditModel(process.env.FAL_EDIT_MODEL);
+if (IMAGE_EDIT_PROVIDER === 'fal') {
+  console.log('[server] fal 편집 모델: ' + FAL_EDIT.name + ' (' + FAL_EDIT.id + ')');
+}
+
+// 나노바나나는 aspect_ratio를 정해진 값 중에서만 받는다 — 사진 비율에 가장 가까운 것을 고른다.
+const BANANA_RATIOS = ['21:9', '16:9', '3:2', '4:3', '5:4', '1:1', '4:5', '3:4', '2:3', '9:16'];
+function nearestBananaRatio(w, h) {
+  const r = Math.log(w / h);
+  let best = '1:1', d = Infinity;
+  for (const s of BANANA_RATIOS) {
+    const [a, b] = s.split(':').map(Number);
+    const dd = Math.abs(Math.log(a / b) - r);
+    if (dd < d) { d = dd; best = s; }
+  }
+  return best;
+}
+
+// 로컬 진단용: EDIT_DEBUG_DIR을 켜면 보낸 사진·마스크·AI가 돌려준 그대로의 그림을 그 폴더에 남긴다.
+// 옷 교체 잔상·«몸이 두 개» 원인을 재려면 늘리기 전 원래 결과가 필요하다. 비우면(배포 기본) 아무것도 안 남긴다.
+// 아이 사진이 들어가므로 저장소 밖이나 gitignore된 폴더만 가리킬 것.
+function debugDumpEdit(tag, parts) {
+  const dir = process.env.EDIT_DEBUG_DIR;
+  if (!dir) return;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-') + '_' + tag;
+    for (const [name, b64] of Object.entries(parts)) if (b64) fs.writeFileSync(path.join(dir, stamp + '_' + name + '.png'), Buffer.from(b64, 'base64'));
+    console.log('[server] 진단용 저장: ' + stamp);
+  } catch (e) { console.warn('[server] 진단용 저장 실패:', e.message); }
+}
+
+// flux-fill 이외의 fal 모델로 마스크 안쪽을 다시 그린다. 반환 모양은 openaiFill과 같다.
+// 결과는 보낸 사진과 같은 크기로 맞춰 돌려준다 — 프런트는 결과를 원본 크기로 늘려 마스크와 겹치므로,
+// 비율이 다르게 오면(나노바나나는 정해진 비율로만 그린다) 마스크 경계가 옷과 어긋난다.
+async function falModelFill(imageBase64, maskBase64, mediaType, prompt, seed) {
+  const imgBuf = Buffer.from(imageBase64, 'base64');
+  const meta = await sharp(imgBuf).metadata();
+  const mt = mediaType || 'image/jpeg';
+  const ext = mt.includes('png') ? 'png' : 'jpg';
+  const [imageUrl, maskUrl] = await Promise.all([
+    fal.storage.upload(new File([imgBuf], 'photo.' + ext, { type: mt }), { lifecycle: FAL_INPUT_LIFECYCLE }),
+    fal.storage.upload(new File([Buffer.from(maskBase64, 'base64')], 'mask.png', { type: 'image/png' }), { lifecycle: FAL_INPUT_LIFECYCLE }),
+  ]);
+
+  let input;
+  if (FAL_EDIT.kind === 'gpt') {
+    // openaiFill과 같은 크기 규칙: 16의 배수, 총 655,360화소 이상(비율 유지)
+    const k = Math.max(1, Math.sqrt(OPENAI_MIN_PIXELS / (meta.width * meta.height)));
+    input = {
+      prompt, image_urls: [imageUrl], mask_url: maskUrl,
+      image_size: { width: roundUpTo16(meta.width * k), height: roundUpTo16(meta.height * k) },
+      quality: 'high', output_format: 'png', num_images: 1, sync_mode: FAL_SYNC_MODE,
+    };
+  } else {
+    // 마스크 칸이 없다 — 마스크를 두 번째 사진으로 같이 보내고 말로 짚는다. (지켜지지 않아도 합성이 막는다)
+    input = {
+      prompt: 'Image 1 is the photo to edit. Image 2 is a black-and-white mask of the same photo. '
+        + 'Change ONLY the areas that are white in image 2; keep every area that is black in image 2 pixel-identical to image 1. '
+        + 'Return the edited photo only, same framing, no mask, no outlines. Edit: ' + prompt,
+      image_urls: [imageUrl, maskUrl],
+      aspect_ratio: nearestBananaRatio(meta.width, meta.height),
+      resolution: '1K', output_format: 'png', num_images: 1, sync_mode: FAL_SYNC_MODE,
+      ...(Number.isInteger(seed) ? { seed } : {}),
+    };
+  }
+
+  const result = await fal.subscribe(FAL_EDIT.id, { input });
+  const output = result.data || result;
+  const outputImage = output.images && output.images[0];
+  if (!outputImage) {
+    const e = new Error(FAL_EDIT.name + ' 응답에 이미지가 없습니다.' + (output.description ? ' (' + String(output.description).slice(0, 120) + ')' : ''));
+    if (Array.isArray(output.has_nsfw_concepts) && output.has_nsfw_concepts.some(Boolean)) e.filtered = true;
+    throw e;
+  }
+  const fetched = await fetchResultImage(outputImage, FAL_EDIT.name);
+  let outBuf = Buffer.from(fetched.base64, 'base64');
+  const outMeta = await sharp(outBuf).metadata();
+  debugDumpEdit(FAL_EDIT.name, { sent: imageBase64, mask: maskBase64, raw: fetched.base64 });
+  const sentW = input.image_size ? input.image_size.width : meta.width;
+  const sentH = input.image_size ? input.image_size.height : meta.height;
+  if (outMeta.width !== sentW || outMeta.height !== sentH) {
+    console.log('[server] ' + FAL_EDIT.name + ' 결과 ' + outMeta.width + 'x' + outMeta.height + ' → 보낸 크기 ' + sentW + 'x' + sentH + '로 맞춤');
+    outBuf = await sharp(outBuf).resize(sentW, sentH, { fit: 'fill' }).png().toBuffer();
+  }
+  return {
+    base64: outBuf.toString('base64'), mediaType: 'image/png',
+    width: sentW, height: sentH, sentWidth: sentW, sentHeight: sentH,
+    returnedSize: outMeta.width + 'x' + outMeta.height,
+    costUsd: null, // fal 문서에 단가가 안 적혀 있다 — 대시보드(fal.ai/dashboard/usage)에서 확인
   };
 }
 
@@ -625,6 +749,10 @@ app.post('/api/suggest-captions', async (req, res) => {
 // system은 선택이다 — callClaudeText처럼 역할/규칙은 system에, 사진과 그때그때 달라지는
 // 데이터는 user에 나눠 넣고 싶은 호출(예: 배경교체 프롬프트 생성)을 위해 열어뒀다.
 async function callClaudeVision(imageBase64, mediaType, prompt, maxTokens, system) {
+  // 측정용 스위치: CLAUDE_VIA=cnu면 같은 Claude 모델을 충남대 게이트웨이로 부른다(학교 크레딧).
+  // 기본(비움)은 Anthropic 직접 그대로다. 앱 배포에는 켜지 않는다 — 켜면 원본 사진이
+  // 게이트웨이(mindlogic)를 거치는데 화면 설명에는 그렇게 적혀 있지 않다.
+  if (process.env.CLAUDE_VIA === 'cnu') return callClaudeVisionViaCnu(imageBase64, mediaType, prompt, maxTokens, system);
   const t0 = Date.now();
   const response = await anthropic.messages.create({
     model: MODEL,
@@ -644,6 +772,34 @@ async function callClaudeVision(imageBase64, mediaType, prompt, maxTokens, syste
   const rawText = textBlock ? textBlock.text : '';
   const parsed = extractJson(rawText); // 실패하면 던져짐 (호출부에서 처리)
   return { parsed, timingMs: Date.now() - t0, usage: response.usage, model: response.model };
+}
+
+// 게이트웨이는 OpenAI 호환이라 요청 모양만 바꾼다. 모델은 직접 연결과 같은 haiku 4.5.
+// 실측(2026-11-16): 응답 id가 msg_로 시작 → 안쪽은 Anthropic. 사용량은 prompt/completion_tokens로 온다.
+async function callClaudeVisionViaCnu(imageBase64, mediaType, prompt, maxTokens, system) {
+  const t0 = Date.now();
+  const resp = await fetch((process.env.CNU_LLM_BASE_URL || 'https://factchat-cloud.mindlogic.ai/v1/gateway') + '/chat/completions/', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + process.env.CNU_LLM_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: process.env.CNU_CLAUDE_MODEL || 'claude-haiku-4-5-20251001',
+      max_tokens: maxTokens || 1024,
+      messages: [
+        ...(system ? [{ role: 'system', content: system }] : []),
+        { role: 'user', content: [
+          { type: 'image_url', image_url: { url: 'data:' + (mediaType || 'image/jpeg') + ';base64,' + imageBase64 } },
+          { type: 'text', text: prompt },
+        ] },
+      ],
+    }),
+  });
+  const text = await resp.text();
+  if (!resp.ok) throw new Error('게이트웨이 Claude 호출 실패 (HTTP ' + resp.status + '): ' + text.slice(0, 300));
+  const data = JSON.parse(text);
+  const rawText = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+  const parsed = extractJson(rawText);
+  const u = data.usage || {};
+  return { parsed, timingMs: Date.now() - t0, usage: { input_tokens: u.prompt_tokens, output_tokens: u.completion_tokens }, model: data.model };
 }
 
 // ===== 글자는 OCR이, 뜻은 Claude가 =====
@@ -672,6 +828,10 @@ function sanitizeOcrWords(list) {
   return out;
 }
 
+// 시도했다가 되돌린 것(2026-11-16): "큰 간판 하나만 고르지 말고 전부 적어줘 — 지점명·층수·전화·창문·
+// 현수막 주최·한자·잘린 글자" 줄. 놓친 사진 42장만 재면 옛 106·104 → 새 118·115로 올라 보였지만,
+// 학습용 401장 전체로 재니 630 → 632(더 찾음 31 · 새로 놓침 30)로 흔들림과 구별이 안 됐고 토큰만 6% 늘었다.
+// 놓친 사진만 골라 다시 재면 운으로도 오른다 — 고친 효과는 전체 세트로 재야 한다.
 function buildPromptWithOcr(basePrompt, ocrWords) {
   if (!ocrWords.length) return basePrompt;
   return basePrompt + `
@@ -1062,6 +1222,17 @@ app.post('/api/replace-background', async (req, res) => {
         timingMs: Date.now() - t0, estimatedCostUsd: out.costUsd,
         attempts: 1, usedSeed: null,
         provider: 'openai', model: OPENAI_IMAGE_MODEL, sentSize: out.sentWidth + 'x' + out.sentHeight, usage: out.usage,
+      });
+    }
+    if (FAL_EDIT.kind !== 'flux') {
+      const out = await falModelFill(imageBase64, maskBase64, mt, editPrompt, seed);
+      return res.json({
+        imageBase64: out.base64, mediaType: out.mediaType,
+        width: out.width, height: out.height,
+        editPrompt: editPrompt, usedPrompt: null,
+        timingMs: Date.now() - t0, estimatedCostUsd: out.costUsd,
+        attempts: 1, usedSeed: null,
+        provider: 'fal', model: FAL_EDIT.id, sentSize: out.sentWidth + 'x' + out.sentHeight, returnedSize: out.returnedSize,
       });
     }
 
@@ -1681,6 +1852,17 @@ app.post('/api/inpaint-regions', async (req, res) => {
     }
 
     const mt = mediaType || 'image/jpeg';
+    if (FAL_EDIT.kind !== 'flux') {
+      const out = await falModelFill(imageBase64, maskBase64, mt, editPrompt, seed);
+      return res.json({
+        imageBase64: out.base64, mediaType: out.mediaType,
+        width: out.width, height: out.height,
+        editPrompt: editPrompt, usedPrompt: null,
+        timingMs: Date.now() - t0, estimatedCostUsd: out.costUsd,
+        attempts: 1, usedSeed: null,
+        provider: 'fal', model: FAL_EDIT.id, sentSize: out.sentWidth + 'x' + out.sentHeight, returnedSize: out.returnedSize,
+      });
+    }
     const ext = mt.includes('png') ? 'png' : 'jpg';
     // 마스크는 흑백 경계가 뭉개지면 안 되므로 항상 PNG로 올린다 (JPEG 압축 금지)
     const [imageUrl, maskUrl] = await Promise.all([
@@ -1735,6 +1917,7 @@ app.post('/api/inpaint-regions', async (req, res) => {
     if (!outputImage) throw new Error('flux-fill 응답에 이미지가 없습니다.');
 
     const fetched = await fetchResultImage(outputImage, 'AI 옷 바꾸기');
+    debugDumpEdit('flux-fill', { sent: imageBase64, mask: maskBase64, raw: fetched.base64 });
 
     res.json({
       imageBase64: fetched.base64,
@@ -1763,7 +1946,9 @@ app.post('/api/inpaint-regions', async (req, res) => {
 // provider는 동의창 문구를 고르는 데 쓴다 — 원본이 실제로 가는 곳을 적어야 한다.
 // 간판 글자 바꿔쓰기는 엔진과 상관없이 fal이라 따로 알린다.
 app.get('/api/flux-status', (req, res) => {
-  res.json({ ready: imageEditReady(), provider: IMAGE_EDIT_PROVIDER, signReady: !!process.env.FAL_KEY });
+  // via: fal을 거쳐 실제로 그리는 회사(OpenAI·Google). 동의창이 «fal.ai로 전송»만 적으면 사실보다 좁다.
+  const via = IMAGE_EDIT_PROVIDER === 'fal' ? FAL_EDIT.via : '';
+  res.json({ ready: imageEditReady(), provider: IMAGE_EDIT_PROVIDER, via, model: IMAGE_EDIT_PROVIDER === 'fal' ? FAL_EDIT.id : OPENAI_IMAGE_MODEL, signReady: !!process.env.FAL_KEY });
 });
 
 // ===== 5. 결과 재검증 프롬프트 (아이사진_SNS위험진단_프롬프트.md 5번, 3단계) =====
