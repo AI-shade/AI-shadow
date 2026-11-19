@@ -60,9 +60,12 @@ function ok(cond, name, detail) {
       if (sc) sc.style.display = 'flex';
       const am = document.getElementById('aiMore');
       if (am) am.style.display = 'block';
-      // 보이는 AI 단추만 잰다(10-27: 로고 지우기·배경 교체하기·옷 전체 바꾸기). 간판 글자 단추는 자동 보정과 함께 빠져
-      // DOM만 숨겨 남아 있다(.is-gone) — 세면 4개가 된다.
-      return Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button')).map(b => {
+      // AI 단추 넷을 잰다: 로고 지우기·배경 교체하기 + 앞 단계를 한 뒤에만 나오는 배경 전체 바꾸기(11-18)·옷 전체 바꾸기(11-19).
+      // 뒤의 둘은 처음엔 숨어 있지만 나왔을 때도 이름이 넘치면 안 되므로 강제로 보이게 해서 잰다.
+      // 간판 글자 단추는 자동 보정과 함께 빠져 DOM만 숨겨 남아 있다(.is-gone) — 여기 셈에는 안 든다.
+      const btns = Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button'));
+      btns.forEach(b => { b.style.display = ''; });
+      return btns.map(b => {
         const r = b.getBoundingClientRect();
         // 픽셀 하한만 재면 글자 크기를 바꿀 때마다 거짓으로 깨진다.
         // 진짜 요구사항은 «이름이 넘치지 않는다»이므로 넘침을 직접 잰다.
@@ -76,7 +79,7 @@ function ok(cond, name, detail) {
     });
 
     console.log('\n폭 ' + w + 'px — 버튼 ' + 잰값.length + '개');
-    ok(잰값.length === 3, '버튼 3개를 찾았다', 잰값.length + '개');
+    ok(잰값.length === 4, '버튼 4개를 찾았다', 잰값.length + '개');
 
     const 두줄 = 잰값.filter(b => b.줄 > 1);
     ok(두줄.length === 0, '모든 버튼이 한 줄이다',

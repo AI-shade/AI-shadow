@@ -113,12 +113,12 @@ const 보임 = (page, sel) => page.evaluate((s) => {
     ok(!(await 보임(page, '#methodRow')), '«보정 내용 · 고치기» 줄이 없다');
     const 단추 = await page.evaluate(() => {
       const bar = document.querySelector('#screen-correct > .app-actionbar').getBoundingClientRect().top;
-      return ['#aiMarkBtn', '#aiBgBtn', '#aiOutfitBtn'].map((s) => {
+      return ['#aiMarkBtn', '#aiBgBtn'].map((s) => { // 옷 전체 바꾸기는 로고 지우기 뒤에만 나온다(11-19)
         const r = document.querySelector(s).getBoundingClientRect();
         return r.height > 0 && r.bottom <= bar;
       });
     });
-    ok(단추.every(Boolean), 'AI 단추 셋이 누르지 않아도 바로 보인다(아래 고정 바에 안 가린다)', JSON.stringify(단추));
+    ok(단추.every(Boolean), 'AI 단추 둘이 누르지 않아도 바로 보인다(아래 고정 바에 안 가린다)', JSON.stringify(단추));
     await page.click('#aiBgBtn');
     await page.waitForTimeout(600);
     ok(await 보임(page, '#fluxConsentCancel'), '동의창이 뜬다');

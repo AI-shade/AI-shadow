@@ -3909,13 +3909,14 @@
     <div class="ai-more" id="aiMore" style="display:none;">
       <p class="ai-more-head">AI로 바꾸기 <span class="m-badge" style="background:var(--risk-mid);">AI · 유료 · 사진 전송</span></p>
       <div class="ai-more-btns">
-        <button type="button" class="secondary" id="aiMarkBtn" title="가슴의 로고·마크만 다시 그린다 · 옷 모양과 색은 그대로">로고 지우기</button>
+        <button type="button" class="secondary" id="aiMarkBtn" title="옷의 로고·이름표 자리만 다시 그린다 · 옷 모양과 색은 그대로">로고 지우기</button>
         <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그린다 · 간판·건물 이름도 같이 사라진다">배경 교체하기</button>
-        <button type="button" class="secondary" id="aiOutfitBtn" title="옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꾼다 · 얼굴·손은 그대로">옷 전체 바꾸기</button>
+        <!-- «로고 지우기»를 한 뒤에만 보인다(11-19 요청: "로고가 안지워지면 옷을 교체하게"). 누르면 그 결과 위에서 옷 전체를 다시 그린다. -->
+        <button type="button" class="secondary" id="aiOutfitBtn" style="display:none;" title="옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꾼다 · 얼굴·손은 그대로">옷 전체 바꾸기</button>
         <!-- «배경 교체하기»가 간판 자리만 바꿨을 때만 보인다. 누르면 그 결과 위에서 배경 전체를 새로 그린다. -->
         <button type="button" class="secondary" id="aiBgFullBtn" style="display:none;" title="간판만이 아니라 사람 뒤 배경 전체를 새로 그린다">배경 전체 바꾸기</button>
       </div>
-      <p class="hint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">«옷 전체 바꾸기»는 칼라·배색처럼 교복 디자인 자체로 어느 학교인지 알아볼 수 있을 때만 쓰세요. 로고만 문제라면 «로고 지우기»가 더 자연스러워요.</p>
+      <p class="hint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">먼저 «로고 지우기»로 로고 자리만 고쳐 보세요. 로고가 남았거나 칼라·배색 같은 교복 디자인으로 학교를 알아볼 수 있으면, 그다음 나오는 «옷 전체 바꾸기»를 누르세요.</p>
       <div class="is-gone">
         <!-- 간판 글자 AI는 자동 글자 덮기 결과 위에서만 돈다 — 자동 보정을 빼면서 같이 뺐다. 스크립트가 참조해서 DOM만 남긴다. -->
         <span class="picker-ai" id="signAiRow" style="display:none;">
@@ -13194,6 +13195,7 @@
       showTargetRedo(false);
       var wantBgFull = bgFullNext; bgFullNext = false;
       document.getElementById('aiBgFullBtn').style.display = 'none';
+      document.getElementById('aiOutfitBtn').style.display = 'none'; // «로고 지우기»가 끝나면 다시 보인다
       var previousMethod = currentMethod;
       currentMethod = method;
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
@@ -13389,12 +13391,12 @@
               + ' (약 $' + Number(of.data.estimatedCostUsd || 0).toFixed(2)
               + ', ' + Math.round(of.data.timingMs / 1000) + '초)');
           } else if (wantAi) {
-            setPreviewBusy('가슴의 마크만 지우는 중이에요\n옷은 그대로 두고 그 자리만 바꿔요\n10~20초 정도 걸려요');
+            setPreviewBusy('옷의 로고·이름표만 지우는 중이에요\n옷은 그대로 두고 그 자리만 바꿔요\n30초쯤 걸려요');
             var emImg = await loadImage(baseUrl);
             var em = await runEmblemRemoval(emImg, ofFaces, lastRiskResult, emSel);
             clearPreviewBusy();
             currentCorrectionCanvas = em.canvas;
-            요약.push('가슴 마크를 ' + (EMBLEM_MODE_KO[emSel] || EMBLEM_MODE_KO.none)
+            요약.push('옷의 마크를 ' + (EMBLEM_MODE_KO[emSel] || EMBLEM_MODE_KO.none)
               + ' — 옷 모양·무늬는 그대로예요 (약 $'
               + Number(em.data.estimatedCostUsd || 0).toFixed(2)
               + ', ' + Math.round(em.data.timingMs / 1000) + '초)');
@@ -13404,10 +13406,11 @@
           var 꼬리 = emSel === 'all'
             ? ' 얼굴과 자세는 그대로예요. 어느 기관 옷인지 알아볼 수 없게 됐는지 꼭 눈으로 확인해주세요.'
             : (wantAi
-              ? ' 마크가 소매나 모자에 있었다면 남아 있을 수 있으니 꼭 눈으로 확인해주세요.'
+              ? ' 로고가 남아 있거나 옷 디자인으로 학교를 알아볼 수 있으면 아래 «옷 전체 바꾸기»를 눌러주세요.'
               : ' 색이 있는 옷은 색조가 옮겨지고, 흰 옷·검정 옷은 살짝만 물들어요(밝기와 무늬 명암은 그대로). ⚠ 밝은 색 옷은 배경과 비슷해서 일부만 잡힐 수 있어요 — 안 바뀐 부분이 없는지 확인해주세요.'
                 + ' 가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, 위에서 «색 + 마크»를 골라주세요.');
           previewCaption.textContent = '✨ ' + 요약.join(' 그리고 ') + '.' + 꼬리;
+          if (wantAi && emSel !== 'all') document.getElementById('aiOutfitBtn').style.display = '';
           lastCorrectionMeta = {
             method: 'outfit',
             detail: '옷 손보기 — ' + 요약.join(' / ') + (didColor && wantAi ? ' (색은 로컬, 마크는 AI)' : ''),
