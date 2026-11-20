@@ -241,7 +241,7 @@ function ok(cond, 기기이름, name, detail) {
       }
     };
     if (폰배치) {
-      for (const t of ['과거글', '문답']) {
+      for (const t of ['내정보', '문답']) {
         await 누르기(`.app-tab[data-goto="${t}"]`, t + ' 탭 단추');
         await 검사(t + ' 탭');
       }

@@ -139,7 +139,7 @@ async function 새로열기(browser, viewport, hash) {
 
   // ── 5) 아이콘 메뉴는 하단 탭과 같은 곳으로 간다 ──
   console.log('\n아이콘 메뉴');
-  for (const 탭 of ['과거글', '알아보기', '문답']) {
+  for (const 탭 of ['내정보', '알아보기', '문답']) {
     const { ctx, page } = await 새로열기(browser, { width: 390, height: 844 });
     await page.click(`.app-menu-item[data-menu="${탭}"]`);
     await page.waitForTimeout(200);
@@ -175,6 +175,17 @@ async function 새로열기(browser, viewport, hash) {
     await page.goBack();
     await page.waitForTimeout(300);
     ok(await 보이나(page, 'header.hero') && !(await 보이나(page, 'main#tool')), '뒤로가기 → 소개로 돌아온다');
+    // 11-21: 과거 게시물 점검·검증은 «내 정보», 사용 화면엔 진단·가리기만
+    await page.click('.nav-links a[href="#me"]');
+    await page.waitForTimeout(300);
+    ok(await 보이나(page, '#pattern-check') && !(await 보이나(page, 'main#tool')), '«내 정보» → 과거 게시물 점검만 보인다');
+    await page.click('.nav-cta');
+    await page.waitForTimeout(300);
+    ok(!(await 보이나(page, '#pattern-check')), '사용 화면에는 과거 게시물 점검이 없다');
+    ok(!(await 보이나(page, '#stepper .step[data-step="verify"]')), '사용 화면 단계 표시에 «검증»이 없다');
+    await page.evaluate(() => window.__anshimTest.showScreenForTest('verify'));
+    await page.waitForTimeout(300);
+    ok((await page.evaluate(() => location.hash)) === '#me' && await 보이나(page, '#screen-verify'), '검증 화면은 «내 정보»에서 열린다');
     await ctx.close();
     const t = await 새로열기(browser, { width: 1280, height: 800 }, '#tool');
     ok(await 보이나(t.page, 'main#tool') && !(await 보이나(t.page, 'header.hero')), '#tool 링크로 들어오면 도구부터');

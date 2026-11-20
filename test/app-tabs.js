@@ -7,10 +7,10 @@
 const { chromium } = require('playwright');
 const URL = process.env.ANSHIM_URL || 'http://localhost:8000/index.html';
 
-const 탭들 = ['진단', '과거글', '알아보기', '문답'];
+const 탭들 = ['진단', '내정보', '알아보기', '문답'];
 const 섹션 = {
   진단: ['tool'],
-  과거글: ['pattern-check'],
+  내정보: ['pattern-check'],
   알아보기: ['steps', 'features', 'why'],
   문답: ['faq'],
 };
