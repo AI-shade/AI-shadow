@@ -2666,6 +2666,16 @@
     :root[data-tab="문답"]     [data-tab-of]:not([data-tab-of="문답"]) { display: none; }
   }
 
+  /* ── 웹(넓은 화면): 소개 ↔ 도구 ────────────────────────────────────────
+     폰은 탭·data-view로 이미 나뉘어 있다. 웹은 한 장으로 길게 이어져 있었는데,
+     같은 data-view를 웹에도 쓴다 — 주소가 #tool·#pattern-check면 도구, 아니면 소개.
+     DOM은 옮기지 않고 숨기기만 한다(결과·검증 화면 안쪽은 그대로). 폰 조건의 반대라
+     폰 규칙과 겹치지 않는다. data-view는 아래 스크립트 「3) 홈 ↔ 도구」가 세운다. */
+  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+    :root[data-view="home"] :is(main#tool, #pattern-check) { display: none; }
+    :root[data-view="tool"] :is(header.hero, #selfcheck, .scroll-cue, #steps, #features, #why, #faq, .cta-band) { display: none; }
+  }
+
   /* ── 배민식 정돈 (폰 폭 전용) ───────────────────────────────────────────
      배달의민족 앱의 화면 구조를 참고했다(공개 자료 분석, 2026-09-20). 옮긴 것은
      **구조와 패턴**뿐이다:
@@ -3257,7 +3267,11 @@
   if ('scrollRestoration' in history && (새로고침 || !location.hash)) {
     history.scrollRestoration = 'manual';
   }
-  if (새로고침) {
+  // 단 웹에서 도구 화면(#tool·#pattern-check)이면 새로고침해도 도구 화면에 남는다 — 사용자 요청
+  // «새로고침하면 해당 페이지에서 새로고침하게». 폰은 하단 탭이 홈에서도 #tool을 달아서 뺀다.
+  var 도구유지 = (location.hash === '#tool' || location.hash === '#pattern-check') &&
+    !matchMedia('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches;
+  if (새로고침 && !도구유지) {
     // 앵커를 미리 떼야 브라우저가 그 자리로 뛰지 않는다.
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
     window.addEventListener('load', function () { window.scrollTo(0, 0); });
@@ -14670,10 +14684,32 @@
     };
     var hasPhoto = function () { return !!(photoIn && photoIn.files && photoIn.files[0]); };
     // 주소가 #tool이면(공유 링크) 도구 화면으로 시작한다. 아니면 홈.
-    setView((location.hash || '') === '#tool' ? 'tool' : 'home');
-    if (photoIn) photoIn.addEventListener('change', function () { if (hasPhoto()) setView('tool'); });
+    var 도구주소 = function (h) { return h === '#tool' || h === '#pattern-check'; };
+    setView(도구주소(location.hash || '') ? 'tool' : 'home');
+    // 웹(넓은 화면)은 주소로 소개 ↔ 도구를 오간다 — 뒤로가기가 되고 링크를 공유할 수 있다.
+    // 폰은 하단 탭 링크도 #tool을 바꾸므로 여기서 손대지 않는다(폰은 위 탭 핸들러가 정한다).
+    var 웹 = function () { return !matchMedia('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches; };
+    window.addEventListener('hashchange', function () {
+      if (!웹()) return;
+      var h = location.hash || '';
+      var 전 = root.getAttribute('data-view');
+      setView(도구주소(h) ? 'tool' : 'home');
+      // 같은 쪽 안에서 앵커만 바뀌면 브라우저가 알아서 내려간다 — 끼어들지 않는다.
+      // (refresh가 부드러운 스크롤을 끊어 맨 위로 되돌린 적이 있다)
+      if (전 === root.getAttribute('data-view')) return;
+      // 쪽이 바뀌면 목표가 숨어 있어서 브라우저가 못 갔다 — 핀 높이를 다시 잡고 직접 보낸다.
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+      var el = h && h !== '#tool' && document.getElementById(h.slice(1));
+      if (el) el.scrollIntoView({ behavior: 'instant' }); else window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    // 사진을 고르는 등 주소 없이 도구로 넘어가면 주소에도 남긴다 — 그래야 뒤로가기로 소개에 돌아간다.
+    var 도구로 = function () {
+      setView('tool');
+      if (웹() && !도구주소(location.hash || '')) history.pushState(null, '', '#tool');
+    };
+    if (photoIn) photoIn.addEventListener('change', function () { if (hasPhoto()) 도구로(); });
     if (tool) {
-      new MutationObserver(function () { if (busy()) setView('tool'); })
+      new MutationObserver(function () { if (busy()) 도구로(); })
         .observe(tool, { subtree: true, attributes: true, attributeFilter: ['style'] });
     }
     var back = document.getElementById('appBack');

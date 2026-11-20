@@ -157,17 +157,28 @@ async function 새로열기(browser, viewport, hash) {
     await ctx.close();
   }
 
-  // ── 6) 데스크톱은 그대로 ──
-  console.log('\n데스크톱은 안 건드렸다');
+  // ── 6) 데스크톱: 소개 ↔ 도구 (11-20부터 주소 #tool로 나눈다) ──
+  console.log('\n데스크톱: 소개 ↔ 도구');
   {
     const { ctx, page } = await 새로열기(browser, { width: 1280, height: 800 });
     ok((await 보이나(page, '.app-home')) === false, '홈 알약·메뉴가 안 보인다');
-    ok(await 보이나(page, 'main#tool'), '입력 폼(도구)이 그대로 보인다');
-    ok(await 보이나(page, 'header.hero'), '히어로가 그대로 보인다');
-    ok(await 보이나(page, '#selfcheck'), '자가 점검이 그대로 보인다');
     ok((await 보이나(page, '.app-bar--form')) === false, '폼 상단 바(‹)가 안 보인다');
     ok((await 보이나(page, '#appTabbar')) === false, '탭바가 안 보인다');
+    ok(await 보이나(page, 'header.hero'), '소개: 히어로가 보인다');
+    ok(await 보이나(page, '#selfcheck'), '소개: 자가 점검이 보인다');
+    ok((await 보이나(page, 'main#tool')) === false, '소개: 입력 폼(도구)은 안 보인다');
+    await page.click('.hero-actions a[href="#tool"]');
+    await page.waitForTimeout(300);
+    ok(await 보이나(page, 'main#tool'), '«지금 진단하기» → 도구가 보인다');
+    ok((await 보이나(page, 'header.hero')) === false, '도구: 히어로는 안 보인다');
+    ok((await 보이나(page, '#faq')) === false, '도구: 문답은 안 보인다');
+    await page.goBack();
+    await page.waitForTimeout(300);
+    ok(await 보이나(page, 'header.hero') && !(await 보이나(page, 'main#tool')), '뒤로가기 → 소개로 돌아온다');
     await ctx.close();
+    const t = await 새로열기(browser, { width: 1280, height: 800 }, '#tool');
+    ok(await 보이나(t.page, 'main#tool') && !(await 보이나(t.page, 'header.hero')), '#tool 링크로 들어오면 도구부터');
+    await t.ctx.close();
   }
 
   await browser.close();
