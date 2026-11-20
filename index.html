@@ -1490,6 +1490,7 @@
        스케줄·조치 둘(짝수)뿐이라 항상 나란히 채워지고 빈 반쪽이 안 생긴다. */
     /* 스케줄 경고를 빼서(10-26) 남는 건 권장 조치·종합 설명 둘 — 나란히 둔다 */
     #screen-result > .rcard-caption { order: 4; grid-column: 1 / -1; }
+    #screen-result > #actionCard { grid-column: 1 / -1; } /* 종합 설명을 합쳐 짝이 없다 — 가로 전체 */
     /* .evidence 공통 규칙의 76ch 줄길이 제한이 좁은 칸 기준이라, 종합 설명이 가로
        전체로 넓어진 지금은 글이 카드 왼쪽 절반에만 몰리고 오른쪽이 비어 보인다
        (사용자 지적). 이 카드만 풀어서 넓어진 만큼 글도 같이 채운다. */
@@ -2025,12 +2026,6 @@
   .cta-band {
     background: var(--card-dark); color: var(--on-dark); padding: 3.4rem 0;
     text-align: center; position: relative; overflow: hidden;
-  }
-  .cta-band::before {
-    content: ''; position: absolute; pointer-events: none;
-    width: 520px; height: 520px; right: -160px; top: -220px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(240, 203, 0, 0.20), rgba(240, 203, 0, 0) 70%);
-    filter: blur(50px);
   }
   .cta-band .section-inner { position: relative; z-index: 1; }
   .cta-band h2 {
@@ -3241,6 +3236,47 @@
     #screen-result, #screen-correct { padding-bottom: 4.6rem; }
   }
 
+  /* ===== 디자인 정리 (11-20) — 점수는 합계 하나만, 위험한 항목만 한 줄씩, 장식은 뺀다 =====
+     DOM은 그대로 두고 보이는 것만 줄인다(테스트·접기·칩·시트가 같은 행을 읽는다). */
+  .radar-val, .sb-total, .sb-list .sb-num, .sb-list .sb-bar { display: none !important; }
+  .sb-list li.zero { display: none; }                         /* 0점 = 드러나지 않은 항목 */
+  .loc-chain li.off { display: none; }                        /* «없음»인 단서 */
+  .loc-chain li.lc-none { color: var(--muted); font-size: 0.86rem; }
+  .loc-chain li.lc-none::before { content: none; }
+  .loc-web-check { border-top: 0; }                           /* 장식 점선 */
+  /* 필요 없는 문장 — 화면이 이미 말하는 것을 다시 적은 설명 */
+  .fm-note, .vr-note, .loc-map-hint, .an-footnote, #screen-verify > .disclaimer { display: none; }
+  #screen-result .factor-chips .factor-chip.zero { display: none; }
+  #screen-result .factor-chips .factor-chip b,
+  .factor-chip b, .fs-score, .fs-bar { display: none; }
+  #screen-result .factor-chips .factor-chip::before { content: none; display: none; }  /* 항목 앞 점 */
+  #summaryCard .evidence { margin: 0 0 0.6rem; font-weight: 700; }
+  /* 원본 전송 동의창 — 묻는 말·핵심 한 줄·단추를 위에, 처리 방침은 단추 아래에 작게 */
+  #fluxConsentModal > .card, #signAiConsentModal > .card, #locOrigConsentModal > .card {
+    max-width: 440px !important; padding: 1.2rem 1.3rem !important;
+  }
+  .consent-title { margin: 0 0 0.5rem; font-size: 1.08rem; font-weight: 800; letter-spacing: -0.012em; color: var(--ink); }
+  .consent-btns { display: flex; gap: 0.5rem; margin: 0.9rem 0 0; }
+  .consent-btns > button { flex: 1; margin: 0; }
+  .consent-fine { margin-top: 0.9rem; font-size: 0.72rem; line-height: 1.55; color: var(--muted); }
+  .consent-fine p { margin: 0 0 0.3rem; }
+  .consent-fine ul { margin: 0 0 0.4rem; padding-left: 1.1rem; }
+  .consent-fine li { margin: 0 0 0.15rem; }
+  .consent-fine strong { color: var(--muted); font-weight: 700; }
+  /* 재검증 결과 — 첫 진단처럼 왼쪽 그림, 오른쪽 목록 */
+  @media (min-width: 761px) {
+    .verify-radar:not([hidden]) {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 2rem; align-items: center; padding: 1.4rem 1.6rem;
+    }
+    .vr-head { grid-column: 1 / -1; }
+    .vr-svg { grid-column: 1; grid-row: 2; max-width: 320px; }
+    .vr-legend { grid-column: 1; grid-row: 3; }
+    .vr-list { grid-column: 2; grid-row: 2 / span 2; }
+    .vr-list li { font-size: 0.95rem; padding: 0.6rem 0; }
+    .vr-note { grid-column: 1 / -1; }
+  }
+
 </style>
 
 <script>
@@ -3286,15 +3322,8 @@
   }
 </script>
 
-<div class="page-glow" aria-hidden="true">
-  <!-- 디자인 감사 지적: 조명 4겹(골드·둘레 온기·연두·숨은 클로버 실루엣)이 스크롤을 따라
-       옮겨가며 합쳐지는 건 공들여 만들었지만, 겹겹이 뭉실한 빛 덩어리 자체가 "SaaS 랜딩
-       템플릿" 느낌을 준다는 지적(요청) — 숨은 클로버는 코드로 읽지 않으면 존재도 모른다.
-       구석의 은은한 골드 한 겹만 남긴다. -->
-  <div class="glow-track">
-    <span class="gb-core"><i></i></span>
-  </div>
-</div>
+<!-- 오른쪽 위 골드 빛(.page-glow > .gb-core)은 뺐다 — 디자인 요소로 들어간 그라데이션을 지운다(11-21 요청).
+     요소가 없으면 아래 숨쉬기 스크립트는 바로 빠져나간다. -->
 <div class="page-grain" aria-hidden="true"></div>
 <!-- 아이SHADOW 마크. 도형은 여기 한 번만 두고 <use>로 갖다 쓴다 —
      여러 벌 박아두면 색이나 모양을 고칠 때 한 곳을 빠뜨린다. -->
@@ -3439,9 +3468,8 @@
 
 <!-- 떨어진 잎. .hero가 overflow:hidden이라 그 안에 두면 히어로 밖으로 못 나간다 —
      화면에 고정(fixed)해두고 스크롤 진행도에 따라 내려보낸다. -->
-<svg class="clover-fly" id="cloverFlyLeaf" viewBox="-20 -32 40 34" aria-hidden="true">
-  <path class="cl-leaf" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
-</svg>
+<!-- 떠다니는 잎(#cloverFlyLeaf)은 뺐다 — 진단·보정 화면 위에 하트처럼 떠서 내용을 가렸다(디자인 정리 11-20).
+     잎이 없으면 아래 애니메이션 스크립트가 바로 빠져나가고, 두 클로버는 온전한 네잎으로 남는다. -->
 
 
 <!-- 올리기 전에 잠깐 — 무엇이 위험한지 먼저 눈으로 보여준다.
@@ -3662,7 +3690,7 @@
         <p id="stepOcr">사진 속 텍스트 위치·내용 감지 중</p>
         <p id="stepPast" style="display:none;">과거 게시물 스크린샷에서 시점·캡션 추출 중</p>
       </div>
-      <p style="font-size:0.74rem; line-height:1.6; color:var(--muted); margin:1.4rem auto 0; max-width:48ch;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
+      <p class="an-footnote" style="font-size:0.74rem; line-height:1.6; color:var(--muted); margin:1.4rem auto 0; max-width:48ch;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
     </div>
   </div>
 
@@ -3737,7 +3765,7 @@
         </div>
       </div>
       <ul class="pin-legend" id="pinLegend"></ul>
-      <p class="pin-note">* 검게 채운 핀은 face-api.js로 감지한 얼굴, 테두리만 있는 핀은 Tesseract.js OCR로 감지한 텍스트 — 둘 다 실제 측정값이에요.</p>
+      <p class="pin-note">* 검게 채운 핀은 얼굴, 테두리만 있는 핀은 글자예요. 둘 다 사진에서 실제로 찾은 자리예요.</p>
       <!-- 점수가 사진의 어디를 보고 매겨졌는지 잇는다. 숫자만 보여주면 "왜 이 점수인지"가
            납득되지 않는다는 피드백을 받아 더했다. -->
       <div class="factor-map" id="factorMap" hidden>
@@ -3789,12 +3817,11 @@
            두 칸을 다 가로지르는 하나의 선으로 그린다(desktop 전용 CSS가 grid-column:
            1/-1을 준다. 폰 폭에서는 그냥 다음 블록으로 이어질 뿐 모양은 그대로다). -->
       <div class="loc-web-check" id="locWebCheck">
-        <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
-        <p class="loc-web-hint">한 번 누르면 확실한 것부터 차례로 봐요 — ① 사진 파일에 박힌 좌표(브라우저 안에서만 확인)
-          ② Google Vision으로 장소 인식·역방향 이미지 검색 ③ 그래도 안 나오면 AI 추측.
-          앞에서 나오면 뒤는 부르지 않아요. ②는 같은 사진을 찾아야 해서 원본을 보내고 —
-          누르면 먼저 물어봐요 — ③에는 얼굴을 가린 사진만 보내요.</p>
+        <!-- 진단과 함께 자동으로 돈다(runLocCheck). 결과가 먼저, 원본이 가야 하는 구글 검색 단추는 그 아래. -->
         <div class="loc-web-result" id="locWebResult" style="display:none;"></div>
+        <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
+        <p class="loc-web-hint">진단할 때 사진 파일의 좌표와 AI 추측(얼굴을 가린 사진)으로 장소를 함께 확인해요.
+          구글 이미지 검색은 원본이 가야 해서, 단추를 누를 때만 먼저 묻고 보내요.</p>
       </div>
     </section>
 
@@ -3815,12 +3842,9 @@
 
     <section class="result-section" id="actionCard">
       <h3>권장 조치</h3>
+      <!-- 종합 설명과 권장 조치가 두 칸으로 나뉘어 있던 것을 한 칸으로 합친다 — 결론 한 줄, 그 아래 할 일 한 줄씩 -->
+      <div id="summaryCard"><p class="evidence" id="summaryText"></p></div>
       <ul class="action-list" id="actionList"></ul>
-    </section>
-
-    <section class="result-section" id="summaryCard">
-      <h3>종합 설명</h3>
-      <p class="evidence" id="summaryText"></p>
     </section>
 
     <!-- 캡션을 안 쓰겠다고 한 사람에게 "캡션을 입력하시면…"을 보여줄 이유가 없다.
@@ -3916,7 +3940,7 @@
         <!-- «배경 교체하기»가 간판 자리만 바꿨을 때만 보인다. 누르면 그 결과 위에서 배경 전체를 새로 그린다. -->
         <button type="button" class="secondary" id="aiBgFullBtn" style="display:none;" title="간판만이 아니라 사람 뒤 배경 전체를 새로 그린다">배경 전체 바꾸기</button>
       </div>
-      <p class="hint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">먼저 «로고 지우기»로 로고 자리만 고쳐 보세요. 로고가 남았거나 칼라·배색 같은 교복 디자인으로 학교를 알아볼 수 있으면, 그다음 나오는 «옷 전체 바꾸기»를 누르세요.</p>
+      <p class="hint" id="aiMarkHint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">먼저 «로고 지우기»로 로고 자리만 고쳐 보세요. 로고가 남았거나 칼라·배색 같은 교복 디자인으로 학교를 알아볼 수 있으면, 그다음 나오는 «옷 전체 바꾸기»를 누르세요.</p>
       <div class="is-gone">
         <!-- 간판 글자 AI는 자동 글자 덮기 결과 위에서만 돈다 — 자동 보정을 빼면서 같이 뺐다. 스크립트가 참조해서 DOM만 남긴다. -->
         <span class="picker-ai" id="signAiRow" style="display:none;">
@@ -4070,7 +4094,7 @@
     <button class="ghost-link" id="cycleVerifyBtn">재검증 다시 실행 ↻</button>
     <button class="secondary" id="restartBtn" style="margin-top:1.3rem;">다른 사진으로 처음부터 다시</button>
     <p class="disclaimer">
-      ※ 처리된 이미지를 1단계와 동일한 방식(얼굴검출+텍스트검출)으로 다시 분석하고, Claude에게
+      ※ 처리된 이미지를 1단계와 동일한 방식(얼굴검출+텍스트검출)으로 다시 분석하고, AI에게
       원본 위험진단·처리 내용과 함께 재검토를 요청한 실제 결과입니다.<br />
       Campus AX-Ton · 아이 사진 SNS 위험진단 서비스
     </p>
@@ -4241,7 +4265,7 @@
     <div class="feature-grid" id="featureGrid">
       <article class="feature-card pin-item">
         <h3>배경 글자 판독</h3>
-        <p>간판·전화번호·지번처럼 위치를 특정할 수 있는 글자를 찾아냅니다. 브라우저 안 OCR과 Claude Vision을 함께 써서, 읽은 내용과 정확한 좌표를 모두 확보해요.</p>
+        <p>간판·전화번호·지번처럼 위치를 특정할 수 있는 글자를 찾아냅니다. 내 기기 안 글자 읽기와 AI 판독을 함께 써서, 무슨 글자가 어디 있는지 정확히 찾아요.</p>
       </article>
       <article class="feature-card pin-item">
         <h3>글자가 아닌 단서</h3>
@@ -4372,30 +4396,34 @@
 <!-- AI 배경교체 전송 동의 모달: "AI 배경 교체" 선택 시에만 뜸, 다른 3가지 방식은 안 뜸 -->
 <div id="fluxConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
   <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
-    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의</h3>
-    <!-- 서버의 마스크 보정 엔진(/api/flux-status의 provider)에 맞춰 둘 중 하나만 보인다(applyAiProviderText). -->
-    <div id="fluxConsentOpenai" style="display:none;">
-    <p class="evidence">AI 방식(옷 바꾸기 · 배경 교체)은 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(OpenAI)로 전송됩니다. 배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요.</p>
-    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">OpenAI가 밝힌 API 데이터 처리 방침</p>
-    <ul class="action-list" style="margin-bottom:0.8rem;">
+    <h3 class="consent-title">원본 사진을 보낼까요?</h3>
+    <!-- 서버의 마스크 보정 엔진(/api/flux-status의 provider)에 맞춰 data-provider가 맞는 쪽만 보인다(applyAiProviderText).
+         핵심 한 줄과 단추를 위에, 처리 방침은 단추 아래에 작게 둔다(디자인 정리 11-20: "원본 전송 동의 칸이 너무 크다고"). -->
+    <p class="evidence" id="fluxConsentOpenai" data-provider="openai" style="display:none;">AI로 바꾸려면 <strong>원본 사진(얼굴 포함)</strong>이 OpenAI로 가요.</p>
+    <p class="evidence" id="fluxConsentFal" data-provider="fal">AI로 바꾸려면 <strong>원본 사진(얼굴 포함)</strong>이 fal.ai로 가요.</p>
+    <!-- 사진이 실제로 가는 회사는 작은 글씨로 내리지 않는다 — fal.ai만 적으면 사실보다 좁다 -->
+    <p class="evidence" id="fluxConsentVia" data-provider="fal" style="display:none; font-size:0.84rem;"></p>
+    <div class="consent-btns">
+      <button class="primary" id="fluxConsentAgree">동의하고 진행</button>
+      <button class="secondary" id="fluxConsentCancel">취소</button>
+    </div>
+    <div class="consent-fine" data-provider="openai" style="display:none;">
+    <p style="font-weight:700;">OpenAI가 밝힌 API 데이터 처리 방침</p>
+    <ul>
       <li><strong>AI 모델 학습에는 쓰지 않아요</strong> — API로 보낸 데이터는 따로 허락하지 않으면 학습에 안 쓴다고 밝혀요</li>
       <li><strong>다만 “처리 후 바로 삭제”는 아니에요.</strong> 남용 감시 기록으로 최대 30일 보관하고, 법적으로 필요하면 더 길어질 수 있다고 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
     </ul>
-    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer">API 데이터 처리</a> · <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a></p>
+    <p>배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요. 한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer">API 데이터 처리</a> · <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a></p>
     </div>
-    <div id="fluxConsentFal">
-    <p class="evidence">AI 방식(옷 바꾸기 · 배경 교체)은 <strong>원본 사진(얼굴 포함)</strong>이 외부 AI 서비스(fal.ai)로 전송됩니다. 배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요.</p>
-    <p class="evidence" id="fluxConsentVia" style="display:none;"></p>
-    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">fal.ai가 밝힌 사진 처리 방침</p>
-    <ul class="action-list" style="margin-bottom:0.8rem;">
+    <div class="consent-fine" data-provider="fal">
+    <p style="font-weight:700;">fal.ai가 밝힌 사진 처리 방침</p>
+    <ul>
       <li>사진에 대한 권리는 그대로 올린 사람에게 있어요</li>
       <li><strong>AI 모델 학습에는 쓰지 않아요</strong> — 개선에 쓰는 건 익명·집계된 사용 기록뿐이에요</li>
       <li><strong>다만 “처리 후 바로 삭제”는 약속돼 있지 않아요.</strong> 계정을 닫으면 30일 안에, 2년간 안 쓰면 그때 지운다고만 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
     </ul>
-    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
+    <p>배경 흐림 · 자연스럽게 덮기는 전송 없이 브라우저 안에서 끝나요. 한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
     </div>
-    <button class="primary" id="fluxConsentAgree">동의하고 진행</button>
-    <button class="secondary" id="fluxConsentCancel">취소</button>
   </div>
 </div>
 
@@ -4414,17 +4442,21 @@
      다른 AI 모달과 달리 원본 전체가 아니라 글자 주변 crop만 보낸다는 걸 분명히 밝힌다. -->
 <div id="signAiConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
   <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
-    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 간판 글자 일부 전송 동의</h3>
-    <p class="evidence">바꿔 쓸 글자 <strong>자리 주변만 잘라서</strong> 외부 AI 서비스(fal.ai)로 보내요. 아이 얼굴이 담긴 사진 전체는 전송되지 않아요 — 다른 AI 방식(배경 교체 등)과 다른 점이에요.</p>
-    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">fal.ai가 밝힌 사진 처리 방침</p>
-    <ul class="action-list" style="margin-bottom:0.8rem;">
+    <h3 class="consent-title">간판 글자 부분만 보낼까요?</h3>
+    <p class="evidence">바꿔 쓸 글자 <strong>자리 주변만 잘라서</strong> fal.ai로 보내요. 아이 얼굴이 담긴 사진 전체는 가지 않아요.</p>
+    <div class="consent-btns">
+      <button class="primary" id="signAiConsentAgree">동의하고 진행</button>
+      <button class="secondary" id="signAiConsentCancel">취소</button>
+    </div>
+    <div class="consent-fine">
+    <p style="font-weight:700;">fal.ai가 밝힌 사진 처리 방침</p>
+    <ul>
       <li>사진에 대한 권리는 그대로 올린 사람에게 있어요</li>
       <li><strong>AI 모델 학습에는 쓰지 않아요</strong> — 개선에 쓰는 건 익명·집계된 사용 기록뿐이에요</li>
       <li><strong>다만 “처리 후 바로 삭제”는 약속돼 있지 않아요.</strong> 계정을 닫으면 30일 안에, 2년간 안 쓰면 그때 지운다고만 밝혀요 (여기서 쓰는 건 저희 팀 계정이에요)</li>
     </ul>
-    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
-    <button class="primary" id="signAiConsentAgree">동의하고 진행</button>
-    <button class="secondary" id="signAiConsentCancel">취소</button>
+    <p>한 번 동의하면 이 사진을 처리하는 동안 다시 묻지 않아요. 방침 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a> · <a href="https://fal.ai/terms" target="_blank" rel="noopener noreferrer">이용약관</a></p>
+    </div>
   </div>
 </div>
 
@@ -4434,18 +4466,22 @@
      만들지 말라"이므로 AI 보정과 같은 방식으로 먼저 물어본다. -->
 <div id="locOrigConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
   <div class="card" style="max-width:580px; width:100%; margin:0; padding:1.4rem 1.6rem; box-shadow:var(--shadow-lift); max-height:90vh; overflow-y:auto;">
-    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 원본 사진 전송 동의 (장소 찾기)</h3>
-    <p class="evidence">인터넷에 같은 사진이 있는지 찾으려면 <strong>원본 사진(얼굴 포함)</strong>이 Google Cloud Vision으로 전송됩니다. 얼굴을 가려 보내면 이미지 지문이 달라져서 실제로 인터넷에 있는 사진도 못 찾습니다(사진의 8~9%가 검게 덮여요).</p>
-    <p class="evidence" style="margin-bottom:0.3rem; font-weight:700; color:var(--ink);">구글이 문서로 밝힌 사진 처리 방침</p>
-    <ul class="action-list" style="margin-bottom:0.8rem;">
+    <h3 class="consent-title">원본 사진을 구글에 보낼까요?</h3>
+    <p class="evidence">같은 사진이 인터넷에 있는지 찾으려면 <strong>원본 사진(얼굴 포함)</strong>이 구글로 가요. 얼굴을 가리면 같은 사진도 못 찾아요.</p>
+    <div class="consent-btns">
+      <button class="primary" id="locOrigConsentAgree">동의하고 찾기</button>
+      <button class="secondary" id="locOrigConsentCancel">보내지 않기</button>
+    </div>
+    <div class="consent-fine">
+    <p style="font-weight:700;">구글이 문서로 밝힌 사진 처리 방침</p>
+    <ul>
       <li>즉시 응답 방식(여기서 쓰는 방식)은 <strong>메모리에서만 처리하고 디스크에 남기지 않아요</strong></li>
       <li><strong>Cloud Vision 기능 학습·개선에 쓰지 않아요</strong></li>
       <li>공개하지 않고 <strong>제3자에게 공유하지 않아요</strong></li>
       <li>보낸 사진이 <strong>구글 검색 색인에 들어가지 않아요</strong></li>
     </ul>
-    <p class="evidence" style="font-size:0.82rem; margin-bottom:1.1rem;">이건 구글의 약관상 약속이에요 — 기술적으로 막혀 있다는 뜻은 아니에요. 동의하지 않으셔도 AI 추측 단계는 그대로 진행되고, 그쪽에는 얼굴을 가린 사진만 보내요. 방침 원문: <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">Cloud Vision 데이터 사용 안내</a></p>
-    <button class="primary" id="locOrigConsentAgree">동의하고 원본으로 찾기</button>
-    <button class="secondary" id="locOrigConsentCancel">보내지 않기</button>
+    <p>이건 구글의 약관상 약속이에요 — 기술적으로 막혀 있다는 뜻은 아니에요. 동의하지 않으셔도 AI 추측 단계는 그대로 진행되고, 그쪽에는 얼굴을 가린 사진만 보내요. 방침 원문: <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">Cloud Vision 데이터 사용 안내</a></p>
+    </div>
   </div>
 </div>
 
@@ -6128,8 +6164,8 @@
         var modal = document.getElementById('noFaceConsentModal');
         var detail = document.getElementById('noFaceConsentDetail');
         detail.textContent = context === 'screenshot'
-          ? '안전 우선을 선택하면 이 스크린샷은 이번 스케줄 분석에서 제외돼요. 원본으로 분석을 선택하면 마스킹되지 않은 원본이 Claude Vision으로 전송돼요.'
-          : '안전 우선을 선택하면 이 사진은 브라우저 안 로컬 OCR로만 읽어요(정확도는 다소 낮아질 수 있어요). 원본으로 분석을 선택하면 마스킹되지 않은 원본이 Claude Vision으로 전송돼요.';
+          ? '안전 우선을 선택하면 이 스크린샷은 이번 스케줄 분석에서 제외돼요. 원본으로 분석을 선택하면 마스킹되지 않은 원본이 AI 판독 서버(Anthropic)로 전송돼요.'
+          : '안전 우선을 선택하면 이 사진은 내 기기 안에서만 글자를 읽어요(정확도는 다소 낮아질 수 있어요). 원본으로 분석을 선택하면 마스킹되지 않은 원본이 AI 판독 서버(Anthropic)로 전송돼요.';
         modal.style.display = 'flex';
         function cleanup(result) {
           modal.style.display = 'none';
@@ -6729,7 +6765,10 @@
     //   1단계 구글 비전 — 알아본 장소(좌표)와 인터넷에 있는 같은/비슷한 이미지
     //   2단계 학교 LLM — 추측. 앞에서 아무것도 안 나왔을 때만.
     // 앞 단계에서 나오면 뒤는 부르지 않는다 — 좌표가 있는데 구글에 보낼 이유가 없다.
-    async function runLocationCascade(imgUrl, faces, onStage) {
+    // opts.noOriginal — 진단과 함께 자동으로 돌 때. 원본을 보내는 1단계는 묻지도 않고 건너뛴다
+    // (동의 없이 원본을 보내는 경로를 만들지 않는다). 이미 동의했으면 그대로 쓴다.
+    async function runLocationCascade(imgUrl, faces, onStage, opts) {
+      opts = opts || {};
       // 0단계
       if (onStage) onStage('exif');
       var exif = await ensureExifRead();
@@ -6739,8 +6778,11 @@
 
       // 1단계 — 원본을 보내므로 먼저 동의를 받는다. 거절하면 건너뛰고 2단계로 간다
       // (거기는 얼굴을 가려 보낸다). 아무 답도 못 받는 것보다 낫다.
-      if (onStage) onStage('consent');
-      var agreed = await askLocationOriginalConsent();
+      var agreed = locOrigConsentGiven;
+      if (!agreed && !opts.noOriginal) {
+        if (onStage) onStage('consent');
+        agreed = await askLocationOriginalConsent();
+      }
       var vision = null;
       if (!agreed) {
         console.log('[위치확인] 1단계 건너뜀 — 원본 전송에 동의하지 않음');
@@ -6801,8 +6843,10 @@
     function aiProviderLabel() { return aiEditProvider === 'openai' ? 'OpenAI' : 'fal.ai'; }
     function applyAiProviderText() {
       var isOpenai = aiEditProvider === 'openai';
-      document.getElementById('fluxConsentOpenai').style.display = isOpenai ? 'block' : 'none';
-      document.getElementById('fluxConsentFal').style.display = isOpenai ? 'none' : 'block';
+      // 핵심 줄과 아래 처리 방침이 떨어져 있어서 data-provider로 같이 켠다(fluxConsentVia는 아래에서 따로 정한다)
+      document.querySelectorAll('#fluxConsentModal [data-provider]').forEach(function (el) {
+        if (el.id !== 'fluxConsentVia') el.style.display = (el.dataset.provider === 'openai') === isOpenai ? 'block' : 'none';
+      });
       // fal을 거쳐 OpenAI·Google 모델이 그리면 사진이 그 회사에도 간다 — «fal.ai로 전송»만 적으면 사실보다 좁다.
       var via = document.getElementById('fluxConsentVia');
       if (via) {
@@ -10592,8 +10636,8 @@
       var bgNote = hasOcrText
         ? '사진에서 실제로 "' + ocrTextJoined + '" 텍스트가 감지돼서 특정 장소로 위치가 특정될 가능성이 있어요.'
         : (inputs.backgroundNotes.trim().length > 0
-          ? '배경으로 언급하신 "' + inputs.backgroundNotes + '"가 특정 장소로 특정될 가능성이 있어요. (OCR로는 뚜렷한 텍스트가 감지되지 않았어요)'
-          : '배경에서 특정 장소를 유추할 만한 단서는 크게 두드러지지 않았어요. (OCR로도 텍스트가 감지되지 않았어요)');
+          ? '배경으로 언급하신 "' + inputs.backgroundNotes + '"가 특정 장소로 특정될 가능성이 있어요. (사진에서 뚜렷한 글자를 찾지 못했어요)'
+          : '배경에서 특정 장소를 유추할 만한 단서는 크게 두드러지지 않았어요. (사진에서 글자를 찾지 못했어요)');
       var timingNote = inputs.uploadTiming === '실시간 업로드'
         ? '실시간으로 업로드하면 아이가 지금 있는 위치가 그대로 노출될 수 있어요.'
         : '시간 차를 두고 올리신 점은 위치 노출 위험을 낮추는 데 도움이 돼요.';
@@ -10619,7 +10663,7 @@
           '배경에 학원/어린이집 이름표나 간판이 보인다면 스마트 크롭이나 스티커로 가린 뒤 올리는 걸 추천해요.',
           inputs.uploadTiming === '실시간 업로드' ? '가능하면 몇 시간 정도 지난 뒤에 업로드해보세요.' : '지금처럼 시간차를 두고 올리는 습관을 유지해주세요.',
         ],
-        summary: '⚠️ Claude 진단 호출에 실패해서 규칙 기반으로 대략 매긴 점수예요. ' +
+        summary: '⚠️ AI 진단 연결에 실패해서 규칙 기반으로 대략 매긴 점수예요. ' +
           '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
           '공개 범위와 업로드 시점 설정에 따라 위치·생활 패턴 노출 위험이 달라질 수 있으니 위 권장 조치를 참고해보세요.',
         // 캡션 제안은 지어내지 않는다. 백엔드(Claude)가 실제 캡션을 보고 다듬은 것만 쓴다.
@@ -10983,8 +11027,8 @@
       var words = (ocrResult && ocrResult.words) || [];
       if (words.length > 0) {
         words.forEach(function (w) {
-          var confPart = w.confidence != null ? ('신뢰도 ' + Math.round(w.confidence) + '%') : 'Claude Vision 판독' + (w.positionSource === 'vision' ? ' · 글자 위치 정밀' : '');
-          var label = '텍스트 감지: "' + w.text + '" · ' + confPart + (w.refined ? ' (영역 확대 재인식)' : '');
+          var confPart = w.confidence != null ? ('신뢰도 ' + Math.round(w.confidence) + '%') : 'AI 판독';
+          var label = '글자: "' + w.text + '" · ' + confPart + (w.refined ? ' (영역 확대 재인식)' : '');
           addPin(wrap, legend, num++, w.xPct, w.yPct, label, 'text');
         });
       } else {
@@ -11205,7 +11249,8 @@
         var sbList = document.getElementById('sbList');
         sbList.innerHTML = '';
         var sum = 0;
-        factors.forEach(function (f) {
+        // 위험한 항목부터 — 0점(드러나지 않은 항목)은 CSS(.zero)가 숨긴다. 오각형은 원래 순서를 쓴다.
+        factors.slice().sort(function (a, b) { return (Number(b.점수) || 0) - (Number(a.점수) || 0); }).forEach(function (f) {
           var pt = Number(f.점수) || 0;
           var cap = Number(f.상한) || 0;
           sum += pt;
@@ -11781,6 +11826,13 @@
         li.appendChild(what); li.appendChild(tag); li.appendChild(why);
         el.appendChild(li);
       });
+      // 드러나지 않은 칸(.off)은 CSS가 숨긴다 — 다 숨으면 빈 목록 대신 한 줄로 말한다
+      if (!steps.some(function (st) { return st.on; })) {
+        var none = document.createElement('li');
+        none.className = 'lc-none';
+        none.textContent = '장소를 좁힐 단서가 보이지 않아요.';
+        el.appendChild(none);
+      }
       // 얼굴이 없으면 인물 특정이 어렵다는 사실도 알려준다 (사슬과 별개 정보)
       void faces;
     }
@@ -12255,6 +12307,10 @@
           renderLocationChain(inputs, faceResult, ocrResult);
           startRiskPending();
           showScreen('result');
+          // 장소 확인도 같이 돌린다 — 원본은 보내지 않는다(위 runLocCheck 설명)
+          var locBtn = document.getElementById('locWebCheckBtn');
+          locBtn.hidden = false;
+          runLocCheck({ noOriginal: true });
           console.log('[성능] 결과 화면 전환까지: ' + Math.round(toResultMs) + 'ms (목표 4~6초)');
 
           var tRiskStart = performance.now();
@@ -12562,6 +12618,10 @@
       var aiMoreBox = document.getElementById('aiMore');
       aiMoreBox.style.display = 'none';
       checkFluxStatus().then(function (ready) { aiMoreBox.style.display = ready ? 'block' : 'none'; });
+      // 로고·명찰 같은 소속 단서를 못 찾았으면 «로고 지우기»와 그 안내를 숨긴다 — 지울 것이 없는데 돈과 원본이 나간다.
+      var hasLogo = hasBelongClue(lastOcrResult && lastOcrResult.visualClues);
+      document.getElementById('aiMarkBtn').style.display = hasLogo ? '' : 'none';
+      document.getElementById('aiMarkHint').style.display = hasLogo ? '' : 'none';
 
       // 아무것도 자동으로 하지 않는다 — 세 단추 모두 원본이 나가고 돈이 들어서, 누를 때만 돈다.
       selectMethod(null);
@@ -12589,8 +12649,12 @@
       // 스크린샷은 그대로 두고 사진만 고르면 되도록 파일 선택창을 바로 연다
       photoInput.click();
     });
-    document.getElementById('locWebCheckBtn').addEventListener('click', async function () {
-      var btn = this;
+    // 장소 확인은 진단과 한 번에 돈다(디자인 정리 11-20: "분석이 여러개로 되어있잖아 그걸 하나로").
+    // 자동으로 돌 때는 원본을 보내지 않는다(좌표 확인 + 얼굴 가린 AI 추측). 원본이 가야 하는
+    // 구글 검색만 단추로 남기고, 누르면 동의를 받는다.
+    document.getElementById('locWebCheckBtn').addEventListener('click', function () { runLocCheck({}); });
+    async function runLocCheck(opts) {
+      var btn = document.getElementById('locWebCheckBtn');
       var resultEl = document.getElementById('locWebResult');
       if (!uploadedPhotoUrl) return;
       btn.disabled = true;
@@ -12618,7 +12682,10 @@
         var faces = (lastFaceResult && lastFaceResult.faces) || [];
         var out = await runLocationCascade(uploadedPhotoUrl, faces, function (stage) {
           btn.textContent = stageText[stage] || prevText;
-        });
+        }, opts);
+        // 원본 없이 끝났을 때만 «구글로 더 찾기» 단추를 남긴다 — 이미 찾았거나 구글까지 봤으면 더 할 게 없다
+        prevText = '🔍 구글로 같은 사진이 인터넷에 있는지 더 찾아보기 (원본 전송 · 동의 필요)';
+        btn.hidden = !(out.vision && out.vision.skipped) || out.kind === 'coords';
         resultEl.innerHTML = '';
 
         var flag = document.createElement('span');
@@ -12710,12 +12777,12 @@
           resultEl.appendChild(flag);
           line((out.vision && out.vision.skipped)
             ? '사진 파일의 좌표도, AI가 배경을 본 것도 위치를 알려주지 않았어요. '
-              + '인터넷 이미지 검색은 보내지 않기로 하셔서 건너뛰었어요.'
+              + '인터넷 이미지 검색은 원본이 가야 해서 하지 않았어요.'
             : '세 단계를 모두 봤지만 위치가 나오지 않았어요 — 사진 파일의 좌표도, '
               + '구글 장소 인식·이미지 검색도, AI가 배경을 본 것도요.');
           if (out.guess && out.guess.근거) line('AI가 본 것: ' + out.guess.근거, true);
           line((out.vision && out.vision.skipped)
-            ? '원본을 보내지 않기로 하셔서 인터넷 이미지 검색은 건너뛰었어요 — 그쪽에서 나왔을 수도 있어요.'
+            ? '원본은 보내지 않았어요. 아래 단추로 구글 이미지 검색까지 해볼 수 있어요 — 그쪽에서 나올 수도 있어요.'
             : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
 
         } else if (out.kind === 'unavailable') {
@@ -12724,10 +12791,10 @@
           flag.textContent = '● 못 찾음';
           resultEl.appendChild(flag);
           line((out.vision && out.vision.skipped)
-            ? '사진 파일에는 좌표가 없었어요. 인터넷 이미지 검색은 보내지 않기로 하셔서 건너뛰었어요.'
+            ? '사진 파일에는 좌표가 없었어요. 인터넷 이미지 검색은 원본이 가야 해서 하지 않았어요.'
             : '사진 파일의 좌표도, 구글 장소 인식·이미지 검색에서도 위치가 나오지 않았어요.');
           line((out.vision && out.vision.skipped)
-            ? '원본을 보내지 않기로 하셔서 인터넷 이미지 검색은 건너뛰었어요.'
+            ? '원본은 보내지 않았어요. 아래 단추로 구글 이미지 검색까지 해볼 수 있어요.'
             : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
           if (out.vision && (out.vision.weakLandmarkCount || 0) > 0) {
             line('참고 — 구글이 장소 후보 ' + out.vision.weakLandmarkCount
@@ -12748,9 +12815,9 @@
         btn.disabled = false;
         btn.textContent = prevText;
       }
-    });
+    }
     document.getElementById('schedIncludeBtn').addEventListener('click', async function () {
-      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 Claude Vision으로 보냅니다. 계속할까요?')) return;
+      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 AI 판독 서버(Anthropic)로 보냅니다. 계속할까요?')) return;
       var btn = this;
       var files = document.getElementById('pastInput').files;
       if (!files || files.length === 0) return;
@@ -12778,7 +12845,7 @@
     });
 
     document.getElementById('pIncludeBtn').addEventListener('click', function () {
-      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 Claude Vision으로 보냅니다. 계속할까요?')) return;
+      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 AI 판독 서버(Anthropic)로 보냅니다. 계속할까요?')) return;
       includeUnmaskedScreenshots = true;
       // pastInput(메인 폼)이 아니라 lastPatternFiles를 쓴다 — #pattern-check(별도 입구)로
       // 들어온 경우엔 pastInput이 아예 비어 있다.
@@ -13704,7 +13771,7 @@
         위험요소해결: textResolved ? '해결됨' : (textReduced ? '부분해결' : '미해결'),
         신규위험: '알수없음(규칙기반 폴백이라 판단 불가)',
         인물보존: faceOk ? '정상' : '변형의심(얼굴 개수가 ' + beforeStats.count + '개→' + afterStats.count + '개로 바뀜)',
-        설명: '⚠️ Claude 재검증 호출에 실패해서 규칙 기반으로 대략 판단한 결과예요(텍스트 개수 변화 + 얼굴 개수만 비교). 상세 근거는 제공되지 않아요.',
+        설명: '⚠️ AI 재검증 연결에 실패해서 규칙 기반으로 대략 판단한 결과예요(텍스트 개수 변화 + 얼굴 개수만 비교). 상세 근거는 제공되지 않아요.',
         추가조치필요시: pass ? '' : '보정 방식을 다시 확인해보세요.',
         _fallback: true,
       };
@@ -13720,7 +13787,7 @@
       stampEl.classList.toggle('warn', !pass);
       stampEl.querySelector('.s-icon').textContent = split ? '⚖' : (pass ? '✓' : '⚠');
       stampEl.querySelector('.s-text').textContent = split ? '판단이 갈렸어요'
-        : (pass ? (oneOnly ? '검증 통과' : '검증완료 (모델 2개 일치)') : '재검토 필요');
+        : (pass ? (oneOnly ? '검증 통과' : '검증완료 (두 번 확인)') : '재검토 필요');
 
       var tagsEl = document.getElementById('verifyTags');
       tagsEl.innerHTML = '';
@@ -14159,6 +14226,7 @@
       showScreenForTest: showScreen,
       renderResultForTest: renderResult,
       renderVerifyResultForTest: renderVerifyResult,
+      runLocCheckForTest: runLocCheck,
       renderLocationChainForTest: renderLocationChain,
       renderPhotoAndPinsForTest: renderPhotoAndPins,
       apiHeadersForTest: apiHeaders,
