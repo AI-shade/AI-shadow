@@ -131,7 +131,7 @@ if (!process.env.FAL_KEY) {
 
 // ===== 마스크 보정 엔진 — fal.ai(FLUX Fill) 또는 OpenAI(GPT Image 2.5 Flare) =====
 // 옷 바꾸기·마크 지우기·배경 교체(/api/inpaint-regions, /api/replace-background)가 쓰는 엔진이다.
-// 간판 글자 바꿔쓰기(/api/inpaint-sign-text)는 한글을 실측으로 확인한 nano-banana-pro(fal)에 그대로 둔다.
+// 간판 글자 바꿔쓰기(/api/inpaint-sign-text)는 한글을 실측으로 확인한 fal에 둔다 — 11-20부터 nano-banana-2.1(FAL_EDIT).
 // (예전엔 IMAGE_EDIT_PROVIDER=fal|openai로 골랐다 — 아래에서 fal로 고정. OpenAI 경로 코드는 되돌릴 때를 위해 남겨 둠)
 //
 // 얼굴 보존은 엔진과 상관없다 — 프런트(compositeThroughMask)가 결과에서 마스크 안쪽만 원본 위에 얹는다.
@@ -1292,6 +1292,10 @@ app.post('/api/replace-background', async (req, res) => {
 // 안 바뀌었다. nano-banana-pro로 올리고 프롬프트를 "정확히 그 글자만, 중복 없이"로
 // 못 박으니 그제서야 "유치원" 세 글자가 원래 폰트·색 그대로 정확히 나왔다(실측 확인).
 // 값은 더 비싸지만($0.04 → $0.15) 검증 안 된 저가형을 쓰는 건 의미가 없어 Pro로 고정.
+// 11-20: 간판마다 Pro를 한 번씩 불러($0.15, 약 210원) 간판이 많으면 1,000원을 넘었다.
+// 사용자 지시(«2.1로 바꿔»)로 nano-banana-2.1(1K 약 $0.044)로 바꿨다. 위의 "유치치치원"은
+// 옛 일반판에서 잰 것이고, 2.1에서 같은 일이 생기는지는 아직 재지 않았다.
+// aspect_ratio는 주지 않는다 — 기본값 auto가 보낸 crop 비율을 따른다(간판 crop은 3.5:1처럼 길쭉하다).
 //
 // 프라이버시: 사진 전체가 아니라 간판 글자 주변만 crop해서 보낸다. 아이 얼굴이 담긴
 // 원본 전체를 간판 글자 하나 바꾸자고 외부로 보낼 이유가 없다. 결과도 그 crop 영역만
@@ -1328,12 +1332,12 @@ app.post('/api/inpaint-sign-text', async (req, res) => {
       + 'printed with just "' + newText + '" on it. '
       + 'Keep the same font style, color, size, position, rotation, and background. Change nothing else.';
 
-    const result = await fal.subscribe('fal-ai/nano-banana-pro/edit', {
-      input: { prompt: prompt, image_urls: [uploadedUrl], sync_mode: FAL_SYNC_MODE },
+    const result = await fal.subscribe(FAL_EDIT.id, {
+      input: { prompt: prompt, image_urls: [uploadedUrl], resolution: '1K', num_images: 1, sync_mode: FAL_SYNC_MODE },
     });
     const output = result.data || result;
     const outputImage = output.images && output.images[0];
-    if (!outputImage) throw new Error('nano-banana-pro 응답에 이미지가 없습니다.');
+    if (!outputImage) throw new Error(FAL_EDIT.name + ' 응답에 이미지가 없습니다.');
 
     const fetched = await fetchResultImage(outputImage, '간판 글자 바꿔쓰기');
 
