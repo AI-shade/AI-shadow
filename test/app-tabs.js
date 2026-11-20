@@ -7,10 +7,10 @@
 const { chromium } = require('playwright');
 const URL = process.env.ANSHIM_URL || 'http://localhost:8000/index.html';
 
-const 탭들 = ['진단', '과거글', '알아보기', '문답'];
+const 탭들 = ['진단', '내정보', '알아보기', '문답'];
 const 섹션 = {
   진단: ['tool'],
-  과거글: ['pattern-check'],
+  내정보: ['pattern-check'],
   알아보기: ['steps', 'features', 'why'],
   문답: ['faq'],
 };
@@ -95,15 +95,19 @@ const 보이나 = (page, id) => page.evaluate(i => {
     console.log('\n데스크톱 1280px');
     ok(!(await 보이나(page, 'appTabbar')), '탭바가 안 보인다');
 
+    // 웹은 소개 ↔ 도구(data-view)로 나뉘어 있어서 원래 숨은 섹션이 있다(11-20).
+    // 여기서 재는 것은 «data-tab이 무엇을 더 숨기나»다 — 세우기 전후를 비교한다.
+    const 보임표 = async () => {
+      const r = [];
+      for (const ids of Object.values(섹션)) for (const id of ids) if (await 보이나(page, id)) r.push(id);
+      return r;
+    };
+    const 전 = await 보임표();
     await page.evaluate(() => window.__anshimTest.setTabForTest('문답'));
     await page.waitForTimeout(120);
-    let 다보임 = true, 숨은것 = [];
-    for (const ids of Object.values(섹션)) {
-      for (const id of ids) {
-        if (!(await 보이나(page, id))) { 다보임 = false; 숨은것.push('#' + id); }
-      }
-    }
-    ok(다보임, 'data-tab을 세워도 아무것도 안 숨는다 (미디어쿼리 안에만 있다)', 숨은것.join(', '));
+    const 후 = await 보임표();
+    const 숨은것 = 전.filter((id) => !후.includes(id)).map((id) => '#' + id);
+    ok(숨은것.length === 0, 'data-tab을 세워도 아무것도 안 숨는다 (미디어쿼리 안에만 있다)', 숨은것.join(', '));
 
     await ctx.close();
   }

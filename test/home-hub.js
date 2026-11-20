@@ -139,7 +139,7 @@ async function 새로열기(browser, viewport, hash) {
 
   // ── 5) 아이콘 메뉴는 하단 탭과 같은 곳으로 간다 ──
   console.log('\n아이콘 메뉴');
-  for (const 탭 of ['과거글', '알아보기', '문답']) {
+  for (const 탭 of ['내정보', '알아보기', '문답']) {
     const { ctx, page } = await 새로열기(browser, { width: 390, height: 844 });
     await page.click(`.app-menu-item[data-menu="${탭}"]`);
     await page.waitForTimeout(200);
@@ -157,17 +157,39 @@ async function 새로열기(browser, viewport, hash) {
     await ctx.close();
   }
 
-  // ── 6) 데스크톱은 그대로 ──
-  console.log('\n데스크톱은 안 건드렸다');
+  // ── 6) 데스크톱: 소개 ↔ 도구 (11-20부터 주소 #tool로 나눈다) ──
+  console.log('\n데스크톱: 소개 ↔ 도구');
   {
     const { ctx, page } = await 새로열기(browser, { width: 1280, height: 800 });
     ok((await 보이나(page, '.app-home')) === false, '홈 알약·메뉴가 안 보인다');
-    ok(await 보이나(page, 'main#tool'), '입력 폼(도구)이 그대로 보인다');
-    ok(await 보이나(page, 'header.hero'), '히어로가 그대로 보인다');
-    ok(await 보이나(page, '#selfcheck'), '자가 점검이 그대로 보인다');
     ok((await 보이나(page, '.app-bar--form')) === false, '폼 상단 바(‹)가 안 보인다');
     ok((await 보이나(page, '#appTabbar')) === false, '탭바가 안 보인다');
+    ok(await 보이나(page, 'header.hero'), '소개: 히어로가 보인다');
+    ok(await 보이나(page, '#selfcheck'), '소개: 자가 점검이 보인다');
+    ok((await 보이나(page, 'main#tool')) === false, '소개: 입력 폼(도구)은 안 보인다');
+    await page.click('.hero-actions a[href="#tool"]');
+    await page.waitForTimeout(300);
+    ok(await 보이나(page, 'main#tool'), '«지금 진단하기» → 도구가 보인다');
+    ok((await 보이나(page, 'header.hero')) === false, '도구: 히어로는 안 보인다');
+    ok((await 보이나(page, '#faq')) === false, '도구: 문답은 안 보인다');
+    await page.goBack();
+    await page.waitForTimeout(300);
+    ok(await 보이나(page, 'header.hero') && !(await 보이나(page, 'main#tool')), '뒤로가기 → 소개로 돌아온다');
+    // 11-21: 과거 게시물 점검·검증은 «내 정보», 사용 화면엔 진단·가리기만
+    await page.click('.nav-links a[href="#me"]');
+    await page.waitForTimeout(300);
+    ok(await 보이나(page, '#pattern-check') && !(await 보이나(page, 'main#tool')), '«내 정보» → 과거 게시물 점검만 보인다');
+    await page.click('.nav-cta');
+    await page.waitForTimeout(300);
+    ok(!(await 보이나(page, '#pattern-check')), '사용 화면에는 과거 게시물 점검이 없다');
+    ok(!(await 보이나(page, '#stepper .step[data-step="verify"]')), '사용 화면 단계 표시에 «검증»이 없다');
+    await page.evaluate(() => window.__anshimTest.showScreenForTest('verify'));
+    await page.waitForTimeout(300);
+    ok((await page.evaluate(() => location.hash)) === '#me' && await 보이나(page, '#screen-verify'), '검증 화면은 «내 정보»에서 열린다');
     await ctx.close();
+    const t = await 새로열기(browser, { width: 1280, height: 800 }, '#tool');
+    ok(await 보이나(t.page, 'main#tool') && !(await 보이나(t.page, 'header.hero')), '#tool 링크로 들어오면 도구부터');
+    await t.ctx.close();
   }
 
   await browser.close();
