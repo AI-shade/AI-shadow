@@ -51,13 +51,21 @@ function ok(cond, name, detail) {
   ok(호출.some((u) => u.startsWith('location-guess')), '얼굴 가린 AI 추측은 부른다');
   const 결과 = await page.textContent('#locWebResult');
   ok(/대전 유성구/.test(결과), '결과가 카드에 바로 나온다', 결과.slice(0, 60));
-  ok(await page.isVisible('#locWebCheckBtn'), '구글로 더 찾기 단추가 남는다');
+  // 11-21: «구글로 같은 사진 찾기»는 «내 정보 › 이미 올린 사진»으로 옮겼다 — 진단 결과에는 단추가 없다
+  ok(!(await page.isVisible('#locWebCheckBtn')), '진단 결과에 구글 찾기 단추가 없다');
 
-  // 11-21: 동의창을 뺐다 — 단추를 누르는 것이 곧 보내겠다는 뜻이다(처리 방침은 «자주 묻는 질문»)
-  console.log('\n단추를 누를 때');
-  await page.click('#locWebCheckBtn');
-  await page.waitForTimeout(500);
-  ok(호출.some((u) => u.startsWith('location-check')), '단추를 누르면 그때 구글 검색을 부른다');
+  console.log('\n내 정보 › 이미 올린 사진');
+  await page.evaluate(() => { location.hash = '#me'; });
+  await page.waitForTimeout(400);
+  await page.click('#reverseBtn');
+  await page.waitForTimeout(200);
+  ok(!호출.some((u) => u.startsWith('location-check')), '사진을 안 고르면 보내지 않는다');
+  ok(/먼저/.test(await page.textContent('#reverseResult')), '사진부터 고르라고 알려준다');
+  await page.setInputFiles('#reverseInput', path.join(__dirname, 'fixtures', 'face-only.png'));
+  await page.click('#reverseBtn');
+  await page.waitForTimeout(600);
+  ok(호출.some((u) => u.startsWith('location-check')), '누르면 그때 구글 검색을 부른다');
+  ok(/못 찾음/.test(await page.textContent('#reverseResult')), '결과를 그 칸에 보여준다', (await page.textContent('#reverseResult')).slice(0, 40));
 
   ok(errs.length === 0, '페이지 오류 없음', errs.join(' | '));
   await browser.close();

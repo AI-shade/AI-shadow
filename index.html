@@ -3271,6 +3271,72 @@
   .loc-chain li.lc-none::before { content: none; }
   .loc-web-check { border-top: 0; }                           /* 장식 점선 */
   .clover, .clover-inline { display: none !important; }       /* 네잎클로버 장식(히어로·진단 띠·푸터) — 11-21 요청 */
+  /* 처음부터 SNS 게시물 틀(11-21 요청). 비어 있으면(.empty) 사진 자리가 올리는 칸, 고르면 사진.
+     사진이 들어가면 올리는 칸은 보이지 않게 접되 파일 입력은 살려 둔다(사진을 누르면 다시 고른다). */
+  .sns-post:not(.empty) #fileDrop {
+    position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important;
+    padding: 0 !important; margin: 0 !important; overflow: hidden !important; clip: rect(0 0 0 0); border: 0 !important;
+  }
+  .sns-post.empty #photoPreview { display: none; }
+  #screen-form .sns-post #fileDrop {
+    aspect-ratio: 4 / 5; min-height: 0; max-height: 320px; width: 100%; margin: 0; border: 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  #screen-form .sns-post #photoPreview { cursor: pointer; }
+  .an-bar { display: none; }                                  /* 분석 중 진행 막대 — 11-21 요청으로 뺀다 */
+  /* «구글로 같은 사진 찾기»는 «내 정보 › 이미 올린 사진»으로 옮겼다(11-21) — 진단 결과에서는 단추·안내를 숨긴다 */
+  #locWebCheckBtn, #locWebCheck .loc-web-hint { display: none !important; }
+  .sns-post .sns-top { display: none; }
+  /* 넓은 화면: 웹에서 올릴 때의 «새 게시물 만들기» 창처럼 — 위 제목 줄, 왼쪽 큰 사진, 오른쪽 계정·아이콘·안내.
+     폰은 위 세로 게시물 그대로. 여백도 줄인다(11-21 «쓸데없는 여백이 너무 크고»). */
+  @media (min-width: 761px) {
+    #screen-form .upload-col > .up-part > label[for="photoInput"] { display: none; }
+    #screen-form #polaroidPreview.sns-post {
+      width: min(100%, 880px); max-width: 880px; margin: 0 auto;
+      display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(240px, 1fr);
+      grid-template-rows: auto auto auto 1fr;
+      grid-template-areas: "top top" "media head" "media actions" "media note";
+    }
+    .sns-post .sns-top {
+      display: block; grid-area: top; text-align: center; font-weight: 700; font-size: 0.95rem;
+      padding: 0.7rem; border-bottom: 1px solid var(--line);
+    }
+    .sns-post .sns-head { grid-area: head; border-bottom: 1px solid var(--line); padding: 0.8rem 1rem; }
+    .sns-post .sns-actions { grid-area: actions; padding: 0.8rem 1rem 0.2rem; }
+    .sns-post .sns-note { grid-area: note; margin: 0.3rem 1rem 1rem; }
+    #screen-form .sns-post #fileDrop, #screen-form .sns-post #photoPreview {
+      grid-area: media; aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 380px;
+      border: 0; border-right: 1px solid var(--line);
+    }
+    #screen-form .sns-post #photoPreview { object-fit: contain; background: var(--soft); }
+    #screen-form .rotate-row { width: min(100%, 880px); margin: 0.5rem auto 0; }
+    /* 바깥 상자 안에 상자가 또 있어 여백이 두 겹이었다 — 안쪽 상자의 테두리·그림자·여백을 걷는다 */
+    #screen-form.card { border: 0; box-shadow: none; background: transparent; padding: 0.4rem 0 0; }
+    #screen-form > #submitBtn { width: min(100%, 880px); margin: 1rem auto 0; display: block; }
+    /* 사용·내 정보 화면에서는 회색 푸터가 도구 바로 밑에 붙어 «페이지 밑에 딸린» 느낌을 줬다(11-21) — 소개 화면에만 둔다 */
+    :root:is([data-view="tool"], [data-view="me"]) .site-footer { display: none; }
+    :root:is([data-view="tool"], [data-view="me"]) main#tool { padding-bottom: 3rem; }
+  }
+  #screen-form .polaroid.sns-post {
+    width: min(100%, 380px); max-width: 380px; margin: 0.6rem auto 0; padding: 0; overflow: hidden;
+    border-radius: 14px; cursor: pointer; background: var(--card);
+  }
+  .sns-post .sns-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.6rem 0.75rem; font-size: 0.86rem; }
+  .sns-post .sns-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--soft); border: 1px solid var(--line); flex: none; }
+  .sns-post .sns-more { margin-left: auto; color: var(--muted); letter-spacing: 1px; }
+  #screen-form .sns-post img { width: 100%; border-radius: 0; display: block; object-fit: cover; }
+  .sns-post .sns-actions { display: flex; gap: 0.85rem; padding: 0.6rem 0.75rem 0.2rem; }
+  .sns-post .sns-actions svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linejoin: round; }
+  .sns-post .sns-note { margin: 0.25rem 0.75rem 0.65rem; font-size: 0.72rem; color: var(--muted); }
+  .sns-post:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  /* AI 단추: 3칸 자리에 2개만 보이면 오른쪽이 비었다(11-21 «배열이 이상해») — 보이는 단추 수만큼 칸을 나눈다 */
+  #aiMore .ai-more-btns, #screen-correct #aiMore .ai-more-btns { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
+  /* 좁혀지는 곳이 없으면 지도를 안 띄운다(autoLoadInlineMap이 no-map / text-only를 붙인다) */
+  #screen-result > .rcard-location.no-map > .loc-right { display: none; }
+  #screen-result > .rcard-location.no-map { grid-template-columns: 1fr; }
+  #screen-result > .rcard-location.text-only .map-box,
+  #screen-result > .rcard-location.text-only .map-note { display: none; }
   /* 필요 없는 문장 — 화면이 이미 말하는 것을 다시 적은 설명 */
   .fm-note, .vr-note, .loc-map-hint, .an-footnote, #screen-verify > .disclaimer { display: none; }
   #screen-result .factor-chips .factor-chip.zero { display: none; }
@@ -3632,14 +3698,25 @@
     <div class="field upload-col">
       <div class="up-part">
         <label for="photoInput">사진</label>
-        <div class="drop-zone" id="fileDrop">
-          <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
-          <span id="fileDropLabel">클릭해서 사진을 선택하세요</span>
-          <input type="file" id="photoInput" accept="image/*" />
-        </div>
-        <div class="polaroid" id="polaroidPreview" style="display:none;">
-          <img id="photoPreview" alt="업로드한 사진 미리보기" />
-          <div class="cap" id="polaroidCap">우리 아이 오늘</div>
+        <!-- 처음부터 SNS에 올리는 게시물 틀로 보여준다(11-21 요청: "처음부터 sns에 업로드하는것처럼 화면 바꿔줘").
+             사진 자리가 비어 있으면(.empty) 그 자리가 올리는 칸(#fileDrop — 누르기·끌어 놓기)이고, 고르면 사진이 들어간다.
+             사진이 들어간 뒤에는 게시물을 누르면 다른 사진을 고른다. 특정 SNS 모양을 흉내 내지 않는 일반 틀이다.
+             예전 «우리 아이 오늘» 글자는 캡션 칸이 없는데 떠서 뺐다. -->
+        <div class="polaroid sns-post empty" id="polaroidPreview" role="group" aria-label="올릴 게시물 미리보기">
+          <div class="sns-top" aria-hidden="true">새 게시물 만들기</div>
+          <div class="sns-head" aria-hidden="true"><span class="sns-avatar"></span><b>내 계정</b><span class="sns-more">···</span></div>
+          <div class="drop-zone" id="fileDrop">
+            <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
+            <span id="fileDropLabel">사진을 눌러 고르세요</span>
+            <input type="file" id="photoInput" accept="image/*" />
+          </div>
+          <img id="photoPreview" alt="올릴 사진 미리보기" tabindex="0" title="누르면 다른 사진을 골라요" />
+          <div class="sns-actions" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7z"/></svg>
+          </div>
+          <p class="sns-note" id="snsNote">올리기 전에 이 게시물을 먼저 살펴봐요</p>
         </div>
         <!-- 누운 사진은 얼굴 검출·인물 분리가 깨진다. 방향을 자동으로 판단하는 것은 재봤더니
              25장 중 5장을 틀려서(멀쩡한 사진을 눕힌다) 사용자가 직접 돌린다.
@@ -3671,7 +3748,8 @@
       <label class="checkline"><input type="checkbox" id="noCaption" checked> 캡션 없이 사진만 올릴 거예요</label>
     </div>
 
-    <div class="row2">
+    <!-- 계정 공개 범위 칸은 뺐다(11-21 요청). DOM은 남긴다 — 값은 첫 항목 «전체공개»로 간다(가장 위험한 쪽으로 본다). -->
+    <div class="row2 is-gone">
       <div class="field">
         <label for="privacySetting">계정 공개 범위</label>
         <select id="privacySetting">
@@ -3745,7 +3823,6 @@
           </svg>
           <div class="gauge-center">
             <div class="gauge-score-label" id="riskScore">–</div>
-            <div class="gauge-unit">/ 100</div>
           </div>
         </div>
         <div class="gauge-meta">
@@ -4189,6 +4266,32 @@
           <p class="file-count" id="patternOnlyCount" style="display:none;"></p>
         </div>
         <button class="primary" id="patternOnlySubmitBtn">패턴만 확인하기</button>
+      </div>
+    </div>
+    <!-- 이미 올린 사진 점검 — 진단 결과에 있던 «구글로 같은 사진 찾기»를 여기로 옮겼다(11-21 사용자 결정).
+         올리기 전 사진은 아직 인터넷에 없어 거의 늘 «못 찾음»이었다. 이미 올린 사진이 퍼졌는지 볼 때 쓸모가 있다.
+         원본이 구글로 가는 건 이 단추를 누를 때뿐이다(처리 방침은 «자주 묻는 질문»). -->
+    <div class="sc-card pe-card" id="reverseCard" style="margin-top:1.2rem;">
+      <div class="pe-text">
+        <span class="sc-eyebrow">이미 올린 사진</span>
+        <h2 class="sc-title">내 사진이 다른 곳에 퍼졌는지 확인하기</h2>
+        <p class="pe-desc">이미 올린 사진을 고르면 같은 사진이나 같은 장소 사진이 인터넷에 있는지 구글로 찾아봐요.</p>
+        <ul class="pe-points">
+          <li>단추를 누르면 원본 사진(얼굴 포함)이 구글로 가요</li>
+          <li>구글은 이 사진을 학습에 쓰지 않고 보관하지 않는다고 밝혀요</li>
+        </ul>
+      </div>
+      <div class="pe-action">
+        <div class="field pe-field">
+          <label for="reverseInput">이미 올린 사진</label>
+          <div class="drop-zone" id="reverseDrop">
+            <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
+            <span id="reverseDropLabel">사진을 고르세요</span>
+            <input type="file" id="reverseInput" accept="image/*" />
+          </div>
+        </div>
+        <button class="primary" id="reverseBtn">구글로 찾아보기</button>
+        <div class="loc-web-result" id="reverseResult" style="display:none;"></div>
       </div>
     </div>
   </div>
@@ -10271,12 +10374,18 @@
         uploadedPhotoUrl = u;
         photoPreview.src = u;
       }).catch(function () {}); // 못 줄이면 원본 그대로 간다 — 예전과 같다
-      polaroidPreview.style.display = 'block';
+      polaroidPreview.classList.remove('empty');
+      document.getElementById('snsNote').textContent = '게시 전 미리보기 · 사진을 누르면 다른 사진을 골라요';
       document.getElementById('rotateRow').style.display = '';
       var upPart = polaroidPreview.closest('.up-part');
       if (upPart) upPart.classList.add('has-preview');
       fileDropLabel.textContent = file.name;
       syncPastHint();
+    });
+    // 사진이 들어간 뒤 사진을 누르면(또는 Enter) 다른 사진을 고른다. 비어 있을 때는 #fileDrop의 입력이 직접 받는다.
+    photoPreview.addEventListener('click', function () { photoInput.click(); });
+    photoPreview.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); photoInput.click(); }
     });
 
     // 아이폰 사진을 원본 크기로 보정하면 iOS가 탭을 다시 띄운다(«보정하다 튕겨요» — 갤럭시에서는 안 남).
@@ -12200,7 +12309,7 @@
           showScreen('result');
           // 장소 확인도 같이 돌린다 — 원본은 보내지 않는다(위 runLocCheck 설명)
           var locBtn = document.getElementById('locWebCheckBtn');
-          locBtn.hidden = false;
+          locBtn.style.display = '';
           runLocCheck({ noOriginal: true });
           console.log('[성능] 결과 화면 전환까지: ' + Math.round(toResultMs) + 'ms (목표 4~6초)');
 
@@ -12544,6 +12653,66 @@
     // 자동으로 돌 때는 원본을 보내지 않는다(좌표 확인 + 얼굴 가린 AI 추측). 원본이 가야 하는
     // 구글 검색만 단추로 남기고, 누르면 동의를 받는다.
     document.getElementById('locWebCheckBtn').addEventListener('click', function () { runLocCheck({}); });
+
+    // «내 정보 › 이미 올린 사진 점검» — 구글로 같은 사진·같은 장소 찾기(진단 결과에서 옮겼다, 11-21).
+    // 이 단추를 누를 때만 원본이 구글로 간다. 결과 문장은 진단 결과 카드에서 쓰던 것과 같은 말을 쓴다.
+    (function () {
+      var input = document.getElementById('reverseInput');
+      var btn = document.getElementById('reverseBtn');
+      var out = document.getElementById('reverseResult');
+      var label = document.getElementById('reverseDropLabel');
+      if (!input || !btn) return;
+      input.addEventListener('change', function () {
+        label.textContent = input.files[0] ? input.files[0].name : '사진을 고르세요';
+        out.style.display = 'none';
+      });
+      function line(text, muted) {
+        var p = document.createElement('p');
+        p.style.margin = muted ? '0.4rem 0 0' : '0';
+        if (muted) p.style.color = 'var(--muted)';
+        p.textContent = text;
+        out.appendChild(p);
+      }
+      btn.addEventListener('click', async function () {
+        out.innerHTML = '';
+        out.style.display = 'block';
+        if (!input.files[0]) { line('먼저 이미 올린 사진을 골라 주세요.'); return; }
+        btn.disabled = true;
+        var prev = btn.textContent;
+        btn.textContent = '구글에서 찾는 중…';
+        try {
+          var v = await runLocationCheckPipeline(URL.createObjectURL(input.files[0]), []);
+          var flag = document.createElement('span');
+          flag.className = 'lwr-flag ' + (v && v.found ? 'on' : 'off');
+          if (v && v.found && v.hasLandmark && v.landmarks && v.landmarks.length) {
+            flag.textContent = '⚠ 장소를 알아봄'; out.appendChild(flag);
+            line('구글이 이 사진의 장소를 "' + v.landmarks[0].description + '"로 알아봤어요.');
+          } else if (v && v.found) {
+            flag.textContent = v.hasExact ? '⚠ 같은 사진이 인터넷에 있음' : '⚠ 일부 겹치는 사진이 있음'; out.appendChild(flag);
+            line(v.hasExact ? '이 사진과 같은 이미지가 인터넷에서 검색돼요.' : '이 사진의 일부(주로 배경)와 겹치는 이미지가 인터넷에서 검색돼요.');
+            if (v.matchingPages && v.matchingPages.length) {
+              var ul = document.createElement('ul');
+              v.matchingPages.forEach(function (pg) {
+                var li = document.createElement('li'), a = document.createElement('a');
+                a.href = pg.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = pg.title || pg.url;
+                li.appendChild(a); ul.appendChild(li);
+              });
+              out.appendChild(ul);
+            }
+          } else {
+            flag.textContent = '● 못 찾음'; out.appendChild(flag);
+            line('인터넷에서 같은 사진을 찾지 못했어요.');
+            line('못 찾았다고 안전하다는 뜻은 아니에요 — 비공개 계정이나 막 올린 사진은 검색에 안 잡혀요.', true);
+          }
+        } catch (e) {
+          line('확인하지 못했어요 (' + e.message + ').');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = prev;
+        }
+      });
+    })();
+
     async function runLocCheck(opts) {
       var btn = document.getElementById('locWebCheckBtn');
       var resultEl = document.getElementById('locWebResult');
@@ -12575,7 +12744,8 @@
         }, opts);
         // 원본 없이 끝났을 때만 «구글로 더 찾기» 단추를 남긴다 — 이미 찾았거나 구글까지 봤으면 더 할 게 없다
         prevText = '🔍 구글로 같은 사진이 인터넷에 있는지 더 찾아보기 (원본 사진이 구글로 가요)';
-        btn.hidden = !(out.vision && out.vision.skipped) || out.kind === 'coords';
+        // hidden 속성은 button.ghost-link의 display가 덮어써서 안 숨는다 — style로 숨긴다
+        btn.style.display = (!(out.vision && out.vision.skipped) || out.kind === 'coords') ? 'none' : '';
         resultEl.innerHTML = '';
 
         var flag = document.createElement('span');
@@ -12672,7 +12842,7 @@
               + '구글 장소 인식·이미지 검색도, AI가 배경을 본 것도요.');
           if (out.guess && out.guess.근거) line('AI가 본 것: ' + out.guess.근거, true);
           line((out.vision && out.vision.skipped)
-            ? '원본은 보내지 않았어요. 아래 단추로 구글 이미지 검색까지 해볼 수 있어요 — 그쪽에서 나올 수도 있어요.'
+            ? '원본은 보내지 않았어요. 이미 올린 사진이라면 «내 정보»에서 구글로 같은 사진을 찾아볼 수 있어요.'
             : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
 
         } else if (out.kind === 'unavailable') {
@@ -12684,7 +12854,7 @@
             ? '사진 파일에는 좌표가 없었어요. 인터넷 이미지 검색은 원본이 가야 해서 하지 않았어요.'
             : '사진 파일의 좌표도, 구글 장소 인식·이미지 검색에서도 위치가 나오지 않았어요.');
           line((out.vision && out.vision.skipped)
-            ? '원본은 보내지 않았어요. 아래 단추로 구글 이미지 검색까지 해볼 수 있어요.'
+            ? '원본은 보내지 않았어요. 이미 올린 사진이라면 «내 정보»에서 구글로 같은 사진을 찾아볼 수 있어요.'
             : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
           if (out.vision && (out.vision.weakLandmarkCount || 0) > 0) {
             line('참고 — 구글이 장소 후보 ' + out.vision.weakLandmarkCount
@@ -13912,10 +14082,12 @@
       pastCount = 0;
       fileCount.style.display = 'none';
       pastDropLabel.textContent = '스크린샷을 선택하면 반복 패턴까지 짚어드려요';
-      polaroidPreview.style.display = 'none';
+      polaroidPreview.classList.add('empty');
+      photoPreview.removeAttribute('src');
+      document.getElementById('snsNote').textContent = '올리기 전에 이 게시물을 먼저 살펴봐요';
       var upPart0 = polaroidPreview.closest('.up-part');
       if (upPart0) upPart0.classList.remove('has-preview');
-      fileDropLabel.textContent = '클릭해서 사진을 선택하세요';
+      fileDropLabel.textContent = '사진을 눌러 고르세요';
       syncSubmitLabel();
       var signAiStatusEl = document.getElementById('signAiStatus'); if (signAiStatusEl) signAiStatusEl.textContent = '';
       document.getElementById('captionInput').value = '';
@@ -14551,6 +14723,10 @@
       var autoLoadInlineMap = function () {
         if (!mapBoxInline || matchMedia(PHONE_SHELL_MQ).matches) return;
         var run = ++inlineMapState.run;
+        // 좁혀지는 곳이 없으면 지도를 띄우지 않는다(11-21 사용자: "장소특정되는곳이 없으면 걍 지도를 띄우지마").
+        // 알기 전까지는 숨겨 두고, 지도에 찍을 자리(원·핀)가 있을 때만 연다. 단서 문장만 있으면 지도 칸만 숨긴다.
+        var locCard = mapBoxInline.closest('.rcard-location');
+        if (locCard) { locCard.classList.add('no-map'); locCard.classList.remove('text-only'); }
         mapWhyInline.textContent = '이 사진의 단서로 찾는 중이에요…';
         var api = window.__anshimLocMap;
         Promise.all([
@@ -14562,8 +14738,14 @@
           var hasMap = r[0], res = r[1];
           inlineMapState.steps = res.steps;
           inlineMapState.note = res.steps.length ? res.note : '';
-          renderInlineMapButtons(res.steps);
           var last = res.steps.length - 1;
+          var anyPlace = res.steps.some(function (s) { return s.center || (s.points && s.points.length); });
+          if (locCard) {
+            locCard.classList.toggle('no-map', last < 0);              // 단서가 하나도 없으면 오른쪽 칸째 숨김
+            locCard.classList.toggle('text-only', last >= 0 && !anyPlace); // 문장은 있는데 찍을 자리가 없으면 지도만 숨김
+          }
+          if (last < 0) return;
+          renderInlineMapButtons(res.steps);
           if (hasMap) {
             ensureInlineMap();
             inlineMapState.map.invalidateSize();
