@@ -12939,6 +12939,16 @@
           flag.textContent = '△ AI 추측 — ' + (등급[g.구체성] || '범위 불명');
           resultEl.appendChild(flag);
           line(g.추측 || 'AI가 장소를 추측했어요.');
+          // 동네·건물까지 좁혔으면 지도에도 «AI 추측» 원으로 그린다 — 지명만 카카오로 찾는다(사진은 안 보낸다)
+          if (g.지명 && (g.구체성 === '동네' || g.구체성 === '건물') && window.__addInlineMapStep) {
+            postJson('/api/geocode', { queries: [g.지명] }).then(function (geo) {
+              var pl = geo && geo.results && geo.results[0] && geo.results[0].places && geo.results[0].places[0];
+              if (!pl) return;
+              var m = g.구체성 === '건물' ? 300 : 1500;
+              window.__addInlineMapStep({ label: 'AI 추측', where: '반경 약 ' + (m >= 1000 ? (m / 1000) + 'km' : m + 'm'), m: m,
+                center: [pl.lat, pl.lng], why: 'AI가 배경을 보고 «' + g.지명 + '» 근처로 추측했어요 — 좌표가 아니라 짐작이라 틀릴 수 있어요.' });
+            }).catch(function (e) { console.warn('[위치확인] AI 추측 지명을 지도에서 못 찾음:', e.message); });
+          }
           if (g.근거) line('그렇게 본 이유: ' + g.근거, true);
           line('③ AI 추측이에요 (확신 ' + (g.확신 || '보통') + ') — 좌표나 검색 결과가 아니라 '
             + '사진을 보고 짐작한 것이니 틀릴 수 있어요. 얼굴을 가린 사진만 보냈어요.', true);
@@ -14842,6 +14852,9 @@
         var locCard = mapBoxInline.closest('.rcard-location');
         if (locCard) { locCard.classList.add('no-map'); locCard.classList.remove('text-only'); }
         mapWhyInline.textContent = '이 사진의 단서로 찾는 중이에요…';
+        inlineMapState.extra = [];   // 진단과 함께 도는 AI 추측이 나중에 더하는 단계(__addInlineMapStep)
+        inlineMapState.base = [];
+        inlineMapState.loaded = false;
         var api = window.__anshimLocMap;
         Promise.all([
           loadLeaflet().then(function () { return true; }, function () { return false; }),
@@ -14849,29 +14862,42 @@
             .catch(function () { return { steps: [], note: '단서를 찾다가 문제가 생겼어요.' }; }),
         ]).then(function (r) {
           if (run !== inlineMapState.run) return;
-          var hasMap = r[0], res = r[1];
-          inlineMapState.steps = res.steps;
-          inlineMapState.note = res.steps.length ? res.note : '';
-          var last = res.steps.length - 1;
-          var anyPlace = res.steps.some(function (s) { return s.center || (s.points && s.points.length); });
-          if (locCard) {
-            locCard.classList.toggle('no-map', last < 0);              // 단서가 하나도 없으면 오른쪽 칸째 숨김
-            locCard.classList.toggle('text-only', last >= 0 && !anyPlace); // 문장은 있는데 찍을 자리가 없으면 지도만 숨김
-          }
-          if (last < 0) return;
-          renderInlineMapButtons(res.steps);
-          if (hasMap) {
-            ensureInlineMap();
-            inlineMapState.map.invalidateSize();
-          } else {
-            mapBoxInline.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.';
-            mapBoxInline.classList.add('fail');
-          }
-          if (last < 0) { mapWhyInline.textContent = res.note; return; }
-          showInlineMapStep(last);
+          inlineMapState.base = r[1].steps;
+          inlineMapState.note = r[1].steps.length ? r[1].note : '';
+          inlineMapState.hasMap = r[0];
+          inlineMapState.loaded = true;
+          drawInlineSteps(locCard);
         });
       };
+      // 글자 단서 단계 + AI 추측 단계를 합쳐 그린다. 단계가 없으면 지도 칸을 숨긴다(no-map / text-only).
+      var drawInlineSteps = function (locCard) {
+        var steps = (inlineMapState.base || []).concat(inlineMapState.extra || []);
+        inlineMapState.steps = steps;
+        var last = steps.length - 1;
+        var anyPlace = steps.some(function (s) { return s.center || (s.points && s.points.length); });
+        if (locCard) {
+          locCard.classList.toggle('no-map', last < 0);              // 단서가 하나도 없으면 오른쪽 칸째 숨김
+          locCard.classList.toggle('text-only', last >= 0 && !anyPlace); // 문장은 있는데 찍을 자리가 없으면 지도만 숨김
+        }
+        if (last < 0) return;
+        renderInlineMapButtons(steps);
+        if (inlineMapState.hasMap) {
+          ensureInlineMap();
+          inlineMapState.map.invalidateSize();
+        } else {
+          mapBoxInline.textContent = '지도를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.';
+          mapBoxInline.classList.add('fail');
+        }
+        showInlineMapStep(last);
+      };
       window.__autoLoadInlineMap = autoLoadInlineMap; // 진단 흐름(다른 스크립트 태그)에서 호출
+      // AI 추측이 «동네·건물»까지 좁혔으면 그 자리를 지도에 «AI 추측» 원으로 더한다(11-21 «위치가 좁혀지면 지도에 표시 되어야하는거 아냐?»).
+      // 글자 단서보다 늦게 오면 바로 그리고, 먼저 오면 글자 단서가 다 모였을 때 함께 그린다.
+      window.__addInlineMapStep = function (st) {
+        if (!mapBoxInline || matchMedia(PHONE_SHELL_MQ).matches) return;
+        inlineMapState.extra = (inlineMapState.extra || []).concat([st]);
+        if (inlineMapState.loaded) drawInlineSteps(mapBoxInline.closest('.rcard-location'));
+      };
 
       var makeMapChip = function () {
         var chip = document.createElement('button');
