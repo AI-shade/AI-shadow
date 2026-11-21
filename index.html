@@ -3290,6 +3290,12 @@
   #screen-form .sns-post #photoPreview { cursor: pointer; }
   #appSubtitle:empty { display: none; }
   #aiMarkHint { display: none !important; }                    /* «먼저 «로고 지우기»로…» 안내 — 11-21 «이런멘트도삭제» */
+  /* 진단하는 동안에도 SNS 게시물 틀을 그대로 둔다(11-21 «진단중일때 왜 다시 sns화면이 사라짐?») —
+     게시물 아래에 분석 진행만 보이고, 같은 사진을 한 번 더 보여주던 분석 화면의 사진 칸은 숨긴다 */
+  :root[data-screen="analyzing"] #screen-form { display: block !important; }
+  :root[data-screen="analyzing"] #screen-form :is(#submitBtn, #rotateRow) { display: none !important; }
+  :root[data-screen="analyzing"] #polaroidPreview { pointer-events: none; }
+  :root[data-screen="analyzing"] #screen-analyzing .scan-frame { display: none; }
   .map-note { display: none; }                                 /* 지도 밑 «원은 이 안 어딘가…» 안내 — 11-21 요청으로 뺀다 */
   .an-bar { display: none; }                                  /* 분석 중 진행 막대 — 11-21 요청으로 뺀다 */
   /* 재검증·패턴 결과를 볼 때는 «내 정보»의 두 카드(과거 게시물·이미 올린 사진)를 숨긴다 — 결과 밑에 딸려 보였다
