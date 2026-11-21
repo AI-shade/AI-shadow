@@ -204,14 +204,16 @@ function check(label, ok, detail) {
       const run = T.runAiUpgradeForTest('bg');
       await new Promise((r) => setTimeout(r, 1500));
       const w = document.getElementById('aiWait');
-      const during = { shown: !w.hidden, text: document.getElementById('aiWaitText').textContent };
+      const busyEl = document.getElementById('previewBusy');
+      const during = { shown: getComputedStyle(w).display !== 'none', busy: !busyEl.hidden };
       try { await run; } catch (e) { /* 가짜 응답 실패 */ }
       await new Promise((r) => setTimeout(r, 300));
       clearInterval(timer);
       return { during, afterHidden: document.getElementById('aiWait').hidden };
     }, u);
-    // 11-21: 긴 안내 문장은 뺐다 — «처리 중이에요» 한마디만
-    check('기다리는 동안 단추 아래에 «처리 중이에요»가 뜬다', wt.during.shown && wt.during.text === '처리 중이에요', wt.during.text);
+    // 11-21: 단추 아래 «처리 중이에요»는 뺐다(«필요하지도않잖아») — 사진 위 표시만 남는다
+    check('기다리는 동안 단추 아래 안내는 없다', !wt.during.shown);
+    check('기다리는 동안 사진 위에 처리 중 표시가 뜬다', wt.during.busy);
     check('끝나면 안내가 사라진다', wt.afterHidden);
   }
 
