@@ -16,6 +16,7 @@ import { resolvePostDate } from './schedule-date.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -1556,6 +1557,45 @@ app.post('/api/text-detect', async (req, res) => {
   }
 });
 
+// ===== 간판 이름이 전국에 몇 곳인가 — 소상공인 상가(상권)정보 색인 =====
+// 카카오 total은 비슷한 이름까지 센다. 이 색인은 «같은 이름»만 센다(지점명·띄어쓰기 빼고 소문자 — storeKey).
+// 만드는 법: scripts/build-store-index.py. 한 줄 10바이트 = md5 앞 6바이트 | 가게 수 | 시군구 번호(여럿이면 65535).
+// 처음 부를 때 한 번만 읽는다(18MB). 파일이 없으면 null — 지도는 카카오만으로 예전처럼 돈다.
+let storeIndex; // undefined = 아직 안 읽음, null = 없음
+let storeSigungu = [];
+// 지점명을 뗀 이름 — scripts/build-store-index.py의 key()와 같은 규칙이어야 한다(«교보문고 광화문점» → «교보문고»).
+export function storeKey(name) {
+  const parts = String(name || '').replace(/\s+/g, ' ').trim().split(' ');
+  if (parts.length > 1 && parts[parts.length - 1].endsWith('점')) parts.pop();
+  return parts.join('').replace(/\(.*?\)/g, '').replace(/(본점|직영점|\d+호점)$/, '').toLowerCase();
+}
+export function storeLookup(name) {
+  if (storeIndex === undefined) {
+    try {
+      storeIndex = fs.readFileSync(path.join(HERE, 'data', 'store-index.bin'));
+      storeSigungu = JSON.parse(fs.readFileSync(path.join(HERE, 'data', 'store-sigungu.json'), 'utf8'));
+    } catch (e) {
+      console.warn('[server] 상가정보 색인 없음 — 간판 이름 개수는 건너뜀:', e.message);
+      storeIndex = null;
+    }
+  }
+  const k = storeKey(name);
+  if (!storeIndex || k.length < 2) return null;
+  const h = crypto.createHash('md5').update(k, 'utf8').digest().subarray(0, 6);
+  let lo = 0, hi = storeIndex.length / 10 - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const c = Buffer.compare(storeIndex.subarray(mid * 10, mid * 10 + 6), h);
+    if (c === 0) {
+      const count = storeIndex.readUInt16BE(mid * 10 + 6);
+      const g = storeIndex.readUInt16BE(mid * 10 + 8);
+      return { count, sigungu: g === 65535 ? null : storeSigungu[g] || null };
+    }
+    if (c < 0) lo = mid + 1; else hi = mid - 1;
+  }
+  return { count: 0, sigungu: null };
+}
+
 // ===== 장소 지도 — 카카오 장소 검색(로컬 API)으로 장소 이름을 좌표로 바꾼다 =====
 // 결과 화면의 「장소 지도」가 사진 속 장소 글자(상호·학교명·지역)를 좌표로 바꿀 때만 온다.
 // **사진은 받지도 보내지도 않는다 — 글자만 오간다.** 키는 서버에만 있고 브라우저에는 안 나간다.
@@ -1587,10 +1627,11 @@ app.post('/api/geocode', async (req, res) => {
       const places = (j.documents || [])
         .map((d) => ({ name: d.place_name, address: d.address_name, lat: Number(d.y), lng: Number(d.x) }))
         .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
-      return { query, total: (j.meta && j.meta.total_count) || 0, places };
+      // same: 같은 이름 가게가 전국에 몇 곳인지(상가정보 색인). 색인이 없으면 null.
+      return { query, total: (j.meta && j.meta.total_count) || 0, places, same: storeLookup(query) };
     } catch (err) {
       console.error('[server] 카카오 장소 검색 실패 (' + query + '):', err.message);
-      return { query, total: 0, places: [], error: true };
+      return { query, total: 0, places: [], error: true, same: storeLookup(query) };
     }
   }));
   res.json({ results });
