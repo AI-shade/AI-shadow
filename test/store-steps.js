@@ -1,5 +1,5 @@
 /*
- * 장소 지도가 상가정보(서버 same — 같은 이름 가게가 전국에 몇 곳인지)를 말하는지 잰다.
+ * 장소 지도가 공공 목록 색인(서버 same — 상가·어린이집·학교·학원에서 같은 이름이 전국에 몇 곳인지)을 말하는지 잰다.
  *   전국 1곳인 이름 → «이름만으로 그 가게가 특정돼요»
  *   카카오가 못 찾아도 전국 1곳이면 그 사실을 한 단계로 보여준다(지도 위치 없이)
  *   프랜차이즈(수천 곳) → «전국에 N곳»
@@ -50,7 +50,7 @@ async function steps(browser, words, results) {
   console.log('\n색인이 없을 때(same 없음)');
   r = await steps(browser, [{ text: '청솔피아노교습소', type: '상호명' }],
     [{ query: '청솔피아노교습소', total: 1, places: [장소('청솔피아노교습소', '대전 유성구 궁동 1', 36.36, 127.34)] }]);
-  ok(r.steps.length === 1 && !/상가정보/.test(r.steps[0].why), '상가정보 문장을 붙이지 않는다', r.steps[0] && r.steps[0].why);
+  ok(r.steps.length === 1 && !/공공 목록/.test(r.steps[0].why), '공공 목록 문장을 붙이지 않는다', r.steps[0] && r.steps[0].why);
 
   await browser.close();
   console.log('\n' + pass + '개 통과, ' + fail + '개 실패');

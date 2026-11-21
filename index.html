@@ -11553,7 +11553,7 @@
             nr.name = n;
             if (!best || (best.scattered && !nr.scattered) || (best.scattered === nr.scattered && nr.m < best.m)) best = nr;
           });
-          // 상가정보 색인(서버 same): 같은 이름 가게가 전국에 몇 곳인지. 카카오 건수는 비슷한 이름까지 섞여 있다.
+          // 공공 목록 색인(서버 same — 상가·어린이집·학교·학원): 같은 이름이 전국에 몇 곳인지. 카카오 건수는 비슷한 이름까지 섞여 있다.
           // 가장 드문 이름을 고른다 — 전국 1곳인 간판 하나면 그 가게가 특정된다.
           var rare = null;
           names.forEach(function (n) {
@@ -11563,9 +11563,9 @@
           var sameText = function (n) {
             var sm = by[n] && by[n].same;
             if (!sm || !sm.count) return '';
-            if (sm.count === 1) return ' 상가정보로 보면 이 이름의 가게는 전국에 1곳뿐이라, 이름만으로 그 가게가 특정돼요.';
-            if (sm.sigungu) return ' 상가정보로 보면 같은 이름 가게 ' + sm.count + '곳이 모두 ' + sm.sigungu + '에 있어요.';
-            return ' 상가정보로 보면 같은 이름 가게가 전국에 ' + sm.count + '곳이에요.';
+            if (sm.count === 1) return ' 공공 목록(상가·어린이집·학교·학원)으로 보면 이 이름은 전국에 1곳뿐이라, 이름만으로 그곳이 특정돼요.';
+            if (sm.sigungu) return ' 공공 목록으로 보면 같은 이름 ' + sm.count + '곳이 모두 ' + sm.sigungu + '에 있어요.';
+            return ' 공공 목록으로 보면 같은 이름이 전국에 ' + sm.count + '곳이에요.';
           };
           if (best) {
             // 정확한 지점명이 아니라 상호+지점만 맞춰 다시 찾은 결과면(카카오맵도 이렇게
