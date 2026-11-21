@@ -961,6 +961,7 @@
   p.evidence {
     font-size: 0.92rem; line-height: 1.75; margin: 0.15rem 0 0;
     max-width: 76ch; word-break: keep-all;
+    text-wrap: pretty; /* 마지막 줄에 한 단어만 떨어지지 않게(11-21 «줄바꿈 이상한데서 함») */
   }
   .action-list { margin: 0; padding-left: 1.1rem; }
   /* 목록 항목도 한글이 단어 중간에서 끊기지 않게 */
@@ -3287,6 +3288,7 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
   #screen-form .sns-post #photoPreview { cursor: pointer; }
+  #appSubtitle:empty { display: none; }
   .an-bar { display: none; }                                  /* 분석 중 진행 막대 — 11-21 요청으로 뺀다 */
   /* 재검증·패턴 결과를 볼 때는 «내 정보»의 두 카드(과거 게시물·이미 올린 사진)를 숨긴다 — 결과 밑에 딸려 보였다
      (11-21 «재검증 단계에서 이걸왜 밑에 보이게 해둔거야»). 폰은 이미 이렇게 한다. */
@@ -3686,7 +3688,7 @@
     <span class="badge-icon" role="img" aria-label="아이SHADOW"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#ishadow-mark"/></svg></span>
     <div class="ph-text">
       <h2 id="appTitle">사진 진단</h2>
-      <p id="appSubtitle">사진을 올리고 두 단계를 따라가면 돼요</p>
+      <p id="appSubtitle"></p>
     </div>
   </header>
 
@@ -3844,7 +3846,6 @@
         <div class="gauge-meta">
           <div class="gauge-score-sub">위험 등급</div>
           <span class="risk-chip risk-중" id="riskBadge">중</span>
-          <p class="gauge-hint">100에 가까울수록 사진만으로 아이를 특정하기 쉬워요.</p>
         </div>
         <!-- 폰 히어로의 결론 한 줄. 종합설명을 그대로 쓴다 — 새 API 항목을 만들지
              않는다. 데스크톱에서는 아래 「종합 설명」 카드가 같은 말을 하므로 숨긴다. -->
@@ -10386,7 +10387,7 @@
         subEl.textContent = '가린 뒤에도 위치·소속 단서가 남았는지 다시 봐요';
       } else {
         titleEl.textContent = '사진 진단';
-        subEl.textContent = '사진을 올리고 두 단계를 따라가면 돼요';
+        subEl.textContent = ''; // 11-21 사용자 요청으로 뺐다 — 빈 칸은 CSS가 숨긴다
       }
     }
 
