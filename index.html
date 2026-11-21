@@ -13659,7 +13659,8 @@
               ? ' 로고가 남아 있거나 옷 디자인으로 학교를 알아볼 수 있으면 아래 «옷 전체 바꾸기»를 눌러주세요.'
               : ' 색이 있는 옷은 색조가 옮겨지고, 흰 옷·검정 옷은 살짝만 물들어요(밝기와 무늬 명암은 그대로). ⚠ 밝은 색 옷은 배경과 비슷해서 일부만 잡힐 수 있어요 — 안 바뀐 부분이 없는지 확인해주세요.'
                 + ' 가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, 위에서 «색 + 마크»를 골라주세요.');
-          previewCaption.textContent = '✨ ' + 요약.join(' 그리고 ') + '.' + 꼬리;
+          // AI 로고 지우기·옷 바꾸기 뒤 안내 문장은 뺐다(11-21 «이부분 없애») — 결과 사진과 아래 단추가 같은 말을 한다
+          previewCaption.textContent = wantAi ? '' : '✨ ' + 요약.join(' 그리고 ') + '.' + 꼬리;
           if (wantAi && emSel !== 'all') document.getElementById('aiOutfitBtn').style.display = '';
           lastCorrectionMeta = {
             method: 'outfit',
