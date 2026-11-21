@@ -3288,6 +3288,19 @@
   }
   #screen-form .sns-post #photoPreview { cursor: pointer; }
   .an-bar { display: none; }                                  /* 분석 중 진행 막대 — 11-21 요청으로 뺀다 */
+  /* 재검증·패턴 결과를 볼 때는 «내 정보»의 두 카드(과거 게시물·이미 올린 사진)를 숨긴다 — 결과 밑에 딸려 보였다
+     (11-21 «재검증 단계에서 이걸왜 밑에 보이게 해둔거야»). 폰은 이미 이렇게 한다. */
+  :root:is([data-screen="verify"], [data-screen="pattern"]) #pattern-check { display: none; }
+  #verifyTags { display: none; }                               /* 재검증 결과 칩 줄(위험요소·신규위험·…) — 11-21 «이부분도 없애고» */
+  /* 폰 «내 정보»: 카드가 둘이 되어 한 화면을 넘었다(1141~1222px) — 긴 설명·점 목록은 접고 제목·올리기·단추만 */
+  @media (max-width: 560px) {
+    #pattern-check .pe-desc, #pattern-check .pe-points, #pattern-check .sc-eyebrow { display: none; }
+    #pattern-check #reverseCard { margin-top: 0.6rem !important; }
+    #pattern-check .pe-field > label { display: none; }
+    #pattern-check .drop-zone { min-height: 0 !important; padding: 0.6rem 0.8rem !important; flex-direction: row !important; gap: 0.5rem; }
+    #pattern-check .drop-zone .icon { margin: 0 !important; width: 22px; height: 22px; }
+    #pattern-check .sc-title { font-size: 1.05rem; margin-bottom: 0.4rem; }
+  }
   /* «구글로 같은 사진 찾기»는 «내 정보 › 이미 올린 사진»으로 옮겼다(11-21) — 진단 결과에서는 단추·안내를 숨긴다 */
   #locWebCheckBtn, #locWebCheck .loc-web-hint { display: none !important; }
   .sns-post .sns-top { display: none; }
