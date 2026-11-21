@@ -123,10 +123,8 @@ const 보임 = (page, sel) => page.evaluate((s) => {
     ok(!(await 보임(page, '#aiMarkBtn')), '로고를 못 찾았으면 «로고 지우기» 단추가 없다');
     await page.click('#aiBgBtn');
     await page.waitForTimeout(600);
-    ok(await 보임(page, '#fluxConsentCancel'), '동의창이 뜬다');
-    await page.click('#fluxConsentCancel');
-    await page.waitForTimeout(400);
-    ok(나간요청.length === 0, '동의를 취소하면 보정 요청이 안 나간다', 나간요청.join(','));
+    // 11-21: 원본 전송 동의창을 뺐다(사용자 결정). 여기선 flux-status가 «준비 안 됨»이라 요청이 나가지 않아야 한다.
+    ok(나간요청.length === 0, '서버가 준비 안 됐으면 보정 요청이 안 나간다', 나간요청.join(','));
     ok(await 보임(page, '#previewCaption'), '결과·오류 안내 문구가 보인다',
       (await page.textContent('#previewCaption')).slice(0, 50));
     ok(errs.length === 0, '페이지 에러 없음', errs.join(' | '));

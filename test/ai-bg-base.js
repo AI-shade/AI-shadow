@@ -79,19 +79,10 @@ function check(label, ok, detail) {
     }, which);
   }
 
-  console.log('\n배경 교체하기 — 동의를 취소하면');
-  await clickConsent('fluxConsentCancel');
-  const cancel = await page.evaluate(async () => {
-    const T = window.__anshimTest;
-    await T.runAiUpgradeForTest('ai');
-    await new Promise((r) => setTimeout(r, 300));
-    clearInterval(window.__consentTimer);
-    return { caption: document.getElementById('previewCaption').textContent, steps: T.stackState().steps.length };
-  });
-  check('아무것도 안 한 상태로 돌아온다', /골라주세요/.test(cancel.caption) && cancel.steps === 0, cancel.steps + '단계 · ' + cancel.caption.slice(0, 30));
-  check('동의 없이는 보내지 않는다', sent.length === 0, sent.length + '회');
+  // 11-21: 원본 전송 동의창을 뺐다(사용자 결정) — 단추를 누르면 바로 보낸다. 취소 검사는 지웠다.
+  check('단추를 누르기 전에는 보내지 않는다', sent.length === 0, sent.length + '회');
 
-  console.log('\n배경 교체하기 — 동의하면');
+  console.log('\n배경 교체하기 — 누르면');
   await clickConsent('fluxConsentAgree');
   const agree = await page.evaluate(async () => {
     const T = window.__anshimTest;

@@ -2,9 +2,9 @@
  * 장소 확인이 진단과 한 번에 돌 때 원본을 보내지 않는지 잰다.
  *
  * 요청(11-20): "분석이 여러개로 지금 되어있잖아 그걸 하나로"
- * 규칙(AGENTS.md): 동의 없이 원본을 보내는 경로를 만들지 않는다.
+ * 규칙(AGENTS.md): 사용자가 그 단추를 누르지 않았는데 원본을 보내는 경로를 만들지 않는다.
  *   자동으로 돌 때 → 좌표 확인 + 얼굴 가린 AI 추측만. /api/location-check(원본)는 부르지 않는다.
- *   단추를 누를 때 → 동의창이 뜬다.
+ *   단추를 누를 때 → 그때 보낸다(11-21 동의창을 뺐다).
  *
  * 사용법: 이 폴더에서 → node loc-auto.js  (프런트가 8000에서). 비용·네트워크 없음.
  */
@@ -49,17 +49,15 @@ function ok(cond, name, detail) {
   console.log('\n자동으로 돌 때');
   ok(!호출.some((u) => u.startsWith('location-check')), '원본을 보내는 구글 검색을 부르지 않는다', JSON.stringify(호출));
   ok(호출.some((u) => u.startsWith('location-guess')), '얼굴 가린 AI 추측은 부른다');
-  ok(!(await page.isVisible('#locOrigConsentModal')), '동의창이 뜨지 않는다');
   const 결과 = await page.textContent('#locWebResult');
   ok(/대전 유성구/.test(결과), '결과가 카드에 바로 나온다', 결과.slice(0, 60));
   ok(await page.isVisible('#locWebCheckBtn'), '구글로 더 찾기 단추가 남는다');
 
+  // 11-21: 동의창을 뺐다 — 단추를 누르는 것이 곧 보내겠다는 뜻이다(처리 방침은 «자주 묻는 질문»)
   console.log('\n단추를 누를 때');
   await page.click('#locWebCheckBtn');
-  await page.waitForTimeout(300);
-  ok(await page.isVisible('#locOrigConsentModal'), '원본을 보내기 전에 동의창이 뜬다');
-  ok(!호출.some((u) => u.startsWith('location-check')), '동의 전에는 아직 보내지 않았다');
-  await page.click('#locOrigConsentCancel');
+  await page.waitForTimeout(500);
+  ok(호출.some((u) => u.startsWith('location-check')), '단추를 누르면 그때 구글 검색을 부른다');
 
   ok(errs.length === 0, '페이지 오류 없음', errs.join(' | '));
   await browser.close();

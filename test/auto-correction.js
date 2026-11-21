@@ -180,35 +180,8 @@ function check(label, ok, detail) {
     }, u);
     check('가릴 곳이 없으면 원본을 그대로 보여주고 길을 알려준다', noneRes.src && /찾지 못했어요/.test(noneRes.caption) && /놓친 곳 추가/.test(noneRes.caption), noneRes.caption.slice(0, 60));
 
-    console.log('\nAI 다듬기 — 동의를 취소하면 되돌아온다');
+    // 11-21: 원본 전송 동의창을 뺐다(사용자 결정) — «동의를 취소하면 되돌아온다» 검사는 지웠다.
     await page.route('**/api/flux-status*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ready: true }) }));
-    const aiBefore = apiCalls.length;
-    const rb = await page.evaluate(async (u) => {
-      const T = window.__anshimTest;
-      T.setLocCluesForTest({ ocr: { visualClues: [{ 종류: '태권도복' }], landmarks: [], words: [] } });
-      T.setTargets([{ text: '청룡 태권도 체육관', xPct: 50, yPct: 8, wPct: 50, hPct: 12, type: '상호명' }]);
-      T.stackSeed(u);
-      await T.selectMethodForTest('auto');
-      const hadAuto = T.stackState().steps.length;
-      // 동의창이 뜨면 취소를 누른다
-      const timer = setInterval(() => {
-        const m = document.getElementById('fluxConsentModal');
-        if (m && getComputedStyle(m).display !== 'none') document.getElementById('fluxConsentCancel').click();
-      }, 50);
-      await T.runAiUpgradeForTest('mark');
-      await new Promise((r) => setTimeout(r, 400));
-      clearInterval(timer);
-      const st = T.stackState();
-      const method = document.querySelector('#autoPlan li') && 'auto';
-      return { hadAuto, steps: st.steps.length, history: st.history, caption: document.getElementById('previewCaption').textContent,
-               consentShown: !!document.getElementById('fluxConsentModal') };
-    }, u);
-    check('동의창이 떴다 (이 검사의 전제)', rb.consentShown);
-    check('취소하면 확정해 둔 자동 보정이 되돌려진다', rb.steps === 0 && rb.history === 0, '쌓인 단계 ' + rb.steps + ' / 되돌리기 ' + rb.history);
-    check('취소하면 자동 미리보기로 돌아온다', /글자|교복/.test(rb.caption), rb.caption.slice(0, 60));
-    // 사진을 보내는 호출만 센다. flux-status는 «준비됐나» 확인이라 사진이 없다.
-    const aiCalls = apiCalls.slice(aiBefore).filter((c) => /inpaint|replace-background|inpaint-sign/i.test(c));
-    check('동의 없이는 사진을 보내지 않는다', aiCalls.length === 0, aiCalls.join(','));
 
     // 사진 위 «처리 중» 안내는 데스크톱에서 단추보다 위에 있어, 단추를 누르는 순간 화면 밖으로 나갔다.
     // 그래서 단추 아래에도 같은 안내를 띄운다(AI 호출은 3초 뒤 실패하는 가짜 응답이다 — 비용 0).
