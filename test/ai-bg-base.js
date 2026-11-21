@@ -46,6 +46,8 @@ function check(label, ok, detail) {
   });
   await page.goto(BASE_URL + '/index.html', { waitUntil: 'load' });
   await page.waitForFunction(() => !!(window.__anshimTest && window.__anshimTest.runAiUpgradeForTest));
+  // 거리 지도 모델은 받지 않는다 — 실패로 두어 예전처럼 사람 밖 전체를 다시 그리게 한다(이 테스트가 재는 것은 그쪽이다)
+  await page.evaluate(() => window.__anshimTest.setDepthForTest(() => { throw new Error('test: no depth'); }));
   const u = 'data:image/jpeg;base64,' + fs.readFileSync(PHOTO).toString('base64');
 
   console.log('\n보정 화면에 들어오면');

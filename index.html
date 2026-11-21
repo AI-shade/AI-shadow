@@ -7038,6 +7038,94 @@
       return ring.length;
     }
 
+    // ===== 거리 지도 — 사람보다 «뒤쪽»만 배경으로 본다 =====
+    // 배경 교체가 사람 밖을 전부 다시 그렸더니, 사람 앞의 식탁·케이크까지 새로 그려지면서 촛불·빨대 같은 원본 조각이
+    // 섬처럼 남고 케이크 자리가 하얀 덩어리가 됐다(11-21 제보 «배경 바꾸기 했는데 뒤에 그래픽이 깨지는게 보임»).
+    // 거리 지도로 사람보다 충분히 먼 곳만 연다. 생일 사진 실측: 다시 그릴 곳 58.5% → 34.6%, 식탁·음식·케이크는 원본 그대로.
+    // 모델: Depth Anything V2 small(학습 없이 그대로 사용, q8 약 25MB) — 처음 한 번 받는다(이 PC 6~10초, 계산 3~6초).
+    // 받지 못하면(오프라인 등) 예전처럼 사람 밖 전체를 다시 그린다 — 막는 쪽을 넓히기만 하므로 얼굴·손은 언제나 검정 그대로다.
+    var DEPTH_FAR_RATIO = 0.8;          // 사람 거리값의 80%보다 먼 곳만 «뒤쪽»(생일 사진으로 정한 값 — 사진마다 재 볼 것)
+    var DEPTH_SMOOTH = 0.012;           // 경계를 펴는 흐림 반지름(긴 변 대비) — 1024px에서 약 12px
+    var depthEstimatorPromise = null;
+    var depthForTest = null;            // 테스트가 거리 지도를 넣는 자리(모델을 받지 않는다)
+    function loadDepthEstimator() {
+      if (!depthEstimatorPromise) {
+        depthEstimatorPromise = import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1').then(function (m) {
+          m.env.allowLocalModels = false;
+          return m.pipeline('depth-estimation', 'onnx-community/depth-anything-v2-small', { dtype: 'q8' });
+        });
+        depthEstimatorPromise.catch(function () { depthEstimatorPromise = null; }); // 실패하면 다음에 다시 시도
+      }
+      return depthEstimatorPromise;
+    }
+    // 거리 지도: { data(가까울수록 큼, 0~255), width, height }
+    async function estimateDepth(canvas) {
+      if (depthForTest) return depthForTest(canvas);
+      var est = await loadDepthEstimator();
+      var out = await est(canvas.toDataURL('image/jpeg', 0.9));
+      return out.depth;
+    }
+    // 배경 마스크(흰 = 다시 그림)에서 사람과 같은 거리이거나 더 가까운 곳(식탁 등)을 검정으로 닫는다. 여는 일은 없다.
+    function keepNearSide(mask, personMask, depth, w, h, guardBoxes) {
+      var mx = mask.getContext('2d'), md = mx.getImageData(0, 0, w, h);
+      var pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+      var px = pc.getContext('2d'); px.drawImage(personMask, 0, 0, w, h);
+      var pd = px.getImageData(0, 0, w, h).data;
+      var D = function (x, y) {
+        return depth.data[Math.min(depth.height - 1, Math.floor(y * depth.height / h)) * depth.width
+          + Math.min(depth.width - 1, Math.floor(x * depth.width / w))];
+      };
+      var vals = [];
+      for (var y = 0; y < h; y += 3) for (var x = 0; x < w; x += 3) {
+        var i = (y * w + x) * 4;
+        if (pd[i + 3] >= 128 && pd[i] >= 128) vals.push(D(x, y));
+      }
+      if (!vals.length) return { closed: 0 };
+      vals.sort(function (a, b) { return a - b; });
+      var thr = vals[Math.floor(vals.length / 2)] * DEPTH_FAR_RATIO, closed = 0;
+      // «뒤쪽» 판정을 픽셀마다 그대로 쓰면 경계가 계단처럼 들쭉날쭉하고 작은 섬이 생겨, AI가 그 모양대로
+      // 각진 조각을 그렸다(생일 사진 실제 결과 11-21: 소파 옆·케이크 팻말 둘레·치킨 위). 흐렸다가 다시 문턱을 넘겨
+      // 경계를 둥글게 펴고 작은 섬을 없앤다. 문턱을 0.6으로 높게 잡아 경계를 사람·식탁 쪽에서 조금 물린다(지키는 쪽으로).
+      // 사람일 가능성이 절반 미만(알파 128 미만)인 뒤쪽 — 원래 마스크와 상관없이 잡는다(사람 둘레 «넓혀 막은 띠»·흐릿한 가장자리 포함)
+      var far = document.createElement('canvas'); far.width = w; far.height = h;
+      var fx = far.getContext('2d'), fim = fx.createImageData(w, h);
+      for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
+        var j = (yy * w + xx) * 4;
+        var v = (pd[j + 3] < 128 && D(xx, yy) < thr) ? 255 : 0;
+        fim.data[j] = fim.data[j + 1] = fim.data[j + 2] = v; fim.data[j + 3] = 255;
+      }
+      fx.putImageData(fim, 0, 0);
+      var sm = document.createElement('canvas'); sm.width = w; sm.height = h;
+      var sx = sm.getContext('2d');
+      sx.filter = 'blur(' + Math.max(2, Math.round(Math.max(w, h) * DEPTH_SMOOTH)) + 'px)';
+      sx.drawImage(far, 0, 0); sx.filter = 'none';
+      var sd = sx.getImageData(0, 0, w, h).data;
+      // 얼굴·손 상자 안은 절대 열지 않는다 — 얼굴을 막는 것이 마지막 단계라는 규칙을 여기서도 지킨다
+      var guard = new Uint8Array(w * h);
+      (guardBoxes || []).forEach(function (b) {
+        for (var gy = Math.max(0, Math.floor(b.y)); gy < Math.min(h, Math.ceil(b.y + b.height)); gy++)
+          for (var gx = Math.max(0, Math.floor(b.x)); gx < Math.min(w, Math.ceil(b.x + b.width)); gx++) guard[gy * w + gx] = 1;
+      });
+      // 띠 채우기(fillHaloFromBackground)가 쓸 마스크: 흰 = 손대지 않음, 검정 = 새 배경 색으로 번져 채울 자리.
+      // 사람 둘레 띠 중 «뒤쪽인데 아직 막혀 있는» 곳만 검정으로 둔다 — 식탁 쪽 띠까지 칠하면 각진 조각이 생겼다.
+      var halo = document.createElement('canvas'); halo.width = w; halo.height = h;
+      var hx = halo.getContext('2d'), him = hx.createImageData(w, h);
+      for (var k = 0; k < sd.length; k += 4) {
+        var p = k >> 2, wasWhite = md.data[k] >= 128, s = sd[k] / 255;
+        var nowWhite = wasWhite;
+        if (wasWhite && s < 0.6) nowWhite = false;                       // 앞쪽(식탁 등)은 원본으로
+        // 넓혀 막은 띠를 거리 지도로 열어 보려 했지만 0.1%밖에 안 열렸다 — 사람 분리 모델(256×256)이 사람 둘레를 처음부터
+        // 뭉툭하게 «확실한 사람»으로 잡는다(소파까지). 경계를 좁히려면 사람 분리 모델을 바꿔야 한다(11-21).
+        if (wasWhite && !nowWhite) closed++;
+        md.data[k] = md.data[k + 1] = md.data[k + 2] = nowWhite ? 255 : 0;
+        var fill = !nowWhite && !guard[p] && pd[k + 3] < 250 && s >= 0.6;
+        him.data[k] = him.data[k + 1] = him.data[k + 2] = fill ? 0 : 255; him.data[k + 3] = 255;
+      }
+      mx.putImageData(md, 0, 0);
+      hx.putImageData(him, 0, 0);
+      return { closed: closed, thr: thr, haloMask: halo };
+    }
+
     async function runBackgroundFill(img, faces, riskResult, ocrResult) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
       // 사람을 못 찾으면 막을 것이 없다 — 보내지 않고 멈춘다. 부탁 방식(kontext)으로 되돌아가지 않는다.
@@ -7058,6 +7146,28 @@
       var handBoxesO = await detectHandBoxes(img);
       var handBoxes = handBoxesO.map(scale);
       var mask = buildBackgroundMask(scaledFaces, sw, sh, personMask, handBoxes);
+      // 사람보다 앞쪽(식탁·케이크 등)은 다시 그리지 않는다 — 거리 지도로 뒤쪽만 남긴다(위 keepNearSide 설명)
+      // 띠 채우기(fillHaloFromBackground)는 거리 지도 적용 «전» 마스크로 한다. 적용 후 마스크를 주면 원본으로 남긴
+      // 식탁 전체가 «채울 띠»가 돼 배경 색으로 번져 칠해졌다(생일 사진: 30만 픽셀, 346겹 — 11-21 실측).
+      var before = document.createElement('canvas'); before.width = sw; before.height = sh;
+      before.getContext('2d').drawImage(mask, 0, 0);
+      var haloMask = before;
+      try {
+        var depth = await estimateDepth(ic);
+        var near = keepNearSide(mask, personMask, depth, sw, sh, scaledFaces.concat(handBoxes));
+        var left = 0, mdd = mask.getContext('2d').getImageData(0, 0, sw, sh).data;
+        for (var mi = 0; mi < mdd.length; mi += 4) if (mdd[mi] >= 128) left++;
+        if (left < sw * sh * 0.02) {
+          // 거리 지도가 평평해(다 사람과 같은 거리) 다시 그릴 곳이 거의 안 남았다 — 빈 요청에 돈을 쓰지 않게 예전 마스크로 되돌린다
+          mask.getContext('2d').drawImage(before, 0, 0);
+          console.warn('[배경교체] 거리 지도로 뒤쪽을 가르지 못해 사람 밖 전체를 다시 그려요');
+        } else {
+          haloMask = near.haloMask;
+          console.log('[배경교체] 거리 지도로 앞쪽 ' + (near.closed / (sw * sh) * 100).toFixed(1) + '%를 원본으로 남김');
+        }
+      } catch (depthErr) {
+        console.warn('[배경교체] 거리 지도를 못 만들어 사람 밖 전체를 다시 그려요:', depthErr && depthErr.message);
+      }
 
       // 마스크 안쪽(옛 배경)을 회색으로 지워 보낸다. 옷 교체에서 지우지 않고 보냈더니 FLUX가 원본 구조를 베껴
       // 헌 옷 조각이 새 옷에 섞였다(A/B 실측). 배경에서 베끼면 안 되는 것은 간판이다 — 같은 이유로 지운다.
@@ -7076,7 +7186,7 @@
       });
       var outImg = await loadImage(falImageDataUrl(data));
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
-      fillHaloFromBackground(out, personMask, mask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
+      fillHaloFromBackground(out, personMask, haloMask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
       console.log('[배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (배경 자리에만 합성, 얼굴 ' + scaledFaces.length
         + '개·손 ' + handBoxes.length + '개 보존)', data);
@@ -14226,6 +14336,7 @@
       computeAlignmentOffset: computeAlignmentOffset,
       matchFacesForTest: matchFaces,
       runBackgroundFill: runBackgroundFill, // 실제 fal 호출 검증용 (비용 발생) — 사람이 없으면 보내기 전에 멈춘다
+      setDepthForTest: function (fn) { depthForTest = fn; }, // 거리 지도를 넣는다(모델을 받지 않는다) — null이면 원래대로
       buildBackgroundMask: buildBackgroundMask,
       findSignSwapRegions: findSignSwapRegions, // 비용 0 — 순수 계산만
       runSignTextAiRewrite: runSignTextAiRewrite, // 실제 fal(nano-banana) 호출 검증용 (비용 발생)
