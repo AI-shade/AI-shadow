@@ -8234,9 +8234,10 @@
     // «로고 지우기»는 예전처럼 findLogoRects만 쓴다. 파일은 41MB라 저장소에 넣지 않는다(public/models/는 gitignore).
     // 배포본은 Supabase 공개 버킷(ai-shadow-dev/models)에서 받는다. 로컬은 public/models/ — 테스트가 이 경로를 막아 «모델 없음»을 흉내 낸다.
     // 무료 플랜은 일주일 안 쓰면 프로젝트가 멈춘다. 멈추면 받기에 실패하고 «로고 지우기»는 모델 없이 돈다(깨지지는 않는다).
+    var MARK_MODEL_REMOTE = 'https://eercjqzhtydhqtgmgqla.supabase.co/storage/v1/object/public/models/mark-int8.onnx';
     var MARK_MODEL_URL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
       ? 'public/models/mark-int8.onnx'
-      : 'https://eercjqzhtydhqtgmgqla.supabase.co/storage/v1/object/public/models/mark-int8.onnx';
+      : MARK_MODEL_REMOTE;
     var MARK_ORT_BASE = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
     var MARK_INPUT = 576;      // 모델 입력(정사각형). 학습 때처럼 가운데 두고 남는 곳은 검게.
     // 확신도 기준은 시험 102장을 열기 전에 검증 78장으로 정했다(docs/마스킹-학습-진행상황.md 3절).
@@ -8271,6 +8272,9 @@
           try { cache = await caches.open('anshim-models-v1'); var hit = await cache.match(MARK_MODEL_URL); if (hit) buf = await hit.arrayBuffer(); } catch (e) { cache = null; }
           if (!buf) {
             var res = await fetch(MARK_MODEL_URL);
+            // 로컬에 모델 파일이 없으면(저장소에 넣지 않는다 — 용량) 배포판과 같은 곳에서 받는다.
+            // 없으면 로고 자리를 못 찾아 «로고 지우기»가 가슴만 열고 로고를 그대로 뒀다(11-21 «로고바꾸기 했는데 로고가 안바뀜», 로컬).
+            if (!res.ok && MARK_MODEL_URL !== MARK_MODEL_REMOTE) res = await fetch(MARK_MODEL_REMOTE);
             if (!res.ok) throw new Error('모델 파일 ' + res.status);
             if (cache) { try { await cache.put(MARK_MODEL_URL, res.clone()); } catch (e) { /* 저장 못 해도 이번엔 쓴다 */ } }
             buf = await res.arrayBuffer();
