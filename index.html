@@ -3289,6 +3289,8 @@
   }
   #screen-form .sns-post #photoPreview { cursor: pointer; }
   #appSubtitle:empty { display: none; }
+  #aiMarkHint { display: none !important; }                    /* «먼저 «로고 지우기»로…» 안내 — 11-21 «이런멘트도삭제» */
+  .map-note { display: none; }                                 /* 지도 밑 «원은 이 안 어딘가…» 안내 — 11-21 요청으로 뺀다 */
   .an-bar { display: none; }                                  /* 분석 중 진행 막대 — 11-21 요청으로 뺀다 */
   /* 재검증·패턴 결과를 볼 때는 «내 정보»의 두 카드(과거 게시물·이미 올린 사진)를 숨긴다 — 결과 밑에 딸려 보였다
      (11-21 «재검증 단계에서 이걸왜 밑에 보이게 해둔거야»). 폰은 이미 이렇게 한다. */
@@ -3351,7 +3353,7 @@
   /* AI 단추: 3칸 자리에 2개만 보이면 오른쪽이 비었다(11-21 «배열이 이상해») — 보이는 단추 수만큼 칸을 나눈다 */
   #aiMore .ai-more-btns, #screen-correct #aiMore .ai-more-btns { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
   /* 좁혀지는 곳이 없으면 지도를 안 띄운다(autoLoadInlineMap이 no-map / text-only를 붙인다) */
-  #screen-result > .rcard-location.no-map > .loc-right { display: none; }
+  #screen-result > .rcard-location.no-map > .loc-right :is(.loc-map-hint, .map-box, .map-steps, .map-why) { display: none; }
   #screen-result > .rcard-location.no-map { grid-template-columns: 1fr; }
   #screen-result > .rcard-location.text-only .map-box,
   #screen-result > .rcard-location.text-only .map-note { display: none; }
@@ -3918,6 +3920,8 @@
         <div class="map-box" id="mapBoxInline" role="img" aria-label="지도"></div>
         <div class="map-steps" id="mapStepsInline" role="group" aria-label="단서를 더할수록 좁혀지는 범위"></div>
         <p class="map-why" id="mapWhyInline"></p>
+        <!-- 좌표·AI 추측 결과는 지도 바로 밑에 둔다(11-21 «저 내용을 지도 밑에 둬도 될거같음») -->
+        <div class="loc-web-result" id="locWebResult" style="display:none;"></div>
         <p class="map-note">원은 “이 안 어딘가”라는 뜻이고, 정확한 위치는 표시하지 않아요.
           사진은 보내지 않고, 사진 속 장소 글자만 카카오 장소 검색으로 보내요. 지도 그림은 OpenStreetMap에서 받아요.</p>
       </div>
@@ -3932,7 +3936,6 @@
            1/-1을 준다. 폰 폭에서는 그냥 다음 블록으로 이어질 뿐 모양은 그대로다). -->
       <div class="loc-web-check" id="locWebCheck">
         <!-- 진단과 함께 자동으로 돈다(runLocCheck). 결과가 먼저, 원본이 가야 하는 구글 검색 단추는 그 아래. -->
-        <div class="loc-web-result" id="locWebResult" style="display:none;"></div>
         <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
         <p class="loc-web-hint">진단할 때 사진 파일의 좌표와 AI 추측(얼굴을 가린 사진)으로 장소를 함께 확인해요.
           구글 이미지 검색은 원본이 가야 해서, 단추를 누를 때만 먼저 묻고 보내요.</p>
@@ -11803,23 +11806,23 @@
           var sameText = function (n) {
             var sm = by[n] && by[n].same;
             if (!sm || !sm.count) return '';
-            if (sm.count === 1) return ' 공공 목록(상가·어린이집·학교·학원)으로 보면 이 이름은 전국에 1곳뿐이라, 이름만으로 그곳이 특정돼요.';
-            if (sm.sigungu) return ' 공공 목록으로 보면 같은 이름 ' + sm.count + '곳이 모두 ' + sm.sigungu + '에 있어요.';
-            return ' 공공 목록으로 보면 같은 이름이 전국에 ' + sm.count + '곳이에요.';
+            if (sm.count === 1) return ' 전국에 1곳뿐인 이름이에요.';
+            if (sm.sigungu) return ' 같은 이름 ' + sm.count + '곳이 모두 ' + sm.sigungu + '에 있어요.';
+            return ' 같은 이름이 전국에 ' + sm.count + '곳이에요.';
           };
           if (best) {
             // 정확한 지점명이 아니라 상호+지점만 맞춰 다시 찾은 결과면(카카오맵도 이렇게
             // 한다), 정확한 자리로 오해하지 않게 문구를 덧붙인다.
-            var looseNote = best.loose ? ' (정확한 지점명은 아니고, 이름으로 다시 찾은 근처 결과예요.)' : '';
+            var looseNote = best.loose ? ' (근처 결과)' : '';
             steps.push(best.scattered
               ? { label: '“' + best.name + '”만', where: '전국 ' + best.total + '건', m: 0, center: null, points: best.points,
-                  why: '“' + best.name + '”은 검색 결과가 전국에 흩어져 있어서 하나로 좁혀지지 않아요 — 찾은 곳들을 지도에 낱개로 찍어드려요.' + sameText(best.name) + looseNote }
+                  why: '“' + best.name + '” — 전국에 흩어져 있어 하나로 안 좁혀져요.' + sameText(best.name) + looseNote }
               : { label: '“' + best.name + '”만', where: mapRadiusText(best.m), m: best.m, center: best.center,
-                  why: '“' + best.name + '”은 검색 결과가 한 동네에 모여 있어서 이름만으로도 그 근처까지 좁혀져요.' + sameText(best.name) + looseNote });
+                  why: '“' + best.name + '” — 이름만으로 이 근처까지 좁혀져요.' + sameText(best.name) + looseNote });
           } else if (rare && (rare.count === 1 || rare.sigungu)) {
             // 카카오에서 못 찾았어도 상가정보에 드문 이름으로 있으면 좁혀진다는 사실은 말한다(지도 위치는 없다)
             steps.push({ label: '“' + rare.name + '”만', where: rare.count === 1 ? '전국 1곳' : rare.sigungu + ' ' + rare.count + '곳',
-              m: 0, center: null, why: '“' + rare.name + '”은 지도 검색에는 안 나왔지만' + sameText(rare.name) });
+              m: 0, center: null, why: '“' + rare.name + '” — 지도엔 없지만' + sameText(rare.name) });
           }
           // + 지역 글자: 이름에 지역이 붙으면 그 지역 안의 곳으로 좁혀진다
           if (region) {
@@ -11832,8 +11835,8 @@
             });
             if (bestR && (!best || best.scattered || bestR.m < best.m)) {
               steps.push({ label: '+ 지역 글자 “' + region + '”', where: mapRadiusText(bestR.m), m: bestR.m, center: bestR.center,
-                why: '“' + region + '”가 더해지면 “' + bestR.name + '”이(가) ' + mapAreaText(bestR.address) + ' 근처로 좁혀져요.'
-                  + (bestR.loose ? ' (정확한 지점명은 아니고, 이름으로 다시 찾은 근처 결과예요.)' : '') });
+                why: '“' + region + '”까지 보면 ' + mapAreaText(bestR.address) + ' 근처로 좁혀져요.'
+                  + (bestR.loose ? ' (근처 결과)' : '') });
             }
           }
         } catch (e) {
@@ -12964,7 +12967,7 @@
               if (!pl) return;
               var m = g.구체성 === '건물' ? 300 : 1500;
               window.__addInlineMapStep({ label: 'AI 추측', where: '반경 약 ' + (m >= 1000 ? (m / 1000) + 'km' : m + 'm'), m: m,
-                center: [pl.lat, pl.lng], why: 'AI가 배경을 보고 «' + g.지명 + '» 근처로 추측했어요 — 좌표가 아니라 짐작이라 틀릴 수 있어요.' });
+                center: [pl.lat, pl.lng], why: 'AI 추측 — «' + g.지명 + '» 근처(틀릴 수 있어요).' });
             }).catch(function (e) { console.warn('[위치확인] AI 추측 지명을 지도에서 못 찾음:', e.message); });
           }
           if (g.근거) line('그렇게 본 이유: ' + g.근거, true);
@@ -13075,7 +13078,7 @@
     function setPreviewBusy(text) {
       var frame = document.getElementById('previewFrame');
       var busy = document.getElementById('previewBusy');
-      document.getElementById('previewBusyText').textContent = text;
+      document.getElementById('previewBusyText').textContent = text ? BUSY_SHORT : '';
       busy.hidden = false;
       frame.classList.add('is-busy');
       // AI 단추(옷·배경)를 눌러 기다릴 때만 단추 아래에도 같은 안내를 보인다 — 자동 보정은 곧 끝나서 필요 없다.
@@ -13086,8 +13089,10 @@
       document.getElementById('previewFrame').classList.remove('is-busy');
       setAiWait('');
     }
+    // 기다리는 동안의 긴 안내 문장은 뺐다(11-21 «이런거 왜 멋대로 추가해?») — 도는 표시와 한마디만 남긴다
+    var BUSY_SHORT = '처리 중이에요';
     function setAiWait(text) {
-      document.getElementById('aiWaitText').textContent = text;
+      document.getElementById('aiWaitText').textContent = text ? BUSY_SHORT : '';
       document.getElementById('aiWait').hidden = !text;
     }
 

@@ -210,7 +210,8 @@ function check(label, ok, detail) {
       clearInterval(timer);
       return { during, afterHidden: document.getElementById('aiWait').hidden };
     }, u);
-    check('기다리는 동안 단추 아래에 안내가 뜬다', wt.during.shown && /배경을 새로 그리는 중/.test(wt.during.text) && /10~20초/.test(wt.during.text), wt.during.text.replace(/\n/g, ' / '));
+    // 11-21: 긴 안내 문장은 뺐다 — «처리 중이에요» 한마디만
+    check('기다리는 동안 단추 아래에 «처리 중이에요»가 뜬다', wt.during.shown && wt.during.text === '처리 중이에요', wt.during.text);
     check('끝나면 안내가 사라진다', wt.afterHidden);
   }
 

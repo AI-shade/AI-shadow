@@ -44,7 +44,8 @@ async function run(browser, words, geocode) {
 
   console.log('\n단서가 하나도 없음');
   let { p, out } = await run(b, [], { results: [] });
-  ok(!out.right, '지도 칸이 안 보인다');
+  // 11-21: 오른쪽 칸은 좌표·AI 추측 결과를 담아 남을 수 있다 — 지도와 단계 설명만 숨는다
+  ok(!out.map && !out.why, '지도와 지도 설명이 안 보인다');
   ok(out.leftW > out.cardW * 0.8, '왼쪽 칸이 가로 전체를 쓴다', out.leftW + '/' + out.cardW);
   await p.close();
 
