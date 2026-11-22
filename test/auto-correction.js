@@ -96,7 +96,7 @@ function check(label, ok, detail) {
   // 10-27 사용자 결정으로 자동 보정·찾은 곳 목록을 화면에서 뺐다("자동보정이 빼봐봐 이것떄문에 더 불편한거같아").
   // 위 자동 보정 검사는 함수(planAutoCorrection·selectMethod('auto'))가 남아 있어 그대로 두지만, 화면에서는 부르지 않는다.
   // 11-19 요청 "옷교체하기를 로고보정기능안에 넣어줘 왜냐면 로고가 안지워지면 옷을 교체하게" — 옷 전체 바꾸기는 로고 지우기 뒤에만 나온다.
-  check('처음 보이는 AI 단추는 로고 지우기·배경 교체하기 둘이다', gone.aiBtns.join(',') === '로고 지우기,배경 교체하기', gone.aiBtns.join(','));
+  check('처음 보이는 AI 단추는 로고 지우기·배경 교체 둘이다', gone.aiBtns.join(',') === '로고 지우기,배경 교체', gone.aiBtns.join(','));
   check('«옷 전체 바꾸기»는 처음에는 숨어 있다 (로고 지우기 뒤에만 보인다)', gone.outfitHidden);
   check('«배경 전체 바꾸기»는 처음에는 숨어 있다 (간판만 바꾼 뒤에만 보인다)', gone.bgFullHidden);
   check('제목이 무엇을 바꿀지 묻는다', gone.title === '무엇을 바꿀까요?', gone.title);

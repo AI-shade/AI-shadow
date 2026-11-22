@@ -3502,7 +3502,7 @@
         <a class="btn-ghost" href="#features">기능 살펴보기</a>
       </div>
       <p class="hero-note">가입 없이 써요. 진단할 때는 얼굴을 가려서 보내요.
-        원본은 AI 보정이나 구글 이미지 검색 단추를 누를 때만 가요.</p>
+        얼굴을 못 찾은 사진과 AI 보정·구글 이미지 검색 단추를 누른 사진은 원본이 가요.</p>
     </div>
     <!-- 오른쪽 장식 카드(위치노출 82점·교복 감지·3단계 재검증)는 11-22 요청으로 뺐다(«이부분도 웹페이지에서 지워줘») -->
   </div>
@@ -3940,7 +3940,7 @@
         <!-- 진단과 함께 자동으로 돈다(runLocCheck). 결과가 먼저, 원본이 가야 하는 구글 검색 단추는 그 아래. -->
         <button type="button" class="ghost-link" id="locWebCheckBtn">장소 찾아보기</button>
         <p class="loc-web-hint">진단할 때 사진 파일의 좌표와 AI 추측(얼굴을 가린 사진)으로 장소를 함께 확인해요.
-          구글 이미지 검색은 원본이 가야 해서, 단추를 누를 때만 먼저 묻고 보내요.</p>
+          구글 이미지 검색은 원본이 가야 해서, 단추를 누를 때만 보내요.</p>
       </div>
     </section>
 
@@ -4443,7 +4443,7 @@
     <div class="why-grid" id="whyGrid">
       <article class="why-card pin-item">
         <h3>얼굴은 가려서 보내요</h3>
-        <p>진단하려고 사진을 밖으로 보낼 때는 얼굴을 먼저 검게 덮어요. AI 보정과 구글 이미지 검색은 원본이 필요해서, 그 단추를 누를 때만 원본을 보내요.</p>
+        <p>진단하려고 사진을 밖으로 보낼 때는 얼굴을 먼저 검게 덮어요. 얼굴을 못 찾은 사진은 덮을 곳이 없어서 원본으로 보내요. AI 보정과 구글 이미지 검색은 원본이 필요해서, 그 단추를 누르면 원본을 보내요.</p>
       </article>
       <article class="why-card pin-item">
         <h3>부탁이 아니라 차단</h3>
@@ -4483,7 +4483,7 @@
       <details class="pin-item"><summary>사진을 어딘가에 저장하나요?</summary><p>진단할 때만 보내고, 따로 보관하지 않아요. 자르기, 흐리기, 주변 색 채우기는 사진이 기기 밖으로 나가지 않아요.</p></details>
       <details class="pin-item"><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없어요. 과거 게시물 패턴을 보고 싶을 때만 직접 캡처한 화면을 올려 주세요.</p></details>
       <details class="pin-item"><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않아요. 얼굴, 머리카락, 목은 AI가 다시 그리는 자리에서 빼 두었어요. 고친 뒤에도 다시 검사해서 얼굴이 그대로인지 확인해요.</p></details>
-      <details class="pin-item"><summary>사진이 어디로 가나요?</summary><p>진단은 얼굴을 가린 사진만 보내요. AI 보정이나 구글 찾기를 누를 때만 원본이 fal.ai나 구글로 가요. 두 곳 모두 학습에는 쓰지 않는다고 밝혀요. 다만 fal.ai는 바로 지운다고 약속하지는 않아요. 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">fal.ai</a>, <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">구글</a></p></details>
+      <details class="pin-item"><summary>사진이 어디로 가나요?</summary><p>진단은 얼굴을 가린 사진을 AI 판독 서버(Anthropic)로 보내요. 얼굴을 못 찾은 사진은 원본이 가요. AI 보정이나 구글 찾기를 누르면 원본이 fal.ai나 구글로 가요. 두 곳 모두 학습에는 쓰지 않는다고 밝혀요. 다만 fal.ai는 바로 지운다고 약속하지는 않아요. 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">fal.ai</a>, <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">구글</a></p></details>
       <details class="pin-item"><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔 드려요. 얼굴과 자세는 그대로예요.</p></details>
       <details class="pin-item"><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않아요. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고를 수 있게 했어요. 최종 판단은 부모님이 해요.</p></details>
     </div>
@@ -6918,7 +6918,7 @@
     // 사람 마스크는 getFullPersonMask(손·팔·다리까지)를 쓴다 — 2분류 마스크는 몸에서 떨어진 손·팔을 배경으로 봐서
     // 그 자리가 «다시 그릴 곳»이 된다. 경계는 1~2픽셀 흔들리므로 사람 쪽을 넓혀서 막는다(과소 보호보다 과다 보호).
     // 얼굴·손은 인물 분리가 놓쳐도 지키도록 마지막에 상자로 한 번 더 검게 덮는다(옷 마스크와 같은 순서).
-    function buildBackgroundMask(faceBoxes, imgW, imgH, personMask, handBoxes) {
+    function buildBackgroundMask(faceBoxes, imgW, imgH, personMask, handBoxes, growRatio) {
       var c = document.createElement('canvas');
       c.width = imgW; c.height = imgH;
       var x = c.getContext('2d');
@@ -6927,7 +6927,8 @@
 
       var person = null; // 원래 크기 인물 분리 알파 — 얼굴·손이 이 사람의 것인지 가르는 데도 쓴다
       if (personMask) {
-        var grow = Math.max(3, Math.round(Math.min(imgW, imgH) * 0.012));
+        var grow = growRatio == null ? Math.max(3, Math.round(Math.min(imgW, imgH) * 0.012))
+          : Math.max(1, Math.round(Math.min(imgW, imgH) * growRatio));
         var p = document.createElement('canvas');
         p.width = imgW; p.height = imgH;
         var px = p.getContext('2d');
@@ -7158,6 +7159,7 @@
     //   ② 진단에서 찾은 글자 자리는 사람이 아닌 곳이면 강제로 다시 그린다 — 사람 덩어리에 붙은 간판까지 막는다
     //   ③ 사람 분리가 찾은 얼굴을 앞쪽 물체가 놓쳤으면 이 사진은 예전 방식(사람 분리 + 거리 지도)으로 한다
     // 모델: briaai/RMBG-1.4 q8(약 44MB, 비상업 라이선스 — 해커톤 시연용). 받지 못하면 예전 방식으로 간다.
+    var MIX_GROW = 0.003;               // 섞은 마스크를 넓혀 막는 폭(짧은 변 대비) — 1024px에서 약 2px
     var fgModelPromise = null;
     var fgForTest = null;               // 테스트가 앞쪽 마스크를 넣는 자리(모델을 받지 않는다) — 함수(canvas) → {data(0~255), width, height}
     function loadForegroundModel() {
@@ -7272,7 +7274,9 @@
         console.warn('[배경교체] 앞쪽 물체 모델을 못 써서 예전 방식으로 해요:', fgErr && fgErr.message);
       }
       var haloPerson = personMask;
-      var mask = buildBackgroundMask(scaledFaces, sw, sh, mixed || personMask, handBoxes);
+      // 섞은 마스크는 경계가 정확해서 넓혀 막지 않는다(). 1.2% 넓힌 띠를 주변 색으로 번져 채웠더니 사람 둘레에
+      // 지그재그 줄무늬가 생겼다(11-22 실제 AI 결과 3장 — AI가 그린 쪽은 깨끗했고, 줄무늬는 띠 채우기에서 났다).
+      var mask = buildBackgroundMask(scaledFaces, sw, sh, mixed || personMask, handBoxes, mixed ? MIX_GROW : null);
       var before = document.createElement('canvas'); before.width = sw; before.height = sh;
       before.getContext('2d').drawImage(mask, 0, 0);
       var haloMask = before;
@@ -7316,7 +7320,9 @@
       });
       var outImg = await loadImage(falImageDataUrl(data));
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
-      fillHaloFromBackground(out, haloPerson, haloMask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
+      // 섞은 마스크에서는 띠 채우기를 하지 않는다 — 사람 둘레에 지그재그 줄무늬를 만든 것이 이 단계였다(11-22: 저장한 AI 결과 2장을
+      // 같은 마스크로 다시 합성해 비교, 끄니 사라짐). 예전 방식(1.2% 넓힌 띠)에서는 그대로 쓴다.
+      if (!mixed) fillHaloFromBackground(out, haloPerson, haloMask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
       console.log('[배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (배경 자리에만 합성, 얼굴 ' + scaledFaces.length
         + '개·손 ' + handBoxes.length + '개 보존)', data);
