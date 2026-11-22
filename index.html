@@ -3752,6 +3752,92 @@
     /* 내 정보: 사진 놓는 칸 */
     .drop-zone { border-radius: 6px; border-width: 2px; }
   }
+
+  /* ----- 폰 앱 화면: 웹과 같은 결(검정 2px 선 · 작은 둥글기 · 굵은 제목 · 영어 라벨) -----
+     배치(탭·쪽 넘기기·행 목록)는 그대로 두고 껍데기만 맞춘다. */
+  @media (max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px) {
+    /* 진단 탭 홈 */
+    header.hero { border-radius: 10px; overflow: hidden; }
+    header.hero .hero-badge { color: var(--tb-green); letter-spacing: .14em; }
+    .app-pill { background: var(--tb-green); border: 2px solid var(--tb-black); border-radius: 999px; }
+    .app-pill:hover, .app-pill:active { background: var(--accent-hover); }
+    .app-menu-item { background: var(--card); border: 2px solid var(--tb-black); border-radius: 8px; box-shadow: none; }
+    .app-menu-item:active { translate: 0 1px; }
+    .app-menu-item .mono-icon { border-radius: 6px; }
+    .app-trust-row .mono-icon { background: var(--tb-green); }
+    .app-ex-head { font-weight: 900; }
+    .app-examples .app-ex-tile { border: 2px solid var(--tb-black); border-radius: 8px; }
+    .app-ex-tile span { background: var(--tb-black); border-radius: 4px; }
+
+    /* 아래 탭바 · 가운데 + */
+    .app-tabbar { border-top: 2px solid var(--tb-black); }
+    .app-fab { background: var(--tb-green); border: 2px solid var(--tb-black); box-shadow: 3px 3px 0 var(--tb-black); }
+    .app-bar-title { font-weight: 900; letter-spacing: -.02em; }
+
+    /* 알아보기 · 문답: 섹션 카드 */
+    #features .section-inner, #why .section-inner, #faq .section-inner, #steps .section-inner,
+    #selfcheck .sc-card, #pattern-check .pe-card {
+      border: 2px solid var(--tb-black); border-radius: 8px;
+    }
+    #features .section-inner, #why .section-inner, #faq .section-inner, #steps .section-inner { width: auto; margin-inline: 0.75rem; }
+    #selfcheck .sc-card, #pattern-check .pe-card { width: auto; margin-left: 0.75rem; margin-right: 0.75rem; }
+    #features .section-eyebrow, #why .section-eyebrow, #faq .section-eyebrow, #steps .section-eyebrow {
+      display: block; margin: 0 0 4px; font-family: 'Archivo', 'Pretendard Variable', sans-serif;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: .16em; color: var(--accent-2);
+    }
+    #features .section-eyebrow::before, #why .section-eyebrow::before, #faq .section-eyebrow::before, #steps .section-eyebrow::before { display: none; }
+    #features .section-title, #why .section-title, #faq .section-title, #steps .section-title {
+      font-size: 1.3rem; font-weight: 900; letter-spacing: -.03em; line-height: 1.25; margin: 0 0 0.8rem;
+    }
+
+    /* 3단계: 번호를 01 · 02 · 03 초록 글자로 */
+    #steps .steps-list .sl-num {
+      width: auto; height: auto; min-width: 26px; background: none; border-radius: 0;
+      color: var(--accent-2); font-family: 'Archivo', sans-serif; font-size: 0.85rem; font-weight: 800;
+    }
+    #steps .steps-list .sl-num::before { content: "0"; }
+    #steps .steps-list .sl-num { white-space: nowrap; min-width: 28px; display: block; text-align: left; }
+    #steps .steps-list li .tb-ico { display: none; }
+
+    /* 기능: 카드 전체를 검정 판으로 (웹의 검정 섹션과 같은 자리) */
+    #features .section-inner { background: var(--tb-black); color: var(--tb-cream); }
+    #features .section-eyebrow { color: var(--tb-green); }
+    #features .section-title { color: var(--tb-cream); }
+    #features .feature-card { background: transparent; border-color: #3A3D37; color: var(--tb-cream); }
+    #features .feature-card h3 { color: var(--tb-cream); }
+    #features .feature-card p { color: #C9C5B6; }
+    #features .feature-card::after { color: #8C8A80; }
+    #features .clamp-more { color: #C9C5B6; }
+
+    /* 행 왼쪽 빈 네모 대신 손그림 아이콘 */
+    #features .feature-card::before, #why .why-card::before { display: none; }
+    #features .feature-card .tb-ico, #why .why-card .tb-ico {
+      display: block; position: absolute; left: 0; top: 50%; translate: 0 -50%; width: 30px; height: 30px;
+    }
+    #features .feature-card .tb-label { display: none; }
+
+    /* 왜 안전한가: 둘째 줄만 초록 판 */
+    #why .why-card:nth-child(2) {
+      background: var(--tb-green); border: 2px solid var(--tb-black); border-radius: 6px;
+      padding-left: 3rem; padding-right: 1.6rem; margin: 0.3rem 0;
+    }
+    #why .why-card:nth-child(2) .tb-ico { left: 0.55rem; }
+    #why .why-card:nth-child(2)::after { right: 0.6rem; color: var(--tb-black); }
+    #why .why-card:nth-child(3) { border-top: 0; }
+
+    /* 문답: + 를 동그라미 안에 */
+    #faq .faq-list details { border-top-color: var(--line); }
+    #faq .faq-list summary::after, #faq .faq-list details[open] summary::after {
+      content: "+"; width: 24px; height: 24px; border: 2px solid var(--tb-black); border-radius: 50%;
+      display: grid; place-items: center; font-size: 0.9rem; font-weight: 700; line-height: 1;
+      color: var(--tb-black); transition: transform .2s, background .2s;
+    }
+    #faq .faq-list details[open] summary::after { transform: rotate(45deg); background: var(--tb-green); }
+
+    /* 내 정보: 놓는 칸 · 단추 */
+    .drop-zone { border-radius: 8px; border-width: 2px; }
+    #pattern-check .primary, #tool .primary, #tool button.primary { border: 2px solid var(--tb-black); font-weight: 800; }
+  }
   /* ===== 테마 끝 ===== */
 </style>
 
