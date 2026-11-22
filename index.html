@@ -10,6 +10,8 @@
     .hero { min-height: 0 !important; padding: 2.2rem 0 2.6rem !important; align-items: flex-start !important; }
     .hero .scroll-cue { display: none !important; }
   }
+  .tap-cover{display:flex;gap:1rem;flex-wrap:wrap;margin:0.4rem 0 0.2rem}
+  .tap-cover .ghost-link[aria-pressed="true"]{font-weight:700;color:var(--ink)}
 </style>
 <!-- 탭 아이콘. 파일을 따로 두지 않고 여기에 그려 넣는다 — 이 페이지는 파일 하나로
      굴러가야 하고, 배포 경로가 바뀌어도 아이콘이 깨지지 않는다.
@@ -4569,6 +4571,12 @@
       <div class="cs-handle" id="csHandle"><span class="cs-handle-grip">↔</span></div>
     </div>
     <p class="preview-caption" id="previewCaption">점선 안쪽만 남기고 자연스럽게 잘라내요.</p>
+    <!-- 남은 곳 눌러서 가리기(멘토 제안 11-22). 예전 «놓친 곳 추가»는 반영이 늦고 다루기 불편해 숨겼다(10-27).
+         이건 보정이 끝난 사진에서 누른 자리만 폰 안에서 바로 흐리게 한다 — AI 호출 없음, 기다림 없음, 아이 얼굴 근처는 막는다. -->
+    <div class="tap-cover" id="tapCoverBar" style="display:none;">
+      <button type="button" class="ghost-link" id="tapCoverBtn" aria-pressed="false">남은 곳 눌러서 가리기</button>
+      <button type="button" class="ghost-link" id="tapCoverUndo" style="display:none;">하나 되돌리기</button>
+    </div>
 
     <div class="edit-instruction" id="editInstruction" style="display:none;">
       <strong>Claude가 생성할 편집 지시문 (fal.ai 연동 후 사용 예정)</strong>
@@ -14541,6 +14549,88 @@
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.style.display !== 'none') close(); });
     })();
 
+    // ===== 남은 곳 눌러서 가리기 =====
+    // 자동 보정이 놓친 간판·글자를 사용자가 사진에서 바로 누른다. 누른 자리(사진 짧은 변의 TAP_COVER_RATIO 크기)를
+    // 폰 안에서 흐리게 칠한다. 정확도를 아무리 올려도 100%는 아니라서, 마지막 손은 보호자에게 준다.
+    // 아이 얼굴 상자(15% 넓힘)와 겹치면 칠하지 않는다. 다른 보정으로 결과가 바뀌면 되돌리기 기록은 비운다.
+    var TAP_COVER_RATIO = 0.12;
+    var tapCoverOn = false, tapCoverStack = [], tapCoverCanvasRef = null, tapCoverCount = 0;
+    function tapCoverSync() {
+      var bar = document.getElementById('tapCoverBar');
+      if (!bar) return;
+      var has = !!currentCorrectionCanvas || appliedSteps.length > 0;
+      bar.style.display = has ? '' : 'none';
+      if (!has && tapCoverOn) tapCoverSet(false);
+      document.getElementById('tapCoverUndo').style.display = tapCoverStack.length ? '' : 'none';
+    }
+    function tapCoverSet(on) {
+      tapCoverOn = on;
+      var b = document.getElementById('tapCoverBtn');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.textContent = on ? '가리기 끝내기' : '남은 곳 눌러서 가리기';
+      document.getElementById('previewAfter').style.cursor = on ? 'crosshair' : '';
+      if (on) previewCaption.textContent = '사진에서 남은 간판이나 글자를 누르면 그 자리를 흐리게 가려요.';
+    }
+    async function tapCoverAt(ev) {
+      if (!tapCoverOn) return;
+      var el = ev.currentTarget, rect = el.getBoundingClientRect();
+      if (!currentCorrectionCanvas) currentCorrectionCanvas = await getFinalCanvas();
+      var c = currentCorrectionCanvas;
+      if (!c) return;
+      if (tapCoverCanvasRef !== c) { tapCoverStack = []; tapCoverCanvasRef = c; }
+      var W = c.width, H = c.height;
+      var px = (ev.clientX - rect.left) / rect.width * W, py = (ev.clientY - rect.top) / rect.height * H;
+      var side = Math.round(Math.min(W, H) * TAP_COVER_RATIO);
+      var x0 = Math.max(0, Math.round(px - side / 2)), y0 = Math.max(0, Math.round(py - side / 2));
+      var w = Math.min(W - x0, side), h = Math.min(H - y0, side);
+      // 아이 얼굴은 건드리지 않는다
+      var faces = (lastFaceResult && lastFaceResult.faces) || [];
+      if (faces.length && uploadedPhotoUrl) {
+        var orig = await loadImage(uploadedPhotoUrl);
+        var sx = W / orig.naturalWidth, sy = H / orig.naturalHeight;
+        var hit = faces.some(function (f) {
+          var b = f.box, mx = b.width * 0.15, my = b.height * 0.15;
+          var fx0 = (b.x - mx) * sx, fy0 = (b.y - my) * sy, fx1 = (b.x + b.width + mx) * sx, fy1 = (b.y + b.height + my) * sy;
+          return x0 < fx1 && x0 + w > fx0 && y0 < fy1 && y0 + h > fy0;
+        });
+        if (hit) { previewCaption.textContent = '아이 얼굴 근처는 가리지 않아요. 조금 떨어진 곳을 눌러 주세요.'; return; }
+      }
+      var ctx = c.getContext('2d');
+      tapCoverStack.push({ x: x0, y: y0, data: ctx.getImageData(x0, y0, w, h) });
+      var copy = document.createElement('canvas'); copy.width = W; copy.height = H; copy.getContext('2d').drawImage(c, 0, 0);
+      ctx.save();
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x0, y0, w, h, Math.round(side * 0.18)); else ctx.rect(x0, y0, w, h);
+      ctx.clip();
+      ctx.filter = 'blur(' + Math.max(8, Math.round(side / 5)) + 'px)';
+      ctx.drawImage(copy, 0, 0);
+      ctx.restore();
+      tapCoverCount++;
+      tapCoverShow(c);
+      var note = '사용자가 직접 흐리게 가린 곳 ' + tapCoverCount + '곳';
+      if (lastCorrectionMeta) lastCorrectionMeta.detail = String(lastCorrectionMeta.detail || '').replace(/ \+ 사용자가 직접 흐리게 가린 곳 \d+곳$/, '') + ' + ' + note;
+      else lastCorrectionMeta = { method: 'tapcover', detail: note };
+      previewCaption.textContent = '가렸어요. 남은 곳이 있으면 더 누르고, 다 됐으면 «가리기 끝내기»를 눌러 주세요.';
+      tapCoverSync();
+    }
+    function tapCoverShow(c) {
+      var url = c.toDataURL('image/png');
+      document.getElementById('previewAfter').src = url;
+      var cs = document.getElementById('csAfter'); if (cs) cs.src = url;
+    }
+    document.getElementById('tapCoverBtn').addEventListener('click', function () { tapCoverSet(!tapCoverOn); tapCoverSync(); });
+    document.getElementById('tapCoverUndo').addEventListener('click', function () {
+      var c = currentCorrectionCanvas, last = tapCoverStack.pop();
+      if (!c || !last || tapCoverCanvasRef !== c) { tapCoverStack = []; tapCoverSync(); return; }
+      c.getContext('2d').putImageData(last.data, last.x, last.y);
+      tapCoverCount = Math.max(0, tapCoverCount - 1);
+      tapCoverShow(c); tapCoverSync();
+    });
+    document.getElementById('previewAfter').addEventListener('click', tapCoverAt);
+    if (typeof METHOD_LABEL === 'object' && METHOD_LABEL && !METHOD_LABEL.tapcover) METHOD_LABEL.tapcover = '직접 가리기';
+    // 보정 결과가 바뀔 때마다 단추를 보이거나 숨긴다(미리보기 그림이 바뀌는 순간을 본다)
+    document.getElementById('previewAfter').addEventListener('load', tapCoverSync);
+
     document.getElementById('downloadResultBtn').addEventListener('click', async function () {
       var out = await getFinalCanvas();
       if (!out) {
@@ -14994,6 +15084,11 @@
     // 앱 코드는 이 객체를 쓰지 않는다 (test/text-routing.js에서만 사용).
     window.__anshimTest = {
       setTabForTest: 탭세우기,
+      // 남은 곳 눌러서 가리기(test/tap-cover.js)
+      tapCover: {
+        setup: function (o) { uploadedPhotoUrl = o.photo; lastFaceResult = { faces: o.faces || [] }; currentCorrectionCanvas = o.canvas; lastCorrectionMeta = o.meta || null; tapCoverSync(); },
+        at: tapCoverAt, set: tapCoverSet, meta: function () { return lastCorrectionMeta; }, loadImage: loadImage,
+      },
       // 사진 돌리기 검증용(test/photo-rotate.js)
       uploadedPhotoUrlForTest: function () { return uploadedPhotoUrl; },
       originalPhotoUrlForTest: function () { return originalPhotoUrl; },
