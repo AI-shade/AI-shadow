@@ -16,6 +16,7 @@
 <meta name="description" content="아이 사진을 SNS에 올리기 전에 위치·소속이 드러나는지 진단하고, 아이는 그대로 둔 채 위험한 부분만 가려주는 서비스.">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,700..900&display=swap">
 <style>
   /* =========================================================================
      아이SHADOW — 시각 언어 v2 (가이드라인.md · 소프트 대시보드)
@@ -3402,6 +3403,356 @@
     .vr-note { grid-column: 1 / -1; }
   }
 
+
+  /* ===== 테마: BETHESDA 결 (윤서 시안, yunseo-design 브랜치) =====
+     내용·구조는 그대로 두고 색·글꼴·모양만 덮는다. 검정 · 풀색 초록 · 크림 세 가지.
+     굵은 제목, 대문자 모서리 라벨, 2px 검정 선, 둥글기 작게. 이 블록을 지우면 원래 디자인으로 돌아간다. */
+  :root {
+    --page: #EFEBDC;
+    --surface: #EFEBDC;
+    --card: #F7F4EA;
+    --card-dark: #121412;
+    --card-tan: #E6E1CF;
+    --soft: #E6E1CF;
+    --soft-hover: #DCD6C2;
+    --ink: #121412;
+    --muted: #55534B;          /* 크림 위 6.6:1 */
+    --on-dark: #EFEBDC;
+    --line: #D3CDBA;
+    --line-strong: #121412;
+    --accent: #4C9A5A;         /* 위 먹색 글씨 5.3:1 */
+    --accent-hover: #43884F;
+    --accent-2: #3C7F4A;
+    --accent-bar: #7FBE8A;
+    --focus: #4C9A5A;
+    --shadow-card: none;
+    --shadow-soft: none;
+    --tb-green: #4C9A5A;
+    --tb-black: #121412;
+    --tb-cream: #EFEBDC;
+  }
+  body { background: var(--page); }
+  .page-grain { display: none; }
+
+  /* 상단 바: 검정 */
+  .site-nav { background: var(--tb-black) !important; color: var(--tb-cream); border-bottom: none; backdrop-filter: none; }
+  .site-nav a { color: #C9C5B6; }
+  .site-nav a:hover, .site-nav .nav-brand { color: var(--tb-cream); }
+  .site-nav .nav-cta { background: var(--tb-green); color: var(--tb-black) !important; font-weight: 800; border-radius: 999px; }
+
+  /* 첫 화면: 검정 + 오른쪽 물결 초록 판 */
+  header.hero { background: var(--tb-black); color: var(--tb-cream); }
+  header.hero::after {
+    content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 17%; z-index: 0; pointer-events: none;
+    background: no-repeat right center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 800' preserveAspectRatio='none'%3E%3Cpath d='M110 0 C 40 120 170 220 100 340 C 30 460 160 560 90 680 C 50 750 90 790 100 800 L 600 800 L 600 0 Z' fill='%234C9A5A'/%3E%3C/svg%3E");
+  }
+  header.hero .hero-badge { background: transparent; color: var(--tb-green); padding: 0; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+  header.hero .hero-title { color: var(--tb-cream); font-weight: 800; letter-spacing: -0.035em; line-height: 1.12; font-size: clamp(2.4rem, 5.6vw, 4.6rem); }
+  header.hero .hero-sub { color: #C9C5B6; }
+  header.hero .btn-ghost { color: var(--tb-cream); border: 2px solid var(--tb-cream); background: transparent; }
+  header.hero .btn-ghost { padding: 14px 28px; font-weight: 800; gap: 8px; }
+  header.hero svg { color: var(--tb-green); }
+  @media (max-width: 1100px) { header.hero::after { width: 10%; } }
+  @media (max-width: 760px) { header.hero::after { display: none; } }
+
+  /* 버튼 */
+  .btn-primary, .primary { background: var(--tb-green); color: var(--tb-black); border: 2px solid var(--tb-black); font-weight: 800; }
+  .btn-primary:hover, .primary:hover { background: var(--accent-hover); }
+
+  /* 섹션 제목: 굵게, 라벨은 대문자 간격 */
+  .section-title, .sc-title { font-weight: 800; letter-spacing: -0.035em; line-height: 1.15; font-size: clamp(1.9rem, 3.6vw, 3rem); }
+  .section-eyebrow, .sc-eyebrow { color: var(--accent-2); font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.72rem; }
+  .sc-eyebrow { background: none; padding: 0; border-radius: 0; color: var(--accent-2); font-size: 0.85rem; letter-spacing: 0.08em; }
+
+  /* 카드: 2px 검정 선, 둥글기 작게, 그림자 없음 */
+  .feature-card, .why-card, .faq-list details, .sc-card, .sp-card, .ig-card {
+    border: 2px solid var(--tb-black); border-radius: 6px; box-shadow: none;
+  }
+  .feature-card.pin-item.on, .why-card.pin-item.on { box-shadow: 6px 6px 0 var(--tb-black); }
+  .feature-card h3, .why-card h3 { font-weight: 800; font-size: 1.15rem; }
+  .faq-list summary { font-weight: 800; }
+  .faq-list summary::after { color: var(--tb-black); font-weight: 700; }
+
+  /* 기능: 검정 판 */
+  #features { background: var(--tb-black); color: var(--tb-cream); }
+  #features .section-title { color: var(--tb-cream); }
+  #features .section-eyebrow { color: var(--tb-green); }
+  #features .feature-card { background: #1D201C; border-color: #3A3D37; color: var(--tb-cream); }
+  #features .feature-card p { color: #C9C5B6; }
+  #features .feature-card.pin-item.on { border-color: var(--tb-green); box-shadow: 6px 6px 0 var(--tb-green); }
+  #features .ghost-link { color: var(--tb-cream); }
+
+  /* 왜 안전한가: 크림 바닥, 강조 카드 하나는 초록 */
+  .site-section.alt { background: var(--card-tan); }
+  #why .why-card { background: var(--card); }
+  #why .why-card:nth-child(2) { background: var(--tb-green); }
+  #why .why-card:nth-child(2) p { color: var(--tb-black); }
+
+  /* 마지막 띠: 초록 */
+  .cta-band { background: var(--tb-green); color: var(--tb-black); }
+  .cta-band p { color: var(--tb-black); }
+  .cta-band h2 { font-weight: 800; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.035em; }
+  .cta-band .btn-primary { background: var(--tb-black); color: var(--tb-cream); }
+
+  /* 푸터: 검정 */
+  .site-footer { background: var(--tb-black); color: var(--tb-cream); border-top: none; }
+  .site-footer a, .foot-brand p, .foot-note { color: #C9C5B6; }
+  .site-footer h4 { color: var(--tb-green); letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.75rem; }
+
+  /* ----- 3단계부터 끝까지: 시안(사이트디자인_시안) 결 그대로 -----
+     웹 화면에서만 바꾼다. 폰 앱 화면(560px 이하)은 위 색만 따르고 배치는 그대로 둔다.
+     여기서는 스크롤 고정(핀)을 풀고 전부 한 번에 보이게 한다. */
+  .tb-ico, .tb-label, .tb-huge { display: none; }
+  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+    .tb-ico { display: block; flex: none; }
+    .tb-label {
+      display: inline-block; font-family: 'Archivo', 'Pretendard Variable', sans-serif;
+      font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    }
+
+    /* 핀 풀기 */
+    #steps, #features, #why, #faq { padding: 110px 0; border-top: 0; }
+    #faq { padding-top: 40px; }
+    #steps .steps-track, #features .pin-track, #why .pin-track, #faq .pin-track { height: auto; }
+    #steps .steps-stage, #features .pin-stage, #why .pin-stage, #faq .pin-stage {
+      position: static; height: auto; min-height: 0; display: block; overflow: visible;
+    }
+    #steps .pin-item, #features .pin-item, #why .pin-item, #faq .pin-item { opacity: 1; }
+    #steps .steps-progress, .pin-progress { display: none; }
+    #steps .section-inner, #features .section-inner, #why .section-inner, #faq .section-inner,
+    .cta-band .section-inner { max-width: 1240px; padding-inline: max(20px, 4vw); }
+
+    /* 섹션 머리 */
+    #steps .section-title, #features .section-title, #why .section-title, #faq .section-title {
+      font-weight: 900; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.1; letter-spacing: -.035em;
+      margin: 0 0 64px; max-width: 12em;
+    }
+    #steps .section-title::after, #features .section-title::after, #why .section-title::after, #faq .section-title::after { display: none; }
+    #steps .section-eyebrow::before, #features .section-eyebrow::before, #why .section-eyebrow::before, #faq .section-eyebrow::before { display: none; }
+    #steps .section-eyebrow, #why .section-eyebrow, #faq .section-eyebrow { color: var(--accent-2); margin-bottom: 18px; }
+
+    /* 3단계: 세 칸, 칸마다 아래에 예시 상자 */
+    #steps .steps-viz {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; align-items: stretch;
+      border-top: 2px solid var(--tb-black);
+    }
+    #steps .steps-list, #steps .steps-panes { display: contents; }
+    #steps .steps-list li {
+      grid-row: 1; flex-direction: column; gap: 16px; padding: 36px 32px 22px;
+      background: transparent; border: 0; border-right: 2px solid var(--tb-black); border-radius: 0;
+      opacity: 1; transform: none; box-shadow: none;
+    }
+    #steps .steps-list li:nth-child(1), #steps .steps-pane:nth-child(1) { grid-column: 1; }
+    #steps .steps-list li:nth-child(2), #steps .steps-pane:nth-child(2) { grid-column: 2; }
+    #steps .steps-list li:nth-child(3), #steps .steps-pane:nth-child(3) { grid-column: 3; border-right: 0; }
+    #steps .sl-num {
+      width: auto; height: auto; border-radius: 0; display: block; background: none !important;
+      color: var(--accent-2) !important; font-family: 'Archivo', sans-serif; font-weight: 800;
+      font-size: 14px; letter-spacing: .14em;
+    }
+    #steps .sl-num::before { content: "0"; }
+    #steps .sl-body { gap: 12px; }
+    #steps .sl-body strong { font-size: 30px; font-weight: 900; letter-spacing: -.02em; line-height: 1.2; }
+    #steps .sl-body span { font-size: 16px; line-height: 1.65; color: var(--muted); }
+    #steps .steps-pane {
+      grid-row: 2; position: static; opacity: 1; transform: none; pointer-events: auto;
+      display: flex; flex-direction: column; justify-content: flex-start; gap: 8px;
+      padding: 0 32px 40px; border-right: 2px solid var(--tb-black);
+    }
+    #steps .sp-card {
+      background: var(--card); border: 2px solid var(--tb-black); border-radius: 0; box-shadow: none;
+      padding: 12px 14px; gap: 6px;
+    }
+    #steps .sp-line { display: none; }
+    #steps .sp-chip {
+      background: transparent; color: var(--tb-black); border: 1.5px solid var(--tb-black);
+      border-radius: 999px; padding: 1px 10px; font-size: 13px; font-weight: 500;
+    }
+    #steps .sp-chip.risk {
+      border: 0; padding: 0; font-family: 'Archivo', 'Pretendard Variable', sans-serif;
+      font-size: 24px; font-weight: 800; letter-spacing: -.02em; color: var(--tb-black);
+    }
+    #steps .sp-compare { gap: 8px; }
+    #steps .sp-shot { border: 2px solid var(--tb-black); border-radius: 0; background: var(--card-tan); }
+    #steps .sp-tag { border-radius: 0; box-shadow: none; border: 1.5px solid var(--tb-black); background: var(--card); color: var(--tb-black); }
+    #steps .sp-tag.on { background: var(--tb-green); }
+    #steps .sp-box { border-color: var(--tb-green); background: rgba(76, 154, 90, .18); border-radius: 0; }
+    #steps .sp-box.covered { background: var(--tb-black); }
+    #steps .sp-check { background: var(--tb-green); border-radius: 50%; }
+    #steps .sp-check svg { stroke: var(--tb-black); }
+
+    /* 기능: 검정 판, 상자 없이 아이콘 + 대문자 라벨 */
+    #features { background: var(--tb-black); }
+    #features .feature-grid { grid-template-columns: repeat(4, 1fr); gap: 48px 32px; }
+    #features .feature-card, #features .feature-card.pin-item.on {
+      background: transparent; border: 0; border-radius: 0; padding: 0; box-shadow: none; transform: none;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 18px;
+    }
+    #features .tb-label { color: var(--tb-green); }
+    #features .feature-card h3 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.02em; color: var(--tb-cream); }
+    #features .feature-card p { font-size: 15px; line-height: 1.65; color: #C9C5B6; }
+
+    /* 왜 안전한가: 살짝 기운 카드 넷, 둘째만 초록, 아래에 번호 */
+    #why.site-section.alt { background: var(--page); }
+    #why .why-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; counter-reset: why; padding-bottom: 14px; }
+    #why .why-card, #why .why-card.pin-item.on {
+      counter-increment: why; background: var(--card); border: 2px solid var(--tb-black); border-radius: 0;
+      padding: 28px 24px 30px; display: flex; flex-direction: column; gap: 14px; min-height: 300px;
+      box-shadow: none; transition: transform .2s;
+    }
+    #why .why-card:nth-child(odd), #why .why-card.pin-item.on:nth-child(odd) { transform: rotate(-1.5deg); }
+    #why .why-card:nth-child(even), #why .why-card.pin-item.on:nth-child(even) { transform: rotate(1.5deg) translateY(14px); }
+    #why .why-card:nth-child(2) { background: var(--tb-green); }
+    #why .why-card:hover, #why .why-card.pin-item.on:hover { transform: rotate(0) translateY(-6px); }
+    #why .why-card h3 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.02em; }
+    #why .why-card p { font-size: 15px; line-height: 1.65; color: var(--muted); }
+    #why .why-card:nth-child(2) p { color: var(--tb-black); }
+    #why .why-card::after {
+      content: "0" counter(why); margin-top: auto;
+      font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .16em;
+    }
+
+    /* 자주 묻는 질문: 선으로만 나눈 목록, 동그라미 + */
+    #faq .faq-list { gap: 0; border-top: 2px solid var(--tb-black); }
+    #faq .faq-list details, #faq .faq-list details.pin-item {
+      background: transparent; border: 0; border-bottom: 2px solid var(--tb-black); border-radius: 0;
+      padding: 0 4px; box-shadow: none; transform: none;
+    }
+    #faq .faq-list summary { padding: 26px 0; font-size: 21px; font-weight: 800; letter-spacing: -.01em; }
+    #faq .faq-list summary::after, #faq .faq-list details[open] summary::after {
+      content: "+"; width: 34px; height: 34px; border: 2px solid var(--tb-black); border-radius: 50%;
+      display: grid; place-items: center; font-family: 'Archivo', sans-serif; font-size: 18px; font-weight: 700;
+      color: var(--tb-black); transition: transform .2s, background .2s;
+    }
+    #faq .faq-list details[open] summary::after { transform: rotate(45deg); background: var(--tb-green); }
+    #faq .faq-list p { padding: 0 0 26px; font-size: 16px; max-width: 760px; color: var(--muted); }
+    #faq .faq-list p a { color: var(--tb-black); text-decoration: underline; }
+
+    /* 마지막 띠: 위쪽 크림 물결 + 큰 SHADOW */
+    .cta-band { background: var(--tb-green); color: var(--tb-black); text-align: left; padding: 160px 0 60px; }
+    .cta-band::before {
+      content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 90px; pointer-events: none;
+      background: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 90' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L1440 0 L1440 30 C 1300 70 1180 10 1040 40 C 900 70 780 20 640 44 C 500 68 380 18 240 42 C 140 60 60 40 0 52 Z' fill='%23EFEBDC'/%3E%3C/svg%3E");
+    }
+    .tb-huge-wrap { width: max-content; max-width: 100%; }
+    .cta-band .tb-huge-wrap .tb-cta-label { display: block; text-align: right; }
+    .tb-huge-row { display: flex; align-items: flex-end; gap: min(1.6vw, 22px); }
+    .cta-band .tb-logo { display: block; flex: none; height: min(11.5vw, 168px); width: auto; margin-bottom: min(.6vw, 8px); }
+    .cta-band .tb-cta-label { margin: 0 0 6px; font-size: 12px; color: var(--tb-black); }
+    .cta-band .clover-cta { margin: 0 0 18px; width: 54px; height: 54px; }
+    .cta-band .clover-cta .cl-leaf { fill: var(--tb-black); }
+    .cta-band .clover-cta .cl-stem { stroke: var(--tb-black); }
+    .cta-band .tb-huge {
+      display: block; margin: 0; font-family: 'Archivo', sans-serif; font-weight: 900; font-stretch: 125%;
+      font-size: min(13vw, 190px); line-height: .9; white-space: nowrap; letter-spacing: -.02em; color: var(--tb-black);
+    }
+    .tb-cta-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; margin-top: 40px; flex-wrap: wrap; }
+    .cta-band .tb-cta-row h2 { margin: 0 0 8px; font-size: clamp(24px, 2.6vw, 34px); font-weight: 900; }
+    .cta-band .tb-cta-row p { margin: 0; max-width: 460px; font-size: 20px; font-weight: 700; color: var(--tb-black); }
+    .cta-band .btn-primary { padding: 14px 26px; border-radius: 999px; font-size: 16px; }
+
+    @media (max-width: 960px) {
+      #steps .steps-viz { grid-template-columns: 1fr; }
+      #steps .steps-list li:nth-child(n), #steps .steps-pane:nth-child(n) { grid-column: 1; border-right: 0; }
+      #steps .steps-list li:nth-child(1) { grid-row: 1; } #steps .steps-pane:nth-child(1) { grid-row: 2; }
+      #steps .steps-list li:nth-child(2) { grid-row: 3; } #steps .steps-pane:nth-child(2) { grid-row: 4; }
+      #steps .steps-list li:nth-child(3) { grid-row: 5; } #steps .steps-pane:nth-child(3) { grid-row: 6; }
+      #steps .steps-pane:nth-child(-n+2) { border-bottom: 2px solid var(--tb-black); }
+      #steps .sp-compare { max-width: 420px; }
+      #features .feature-grid, #why .why-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      #features .feature-grid, #why .why-grid { grid-template-columns: 1fr; }
+      #why .why-card:nth-child(n), #why .why-card.pin-item.on:nth-child(n) { transform: none; }
+    }
+  }
+
+  /* 줄바꿈: 낱말 중간에서 끊지 않고, 제목은 줄 길이를 고르게, 글은 끝줄에 한두 글자만 남지 않게 */
+  body { word-break: keep-all; overflow-wrap: break-word; }
+  h1, h2, h3, h4, summary, .section-title, .hero-title, .sl-body strong, .sc-title { text-wrap: balance; }
+  p, li, .sl-body span, figcaption, label { text-wrap: pretty; }
+  .nb { white-space: nowrap; }
+  .hero-sub .sub-l { display: block; text-wrap: balance; }
+
+  /* ----- 살짝 움직임 (웹 화면 · 모션 줄이기 설정이 아닐 때만) -----
+     초기 숨김은 스크립트가 html에 .tb-anim을 붙였을 때만 걸린다 — JS가 안 돌면 그냥 보인다.
+     한 번 나타나면 그대로 둔다(다시 숨기지 않는다). */
+  @media (prefers-reduced-motion: no-preference) and (not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px)))) {
+    :root { --tb-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+
+    /* 공통: 아래에서 올라오며 나타남 */
+    .tb-anim .tb-up { opacity: 0; translate: 0 22px; transition: opacity .7s var(--tb-ease), translate .7s var(--tb-ease); transition-delay: var(--d, 0ms); }
+    .tb-anim .tb-up.tb-in { opacity: 1; translate: 0 0; }
+    .tb-anim :is(#steps, #features, #why, #faq) .tb-up:not(.tb-in) { opacity: 0; }
+    .tb-anim #why .why-card.tb-up { transition: transform .2s, opacity .7s var(--tb-ease), translate .7s var(--tb-ease); transition-delay: 0s, var(--d, 0ms), var(--d, 0ms); }
+
+    /* 3단계: 위 굵은 선이 왼쪽에서 그어진다 */
+    #steps .steps-viz { position: relative; }
+    .tb-anim #steps .steps-viz { border-top-color: transparent; }
+    .tb-anim #steps .steps-viz::before {
+      content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 2px; background: var(--tb-black);
+      transform: scaleX(0); transform-origin: left; transition: transform 1s var(--tb-ease);
+    }
+    .tb-anim #steps .steps-viz.tb-in::before { transform: scaleX(1); }
+
+    /* 아이콘 선이 그려진다 */
+    .tb-anim .tb-draw path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.1s var(--tb-ease); transition-delay: calc(var(--d, 0ms) + 150ms); }
+    .tb-anim .tb-draw path[fill="#121412"] { stroke-dasharray: none; stroke-dashoffset: 0; opacity: 0; transition: opacity .5s ease; transition-delay: calc(var(--d, 0ms) + 700ms); }
+    .tb-anim .tb-draw.tb-in path { stroke-dashoffset: 0; }
+    .tb-anim .tb-draw.tb-in path[fill="#121412"] { opacity: 1; }
+
+    /* SHADOW 글자가 한 자씩 올라온다 */
+    .cta-band .tb-huge .tb-ch { display: inline-block; }
+    .tb-anim .cta-band .tb-huge { clip-path: inset(0 -5% 0 -5%); }
+    .tb-anim .cta-band .tb-huge .tb-ch { translate: 0 100%; transition: translate .8s var(--tb-ease); transition-delay: var(--d, 0ms); }
+    .tb-anim .cta-band .tb-huge.tb-in .tb-ch { translate: 0 0; }
+
+    /* 자주 묻는 질문: 펼친 답이 부드럽게 내려온다 */
+    #faq .faq-list details[open] p { animation: tbDrop .45s var(--tb-ease); }
+    @keyframes tbDrop { from { opacity: 0; translate: 0 -8px; } }
+
+    /* 단추: 올라가면서 검정 그림자가 생긴다 */
+    .btn-primary, header.hero .btn-ghost { transition: translate .2s var(--tb-ease), box-shadow .2s var(--tb-ease), background .2s; }
+    .btn-primary:hover { translate: 0 -2px; box-shadow: 4px 4px 0 var(--tb-black); }
+    .cta-band .btn-primary:hover { box-shadow: 4px 4px 0 var(--tb-cream); }
+    header.hero .btn-ghost:hover { translate: 0 -2px; box-shadow: 4px 4px 0 var(--tb-green); background: transparent; }
+    header.hero .btn-ghost span { display: inline-block; transition: translate .2s var(--tb-ease); }
+    header.hero .btn-ghost:hover span { translate: 4px 0; }
+  }
+
+  /* ----- 흐르는 단서 띠 · 자가진단 제목 · 진단/내 정보 화면 모양 맞추기 ----- */
+  .tb-ticker { display: none; }
+  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+    .tb-ticker {
+      display: block; overflow: hidden; background: var(--tb-green); color: var(--tb-black);
+      border-top: 2px solid var(--tb-black); border-bottom: 2px solid var(--tb-black);
+    }
+    :root:not([data-view="home"]) .tb-ticker { display: none; }
+    .tb-ticker .tb-track {
+      display: flex; width: max-content; padding: 16px 0;
+      animation: tbSlide 36s linear infinite;
+    }
+    .tb-ticker span {
+      display: inline-flex; align-items: center; gap: 36px; padding-right: 36px;
+      font-weight: 900; font-size: 22px; letter-spacing: -.01em; white-space: nowrap;
+    }
+    .tb-ticker span::after { content: ""; width: 9px; height: 9px; background: var(--tb-black); transform: rotate(45deg); }
+    @keyframes tbSlide { to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .tb-ticker .tb-track { animation: none; } }
+
+    /* 자가진단 제목: 아래 섹션 제목과 같은 굵기·크기 */
+    #selfcheck .sc-title { font-weight: 900; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.1; letter-spacing: -.035em; }
+    #selfcheck .sc-eyebrow { margin-bottom: 14px; }
+
+    /* 진단 화면: 둥근 판 → 검정 2px 테두리, 모서리 작게 */
+    main#tool { border: 2px solid var(--tb-black); border-radius: 6px; box-shadow: none; }
+    #tool .card { border-radius: 6px; }
+    #tool .polaroid { border: 2px solid var(--tb-black); border-radius: 6px; }
+    #tool .primary, #tool button.primary, #pattern-check .primary, #pattern-check .btn-primary { border: 2px solid var(--tb-black); font-weight: 800; }
+    /* 내 정보: 사진 놓는 칸 */
+    .drop-zone { border-radius: 6px; border-width: 2px; }
+  }
+  /* ===== 테마 끝 ===== */
 </style>
 
 <script>
@@ -3508,10 +3859,10 @@
   <div class="hero-inner">
     <div class="hero-copy">
       <span class="hero-badge">Campus AX-Ton · 멋쟁이사자처럼</span>
-      <h1 class="hero-title">아이 사진, 올리기 전에<br>한 번 더 살펴봐요</h1>
+      <h1 class="hero-title"><span class="nb">아이 사진,</span> <span class="nb">올리기 전에</span><br><span class="nb">한 번 더</span> <span class="nb">살펴봐요</span></h1>
       <p class="hero-sub">
-        간판, 전화번호, 지번 같은 위치 단서와 교복, 명찰처럼 소속을 드러내는 것까지 찾아내고,
-        아이는 그대로 둔 채 위험한 부분만 지워드려요.
+        <span class="sub-l">간판, 전화번호, 지번 같은 위치 단서와 <span class="nb">교복, 명찰처럼</span> 소속을 드러내는 것까지 찾아내고,</span>
+        <span class="sub-l">아이는 그대로 둔 채 위험한 부분만 지워드려요.</span>
       </p>
       <div class="hero-actions">
         <a class="btn-primary" href="#tool">지금 진단하기</a>
@@ -3541,6 +3892,9 @@
     </g>
   </svg>
 </header>
+
+<!-- 첫 화면 아래 흐르는 띠: 사이트가 찾는 위치 단서들(장식, 화면 낭독기에는 숨김) -->
+<div class="tb-ticker" aria-hidden="true"><div class="tb-track"><span>간판</span><span>전화번호</span><span>지번</span><span>교복</span><span>명찰</span><span>원복</span><span>기관 로고</span><span>아파트</span><span>번호판</span><span>간판</span><span>전화번호</span><span>지번</span><span>교복</span><span>명찰</span><span>원복</span><span>기관 로고</span><span>아파트</span><span>번호판</span></div></div>
 
 <!-- 폰 전용 진단 탭 머리 — 제목 바 + 알약 모양 진입점. 배민 앱 홈의 「상단 바 + 검색창」 구조를
      참고했다(검색창 자리에 "사진 올리기"). 누르면 가운데 ＋ 버튼과 똑같이 사진 고르기를 연다.
@@ -3646,7 +4000,7 @@
         </div>
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 94개</p>
-        <p class="ig-cap"><strong>seoul_mom22</strong> 하원길에 달려오는 우리 딸 🥰</p>
+        <p class="ig-cap"><strong>seoul_mom22</strong> 하원길에 달려오는 <span class="nb">우리 딸 🥰</span></p>
         <p class="ig-note">뒤 건물에 아파트 이름과 동이 적혀 있어요</p>
         <p class="ig-time">5시간 전</p>
       </article>
@@ -4342,12 +4696,13 @@
   <div class="pin-track steps-track" id="stepsTrack" data-pin="3">
     <div class="pin-stage steps-stage">
       <div class="section-inner steps-inner">
-        <p class="section-eyebrow">어떻게 쓰나요</p>
+        <p class="section-eyebrow">How it works</p>
         <h2 class="section-title">3단계면 끝나요</h2>
 
         <div class="steps-viz">
           <ol class="steps-list" id="stepsList">
             <li class="pin-item" data-step="0">
+              <svg class="tb-ico" width="64" height="64" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M44 18 C60 17 71 29 70 44 C69 59 57 70 43 69 C28 68 18 57 19 43 C20 29 30 19 44 18 Z"/><path d="M63 63 L83 84"/><path d="M33 38 C35 31 41 28 47 28"/></g></svg>
               <span class="sl-num">1</span>
               <span class="sl-body">
                 <strong>진단</strong>
@@ -4356,6 +4711,7 @@
               </span>
             </li>
             <li class="pin-item" data-step="1">
+              <svg class="tb-ico" width="64" height="64" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M76 16 C82 18 84 24 80 30 L50 62 L40 54 L70 20 C72 17 74 16 76 16 Z"/><path d="M40 56 C30 56 24 64 24 72 C24 80 18 84 14 84 C30 88 46 82 48 66"/></g></svg>
               <span class="sl-num">2</span>
               <span class="sl-body">
                 <strong>보정</strong>
@@ -4364,6 +4720,7 @@
               </span>
             </li>
             <li class="pin-item" data-step="2">
+              <svg class="tb-ico" width="64" height="64" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 14 C62 21 72 23 82 22 C83 55 71 76 50 88 C29 76 17 55 18 22 C28 23 38 21 50 14 Z"/><path d="M35 50 L46 61 L66 37"/></g></svg>
               <span class="sl-num">3</span>
               <span class="sl-body">
                 <strong>검증</strong>
@@ -4420,22 +4777,30 @@
   <div class="pin-track" data-pin="4">
   <div class="pin-stage">
   <div class="section-inner">
-    <p class="section-eyebrow">기능</p>
+    <p class="section-eyebrow">Features</p>
     <h2 class="section-title">사람이 놓치는 것을 대신 찾아드려요</h2>
     <div class="feature-grid" id="featureGrid">
       <article class="feature-card pin-item">
+        <svg class="tb-ico" width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#EFEBDC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 24 L84 20 L86 58 L15 62 Z"/><path d="M30 61 L28 86"/><path d="M72 58 L74 84"/><path d="M28 36 L70 34"/><path d="M30 47 L58 46"/></g></svg>
+        <span class="tb-label" aria-hidden="true">Signboard</span>
         <h3>배경 글자 판독</h3>
         <p>간판, 전화번호, 지번처럼 장소를 알려 주는 글자를 찾아요. 기기 안에서 읽은 글자와 AI가 읽은 글자를 함께 써서, 무슨 글자가 어디 있는지 정확히 찾아요.</p>
       </article>
       <article class="feature-card pin-item">
+        <svg class="tb-ico" width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#EFEBDC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M34 14 L50 24 L66 14 L86 26 L78 42 L70 38 L70 86 L30 86 L30 38 L22 42 L14 26 Z"/><path d="M56 50 C62 50 64 56 60 60 C56 64 50 60 52 54"/></g></svg>
+        <span class="tb-label" aria-hidden="true">Uniform</span>
         <h3>글자가 아닌 단서</h3>
         <p>교복, 원복, 명찰, 기관 로고처럼 아이가 어디에 다니는지 알려 주는 것을 찾아요. 주소 다음으로 강한 위치 단서예요.</p>
       </article>
       <article class="feature-card pin-item">
+        <svg class="tb-ico" width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#EFEBDC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 24 L84 22 L85 84 L15 86 Z"/><path d="M16 40 L84 39"/><path d="M32 14 L32 30 M68 14 L68 30"/><path d="M30 56 L40 56 M52 56 L62 56 M30 70 L40 70"/><path d="M54 66 L60 72 L72 60"/></g></svg>
+        <span class="tb-label" aria-hidden="true">Pattern</span>
         <h3>반복 패턴 분석</h3>
         <p>과거 게시물 스크린샷을 함께 넣으면 "매주 같은 요일, 시간대" 같은 생활 패턴이 드러나는지 짚어 드려요.</p>
       </article>
       <article class="feature-card pin-item">
+        <svg class="tb-ico" width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#EFEBDC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 12 L24 76 L88 76"/><path d="M12 24 L76 24 L76 88"/><path d="M40 60 L56 40 L64 50"/></g></svg>
+        <span class="tb-label" aria-hidden="true">5 ways</span>
         <h3>5가지 보정</h3>
         <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
       </article>
@@ -4453,22 +4818,26 @@
   <div class="pin-track" data-pin="4">
   <div class="pin-stage">
   <div class="section-inner">
-    <p class="section-eyebrow">왜 안전한가</p>
+    <p class="section-eyebrow">Why it’s safe</p>
     <h2 class="section-title">아이를 건드리지 않는다는 원칙</h2>
     <div class="why-grid" id="whyGrid">
       <article class="why-card pin-item">
-        <h3>얼굴은 가려서 보내요</h3>
+        <svg class="tb-ico" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 14 C69 14 80 30 80 50 C80 71 66 87 49 86 C31 85 20 70 20 50 C20 30 32 14 50 14 Z"/><path d="M24 41 L77 39 L78 55 L23 56 Z" fill="#121412"/></g></svg>
+        <h3>얼굴은 <span class="nb">가려서 보내요</span></h3>
         <p>진단하려고 사진을 밖으로 보낼 때는 얼굴을 먼저 검게 덮어요. 얼굴을 못 찾은 사진은 덮을 곳이 없어서 원본으로 보내요. AI 보정과 구글 이미지 검색은 원본이 필요해서, 그 단추를 누르면 원본을 보내요.</p>
       </article>
       <article class="why-card pin-item">
+        <svg class="tb-ico" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 46 L72 45 L73 86 L27 86 Z"/><path d="M37 46 L37 33 C37 15 63 15 63 33 L63 46"/><path d="M50 62 L50 72"/></g></svg>
         <h3>부탁이 아니라 차단</h3>
         <p>AI에게 "아이를 바꾸지 마"라고 부탁하는 대신, 아이 부분을 AI가 다시 그리는 자리에서 아예 빼요. 그래서 AI가 아이를 바꿀 수 없어요.</p>
       </article>
       <article class="why-card pin-item">
+        <svg class="tb-ico" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 22 L80 20 L82 80 L18 82 Z"/><path d="M34 62 L48 46 L58 56 L66 48"/></g></svg>
         <h3>비율은 원본 그대로</h3>
         <p>어떤 보정을 해도 사진 비율은 그대로예요. 잘라야 할 때는 아이를 자르지 않고, 비율을 바꾼 뒤 알려 드려요.</p>
       </article>
       <article class="why-card pin-item">
+        <svg class="tb-ico" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 14 C62 21 72 23 82 22 C83 55 71 76 50 88 C29 76 17 55 18 22 C28 23 38 21 50 14 Z"/><path d="M35 50 L46 61 L66 37"/></g></svg>
         <h3>고친 다음 다시 검사</h3>
         <p>고친 사진을 처음과 같은 검사로 한 번 더 살펴보고, 단서가 정말 사라졌는지 보여 드려요.</p>
       </article>
@@ -4492,7 +4861,7 @@
   <div class="pin-track" data-pin="5" data-pin-accumulate="1">
   <div class="pin-stage">
   <div class="section-inner narrow">
-    <p class="section-eyebrow">자주 묻는 질문</p>
+    <p class="section-eyebrow">FAQ</p>
     <h2 class="section-title">궁금하실 것들</h2>
     <div class="faq-list">
       <details class="pin-item"><summary>사진을 어딘가에 저장하나요?</summary><p>진단할 때만 보내고, 따로 보관하지 않아요. 자르기, 흐리기, 주변 색 채우기는 사진이 기기 밖으로 나가지 않아요.</p></details>
@@ -4528,9 +4897,20 @@
         <path class="cl-leaf cl-leaf-detach" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" />
       </g>
     </svg>
-    <h2>올리기 전에 30초만 써보세요</h2>
-    <p>사진 1장이면 돼요. 위험한 부분만 찾아서 알려 드릴게요.</p>
-    <a class="btn-primary" href="#tool">사진 진단하기</a>
+    <div class="tb-huge-wrap">
+      <p class="tb-label tb-cta-label" aria-hidden="true">아이 곁의 그림자</p>
+      <div class="tb-huge-row">
+        <img class="tb-logo" src="public/brand/shadow_logo.png" alt="" width="376" height="416">
+        <p class="tb-huge" aria-hidden="true">SHADOW</p>
+      </div>
+    </div>
+    <div class="tb-cta-row">
+      <div>
+        <h2>올리기 전에 30초만 써보세요</h2>
+        <p>사진 1장이면 돼요. 위험한 부분만 찾아서 알려 드릴게요.</p>
+      </div>
+      <a class="btn-primary" href="#tool">사진 진단하기</a>
+    </div>
   </div>
 </section>
 
@@ -4545,7 +4925,7 @@
     </div>
     <div class="foot-cols">
       <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#me">내 정보</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
-      <div><h4>지원</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
+      <div><h4>지원</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 <span class="nb">미래내일 일경험</span></li></ul></div>
       <div><h4>만든 사람들</h4><ul><li class="foot-team">Team 네잎클로드<svg class="clover-inline" viewBox="-32 -32 64 64" aria-hidden="true"><path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /></svg></li><li>김민석</li><li>남근오</li><li>김현미</li><li>최윤서</li><li>이영우</li></ul></div>
     </div>
   </div>
@@ -4965,6 +5345,73 @@
       if (everFired) return;
       io.disconnect();
       all.forEach(function (el) { el.classList.add('in'); });
+    }, 3000);
+  })();
+</script>
+<script>
+  /* 아래 섹션(3단계~마지막 띠)에 살짝 움직임을 준다. 웹 화면 + 모션 줄이기 꺼짐일 때만.
+     .tb-anim을 html에 붙여야 초기 숨김 CSS가 걸리고, 3초 안에 관찰자가 한 번도 안 돌면 전부 편다. */
+  (function () {
+    var mq = window.matchMedia;
+    if (!mq || mq('(prefers-reduced-motion: reduce)').matches) return;
+    if (mq('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    var items = [];
+    function add(sel, step, cls) {
+      Array.prototype.forEach.call(document.querySelectorAll(sel), function (el, i) {
+        el.classList.add(cls || 'tb-up');
+        if (step) el.style.setProperty('--d', Math.min(i * step, 480) + 'ms');
+        items.push(el);
+      });
+    }
+    ['#steps', '#features', '#why', '#faq'].forEach(function (id) {
+      add(id + ' .section-eyebrow', 0);
+      add(id + ' .section-title', 0);
+    });
+    add('#steps .steps-list li', 110);
+    add('#steps .steps-pane', 110);
+    add('#steps .steps-viz', 0, 'tb-noop');
+    add('#features .feature-card', 110);
+    add('#why .why-card', 110);
+    add('#faq .faq-list details', 60);
+    add('.cta-band .tb-cta-label', 0);
+    add('.cta-band .tb-logo', 0);
+    add('.cta-band .tb-cta-row', 0);
+    // 아이콘 선 그리기: 선 길이를 1로 맞춰 둔다
+    Array.prototype.forEach.call(document.querySelectorAll('#steps .tb-ico, #features .tb-ico, #why .tb-ico'), function (svg, i) {
+      Array.prototype.forEach.call(svg.querySelectorAll('path'), function (p) { p.setAttribute('pathLength', '1'); });
+      svg.classList.add('tb-draw');
+      svg.style.setProperty('--d', ((i % 4) * 110) + 'ms');
+      items.push(svg);
+    });
+    // SHADOW 한 자씩
+    var huge = document.querySelector('.cta-band .tb-huge');
+    if (huge && !huge.querySelector('.tb-ch')) {
+      var t = huge.textContent.trim();
+      huge.textContent = '';
+      t.split('').forEach(function (c, i) {
+        var s = document.createElement('span');
+        s.className = 'tb-ch'; s.textContent = c; s.style.setProperty('--d', (i * 55) + 'ms');
+        huge.appendChild(s);
+      });
+      items.push(huge);
+    }
+    if (!items.length) return;
+
+    document.documentElement.classList.add('tb-anim');
+    var fired = false;
+    var io = new IntersectionObserver(function (entries) {
+      fired = true;
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('tb-in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    items.forEach(function (el) { io.observe(el); });
+    setTimeout(function () {
+      if (fired) return;
+      io.disconnect();
+      items.forEach(function (el) { el.classList.add('tb-in'); });
     }, 3000);
   })();
 </script>
