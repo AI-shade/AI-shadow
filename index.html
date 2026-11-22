@@ -3,6 +3,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>아이SHADOW</title>
+<style id="pc-like-phone">
+  /* 폰에서도 컴퓨터와 같은 구성으로 보인다(앱 껍데기 조건을 1px로 꺼 둠). 첫 화면이 화면 높이를 꽉 채우면
+     폰에서는 오른쪽 물결이 사라져 위아래가 비므로, 폰 폭에서는 내용 높이만큼만 차지한다 */
+  @media (max-width: 560px) {
+    .hero { min-height: 0 !important; padding: 2.2rem 0 2.6rem !important; align-items: flex-start !important; }
+    .hero .scroll-cue { display: none !important; }
+  }
+</style>
 <!-- 탭 아이콘. 파일을 따로 두지 않고 여기에 그려 넣는다 — 이 페이지는 파일 하나로
      굴러가야 하고, 배포 경로가 바뀌어도 아이콘이 깨지지 않는다.
      배경 없이 누끼로 두되, SVG 안에 prefers-color-scheme 규칙을 넣어
@@ -2118,7 +2126,7 @@
      누를 필요 없이 카드 안에 바로 떠 있게 바꿔서, 이제 이 카드는 #mapSheet 대화상자를
      안 쓴다(그건 폰 전용 하단 시트로만 남는다 — 아래 폰 블록에서 계속 쓴다). */
   .loc-map-hint { margin: 0.9rem 0 0.7rem; font-size: 0.78rem; color: var(--muted); }
-  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+  @media not ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) {
     /* 카드 안에 바로 있으니 폰 크기(30vh/250px)보다 조금 더 크게 — 여유 있는 데스크톱 공간을 쓴다. */
     #mapBoxInline { height: min(34vh, 320px); }
   }
@@ -2140,8 +2148,8 @@
      둘 다여야 "손가락으로만 쓰는 기기"다.
      태블릿(744px 이상)은 일부러 뺀다 — 웹 배치가 편하게 들어간다.
      test/device-switch.js가 기기 11종으로 이 경계를 지킨다. */
-  @media (max-width: 560px),
-         (pointer: coarse) and (hover: none) and (max-height: 560px) {
+  @media (max-width: 1px),
+         (pointer: coarse) and (hover: none) and (max-height: 1px) {
     /* 앱 껍데기에서는 웹 네비·푸터·CTA 띠가 할 일이 없다 — 앱바와 탭바,
        그리고 화면 아래 고정 액션이 그 자리를 맡는다.
        (실측: 알아보기 탭 아래에 푸터 579px, 검증 화면 아래에 CTA 띠가 붙어 있었다) */
@@ -2682,7 +2690,7 @@
      같은 data-view를 웹에도 쓴다 — 주소가 #tool·#pattern-check면 도구, 아니면 소개.
      DOM은 옮기지 않고 숨기기만 한다(결과·검증 화면 안쪽은 그대로). 폰 조건의 반대라
      폰 규칙과 겹치지 않는다. data-view는 아래 스크립트 「3) 홈 ↔ 도구」가 세운다. */
-  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+  @media not ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) {
     :root[data-view="home"] :is(main#tool, #pattern-check) { display: none; }
     :root:is([data-view="tool"], [data-view="me"]) :is(header.hero, #selfcheck, .scroll-cue, #steps, #features, #why, #faq, .cta-band) { display: none; }
     :root[data-view="tool"] #pattern-check { display: none; }
@@ -2701,7 +2709,7 @@
      바꾼다. data-screen은 아래 스크립트 「3) 홈 ↔ 도구」가 지금 떠 있는 화면 이름으로 세운다. */
   #stepper .step[data-step="verify"], #conn2, .app-bar-steps > span:nth-child(3) { display: none; }
   :root[data-screen="verify"] #stepper { display: none; }
-  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+  @media (max-width: 1px), ((pointer: coarse) and (hover: none) and (max-height: 1px)) {
     /* 폰: 검증·패턴 결과는 내 정보 탭에서 보인다. 도구(main#tool)는 진단 탭 것이라 탭 규칙이
        숨기는데, 이때만 꺼낸다(id가 있어 탭 규칙보다 무겁다). 입구와 제목 바는 그동안 비킨다. */
     :root[data-tab="내정보"]:is([data-screen="verify"], [data-screen="pattern"]) main#tool { display: block; }
@@ -2721,8 +2729,8 @@
      진짜 배민 앱으로 착각할 만큼 닮게 만들지 않는다.
      위 「어플 배치」 블록과 같은 조건이고 뒤에 있어서, 같은 무게의 규칙은 이쪽이 이긴다.
      데스크톱은 건드리지 않는다. */
-  @media (max-width: 560px),
-         (pointer: coarse) and (hover: none) and (max-height: 560px) {
+  @media (max-width: 1px),
+         (pointer: coarse) and (hover: none) and (max-height: 1px) {
     /* 바닥은 연회색, 그 위에 흰 면. 앱 본체 판(main)의 테두리·모서리·그림자는 걷는다. */
     body { background: var(--soft); }
     main {
@@ -2984,7 +2992,7 @@
      남긴다. 원래는 아주 낮은 폰(360x640)의 넘침을 막으려고 max-height 700px 이하에서만
      껐는데, 844px처럼 안 넘치는 폰에서도 첫 화면 절반이 설명 글로 채워진다는 제보(실사용)를
      받아 높이 조건을 뺐다 — 이제 폰 폭이면 키와 무관하게 접는다. */
-  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+  @media (max-width: 1px), ((pointer: coarse) and (hover: none) and (max-height: 1px)) {
     :root[data-tab="진단"][data-view="home"] header.hero .hero-sub { display: none; }
   }
 
@@ -2996,7 +3004,7 @@
   /* 진단 결과의 항목 칩이 하단 고정 바에 가리지 않게, 낮은 폰에서는 사진과 오각형을 더 줄인다.
      실측: 360x740에서 20vh/190px로는 칩이 48px 가렸다. 아주 낮은 폰(667 이하)은 그래도 조금
      스크롤해야 칩이 다 보인다 — 알려진 한계. */
-  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 800px) {
+  @media ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) and (max-height: 800px) {
     #screen-result .risk-photo-wrap img { max-height: 14vh; }
     #screen-result .gauge-ring { max-width: 168px; }
   }
@@ -3010,7 +3018,7 @@
      (사용자 지시 "색상은 적용하지마") — 기존 --card-dark·--accent-bar 그대로다.
      DOM은 그대로 두고, .app-home을 display:contents로 풀어 히어로와 같은 줄에 세운 뒤
      order로 순서만 바꾼다. 버튼은 히어로 밑에 두고 음수 여백으로 카드 안에 올려 앉힌다. */
-  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+  @media (max-width: 1px), ((pointer: coarse) and (hover: none) and (max-height: 1px)) {
     :root[data-tab="진단"][data-view="home"] .app-home { display: contents; }
     /* .app-home의 흰 면이 contents로 풀리면서 사라져 바닥(--soft)이 드러났다 — 감싼 쪽에 다시 깐다 */
     :root[data-tab="진단"][data-view="home"] .app-home-wrap { background: var(--card); position: relative; z-index: 1; }
@@ -3186,7 +3194,7 @@
 
   /* 낮은 폰(키 760px 이하, 예: 375x667) — 같은 내용을 더 촘촘히. 항목 목록은 두 줄로 나란히,
      보정 단계는 설명 줄을 접는다. (실측 375x667: 결과 130px · 보정 90px 넘쳤다) */
-  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 760px) {
+  @media ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) and (max-height: 760px) {
     #screen-result .factor-chips { display: grid; grid-template-columns: 1fr 1fr; column-gap: 0.9rem; }
     #screen-result .factor-chips .factor-chip,
     #screen-result .factor-chips .map-chip { font-size: 0.76rem; }
@@ -3199,7 +3207,7 @@
 
   /* 알아보기 쪽 넘기기 (폰 전용) — 섹션 하나가 한 쪽. 쪽 표시 줄은 탭바 바로 위에 붙는다. */
   .app-pager { display: none; }
-  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+  @media (max-width: 1px), ((pointer: coarse) and (hover: none) and (max-height: 1px)) {
     :root[data-tab="알아보기"] section[data-tab-of="알아보기"]:not([data-page-on]) { display: none; }
     :root[data-tab="알아보기"] .app-pager {
       display: flex; align-items: center; gap: 0.6rem; position: fixed; left: 0; right: 0; bottom: 4.1rem;
@@ -3267,7 +3275,7 @@
     :root[data-tab="알아보기"] :is(#selfcheck, #steps, #features, #why)[data-page-on] > * { width: 100%; }
   }
   /* 낮은 폰(375x667) — 과거글이 18px 넘쳤다 */
-  @media ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) and (max-height: 760px) {
+  @media ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) and (max-height: 760px) {
     #pattern-check .pe-card { gap: 0.5rem; padding-top: 0.7rem; padding-bottom: 0.8rem; }
     /* 알아보기 3·4쪽이 갤럭시 S22+ 삼성 인터넷(384x653)에서 7px 넘쳤다. 내용을 세로 가운데에 두니
        위아래 여백은 남는 키가 대신 채운다 — 안쪽 여백을 줄인다. */
@@ -3503,7 +3511,7 @@
      웹 화면에서만 바꾼다. 폰 앱 화면(560px 이하)은 위 색만 따르고 배치는 그대로 둔다.
      여기서는 스크롤 고정(핀)을 풀고 전부 한 번에 보이게 한다. */
   .tb-ico, .tb-label, .tb-huge { display: none; }
-  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+  @media not ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) {
     .tb-ico { display: block; flex: none; }
     .tb-label {
       display: inline-block; font-family: 'Archivo', 'Pretendard Variable', sans-serif;
@@ -3677,7 +3685,7 @@
   /* ----- 살짝 움직임 (웹 화면 · 모션 줄이기 설정이 아닐 때만) -----
      초기 숨김은 스크립트가 html에 .tb-anim을 붙였을 때만 걸린다 — JS가 안 돌면 그냥 보인다.
      한 번 나타나면 그대로 둔다(다시 숨기지 않는다). */
-  @media (prefers-reduced-motion: no-preference) and (not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px)))) {
+  @media (prefers-reduced-motion: no-preference) and (not ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px)))) {
     :root { --tb-ease: cubic-bezier(0.22, 1, 0.36, 1); }
 
     /* 공통: 아래에서 올라오며 나타남 */
@@ -3722,7 +3730,7 @@
 
   /* ----- 흐르는 단서 띠 · 자가진단 제목 · 진단/내 정보 화면 모양 맞추기 ----- */
   .tb-ticker { display: none; }
-  @media not ((max-width: 560px) or ((pointer: coarse) and (hover: none) and (max-height: 560px))) {
+  @media not ((max-width: 1px) or ((pointer: coarse) and (hover: none) and (max-height: 1px))) {
     .tb-ticker {
       display: block; overflow: hidden; background: var(--tb-green); color: var(--tb-black);
       border-top: 2px solid var(--tb-black); border-bottom: 2px solid var(--tb-black);
@@ -3755,7 +3763,7 @@
 
   /* ----- 폰 앱 화면: 웹과 같은 결(검정 2px 선 · 작은 둥글기 · 굵은 제목 · 영어 라벨) -----
      배치(탭·쪽 넘기기·행 목록)는 그대로 두고 껍데기만 맞춘다. */
-  @media (max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px) {
+  @media (max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px) {
     /* 진단 탭 홈 */
     header.hero { border-radius: 10px; overflow: hidden; }
     header.hero .hero-badge { color: var(--tb-green); letter-spacing: .14em; }
@@ -3859,7 +3867,7 @@
   // «새로고침하면 해당 페이지에서 새로고침하게». 폰은 하단 탭이 홈에서도 #tool을 달아서 뺀다.
   // 내 정보(#me·#pattern-check)는 폰에서도 남는다 — 그 주소는 내 정보 탭에서만 생긴다.
   var 도구유지 = location.hash === '#me' || location.hash === '#pattern-check' ||
-    (location.hash === '#tool' && !matchMedia('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches);
+    (location.hash === '#tool' && !matchMedia('(max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px)').matches);
   if (새로고침 && !도구유지) {
     // 앵커를 미리 떼야 브라우저가 그 자리로 뛰지 않는다.
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
@@ -5440,7 +5448,7 @@
   (function () {
     var mq = window.matchMedia;
     if (!mq || mq('(prefers-reduced-motion: reduce)').matches) return;
-    if (mq('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches) return;
+    if (mq('(max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px)').matches) return;
     if (!('IntersectionObserver' in window)) return;
 
     var items = [];
@@ -14542,7 +14550,7 @@
       }
       var name = '아이SHADOW_보정_' + (currentMethod || 'result') + '.png';
       var blob = await new Promise(function (resolve) { out.toBlob(resolve, 'image/png'); });
-      var phone = window.matchMedia && matchMedia('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches;
+      var phone = window.matchMedia && matchMedia('(max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px)').matches;
       if (phone && blob && typeof File === 'function' && navigator.canShare) {
         var file = new File([blob], name, { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
@@ -14953,7 +14961,7 @@
        갈려 있어 상수를 그대로 공유하지 못해 문자열을 옮겨 적었다. 값을 바꿀 땐 같이 바꿀 것.
        클릭 핸들러는 .sb-row가 아니라 공용 껍데기 .foldable로 몸통을 찾는다 —
        FAQ 항목(Task 5)에는 .sb-row가 없어서 .sb-row 기준이면 그때 null 참조로 터진다. */
-    var FOLD_PHONE_MQ = '(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)';
+    var FOLD_PHONE_MQ = '(max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px)';
     if (matchMedia(FOLD_PHONE_MQ).matches) document.documentElement.classList.add('fold-on');
     document.addEventListener('click', function (e) {
       var btn = e.target.closest && e.target.closest('.why-btn');
@@ -15455,7 +15463,7 @@
       // 않게). 위 mapSheet(폰 하단 시트)와는 DOM이 달라서 leaflet 지도 객체도 따로 둔다.
       // CSS의 폰 조건(어플 배치 미디어 쿼리)과 똑같은 식이어야 한다 — 갈라지면 폰에서
       // 숨은 카드 안 지도를 부르느라 헛김만 새는 API 호출이 생긴다.
-      var PHONE_SHELL_MQ = '(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)';
+      var PHONE_SHELL_MQ = '(max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px)';
       var mapBoxInline = document.getElementById('mapBoxInline');
       var mapStepsInlineEl = document.getElementById('mapStepsInline');
       var mapWhyInline = document.getElementById('mapWhyInline');
@@ -15635,7 +15643,7 @@
     // #features → 기능 쪽(11-22 «기능 살펴보기 누르면 밑으로 내려가지말고 기능 살펴보는 페이지로 이동하는 느낌»)
     var 쪽주소 = function (h) { return h === '#tool' ? 'tool' : (h === '#me' || h === '#pattern-check') ? 'me' : h === '#features' ? 'features' : 'home'; };
     setView(쪽주소(location.hash || ''));
-    var 웹 = function () { return !matchMedia('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches; };
+    var 웹 = function () { return !matchMedia('(max-width: 1px), (pointer: coarse) and (hover: none) and (max-height: 1px)').matches; };
     // 앱 함수는 첫 번째 스크립트 안에 있어서 거기서 내보낸 것을 빌려 쓴다(이름에 ForTest가 붙어 있다)
     var 앱 = function () { return window.__anshimTest || {}; };
     var 지금화면 = function () {
