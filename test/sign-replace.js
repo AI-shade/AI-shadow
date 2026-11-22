@@ -67,6 +67,7 @@ function check(label, ok, detail) {
     const faceBoxes = fd.faces.map((q) => q.box);
     const pm = await T.getFullPersonMask(img, 'sign-test');
     const kept = T.signRectsOffPerson(boxes, faceBoxes, pm, W, H).map((b) => b.what);
+    const fstats = Object.assign({}, window.__anshimSignFilterStats || {});
     const picked = T.pickPlaceSigns(reads.map((_, i) => ({ x: i, y: 0, width: 1, height: 1 })),
       reads.map((r, i) => ({ n: i + 1, text: r.text, type: r.type }))).map((p) => p.n - 1);
     // 조각 모음(Claude에 가는 것): 얼굴 자리를 그대로 조각으로 잘라도 그 조각 가운데가 검은지 — 자르기 전에 가린다
@@ -77,11 +78,15 @@ function check(label, ok, detail) {
     const s = Math.min(4, 220 / (Math.max(big.width, big.height) * 1.3)), gw = big.width * 1.3 * s, gh = big.height * 1.3 * s;
     let dark = 0, n = 0;
     for (let y = Math.round(36 + gh * 0.2); y < 36 + gh * 0.8; y += 2) for (let x = Math.round(10 + gw * 0.2); x < 10 + gw * 0.8; x += 2) { n++; const i = (y * cw + x) * 4; if (d[i] + d[i + 1] + d[i + 2] < 30) dark++; }
-    return { kept, picked, faceDark: dark / n, person: !!pm };
+    return { kept, picked, faceDark: dark / n, person: !!pm, fstats };
   }, { u, boxes: BOXES, reads: READS });
   check('사람 분리가 된다', r1.person);
   BOXES.forEach((b) => check(b.what + (b.keep ? ' — 남긴다' : ' — 버린다'), r1.kept.includes(b.what) === b.keep));
   READS.forEach((r, i) => check(r.what + ' «' + r.text + '» — ' + (r.pick ? '고른다' : '고르지 않는다'), r1.picked.includes(i) === r.pick));
+  // 거른 이유별 개수(멘토 제안 11-23): 정답표로 규칙을 고를 때 이 숫자를 본다
+  const fs1 = r1.fstats || {};
+  check('거른 이유를 센다: 후보 4 = 남김 1 + 얼굴 품음 1 + 사람 위 1 + 너무 큼 1', fs1.in === 4 && fs1.kept === 1 && fs1.face === 1 && fs1.person === 1 && fs1.big === 1,
+    JSON.stringify(fs1));
   check('조각 모음에서 아이 얼굴 자리는 검게 가려 보낸다 (자르기 전에 가림)', r1.faceDark > 0.95, (r1.faceDark * 100).toFixed(0) + '%');
 
   const has = await page.evaluate(async (url) => { try { const r = await fetch(url, { method: 'HEAD' }); return r.ok; } catch (e) { return false; } }, BASE_URL + '/public/models/mark-int8.onnx');
