@@ -999,7 +999,7 @@
      무엇을 고칠지는 사용자가 고른다. */
   .caption-empty { color: var(--muted); font-size: 0.88rem; line-height: 1.7; list-style: none; }
 
-  /* «+ 놓친 곳 추가»와 «AI로 더 자연스럽게»를 한 줄로 — 둘 다 목록을 고치는 일이라 목록 바로 밑에 둔다 */
+  /* «놓친 곳 추가»와 «AI로 더 자연스럽게»를 한 줄로 — 둘 다 목록을 고치는 일이라 목록 바로 밑에 둔다 */
   .picker-actions { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin-top: 0.4rem; }
   .picker-ai { display: inline-flex; align-items: center; gap: 0.5rem; }
   /* 자동으로 도는 단계 목록 */
@@ -3494,15 +3494,15 @@
       <span class="hero-badge">Campus AX-Ton · 멋쟁이사자처럼</span>
       <h1 class="hero-title">아이 사진, 올리기 전에<br>한 번 더 살펴봐요</h1>
       <p class="hero-sub">
-        간판·전화번호·지번 같은 위치 단서와 교복·명찰처럼 소속을 드러내는 것까지 찾아내고,
+        간판, 전화번호, 지번 같은 위치 단서와 교복, 명찰처럼 소속을 드러내는 것까지 찾아내고,
         아이는 그대로 둔 채 위험한 부분만 지워드려요.
       </p>
       <div class="hero-actions">
         <a class="btn-primary" href="#tool">지금 진단하기</a>
         <a class="btn-ghost" href="#features">기능 살펴보기</a>
       </div>
-      <p class="hero-note">계정 연동도, 비밀번호도 필요 없어요. 진단할 때는 얼굴을 가려서 보내고,
-        원본은 AI 보정 · 구글 이미지 검색 단추를 누를 때만 가요. 자세한 건 «자주 묻는 질문»에 있어요.</p>
+      <p class="hero-note">가입 없이 써요. 진단할 때는 얼굴을 가려서 보내요.
+        원본은 AI 보정이나 구글 이미지 검색 단추를 누를 때만 가요.</p>
     </div>
     <!-- 오각형 스크린샷, 실제 부품으로 채운 카드까지 시도해봤는데 사용자가 그냥
          맨 처음(가짜 라벨+회색 막대) 그대로 되돌려달라고 했다 — 그대로 되돌린다. -->
@@ -3560,7 +3560,7 @@
   <div class="app-trust">
     <a class="app-menu-item app-trust-row" href="#why" data-menu="알아보기">
       <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16C4 16 9 8 16 8C23 8 28 16 28 16C28 16 23 24 16 24C9 24 4 16 4 16Z"/><circle cx="16" cy="16" r="3"/><path d="M6 6L26 26"/></svg>
-      <span>얼굴은 가려서 보냅니다</span>
+      <span>얼굴은 가려서 보내요</span>
       <span class="app-trust-go" aria-hidden="true">›</span></a>
     <a class="app-menu-item app-trust-row" href="#why" data-menu="알아보기">
       <svg class="mono-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4L27 8V15C27 22 22 27 16 29C10 27 5 22 5 15V8L16 4Z"/></svg>
@@ -3572,8 +3572,8 @@
   <div class="app-examples">
     <p class="app-ex-head">이런 단서를 찾아요 <span>예시 사진은 AI로 만든 이미지예요</span></p>
     <div class="app-ex-row">
-      <a class="app-menu-item app-ex-tile" href="#selfcheck" data-menu="알아보기"><img src="public/self-check/school-sign.jpg" alt="어린이집 간판 앞 아이" loading="lazy" decoding="async" width="440" height="440" /><span>간판·명찰</span></a>
-      <a class="app-menu-item app-ex-tile" href="#selfcheck" data-menu="알아보기"><img src="public/self-check/apartment.jpg" alt="아파트 앞 유치원 버스" loading="lazy" decoding="async" width="440" height="440" /><span>아파트·동</span></a>
+      <a class="app-menu-item app-ex-tile" href="#selfcheck" data-menu="알아보기"><img src="public/self-check/school-sign.jpg" alt="어린이집 간판 앞 아이" loading="lazy" decoding="async" width="440" height="440" /><span>간판, 명찰</span></a>
+      <a class="app-menu-item app-ex-tile" href="#selfcheck" data-menu="알아보기"><img src="public/self-check/apartment.jpg" alt="아파트 앞 유치원 버스" loading="lazy" decoding="async" width="440" height="440" /><span>아파트, 동</span></a>
       <a class="app-menu-item app-ex-tile" href="#selfcheck" data-menu="알아보기"><img src="public/self-check/license-plate.jpg" alt="가족 뒤의 차" loading="lazy" decoding="async" width="440" height="440" /><span>번호판</span></a>
     </div>
   </div>
@@ -3633,7 +3633,7 @@
         </header>
         <div class="ig-photo">
           <img src="public/self-check/apartment.jpg" alt="" loading="lazy" decoding="async" width="440" height="440" />
-          <span class="ig-badge">동·호수 노출</span>
+          <span class="ig-badge">동, 호수 노출</span>
         </div>
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 94개</p>
@@ -3670,14 +3670,14 @@
         <div class="ig-acts" aria-hidden="true"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 3.8 12.4a4.9 4.9 0 0 1 6.9-6.9l1.3 1.3 1.3-1.3a4.9 4.9 0 0 1 6.9 6.9Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-3-.6L3.5 21l1.8-4.6A8.3 8.3 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3 2 10.2l7.4 2.6L12 21Z"/><path d="M21.5 3 9.4 12.8"/></svg></div>
         <p class="ig-likes">좋아요 76개</p>
         <p class="ig-cap"><strong>playdate_with_us</strong> 매주 화요일 4시, 태권도 끝나고 한 컷 🥋</p>
-        <p class="ig-note">도장 이름에 요일·시간까지 겹치면 다음에 어디 있을지 예측돼요</p>
+        <p class="ig-note">도장 이름에 요일과 시간까지 겹치면 다음에 어디 있을지 알 수 있어요</p>
         <p class="ig-time">3시간 전</p>
       </article>
         </div>
         <button type="button" class="sc-nav prev" id="scPrev" aria-label="이전 예시"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
         <button type="button" class="sc-nav next" id="scNext" aria-label="다음 예시"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
-      <p class="sc-credit">사진·계정명·게시물 모두 예시예요 — 실제 아이 사진이 아니라 AI로 만든 이미지입니다</p>
+      <p class="sc-credit">사진, 계정 이름, 게시물은 모두 예시예요. 사진은 AI로 만든 이미지예요.</p>
       <p class="sc-foot">눈으로 다 확인하기 어렵다면, 사진 한 장이면 저희가 대신 확인해드려요.</p>
       <a class="primary sc-cta" href="#tool">사진으로 확인하기</a>
     </div>
@@ -3750,7 +3750,7 @@
              25장 중 5장을 틀려서(멀쩡한 사진을 눕힌다) 사용자가 직접 돌린다.
              10-27에 넣었다가 팀원 화면을 합치며 빠졌다 — 되살린다(제보 10-28 "모바일에서는 사진 돌리기가 안돼"). -->
         <p class="rotate-row" id="rotateRow" style="display:none;">
-          <button type="button" class="ghost-link" id="rotatePhotoBtn">↻ 사진 돌리기</button>
+          <button type="button" class="ghost-link" id="rotatePhotoBtn">사진 돌리기</button>
           <span class="hint">사진이 누워 있으면 눌러서 바로 세워주세요</span>
         </p>
       </div>
@@ -3758,10 +3758,10 @@
       <!-- 사진 한 장만 올린다(사용자 시안, 10-26). 과거 게시물 패턴은 «과거글» 탭에서 따로 본다.
            DOM은 남긴다 — 스크립트 여러 곳이 pastInput을 읽는다. -->
       <div class="up-part is-gone">
-        <label for="pastInput">과거 게시물 스크린샷 <span class="hint">선택 · 여러 장</span></label>
+        <label for="pastInput">과거 게시물 스크린샷 <span class="hint">넣지 않아도 돼요, 여러 장 가능</span></label>
         <div class="drop-zone" id="pastDrop">
           <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
-          <span id="pastDropLabel">반복되는 요일·시간·장소를 짚어드려요</span>
+          <span id="pastDropLabel">반복되는 요일, 시간, 장소를 짚어 드려요</span>
           <input type="file" id="pastInput" accept="image/*" multiple />
         </div>
         <p class="file-count" id="fileCount" style="display:none;"></p>
@@ -3801,7 +3801,7 @@
       <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
     </div>
 
-    <button class="primary" id="submitBtn">위험도 진단하기</button>
+    <button class="primary" id="submitBtn">진단</button>
   </div>
 
   <!-- 화면 2: 분석 중 -->
@@ -3813,8 +3813,8 @@
       <div class="an-bar" aria-hidden="true"><div class="an-bar-fill" id="anBarFill"></div></div>
       <div class="analyzing-steps">
         <p id="stepFace">브라우저에서 얼굴 정보 분석 중 (로컬 처리, 외부 전송 없음)</p>
-        <p id="stepOcr">사진 속 텍스트 위치·내용 감지 중</p>
-        <p id="stepPast" style="display:none;">과거 게시물 스크린샷에서 시점·캡션 추출 중</p>
+        <p id="stepOcr">사진 속 글자를 찾는 중</p>
+        <p id="stepPast" style="display:none;">과거 게시물에서 올린 때와 캡션을 읽는 중</p>
       </div>
       <p class="an-footnote" style="font-size:0.74rem; line-height:1.6; color:var(--muted); margin:1.4rem auto 0; max-width:48ch;">* 사진 분석이 끝나는 대로 먼저 결과 화면을 보여드리고, 위험도 판단은 이어서 채워드려요.</p>
     </div>
@@ -3901,7 +3901,7 @@
                   aria-controls="fmList">어디를 ⌄</button></p>
         <ul class="fm-list" id="fmList"></ul>
         <p class="fm-note">항목을 누르거나 손을 올리면 사진에서 그 자리만 밝아져요.
-          캡션·게시 습관은 사진이 아니라 적어주신 글과 설정에서 나온 점수예요.</p>
+          캡션과 게시 습관 점수는 적어주신 글과 설정에서 나왔어요.</p>
       </div>
     </div>
 
@@ -3918,13 +3918,13 @@
         <p class="evidence" id="locationEvidence"></p>
         <!-- 점수만 있으면 "그래서 어떻게 알아낸다는 건데"가 남는다.
              이미 감지한 것들로 좁혀지는 순서를 보여준다. 새로 호출하지 않는다. -->
-        <p class="chain-head">이렇게 좁혀집니다</p>
+        <p class="chain-head">좁혀지는 범위</p>
         <ol class="loc-chain" id="locChain"></ol>
       </div>
       <div class="loc-right">
         <!-- 예전엔 눌러야 열리는 대화상자였다 — 사용자 요청으로 누를 필요 없이 진단하자마자
              카드 안에 바로 떠 있게 바꿨다(사진은 안 보내고, 카카오 장소 검색만 자동으로 부른다). -->
-        <p class="loc-map-hint">사진 속 글자·파일 좌표로 어디까지 좁혀지는지 반경으로 보여줘요</p>
+        <p class="loc-map-hint">사진 속 글자와 파일에 적힌 위치로 어디까지 좁혀지는지 지도에 보여 줘요</p>
         <div class="map-box" id="mapBoxInline" role="img" aria-label="지도"></div>
         <div class="map-steps" id="mapStepsInline" role="group" aria-label="단서를 더할수록 좁혀지는 범위"></div>
         <p class="map-why" id="mapWhyInline"></p>
@@ -3944,7 +3944,7 @@
            1/-1을 준다. 폰 폭에서는 그냥 다음 블록으로 이어질 뿐 모양은 그대로다). -->
       <div class="loc-web-check" id="locWebCheck">
         <!-- 진단과 함께 자동으로 돈다(runLocCheck). 결과가 먼저, 원본이 가야 하는 구글 검색 단추는 그 아래. -->
-        <button type="button" class="ghost-link" id="locWebCheckBtn">🔍 이 사진으로 장소를 찾을 수 있는지 확인하기</button>
+        <button type="button" class="ghost-link" id="locWebCheckBtn">장소 찾아보기</button>
         <p class="loc-web-hint">진단할 때 사진 파일의 좌표와 AI 추측(얼굴을 가린 사진)으로 장소를 함께 확인해요.
           구글 이미지 검색은 원본이 가야 해서, 단추를 누를 때만 먼저 묻고 보내요.</p>
       </div>
@@ -3961,7 +3961,7 @@
            빈약한지 알 수 없었다(실사용 제보 — "유출 경고가 전보다 덜 된다"). -->
       <div id="schedSkip" style="display:none; margin-top:0.7rem;">
         <p class="evidence" id="schedSkipText" style="margin:0 0 0.5rem;"></p>
-        <button class="ghost-link" id="schedIncludeBtn">그래도 포함해서 다시 분석 ↻</button>
+        <button class="ghost-link" id="schedIncludeBtn">포함해서 다시 분석</button>
       </div>
     </section>
 
@@ -3983,7 +3983,7 @@
          이 상자가 배치에서 사라지고 버튼 둘이 예전 그대로 카드의 직계 자식처럼
          놓인다 — 감싸기만 하고 옮기지 않는다. -->
     <div class="app-actionbar">
-      <button class="primary" id="goCorrectBtn">보정하러 가기 →</button>
+      <button class="primary" id="goCorrectBtn">보정</button>
       <button class="secondary" id="skipCorrectBtn">보정 없이 마치기</button>
     </div>
 
@@ -4029,7 +4029,7 @@
     <h3 style="font-size:1.35rem; font-weight:700; letter-spacing:-0.012em; line-height:1.3; margin:0 0 0.7rem; max-width:22ch; color:var(--ink);">
       무엇을 바꿀까요?
     </h3>
-    <!-- 자동 보정(글자 덮기·교복 색·배경 흐림)·찾은 곳 목록·«+ 놓친 곳 추가»·상자 끌기는 뺐다(10-27 사용자 결정:
+    <!-- 자동 보정(글자 덮기·교복 색·배경 흐림)·찾은 곳 목록·«놓친 곳 추가»·상자 끌기는 뺐다(10-27 사용자 결정:
          "자동보정이 빼봐봐 이것떄문에 더 불편한거같아", 놓친 곳 추가·상자 끌기는 "바로바로 반영이 되는것도 아니고
          로딩시간도 길고 컨트롤이 편한것도 아니라서"). 스크립트가 참조해서 DOM은 남기고 늘 숨긴다(is-gone). -->
     <ul class="auto-plan is-gone" id="autoPlan" aria-live="polite"></ul>
@@ -4043,7 +4043,7 @@
            거꾸로였다). 빈 상자를 하나 만들어 사진 위로 끌어다 맞추게 한다 — 자동 감지된
            것과 똑같이 체크·고치기·빼기·크기조절이 다 되게(별도 코드 없이 같은 목록에 얹는다). -->
       <div class="picker-actions">
-        <button type="button" class="ghost-link" id="addMissedBtn">+ 놓친 곳 추가</button>
+        <button type="button" class="ghost-link" id="addMissedBtn">놓친 곳 추가</button>
       </div>
       <!-- AI 방식은 체크를 고칠 때마다 다시 부르면 요금이 나가고 원본이 또 나간다.
            체크는 체크만 하고, 다시 만드는 건 여기서 직접 누른다. -->
@@ -4056,16 +4056,16 @@
     <!-- 보정은 이 세 단추뿐이다. 모두 원본이 밖으로 나가므로 누를 때마다 동의를 받는다(askFluxConsent).
          fal.ai가 준비돼 있을 때만 보인다(goCorrectBtn). 하나를 한 뒤 다른 것을 누르면 그 결과 위에 얹힌다(runAiUpgrade). -->
     <div class="ai-more" id="aiMore" style="display:none;">
-      <p class="ai-more-head">AI로 바꾸기 <span class="m-badge" style="background:var(--risk-mid);">AI · 유료 · 사진 전송</span></p>
+      <p class="ai-more-head">AI로 바꾸기 <span class="m-badge" style="background:var(--risk-mid);">AI, 유료, 사진 전송</span></p>
       <div class="ai-more-btns">
         <button type="button" class="secondary" id="aiMarkBtn" title="옷의 로고·이름표 자리만 다시 그린다 · 옷 모양과 색은 그대로">로고 지우기</button>
-        <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그린다 · 간판·건물 이름도 같이 사라진다">배경 교체하기</button>
+        <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그린다 · 간판·건물 이름도 같이 사라진다">배경 교체</button>
         <!-- «로고 지우기»를 한 뒤에만 보인다(11-19 요청: "로고가 안지워지면 옷을 교체하게"). 누르면 그 결과 위에서 옷 전체를 다시 그린다. -->
         <button type="button" class="secondary" id="aiOutfitBtn" style="display:none;" title="옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꾼다 · 얼굴·손은 그대로">옷 전체 바꾸기</button>
         <!-- «배경 교체하기»가 간판 자리만 바꿨을 때만 보인다. 누르면 그 결과 위에서 배경 전체를 새로 그린다. -->
         <button type="button" class="secondary" id="aiBgFullBtn" style="display:none;" title="간판만이 아니라 사람 뒤 배경 전체를 새로 그린다">배경 전체 바꾸기</button>
       </div>
-      <p class="hint" id="aiMarkHint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">먼저 «로고 지우기»로 로고 자리만 고쳐 보세요. 로고가 남았거나 칼라·배색 같은 교복 디자인으로 학교를 알아볼 수 있으면, 그다음 나오는 «옷 전체 바꾸기»를 누르세요.</p>
+      <p class="hint" id="aiMarkHint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">먼저 «로고 지우기»로 로고 자리만 고쳐 보세요. 로고가 남았거나 칼라나 배색 같은 교복 디자인으로 학교를 알아볼 수 있으면, 그다음 나오는 «옷 전체 바꾸기»를 눌러 주세요.</p>
       <div class="is-gone">
         <!-- 간판 글자 AI는 자동 글자 덮기 결과 위에서만 돈다 — 자동 보정을 빼면서 같이 뺐다. 스크립트가 참조해서 DOM만 남긴다. -->
         <span class="picker-ai" id="signAiRow" style="display:none;">
@@ -4081,7 +4081,7 @@
     </div><!-- /.correct-left -->
 
     <div class="correct-right">
-    <button type="button" class="ghost-link compare-toggle" id="compareSliderToggle">↔ 겹쳐서 비교하기</button>
+    <button type="button" class="ghost-link compare-toggle" id="compareSliderToggle">겹쳐서 비교</button>
     <div class="compare-grid" id="compareGrid">
       <div>
         <p class="preview-label">원본</p>
@@ -4122,7 +4122,7 @@
       <ol class="stack-list" id="stackList"></ol>
     </div>
 
-    <button class="secondary" id="downloadResultBtn" style="margin-top:0.4rem;">⬇ 처리된 사진 다운로드</button>
+    <button class="secondary" id="downloadResultBtn" style="margin-top:0.4rem;">고친 사진 저장</button>
     </div><!-- /.correct-right -->
 
     <!-- 폰 전용: 지금 고른 보정 방식을 한 줄로 보여주고, 누르면 방식 시트가 올라온다.
@@ -4139,7 +4139,7 @@
     <!-- 이미 상자였으므로 감싸지 않고 클래스만 얹는다. 폰에서 화면 아래에
          고정되고, 데스크톱에서는 .correct-actions 그대로다. -->
     <div class="correct-actions app-actionbar">
-    <button class="primary" id="goVerifyBtn">보정 완료 → 검증하기</button>
+    <button class="primary" id="goVerifyBtn">다시 검사</button>
     <button class="secondary" id="backToResultBtn">진단 결과로 돌아가기</button>
     </div><!-- /.correct-actions -->
   </div>
@@ -4166,7 +4166,7 @@
     <section class="result-section" id="pSkipNotice" style="display:none;">
       <h3>분석에서 뺀 스크린샷</h3>
       <p class="evidence" id="pSkipText"></p>
-      <button class="ghost-link" id="pIncludeBtn">그래도 포함해서 다시 분석 ↻</button>
+      <button class="ghost-link" id="pIncludeBtn">포함해서 다시 분석</button>
     </section>
 
     <section class="result-section">
@@ -4175,7 +4175,7 @@
     </section>
 
     <div class="correct-actions">
-      <button class="primary" id="pWithPhotoBtn">사진도 함께 진단하기</button>
+      <button class="primary" id="pWithPhotoBtn">사진도 함께 진단</button>
       <button class="secondary" id="pRestartBtn">처음부터 다시</button>
     </div>
     <p class="disclaimer">
@@ -4192,7 +4192,7 @@
       <span class="app-bar-steps"><span>진단</span><span>보정</span><span class="on">검증</span></span>
     </div>
     <div class="verify-stamp-wrap">
-      <div class="verify-stamp" id="verifyStamp"><span class="s-icon">✓</span><span class="s-text">검증완료</span></div>
+      <div class="verify-stamp" id="verifyStamp"><span class="s-icon">✓</span><span class="s-text">다시 검사 끝</span></div>
     </div>
     <!-- 처음 → 보정 후 오각형(제보 10-28). 보정한 사진을 같은 채점으로 다시 잰 값이다(renderVerifyRadar).
          다시 채점이 실패하면 숨는다 — 지어낸 점수를 그리지 않는다. -->
@@ -4208,7 +4208,7 @@
       </svg>
       <p class="vr-legend"><span class="vr-key before" aria-hidden="true"></span>처음 <span class="vr-key after" aria-hidden="true"></span>보정 후</p>
       <ul class="vr-list" id="vrList"></ul>
-      <p class="vr-note">보정한 사진을 처음과 같은 방법으로 다시 잰 값이에요. 캡션·게시 습관은 사진을 고쳐도 바뀌지 않아 처음 점수를 그대로 썼어요. 같은 사진도 읽을 때마다 조금씩 달라질 수 있어요.</p>
+      <p class="vr-note">고친 사진을 처음과 같은 방법으로 다시 잰 값이에요. 캡션과 게시 습관은 사진을 고쳐도 바뀌지 않아서 처음 점수를 그대로 썼어요. 같은 사진도 읽을 때마다 조금씩 달라질 수 있어요.</p>
     </section>
     <div class="verify-tags" id="verifyTags"></div>
     <div class="verify-detail" id="verifyDetail"></div>
@@ -4216,11 +4216,11 @@
          나머지는 이 단추로 편다. 방식 카드와 같은 장치를 쓴다. -->
     <button type="button" class="ghost-link clamp-more" id="verifyMoreBtn"
             aria-expanded="false" aria-controls="verifyDetail">자세히 보기 ⌄</button>
-    <button class="ghost-link" id="cycleVerifyBtn">재검증 다시 실행 ↻</button>
+    <button class="ghost-link" id="cycleVerifyBtn">한 번 더 검사</button>
     <button class="secondary" id="restartBtn" style="margin-top:1.3rem;">다른 사진으로 처음부터 다시</button>
     <p class="disclaimer">
-      ※ 처리된 이미지를 1단계와 동일한 방식(얼굴검출+텍스트검출)으로 다시 분석하고, AI에게
-      원본 위험진단·처리 내용과 함께 재검토를 요청한 실제 결과입니다.<br />
+      고친 사진을 처음과 같은 방법(얼굴 찾기, 글자 찾기)으로 다시 살펴보고, 처음 진단과
+      고친 내용을 AI에게 함께 보내 다시 확인한 결과예요.<br />
       Campus AX-Ton · 아이 사진 SNS 위험진단 서비스
     </p>
   </div>
@@ -4293,7 +4293,7 @@
           </div>
           <p class="file-count" id="patternOnlyCount" style="display:none;"></p>
         </div>
-        <button class="primary" id="patternOnlySubmitBtn">패턴만 확인하기</button>
+        <button class="primary" id="patternOnlySubmitBtn">패턴만 확인</button>
       </div>
     </div>
     <!-- 이미 올린 사진 점검 — 진단 결과에 있던 «구글로 같은 사진 찾기»를 여기로 옮겼다(11-21 사용자 결정).
@@ -4334,7 +4334,7 @@
     <div class="pin-stage steps-stage">
       <div class="section-inner steps-inner">
         <p class="section-eyebrow">어떻게 쓰나요</p>
-        <h2 class="section-title">세 단계면 끝나요</h2>
+        <h2 class="section-title">3단계면 끝나요</h2>
 
         <div class="steps-viz">
           <ol class="steps-list" id="stepsList">
@@ -4342,15 +4342,15 @@
               <span class="sl-num">1</span>
               <span class="sl-body">
                 <strong>진단</strong>
-                <span>사진과 함께 올릴 글을 넣으면, 간판·전화번호·지번 같은 위치 단서와
-                교복·명찰처럼 소속을 드러내는 것까지 찾아내요. 위험도와 근거를 같이 보여드려요.</span>
+                <span>사진과 함께 올릴 글을 넣으면, 간판, 전화번호, 지번 같은 위치 단서와
+                교복, 명찰처럼 소속을 드러내는 것까지 찾아내요. 위험도와 근거를 같이 보여 드려요.</span>
               </span>
             </li>
             <li class="pin-item" data-step="1">
               <span class="sl-num">2</span>
               <span class="sl-body">
                 <strong>보정</strong>
-                <span>무엇을 고칠지 직접 고르고, 흐림·덮기·AI 지우기를 겹쳐 쌓을 수 있어요.
+                <span>무엇을 고칠지 직접 고르고, 흐림, 덮기, AI 지우기를 겹쳐 쌓을 수 있어요.
                 위치가 어긋났으면 끌어 맞추면 돼요. 사진 비율은 원본 그대로예요.</span>
               </span>
             </li>
@@ -4416,18 +4416,18 @@
     <div class="feature-grid" id="featureGrid">
       <article class="feature-card pin-item">
         <h3>배경 글자 판독</h3>
-        <p>간판·전화번호·지번처럼 위치를 특정할 수 있는 글자를 찾아냅니다. 내 기기 안 글자 읽기와 AI 판독을 함께 써서, 무슨 글자가 어디 있는지 정확히 찾아요.</p>
+        <p>간판, 전화번호, 지번처럼 장소를 알려 주는 글자를 찾아요. 기기 안에서 읽은 글자와 AI가 읽은 글자를 함께 써서, 무슨 글자가 어디 있는지 정확히 찾아요.</p>
       </article>
       <article class="feature-card pin-item">
         <h3>글자가 아닌 단서</h3>
-        <p>교복·원복·명찰·기관 로고처럼 아이가 어디에 다니는지 알려주는 것들을 잡아냅니다. 주소 다음으로 강한 위치 단서예요.</p>
+        <p>교복, 원복, 명찰, 기관 로고처럼 아이가 어디에 다니는지 알려 주는 것을 찾아요. 주소 다음으로 강한 위치 단서예요.</p>
       </article>
       <article class="feature-card pin-item">
         <h3>반복 패턴 분석</h3>
-        <p>과거 게시물 스크린샷을 함께 넣으면 "매주 같은 요일·시간대" 같은 생활 패턴이 드러나는지 짚어드려요.</p>
+        <p>과거 게시물 스크린샷을 함께 넣으면 "매주 같은 요일, 시간대" 같은 생활 패턴이 드러나는지 짚어 드려요.</p>
       </article>
       <article class="feature-card pin-item">
-        <h3>다섯 가지 보정</h3>
+        <h3>5가지 보정</h3>
         <p>스마트 크롭, 배경 흐림, 주변색 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고르실 수 있어요.</p>
       </article>
     </div>
@@ -4448,20 +4448,20 @@
     <h2 class="section-title">아이를 건드리지 않는다는 원칙</h2>
     <div class="why-grid" id="whyGrid">
       <article class="why-card pin-item">
-        <h3>얼굴은 가려서 보냅니다</h3>
-        <p>진단을 위해 외부로 보낼 때 얼굴을 먼저 검게 덮습니다. 원본이 필요한 기능(AI 보정 · 구글 이미지 검색)은 그 단추를 누를 때만 원본을 보내요.</p>
+        <h3>얼굴은 가려서 보내요</h3>
+        <p>진단하려고 사진을 밖으로 보낼 때는 얼굴을 먼저 검게 덮어요. AI 보정과 구글 이미지 검색은 원본이 필요해서, 그 단추를 누를 때만 원본을 보내요.</p>
       </article>
       <article class="why-card pin-item">
         <h3>부탁이 아니라 차단</h3>
-        <p>AI에게 "아이를 바꾸지 마"라고 부탁하는 대신, 아이 영역을 마스크에서 아예 빼버립니다. 모델이 접근할 방법 자체가 없어요.</p>
+        <p>AI에게 "아이를 바꾸지 마"라고 부탁하는 대신, 아이 부분을 AI가 다시 그리는 자리에서 아예 빼요. 그래서 AI가 아이를 바꿀 수 없어요.</p>
       </article>
       <article class="why-card pin-item">
         <h3>비율은 원본 그대로</h3>
-        <p>어떤 보정을 거쳐도 사진 비율이 바뀌지 않습니다. 잘라야 할 때도 아이를 자르느니 비율을 포기하고 알려드려요.</p>
+        <p>어떤 보정을 해도 사진 비율은 그대로예요. 잘라야 할 때는 아이를 자르지 않고, 비율을 바꾼 뒤 알려 드려요.</p>
       </article>
       <article class="why-card pin-item">
         <h3>고친 다음 다시 검사</h3>
-        <p>보정된 사진을 처음과 같은 검사에 한 번 더 통과시켜, 정말 위험이 사라졌는지 확인하고 결과를 보여드립니다.</p>
+        <p>고친 사진을 처음과 같은 검사로 한 번 더 살펴보고, 단서가 정말 사라졌는지 보여 드려요.</p>
       </article>
     </div>
     <button type="button" class="ghost-link clamp-more" aria-expanded="false"
@@ -4486,12 +4486,12 @@
     <p class="section-eyebrow">자주 묻는 질문</p>
     <h2 class="section-title">궁금하실 것들</h2>
     <div class="faq-list">
-      <details class="pin-item"><summary>사진이 서버에 저장되나요?</summary><p>진단에 필요한 순간에만 전송하고 따로 보관하지 않습니다. 대부분의 처리(크롭·흐림·주변색 채우기)는 아예 브라우저 밖으로 나가지 않아요.</p></details>
-      <details class="pin-item"><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없습니다. 과거 게시물 패턴을 보고 싶으실 때만 직접 캡처한 화면을 올려주시면 됩니다.</p></details>
-      <details class="pin-item"><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않습니다. 얼굴·머리카락·목은 마스크에서 제외해 AI가 접근할 수 없게 만들어 두었고, 보정 후 다시 검사해 얼굴이 그대로인지 확인합니다.</p></details>
-      <details class="pin-item"><summary>사진이 어디로 가나요?</summary><p>진단은 얼굴을 가린 사진만 보내요. AI 보정 · 구글 찾기를 누를 때만 원본이 fal.ai · 구글로 가고, 두 곳 모두 학습엔 쓰지 않는다고 밝혀요(fal.ai는 바로 삭제는 약속하지 않아요). 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">fal.ai</a> · <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">구글</a></p></details>
-      <details class="pin-item"><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔드립니다. 얼굴과 자세는 그대로예요.</p></details>
-      <details class="pin-item"><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않습니다. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고르실 수 있게 해두었습니다. 최종 판단은 부모님 몫이에요.</p></details>
+      <details class="pin-item"><summary>사진을 어딘가에 저장하나요?</summary><p>진단할 때만 보내고, 따로 보관하지 않아요. 자르기, 흐리기, 주변 색 채우기는 사진이 기기 밖으로 나가지 않아요.</p></details>
+      <details class="pin-item"><summary>SNS 계정을 연결해야 하나요?</summary><p>아니요. 계정 연동도 비밀번호도 필요 없어요. 과거 게시물 패턴을 보고 싶을 때만 직접 캡처한 화면을 올려 주세요.</p></details>
+      <details class="pin-item"><summary>AI 보정을 쓰면 아이 얼굴이 바뀌나요?</summary><p>바뀌지 않아요. 얼굴, 머리카락, 목은 AI가 다시 그리는 자리에서 빼 두었어요. 고친 뒤에도 다시 검사해서 얼굴이 그대로인지 확인해요.</p></details>
+      <details class="pin-item"><summary>사진이 어디로 가나요?</summary><p>진단은 얼굴을 가린 사진만 보내요. AI 보정이나 구글 찾기를 누를 때만 원본이 fal.ai나 구글로 가요. 두 곳 모두 학습에는 쓰지 않는다고 밝혀요. 다만 fal.ai는 바로 지운다고 약속하지는 않아요. 원문: <a href="https://fal.ai/privacy" target="_blank" rel="noopener noreferrer">fal.ai</a>, <a href="https://docs.cloud.google.com/vision/docs/data-usage" target="_blank" rel="noopener noreferrer">구글</a></p></details>
+      <details class="pin-item"><summary>교복은 어떻게 처리하나요?</summary><p>교복은 지우거나 잘라낼 수 없어서, 어느 기관인지 알 수 없는 평범한 옷으로 바꿔 드려요. 얼굴과 자세는 그대로예요.</p></details>
+      <details class="pin-item"><summary>진단 결과를 얼마나 믿어도 되나요?</summary><p>완벽하지 않아요. 글자를 놓치거나 엉뚱한 것을 잡을 수 있어서, 무엇을 고칠지 직접 고를 수 있게 했어요. 최종 판단은 부모님이 해요.</p></details>
     </div>
   </div>
   </div>
@@ -4520,7 +4520,7 @@
       </g>
     </svg>
     <h2>올리기 전에 30초만 써보세요</h2>
-    <p>사진 한 장이면 됩니다. 위험한 부분만 찾아서 알려드릴게요.</p>
+    <p>사진 1장이면 돼요. 위험한 부분만 찾아서 알려 드릴게요.</p>
     <a class="btn-primary" href="#tool">사진 진단하기</a>
   </div>
 </section>
@@ -4537,11 +4537,10 @@
     <div class="foot-cols">
       <div><h4>바로가기</h4><ul><li><a href="#tool">진단하기</a></li><li><a href="#me">내 정보</a></li><li><a href="#features">기능</a></li><li><a href="#why">왜 안전한가</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></div>
       <div><h4>지원</h4><ul><li>Campus AX-Ton</li><li>멋쟁이사자처럼</li><li>고용노동부 미래내일 일경험</li></ul></div>
-      <div><h4>제작·배포</h4><ul><li class="foot-team">Team 네잎클로드<svg class="clover-inline" viewBox="-32 -32 64 64" aria-hidden="true"><path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /></svg></li><li>김민석</li><li>남근오</li><li>김현미</li><li>최윤서</li><li>이영우</li></ul></div>
-      <div><h4>사용 기술</h4><ul><li>Claude Vision</li><li>face-api.js</li><li>Tesseract.js</li><li>fal.ai FLUX</li></ul></div>
+      <div><h4>만든 사람들</h4><ul><li class="foot-team">Team 네잎클로드<svg class="clover-inline" viewBox="-32 -32 64 64" aria-hidden="true"><path class="cl-leaf" transform="rotate(-45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(45)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /><path class="cl-leaf" transform="rotate(-135)" d="M0,0 C-10,-2 -18,-10 -18,-19 C-18,-27 -12,-30 -6,-28 C-3,-26 -1,-24 0,-22 C1,-24 3,-26 6,-28 C12,-30 18,-27 18,-19 C18,-10 10,-2 0,0 Z" /></svg></li><li>김민석</li><li>남근오</li><li>김현미</li><li>최윤서</li><li>이영우</li></ul></div>
     </div>
   </div>
-  <p class="foot-note">진단 결과는 참고용이며, 최종 판단은 보호자에게 있습니다.</p>
+  <p class="foot-note">진단 결과는 참고용이에요. 최종 판단은 보호자가 해요.</p>
 </footer>
 
 <!-- 사진 저장 안내: 카카오톡 안 브라우저처럼 내려받기(<a download>)를 막는 곳에서만 뜬다(10-28 제보 "사진 다운로드도 안되고").
@@ -4561,12 +4560,12 @@
      원본을 외부로 보내지 않고 여기서 먼저 멈춰서 물어봄 -->
 <div id="noFaceConsentModal" style="display:none; position:fixed; inset:0; background:rgba(28,22,16,0.55); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
   <div class="card" style="max-width:380px; margin:0; box-shadow:var(--shadow-lift);">
-    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">⚠ 얼굴을 자동으로 찾지 못했어요</h3>
-    <p class="evidence">이 사진에서 얼굴이 감지되지 않았어요. 실제로 사람이 없는 사진일 수도 있지만, 반사·각도·가림 등으로 감지에 실패했을 가능성도 있습니다.</p>
+    <h3 style="margin:0 0 0.7rem; color:var(--risk-mid); font-size:1.2rem; font-weight:700; letter-spacing:-0.012em;">얼굴을 찾지 못했어요</h3>
+    <p class="evidence">이 사진에서 얼굴을 찾지 못했어요. 사람이 없는 사진일 수도 있고, 빛 반사나 각도, 가려진 부분 때문에 못 찾았을 수도 있어요.</p>
     <p class="evidence" id="noFaceConsentDetail" style="font-weight:700;"></p>
-    <p class="evidence">사진이 옆으로 누워 있다면 «안전 우선»을 누른 뒤, 사진 아래 ↻ 사진 돌리기로 바로 세우고 다시 진단해보세요.</p>
-    <button class="primary" id="noFaceConsentSafe">안전 우선 (전송 안 함)</button>
-    <button class="secondary" id="noFaceConsentOriginal">그래도 원본으로 분석</button>
+    <p class="evidence">사진이 옆으로 누워 있다면 «보내지 않기»를 누른 뒤, 사진 아래 «사진 돌리기»로 바로 세우고 다시 진단해 보세요.</p>
+    <button class="primary" id="noFaceConsentSafe">보내지 않기</button>
+    <button class="secondary" id="noFaceConsentOriginal">원본 보내기</button>
   </div>
 </div>
 
@@ -6236,8 +6235,8 @@
         var modal = document.getElementById('noFaceConsentModal');
         var detail = document.getElementById('noFaceConsentDetail');
         detail.textContent = context === 'screenshot'
-          ? '안전 우선을 선택하면 이 스크린샷은 이번 스케줄 분석에서 제외돼요. 원본으로 분석을 선택하면 마스킹되지 않은 원본이 AI 판독 서버(Anthropic)로 전송돼요.'
-          : '안전 우선을 선택하면 이 사진은 내 기기 안에서만 글자를 읽어요(정확도는 다소 낮아질 수 있어요). 원본으로 분석을 선택하면 마스킹되지 않은 원본이 AI 판독 서버(Anthropic)로 전송돼요.';
+          ? '보내지 않으면 이 스크린샷은 빼고 생활 패턴을 살펴봐요. 원본을 보내면 얼굴을 가리지 않은 사진이 AI 판독 서버(Anthropic)로 가요.'
+          : '보내지 않으면 이 기기 안에서만 글자를 읽어요. 정확도는 조금 낮을 수 있어요. 원본을 보내면 얼굴을 가리지 않은 사진이 AI 판독 서버(Anthropic)로 가요.';
         modal.style.display = 'flex';
         function cleanup(result) {
           modal.style.display = 'none';
@@ -6723,7 +6722,7 @@
       if (!pastFiles || pastFiles.length === 0) {
         return {
           scheduleOn: false, patterns: [], predictedInfo: '',
-          evidence: '이번엔 사진 1장만 분석했어요. 과거 게시물 스크린샷을 여러 장 함께 올리면 반복되는 요일·시간·장소 패턴까지 짚어드릴 수 있어요.',
+          evidence: '이번엔 사진 1장만 살펴봤어요. 과거 게시물 스크린샷을 여러 장 함께 올리면 반복되는 요일, 시간, 장소까지 짚어 드릴 수 있어요.',
           extracted: [],
         };
       }
@@ -7624,7 +7623,7 @@
           : '옷을 «' + cw.label + '» 색상의 다른 옷으로 바꿨어요';
       }
       if (cw.keepColors) {
-        return '옷 색은 그대로 두고 깃·여밈을 교복이 아닌 모양으로 바꿨어요. 가슴 마크는 ' + emblem + '.';
+        return '옷 색은 그대로 두고, 깃과 여밈을 교복과 다른 모양으로 바꿨어요. 가슴 마크는 ' + emblem + '.';
       }
       return '옷을 «' + cw.label + '» 색상으로 바꾸고, 가슴 마크는 ' + emblem + '.';
     }
@@ -10399,7 +10398,7 @@
       } else if (name === 'verify') {
         // 검증은 «내 정보»에서 보인다 — 사용 화면의 «두 단계» 머리말을 그대로 두면 안 맞는다
         titleEl.textContent = '가린 사진 다시 확인';
-        subEl.textContent = '가린 뒤에도 위치·소속 단서가 남았는지 다시 봐요';
+        subEl.textContent = '가린 뒤에도 위치나 소속 단서가 남았는지 다시 봐요';
       } else {
         titleEl.textContent = '사진 진단';
         subEl.textContent = ''; // 11-21 사용자 요청으로 뺐다 — 빈 칸은 CSS가 숨긴다
@@ -10466,7 +10465,7 @@
       var btn = document.getElementById('submitBtn');
       var hasPhoto = !!(photoInput.files && photoInput.files[0]);
       var hasPast = !!(pastInput.files && pastInput.files.length > 0);
-      btn.textContent = (!hasPhoto && hasPast) ? '생활 패턴만 분석하기' : '위험도 진단하기';
+      btn.textContent = (!hasPhoto && hasPast) ? '생활 패턴만 분석' : '진단';
     }
     var pastDropLabel = document.getElementById('pastDropLabel');
     var fileCount = document.getElementById('fileCount');
@@ -10517,7 +10516,7 @@
         photoPreview.src = u;
       }).catch(function () {}); // 못 줄이면 원본 그대로 간다 — 예전과 같다
       polaroidPreview.classList.remove('empty');
-      document.getElementById('snsNote').textContent = '게시 전 미리보기 · 사진을 누르면 다른 사진을 골라요';
+      document.getElementById('snsNote').textContent = '올리기 전 미리보기예요. 사진을 누르면 다른 사진을 골라요.';
       document.getElementById('rotateRow').style.display = '';
       var upPart = polaroidPreview.closest('.up-part');
       if (upPart) upPart.classList.add('has-preview');
@@ -10590,8 +10589,8 @@
         pastDropLabel.textContent = pastCount + '개 스크린샷 선택됨';
         fileCount.style.display = 'block';
         fileCount.textContent = hasPhoto
-          ? '✓ 과거 게시물 ' + pastCount + '개로 패턴 분석까지 함께 진행해요'
-          : '✓ 사진 없이 이대로 눌러도 과거 게시물 ' + pastCount + '개의 생활 패턴을 분석해요';
+          ? '과거 게시물 ' + pastCount + '개로 생활 패턴도 함께 살펴봐요'
+          : '사진 없이 눌러도 과거 게시물 ' + pastCount + '개의 생활 패턴을 살펴봐요';
       } else {
         pastDropLabel.textContent = '스크린샷을 선택하면 반복 패턴까지 짚어드려요';
         fileCount.style.display = 'none';
@@ -10616,7 +10615,7 @@
       if (n > 0) {
         patternOnlyDropLabel.textContent = n + '개 스크린샷 선택됨';
         patternOnlyCount.style.display = 'block';
-        patternOnlyCount.textContent = '✓ 스크린샷 ' + n + '개의 생활 패턴을 분석해요';
+        patternOnlyCount.textContent = '스크린샷 ' + n + '개의 생활 패턴을 살펴봐요';
       } else {
         patternOnlyDropLabel.textContent = '스크린샷을 선택하면 반복 패턴을 짚어드려요';
         patternOnlyCount.style.display = 'none';
@@ -10689,16 +10688,16 @@
         + (hasOcrText ? 5 : 0) + (hasNotes ? 4 : 0));
       var f1why = placeWords.length > 0
         ? '사진에서 ' + placeWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
-          + ' 같은 글자가 읽혀서 건물·번지까지 좁혀질 수 있어요.'
+          + ' 같은 글자가 읽혀서 건물과 번지까지 좁혀질 수 있어요.'
           + (markNames.length > 0 ? ' 게다가 배경에 ' + markNames.join('·') + josa이가(markNames[markNames.length - 1]) + ' 보여요.' : '')
         : (markNames.length > 0
           ? '글자는 없지만 배경의 ' + markNames.join('·') + josa이가(markNames[markNames.length - 1])
             + ' 알아볼 수 있어서 장소가 좁혀져요.'
           : (hasOcrText
-            ? '간판·주소로 분류될 만한 글자는 아니지만 "' + ocrTextJoined + '"가 읽혔어요.'
+            ? '"' + ocrTextJoined + '"가 읽혔어요. 간판이나 주소로 보이는 글자는 아니에요.'
             : (hasNotes
               ? '배경으로 적어주신 "' + inputs.backgroundNotes.trim() + '"만으로도 장소가 좁혀질 수 있어요.'
-              : '간판·주소·전화번호로 읽히는 글자가 없고, 배경으로 알아볼 만한 곳도 없어요.')));
+              : '간판, 주소, 전화번호로 읽히는 글자를 찾지 못했어요. 배경에서 알아볼 만한 곳도 찾지 못했어요.')));
 
       // ② 소속 노출 (상한 22) — 교복·명찰·기관 로고
       // 판정은 isBelongClue 한 곳에만 둔다(위 BELONG_TYPE_RE 주석 참고).
@@ -10715,7 +10714,7 @@
             ? head + ' 보이지만 적힌 글자까지는 읽히지 않았어요. 원본에서는 읽힐 수 있어요.'
             : head + ' 보여서 다니는 기관까지 좁혀져요.';
         })()
-        : '교복·명찰·기관 로고가 보이지 않아요.';
+        : '교복, 명찰, 기관 로고를 찾지 못했어요.';
 
       // ③ 인물 식별성 (상한 18) — 얼굴 수
       var f3 = Math.min(18, faces.length > 0 ? 9 + (faces.length - 1) * 5 : 0);
@@ -10727,7 +10726,7 @@
       // 캡션을 안 썼으면 0이 맞다. 안 썼으니 흘릴 것도 없다.
       var cap = String(inputs.caption || '').trim();
       var capHits = [];
-      if (/(어린이집|유치원|초등학교|학교|학원|아파트|단지)/.test(cap)) capHits.push('기관·단지 이름');
+      if (/(어린이집|유치원|초등학교|학교|학원|아파트|단지)/.test(cap)) capHits.push('기관이나 단지 이름');
       if (/(매주|매일|요일|첫 등원|첫 등교|하원|등원|등교)/.test(cap)) capHits.push('반복되는 일정');
       if (/(\d{1,2}\s*시|오전|오후|아침|저녁)/.test(cap)) capHits.push('시간대');
       if (/(동|읍|면|리|로|길)\s*\d/.test(cap)) capHits.push('주소 조각');
@@ -10758,7 +10757,7 @@
       var locationScore = Math.max(10, Math.min(f1 + f2 + (realtime ? 10 : 0), 95));
 
       var bgNote = hasOcrText
-        ? '사진에서 실제로 "' + ocrTextJoined + '" 텍스트가 감지돼서 특정 장소로 위치가 특정될 가능성이 있어요.'
+        ? '사진에서 "' + ocrTextJoined + '"가 읽혀서 장소가 좁혀질 수 있어요.'
         : (inputs.backgroundNotes.trim().length > 0
           ? '배경으로 언급하신 "' + inputs.backgroundNotes + '"가 특정 장소로 특정될 가능성이 있어요. (사진에서 뚜렷한 글자를 찾지 못했어요)'
           : '배경에서 특정 장소를 유추할 만한 단서는 크게 두드러지지 않았어요. (사진에서 글자를 찾지 못했어요)');
@@ -10768,10 +10767,10 @@
 
       var scheduleOn = pastCount > 0;
       var scheduleEvidence = scheduleOn
-        ? '최근 게시물 ' + pastCount + '개를 분석한 결과, 매주 화·목요일 오후 3시경 ' +
+        ? '최근 게시물 ' + pastCount + '개를 살펴보니, 매주 화요일과 목요일 오후 3시쯤 ' +
           (inputs.backgroundNotes.trim() || '같은 장소') +
           '에 계신 패턴이 반복적으로 노출되고 있어요. 이런 정보가 누적되면 아이의 위치와 시간을 예측하기 쉬워질 수 있어요.'
-        : '이번엔 사진 1장만 분석했어요. 과거 게시물 스크린샷을 여러 장 함께 올리면 반복되는 요일·시간·장소 패턴까지 짚어드릴 수 있어요.';
+        : '이번엔 사진 1장만 살펴봤어요. 과거 게시물 스크린샷을 여러 장 함께 올리면 반복되는 요일, 시간, 장소까지 짚어 드릴 수 있어요.';
 
       return {
         score: score, grade: grade, locationScore: locationScore,
@@ -10787,9 +10786,9 @@
           '배경에 학원/어린이집 이름표나 간판이 보인다면 스마트 크롭이나 스티커로 가린 뒤 올리는 걸 추천해요.',
           inputs.uploadTiming === '실시간 업로드' ? '가능하면 몇 시간 정도 지난 뒤에 업로드해보세요.' : '지금처럼 시간차를 두고 올리는 습관을 유지해주세요.',
         ],
-        summary: '⚠️ AI 진단 연결에 실패해서 규칙 기반으로 대략 매긴 점수예요. ' +
-          '이번 사진은 종합적으로 "' + grade + '" 등급(' + score + '점)으로 진단됐어요. ' +
-          '공개 범위와 업로드 시점 설정에 따라 위치·생활 패턴 노출 위험이 달라질 수 있으니 위 권장 조치를 참고해보세요.',
+        summary: 'AI로 진단하지 못해서 간단한 기준으로 대략 매긴 점수예요. ' +
+          '이번 사진은 ' + score + '점, "' + grade + '" 등급이에요. ' +
+          '공개 범위와 올리는 때에 따라 위치와 생활 패턴이 드러나는 정도가 달라질 수 있어요. 위의 권장 조치를 참고해 주세요.',
         // 캡션 제안은 지어내지 않는다. 백엔드(Claude)가 실제 캡션을 보고 다듬은 것만 쓴다.
         // 예전에는 여기서 '오늘 하루도 즐겁게 보냈어요' 같은 고정 문구를 돌려줘서,
         // 사진이 무엇이든 늘 같은 제안이 나오는 것처럼 보였다.
@@ -10855,9 +10854,9 @@
       { 항목: '소속 노출', kind: 'clothes', color: '#1f6feb' },
       { 항목: '인물 식별성', kind: 'face', color: '#8a4fd3' },
       { 항목: '캡션 노출', kind: 'outside', color: '#8a8f98',
-        note: '캡션은 사진이 아니라 적어주신 글에서 나온 점수예요.' },
+        note: '캡션 점수는 적어주신 글에서 나왔어요.' },
       { 항목: '게시 습관', kind: 'outside', color: '#8a8f98',
-        note: '게시 습관은 사진이 아니라 공개 범위·업로드 시점 설정에서 나온 점수예요.' },
+        note: '게시 습관 점수는 공개 범위와 올리는 때 설정에서 나왔어요.' },
     ];
 
     // 점수를 매길 때 쓰는 것과 같은 유형 판정이다. 여기서만 다르게 고르면
@@ -11156,7 +11155,7 @@
           addPin(wrap, legend, num++, w.xPct, w.yPct, label, 'text');
         });
       } else {
-        addNoPinNote(legend, num++, '이 사진에서는 텍스트가 감지되지 않았어요.');
+        addNoPinNote(legend, num++, '이 사진에서 글자를 찾지 못했어요.');
       }
 
       // 교복·명찰·기관 로고 — 핀은 못 찍지만(위치 근사) 목록에는 반드시 보여야 한다.
@@ -11466,7 +11465,7 @@
         if (sk > 0) {
           document.getElementById('schedSkipText').textContent =
             '스크린샷 ' + (r.scheduleTotal || sk) + '장 중 ' + sk + '장은 얼굴을 찾지 못해 분석에서 뺐어요. '
-            + '얼굴을 가릴 수 없는 사진은 밖으로 보내지 않습니다. 그래서 패턴이 덜 잡혔을 수 있어요.';
+            + '얼굴을 가릴 수 없는 사진은 밖으로 보내지 않아요. 그래서 패턴이 덜 잡혔을 수 있어요.';
           schedSkip.style.display = 'block';
         } else {
           schedSkip.style.display = 'none';
@@ -11476,7 +11475,7 @@
       var predictedEl = document.getElementById('schedulePredicted');
       if (r.schedulePredicted) {
         predictedEl.className = 'evidence';
-        predictedEl.textContent = '⚠ 예측 가능해지는 정보: ' + r.schedulePredicted;
+        predictedEl.textContent = '알 수 있게 되는 정보: ' + r.schedulePredicted;
         predictedEl.style.display = 'block';
       } else {
         predictedEl.style.display = 'none';
@@ -11632,10 +11631,10 @@
       if (exif && exif.hasGps) {
         return {
           score: 100,
-          evidence: '이 사진 파일에 촬영 장소의 좌표가 그대로 적혀 있어요 ('
+          evidence: '이 사진 파일에 촬영 위치가 그대로 적혀 있어요 ('
             + exif.lat.toFixed(6) + ', ' + exif.lng.toFixed(6) + ')'
-            + (exif.takenAt ? ' · 촬영 ' + exif.takenAt : '')
-            + '. 간판을 가려도 이 좌표는 남습니다 — 파일 자체를 손봐야 해요.',
+            + (exif.takenAt ? ', 촬영 ' + exif.takenAt : '')
+            + '. 간판을 가려도 이 위치는 남아요. 파일에서 지워야 해요.',
         };
       }
       return { score: r.locationScore, evidence: r.locationEvidence };
@@ -11824,13 +11823,13 @@
             var looseNote = best.loose ? ' (근처 결과)' : '';
             steps.push(best.scattered
               ? { label: '“' + best.name + '”만', where: '전국 ' + best.total + '건', m: 0, center: null, points: best.points,
-                  why: '“' + best.name + '” — 전국에 흩어져 있어 하나로 안 좁혀져요.' + sameText(best.name) + looseNote }
+                  why: '“' + best.name + '”: 전국에 여러 곳이 있어서 한 곳으로 좁혀지지 않아요.' + sameText(best.name) + looseNote }
               : { label: '“' + best.name + '”만', where: mapRadiusText(best.m), m: best.m, center: best.center,
-                  why: '“' + best.name + '” — 이름만으로 이 근처까지 좁혀져요.' + sameText(best.name) + looseNote });
+                  why: '“' + best.name + '”: 이름만으로 이 근처까지 좁혀질 수 있어요.' + sameText(best.name) + looseNote });
           } else if (rare && (rare.count === 1 || rare.sigungu)) {
             // 카카오에서 못 찾았어도 상가정보에 드문 이름으로 있으면 좁혀진다는 사실은 말한다(지도 위치는 없다)
             steps.push({ label: '“' + rare.name + '”만', where: rare.count === 1 ? '전국 1곳' : rare.sigungu + ' ' + rare.count + '곳',
-              m: 0, center: null, why: '“' + rare.name + '” — 지도엔 없지만' + sameText(rare.name) });
+              m: 0, center: null, why: '“' + rare.name + '”: 지도에는 없지만' + sameText(rare.name) });
           }
           // + 지역 글자: 이름에 지역이 붙으면 그 지역 안의 곳으로 좁혀진다
           if (region) {
@@ -11858,10 +11857,10 @@
       // 파일 좌표는 추측이 아니라 사실이라 맨 끝(가장 좁은 것)에 둔다
       if (exif && exif.hasGps) {
         steps.push({ label: '+ 사진 파일의 좌표', where: mapRadiusText(50), m: 50, center: [exif.lat, exif.lng],
-          why: '사진 파일에 촬영 장소의 좌표가 적혀 있어요 — 추측이 아니라 사실이고, 간판을 가려도 남아요.' });
+          why: '사진 파일에 촬영 위치가 적혀 있어요. 간판을 가려도 이 위치는 남아요.' });
       }
       if (!steps.length && !note) {
-        note = '이 사진에서는 지도로 좁혀지는 단서(파일 좌표·장소 글자)를 찾지 못했어요.';
+        note = '이 사진에서 지도로 좁혀지는 단서(파일에 적힌 위치, 장소 글자)를 찾지 못했어요.';
       }
       return { steps: steps, note: note };
     }
@@ -11898,8 +11897,8 @@
           tag: hasGps ? '좌표 있음' : (exif ? '없음' : '확인 중'),
           why: hasGps
             ? exif.lat.toFixed(6) + ', ' + exif.lng.toFixed(6)
-              + (exif.takenAt ? ' · 촬영 ' + exif.takenAt : '')
-              + ' — 추측이 아니라 파일에 적힌 좌표예요. 간판을 가려도 남습니다.'
+              + (exif.takenAt ? ', 촬영 ' + exif.takenAt : '')
+              + '. 파일에 적힌 위치예요. 간판을 가려도 남아요.'
             : (exif
               ? '사진 파일에 위치 좌표가 없어요. (올리는 곳에서 지워졌거나, 위치 기록을 꺼두셨어요)'
               : '사진 파일을 읽는 중이에요.'),
@@ -11909,8 +11908,8 @@
           what: '소속이 보인다',
           tag: belong.length > 0 ? belong.length + '개 감지' : '없음',
           why: belong.length > 0
-            ? belong.map(function (c) { return c.종류; }).join('·') + ' — 다니는 기관까지 좁혀져요.'
-            : '교복·명찰·기관 로고가 보이지 않아 어디 다니는지는 알 수 없어요.',
+            ? belong.map(function (c) { return c.종류; }).join(', ') + ': 다니는 기관까지 좁혀질 수 있어요.'
+            : '교복, 명찰, 기관 로고를 찾지 못해서 어디 다니는지는 알 수 없어요.',
         },
         {
           // 글자 칸과 나란히 둔다. 하나는 "적혀 있다", 하나는 "알아볼 수 있다"로
@@ -11920,19 +11919,19 @@
           tag: chainMarks.length > 0 ? chainMarks.length + '곳' : '없음',
           why: chainMarks.length > 0
             ? chainMarks.map(function (l) { return l.이름; }).join(', ')
-              + ' — 글자가 없어도 여기가 어딘지 좁혀져요.'
-            : '배경에 이름을 댈 만한 건물이나 랜드마크가 보이지 않아요.',
+              + ': 글자가 없어도 어디인지 좁혀질 수 있어요.'
+            : '배경에서 알아볼 만한 건물이나 장소를 찾지 못했어요.',
         },
         {
           on: shownWords.length > 0,
           what: '장소가 적혀있다',
           tag: shownWords.length > 0 ? shownWords.length + '곳' : '없음',
           why: shownWords.length === 0
-            ? '간판·주소·전화번호 같은 글자가 없어 건물까지는 좁혀지지 않아요.'
+            ? '간판, 주소, 전화번호 같은 글자를 찾지 못해서 건물까지는 좁혀지지 않아요.'
             : shownWords.slice(0, 3).map(function (w) { return '"' + w.text + '"'; }).join(', ')
               + (placeWords.length > 0
-                ? ' — 건물·번지까지 좁혀져요.'
-                : ' — 사진에 글자가 읽혀요. 장소가 좁혀질 수 있어요.'),
+                ? ': 건물과 번지까지 좁혀질 수 있어요.'
+                : ': 사진에 글자가 읽혀요. 장소가 좁혀질 수 있어요.'),
         },
         {
           on: realtime,
@@ -11997,7 +11996,7 @@
     // ===== #3/#4: 위험도 판단 대기 중 스켈레톤 + 회전 문구 =====
     var RISK_PENDING_TIPS = [
       '체크리스트 정보 종합 중…',
-      '위치·상황 정보 분석 중…',
+      '위치와 상황 정보를 살펴보는 중…',
       '위험 요소 판단 중…',
       '권장 조치 작성 중…',
     ];
@@ -12248,7 +12247,7 @@
       SKELETON_TEXT_IDS.forEach(function (id) { document.getElementById(id).classList.add('skel'); });
       startScoreTicker();
       ensureBottomSkeleton();
-      setResultStatus('위험도를 계산하고 있어요. 잠시 뒤 결과가 이 화면에 채워집니다.');
+      setResultStatus('위험도를 계산하고 있어요. 잠시 뒤 이 화면에 결과가 나와요.');
 
       // 뼈대 줄이 실제 줄과 규격이 달라 결과가 오면 카드가 튀었다(215 → 174).
       // 얇은 막대(30px) 두 줄이 아니라, 실제 제안 줄과 같은 모양·개수(3줄)로 깐다.
@@ -12346,7 +12345,7 @@
         if (r.skippedCount > 0) {
           document.getElementById('pSkipText').textContent =
             '스크린샷 ' + r.totalCount + '장 중 ' + r.skippedCount + '장은 얼굴을 찾지 못해 분석에서 뺐어요. '
-            + '얼굴을 가릴 수 없는 사진은 밖으로 보내지 않습니다.';
+            + '얼굴을 가릴 수 없는 사진은 밖으로 보내지 않아요.';
           skipBox.style.display = 'block';
         } else {
           skipBox.style.display = 'none';
@@ -12514,7 +12513,7 @@
           if (OCR_DEBUG) renderDebugPanel(faceResult, textResult);
         } catch (err) {
           console.error('[OCR/FACE] 처리 중 오류 발생', err);
-          alert('사진을 분석하는 중 문제가 발생했어요. 콘솔(F12)에서 자세한 내용을 확인해주세요.\n\n' + err.message);
+          alert('진단하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
           showScreen('form');
         } finally {
           submitBtn.disabled = false;
@@ -12530,7 +12529,7 @@
     var selectedTargetIds = null; // 선택된 항목의 고유 번호 목록 (인덱스가 아니다 — 지우면 밀린다)
     var currentBlurPx = 18;   // 흐림 강도 — 고정(슬라이더는 없앴다)
     // 덮는 방식은 «자동» 하나로 고정했다(2026-10-07, 멘토 지적: 선택지 줄이기). 주변색·모자이크·픽셀 크기와
-    // 브러시(굵기·지우개·획 되돌리기)는 화면에서 뺐다 — 위치는 상자를 끌어 맞추고 놓친 곳은 «+ 놓친 곳 추가»로 더한다.
+    // 브러시(굵기·지우개·획 되돌리기)는 화면에서 뺐다 — 위치는 상자를 끌어 맞추고 놓친 곳은 «놓친 곳 추가»로 더한다.
     // applyPatchFill은 mode·cellPx·brushMask 인자를 그대로 받으므로(테스트가 쓴다) 다시 열려면 화면만 되살리면 된다.
     var currentFill = 'auto';
     var currentFillPx = 16;
@@ -12606,7 +12605,7 @@
         var p = document.createElement('p');
         p.className = 't-none';
         p.textContent = '글자처럼 보였지만 뜻을 이루지 않는 ' + droppedNoiseCount + '곳은 목록에서 뺐어요.'
-          + ' 가려야 할 자리가 남았다면 «+ 놓친 곳 추가»를 눌러주세요.';
+          + ' 가려야 할 자리가 남았다면 «놓친 곳 추가»를 눌러주세요.';
         return p;
       }
 
@@ -12615,8 +12614,8 @@
         var none = document.createElement('p');
         none.className = 't-none';
         none.textContent = droppedNoiseCount > 0
-          ? '읽을 만한 텍스트를 찾지 못했어요 — 잘못 읽은 ' + droppedNoiseCount + '곳은 뺐어요.'
-          : '위치를 아는 텍스트를 찾지 못했어요 — 텍스트를 지우는 방식은 쓸 수 없어요.';
+          ? '읽을 만한 글자를 찾지 못했어요. 잘못 읽은 ' + droppedNoiseCount + '곳은 뺐어요.'
+          : '장소를 알려 주는 글자를 찾지 못했어요. 그래서 글자 지우기는 쓸 수 없어요.';
         list.appendChild(none);
         return;
       }
@@ -12664,7 +12663,7 @@
         del.type = 'button';
         del.className = 't-del';
         del.textContent = '빼기';
-        del.title = w.userAdded ? '추가한 항목을 뺍니다' : '이건 잘못 찾은 것 — 목록에서 지웁니다';
+        del.title = w.userAdded ? '추가한 항목 빼기' : '잘못 찾은 항목 빼기';
         del.addEventListener('click', function (ev) {
           ev.preventDefault();
           correctionTextWords = correctionTextWords.filter(function (x) { return x._tid !== w._tid; });
@@ -12827,10 +12826,10 @@
           var flag = document.createElement('span');
           flag.className = 'lwr-flag ' + (v && v.found ? 'on' : 'off');
           if (v && v.found && v.hasLandmark && v.landmarks && v.landmarks.length) {
-            flag.textContent = '⚠ 장소를 알아봄'; out.appendChild(flag);
+            flag.textContent = '장소를 알아봄'; out.appendChild(flag);
             line('구글이 이 사진의 장소를 "' + v.landmarks[0].description + '"로 알아봤어요.');
           } else if (v && v.found) {
-            flag.textContent = v.hasExact ? '⚠ 같은 사진이 인터넷에 있음' : '⚠ 일부 겹치는 사진이 있음'; out.appendChild(flag);
+            flag.textContent = v.hasExact ? '같은 사진이 인터넷에 있음' : '일부 겹치는 사진이 있음'; out.appendChild(flag);
             line(v.hasExact ? '이 사진과 같은 이미지가 인터넷에서 검색돼요.' : '이 사진의 일부(주로 배경)와 겹치는 이미지가 인터넷에서 검색돼요.');
             if (v.matchingPages && v.matchingPages.length) {
               var ul = document.createElement('ul');
@@ -12844,7 +12843,7 @@
           } else {
             flag.textContent = '● 못 찾음'; out.appendChild(flag);
             line('인터넷에서 같은 사진을 찾지 못했어요.');
-            line('못 찾았다고 안전하다는 뜻은 아니에요 — 비공개 계정이나 막 올린 사진은 검색에 안 잡혀요.', true);
+            line('비공개 계정이나 막 올린 사진은 검색에 안 잡혀요. 그래서 못 찾았어도 이미 올라가 있을 수 있어요.', true);
           }
         } catch (e) {
           line('확인하지 못했어요 (' + e.message + ').');
@@ -12866,9 +12865,9 @@
       // 단계마다 버튼 글씨를 바꿔서 지금 무엇을 하는 중인지 알린다. 최대 세 번
       // 호출하므로 "확인하는 중…"만 띄우면 왜 오래 걸리는지 알 수 없다.
       var stageText = {
-        exif: '① 사진 파일의 좌표 확인 중…',
-        vision: '② 구글로 장소 확인 중…',
-        guess: '③ AI 추측 확인 중…',
+        exif: '사진 파일에 적힌 위치 확인 중… (1/3)',
+        vision: '구글로 장소 확인 중… (2/3)',
+        guess: 'AI 추측 확인 중… (3/3)',
       };
 
       function line(text, muted) {
@@ -12885,7 +12884,7 @@
           btn.textContent = stageText[stage] || prevText;
         }, opts);
         // 원본 없이 끝났을 때만 «구글로 더 찾기» 단추를 남긴다 — 이미 찾았거나 구글까지 봤으면 더 할 게 없다
-        prevText = '🔍 구글로 같은 사진이 인터넷에 있는지 더 찾아보기 (원본 사진이 구글로 가요)';
+        prevText = '구글로 같은 사진 찾기 (원본 사진이 구글로 가요)';
         // hidden 속성은 button.ghost-link의 display가 덮어써서 안 숨는다 — style로 숨긴다
         btn.style.display = (!(out.vision && out.vision.skipped) || out.kind === 'coords') ? 'none' : '';
         resultEl.innerHTML = '';
@@ -12896,18 +12895,18 @@
 
         if (out.kind === 'coords') {
           // 0단계 — 추측이 아니라 파일에 적힌 값이다. 가장 강하게 말한다.
-          flag.textContent = '⚠ 좌표가 그대로 있음';
+          flag.textContent = '촬영 위치가 그대로 있음';
           resultEl.appendChild(flag);
-          line('사진 파일에 촬영 장소의 좌표가 적혀 있어요 — '
+          line('사진 파일에 촬영 위치가 적혀 있어요: '
             + out.exif.lat.toFixed(6) + ', ' + out.exif.lng.toFixed(6)
             + (out.exif.takenAt ? ' (촬영 ' + out.exif.takenAt + ')' : '') + '.');
-          line('추측이 아니라 파일에 적힌 값이에요. 간판을 가려도 이건 남으니 파일 자체를 손봐야 해요.', true);
-          line('① 사진 파일 확인에서 나왔어요. 이 사진은 밖으로 보내지 않았어요.', true);
+          line('파일에 적힌 값이에요. 간판을 가려도 남아서, 파일에서 지워야 해요.', true);
+          line('사진 파일을 확인해서 나왔어요. 이 사진은 밖으로 보내지 않았어요.', true);
 
         } else if (out.kind === 'place') {
           // 1단계 — 구글이 알아본 장소. 좌표까지 주지만 "알아봤다"는 조회 결과다.
           var top = out.vision.landmarks[0];
-          flag.textContent = '⚠ 장소를 알아봄';
+          flag.textContent = '장소를 알아봄';
           resultEl.appendChild(flag);
           line('구글이 이 사진의 장소를 "' + top.description + '"로 알아봤어요 (신뢰도 '
             + Math.round(top.score * 100) + '%'
@@ -12917,24 +12916,24 @@
               return l.description + '(' + Math.round(l.score * 100) + '%)';
             }).join(', '), true);
           }
-          line('② 구글 장소 인식에서 나왔어요. 원본 사진을 보냈어요.', true);
+          line('구글 장소 인식으로 나왔어요. 원본 사진을 보냈어요.', true);
 
         } else if (out.kind === 'image') {
           // 1단계 — 같은/비슷한 이미지. 장소 이름을 직접 주지는 않지만 페이지가 알려준다.
           var v = out.vision;
-          flag.textContent = v.hasExact ? '⚠ 같은 이미지 발견' : '⚠ 일부 겹치는 이미지 발견';
+          flag.textContent = v.hasExact ? '같은 사진이 인터넷에 있음' : '일부 겹치는 사진이 있음';
           resultEl.appendChild(flag);
           if (v.hasExact) {
-            line('이 사진과 같은 이미지가 인터넷에서 검색돼요 — 이미 어딘가(가게 홈페이지·지도 등)에 '
-              + '올라가 있는 사진일 수 있어요. 그 페이지가 장소를 알려줍니다.');
+            line('인터넷에서 이 사진과 같은 사진이 검색돼요. 가게 홈페이지나 지도 같은 곳에 '
+              + '이미 올라가 있을 수 있어요. 그 페이지를 보면 장소를 알 수 있어요.');
           } else {
             line('이 사진의 일부(주로 배경)와 겹치는 이미지가 인터넷에서 검색돼요. '
-              + '같은 사진은 아니지만 같은 장소일 수 있어요 — 배경만으로도 장소가 좁혀진다는 뜻이에요.');
+              + '같은 사진은 아니지만 같은 장소일 수 있어요. 배경만으로도 장소가 좁혀질 수 있다는 뜻이에요.');
           }
           if (v.bestGuessLabels && v.bestGuessLabels.length > 0) {
             line('구글이 짐작한 내용: ' + v.bestGuessLabels.join(', '), true);
           }
-          line('검색 결과 — 같은 이미지 ' + (v.fullMatchCount || 0) + '건, 일부 겹치는 이미지 '
+          line('검색 결과: 같은 사진 ' + (v.fullMatchCount || 0) + '건, 일부 겹치는 사진 '
             + (v.partialMatchCount || 0) + '건, 이 사진이 실린 페이지 '
             + ((v.matchingPages || []).length) + '건'
             // 일부만 겹친 페이지는 링크로 내걸지 않는다 — 아이 사진은 비슷한 것이 많아서
@@ -12956,7 +12955,7 @@
             });
             resultEl.appendChild(ul);
           }
-          line('② 구글 역방향 이미지 검색에서 나왔어요. 원본 사진을 보냈어요.', true);
+          line('구글 이미지 검색으로 나왔어요. 원본 사진을 보냈어요.', true);
 
         } else if (out.kind === 'guess') {
           // 2단계 — 추측이다. 앞 단계와 같은 말을 쓰지 않는다.
@@ -12965,7 +12964,7 @@
           // 구체성으로 위험의 크기를 구분한다. "한국의 아파트 단지"와 "○○초등학교 앞"을
           // 같은 말로 뭉개면, 넓은 추측에 겁먹거나 좁은 추측을 흘려보낸다.
           var 등급 = { 건물: '건물까지', 동네: '동네까지', 광범위: '넓은 범위만' };
-          flag.textContent = '△ AI 추측 — ' + (등급[g.구체성] || '범위 불명');
+          flag.textContent = 'AI 추측: ' + (등급[g.구체성] || '범위 불명');
           resultEl.appendChild(flag);
           line(g.추측 || 'AI가 장소를 추측했어요.');
           // 동네·건물까지 좁혔으면 지도에도 «AI 추측» 원으로 그린다 — 지명만 카카오로 찾는다(사진은 안 보낸다)
@@ -12975,12 +12974,12 @@
               if (!pl) return;
               var m = g.구체성 === '건물' ? 300 : 1500;
               window.__addInlineMapStep({ label: 'AI 추측', where: '반경 약 ' + (m >= 1000 ? (m / 1000) + 'km' : m + 'm'), m: m,
-                center: [pl.lat, pl.lng], why: 'AI 추측 — «' + g.지명 + '» 근처(틀릴 수 있어요).' });
+                center: [pl.lat, pl.lng], why: 'AI 추측: «' + g.지명 + '» 근처 (틀릴 수 있어요)' });
             }).catch(function (e) { console.warn('[위치확인] AI 추측 지명을 지도에서 못 찾음:', e.message); });
           }
           if (g.근거) line('그렇게 본 이유: ' + g.근거, true);
-          line('③ AI 추측이에요 (확신 ' + (g.확신 || '보통') + ') — 좌표나 검색 결과가 아니라 '
-            + '사진을 보고 짐작한 것이니 틀릴 수 있어요. 얼굴을 가린 사진만 보냈어요.', true);
+          line('AI가 사진을 보고 짐작한 거예요 (확신 ' + (g.확신 || '보통') + '). '
+            + '틀릴 수 있어요. 얼굴을 가린 사진만 보냈어요.', true);
 
         } else if (out.kind === 'notfound') {
           // AI가 봤지만 배경으로 아무것도 안 좁혀졌다. "추측했다"고 하면 없는 위험이 생긴다.
@@ -12990,12 +12989,12 @@
           line((out.vision && out.vision.skipped)
             ? '사진 파일의 좌표도, AI가 배경을 본 것도 위치를 알려주지 않았어요. '
               + '인터넷 이미지 검색은 원본이 가야 해서 하지 않았어요.'
-            : '세 단계를 모두 봤지만 위치가 나오지 않았어요 — 사진 파일의 좌표도, '
-              + '구글 장소 인식·이미지 검색도, AI가 배경을 본 것도요.');
+            : '3단계를 모두 봤지만 위치를 찾지 못했어요. 사진 파일에 적힌 위치, '
+              + '구글 장소 인식과 이미지 검색, AI가 배경을 본 것 모두요.');
           if (out.guess && out.guess.근거) line('AI가 본 것: ' + out.guess.근거, true);
           line((out.vision && out.vision.skipped)
             ? '원본은 보내지 않았어요. 이미 올린 사진이라면 «내 정보»에서 구글로 같은 사진을 찾아볼 수 있어요.'
-            : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
+            : '이미지 검색은 인터넷에 올라간 사진만 찾아요. 그래서 못 찾았어도 장소가 드러날 수 있어요.', true);
 
         } else if (out.kind === 'unavailable') {
           // 못 찾은 것과 아직 못 하는 것을 구분한다. 뭉개면 "안전하다"로 읽힌다.
@@ -13004,15 +13003,15 @@
           resultEl.appendChild(flag);
           line((out.vision && out.vision.skipped)
             ? '사진 파일에는 좌표가 없었어요. 인터넷 이미지 검색은 원본이 가야 해서 하지 않았어요.'
-            : '사진 파일의 좌표도, 구글 장소 인식·이미지 검색에서도 위치가 나오지 않았어요.');
+            : '사진 파일에 적힌 위치, 구글 장소 인식과 이미지 검색 모두에서 위치를 찾지 못했어요.');
           line((out.vision && out.vision.skipped)
             ? '원본은 보내지 않았어요. 이미 올린 사진이라면 «내 정보»에서 구글로 같은 사진을 찾아볼 수 있어요.'
-            : '못 찾았다고 안전하다는 뜻은 아니에요 — 인터넷에 올라간 사진만 찾을 수 있어요.', true);
+            : '이미지 검색은 인터넷에 올라간 사진만 찾아요. 그래서 못 찾았어도 장소가 드러날 수 있어요.', true);
           if (out.vision && (out.vision.weakLandmarkCount || 0) > 0) {
-            line('참고 — 구글이 장소 후보 ' + out.vision.weakLandmarkCount
-              + '개를 봤지만 신뢰도가 낮아 알려드리지 않았어요.', true);
+            line('참고: 구글이 장소 후보 ' + out.vision.weakLandmarkCount
+              + '개를 찾았지만 확실하지 않아서 알려 드리지 않았어요.', true);
           }
-          line('③ AI 추측은 아직 준비 중이에요 (' + (out.reason || '연동 전') + ').', true);
+          line('AI 추측은 아직 준비 중이에요.', true);
         }
         resultEl.style.display = 'block';
       } catch (e) {
@@ -13029,7 +13028,7 @@
       }
     }
     document.getElementById('schedIncludeBtn').addEventListener('click', async function () {
-      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 AI 판독 서버(Anthropic)로 보냅니다. 계속할까요?')) return;
+      if (!confirm('이 스크린샷에서 얼굴을 찾지 못했어요. 가리지 않은 원본을 AI 판독 서버(Anthropic)로 보낼까요?')) return;
       var btn = this;
       var files = document.getElementById('pastInput').files;
       if (!files || files.length === 0) return;
@@ -13057,7 +13056,7 @@
     });
 
     document.getElementById('pIncludeBtn').addEventListener('click', function () {
-      if (!confirm('얼굴을 찾지 못한 스크린샷을 가리지 않은 원본 그대로 AI 판독 서버(Anthropic)로 보냅니다. 계속할까요?')) return;
+      if (!confirm('이 스크린샷에서 얼굴을 찾지 못했어요. 가리지 않은 원본을 AI 판독 서버(Anthropic)로 보낼까요?')) return;
       includeUnmaskedScreenshots = true;
       // pastInput(메인 폼)이 아니라 lastPatternFiles를 쓴다 — #pattern-check(별도 입구)로
       // 들어온 경우엔 pastInput이 아예 비어 있다.
@@ -13141,7 +13140,7 @@
 
     document.getElementById('compareSliderToggle').addEventListener('click', function () {
       compareSliderOn = !compareSliderOn;
-      this.textContent = compareSliderOn ? '← 따로 보기' : '↔ 겹쳐서 비교하기';
+      this.textContent = compareSliderOn ? '따로 보기' : '겹쳐서 비교';
       document.getElementById('compareGrid').style.display = compareSliderOn ? 'none' : '';
       document.getElementById('compareSlider').style.display = compareSliderOn ? 'block' : 'none';
       if (compareSliderOn) {
@@ -13334,7 +13333,7 @@
       lastCorrectionMeta = null;
       document.getElementById('previewAfter').src = correctionBaseUrl;
       previewCaption.textContent = appliedSteps.length === 0
-        ? '적용한 보정을 모두 되돌렸어요 — 원본 상태예요.'
+        ? '보정을 모두 되돌렸어요. 지금은 원본이에요.'
         : '마지막 보정을 되돌렸어요 (' + appliedSteps.length + '단계 남음).';
       renderAppliedSteps();
       renderCoverHandles();
@@ -13384,7 +13383,7 @@
       var ul = document.getElementById('autoPlan');
       var row = document.getElementById('methodRowValue');
       var items = [], short = [];
-      if (plan.cover) { items.push('글자·간판 ' + plan.coverN + '곳 덮기'); short.push('글자 ' + plan.coverN + '곳'); }
+      if (plan.cover) { items.push('글자와 간판 ' + plan.coverN + '곳 덮기'); short.push('글자 ' + plan.coverN + '곳'); }
       if (plan.uniform) { items.push('교복 색 바꾸기'); short.push('교복 색'); }
       if (plan.blur) { items.push('배경 흐리기 (글자는 없지만 장소가 알아볼 만해요)'); short.push('배경 흐림'); }
       if (ul) {
@@ -13404,7 +13403,7 @@
       var list = document.getElementById('methodRowList');
       if (list) {
         var rows = [];
-        if (plan.cover) rows.push(['cover', '글자·간판 ' + plan.coverN + '곳 덮기', '주변 배경에 맞춰 글자가 안 보이게 해요']);
+        if (plan.cover) rows.push(['cover', '글자와 간판 ' + plan.coverN + '곳 덮기', '주변 배경에 맞춰 글자가 안 보이게 해요']);
         if (plan.uniform) rows.push(['uniform', '교복 색 바꾸기', '옷으로 소속이 드러나지 않게 해요']);
         if (plan.blur) rows.push(['blur', '배경 흐리기', '아이는 그대로 두고 장소만 흐리게 해요']);
         list.innerHTML = '';
@@ -13515,12 +13514,12 @@
                  uniform: plan.uniform && !autoOff.uniform, blur: plan.blur && !autoOff.blur };
         if (찾은게있음 && !plan.cover && !plan.uniform && !plan.blur) {
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '모든 단계를 껐어요 — 원본 그대로예요.';
+          previewCaption.textContent = '모든 단계를 껐어요. 지금은 원본이에요.';
           return;
         }
         if (!plan.cover && !plan.uniform && !plan.blur) {
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '자동으로 가릴 곳을 찾지 못했어요. «+ 놓친 곳 추가»로 직접 지정하거나, 아래 «AI로 더 다듬기»를 써보세요.';
+          previewCaption.textContent = '자동으로 가릴 곳을 찾지 못했어요. «놓친 곳 추가»로 직접 지정하거나, 아래 «AI로 더 다듬기»를 써보세요.';
           return;
         }
         setPreviewBusy('자동으로 보정하는 중이에요\n사진은 밖으로 나가지 않아요');
@@ -13554,8 +13553,8 @@
             if (mySeq !== methodSeq) return;
             if (bMask || aFaces.length > 0) {
               aCanvas = applyBackgroundBlur(aImg, aFaces, aw, ah, currentBlurPx, bMask);
-              blurTxt = '글자는 없지만 사진 속 장소가 알아볼 만해서 배경을 흐렸어요'
-                + (bMask && bMask._limbs ? '(손·팔·다리는 선명하게).' : '.');
+              blurTxt = '글자는 없지만 사진 속 장소를 알아볼 만해서 배경을 흐렸어요'
+                + (bMask && bMask._limbs ? ' (손, 팔, 다리는 선명하게).' : '.');
             } else {
               blurTxt = '배경을 흐리려 했지만 사람을 찾지 못해 건너뛰었어요.';
             }
@@ -13563,7 +13562,7 @@
           if (mySeq !== methodSeq) return;
           if (!aCanvas) {
             previewAfter.src = correctionBaseUrl;
-            previewCaption.textContent = [colorTxt, blurTxt].filter(Boolean).join(' ') + ' 바뀐 곳이 없어요 — «+ 놓친 곳 추가»나 «AI로 더 다듬기»를 써보세요.';
+            previewCaption.textContent = [colorTxt, blurTxt].filter(Boolean).join(' ') + ' 바뀐 곳이 없어요. «놓친 곳 추가»나 «AI로 더 다듬기»를 써 보세요.';
             return;
           }
           currentCorrectionCanvas = aCanvas;
@@ -13575,7 +13574,7 @@
           console.error('[자동 보정] 실패:', err);
           if (mySeq === methodSeq) {
             previewAfter.src = correctionBaseUrl;
-            previewCaption.textContent = '⚠ 자동 보정에 실패했어요 (' + err.message + '). «AI로 더 다듬기»를 써보세요.';
+            previewCaption.textContent = '자동 보정을 하지 못했어요. «AI로 더 다듬기»를 써 보세요.';
             currentCorrectionCanvas = null; lastCorrectionMeta = null;
           }
         } finally {
@@ -13597,8 +13596,8 @@
           var au = await pickAutoColorway(await loadImage(correctionBaseUrl), (lastFaceResult && lastFaceResult.faces) || []);
           cwKey = au.key;
           autoNote = au.read
-            ? ' — 원래 옷 색(' + outfitColorsKo(au.read) + ')을 읽어 가장 달라 보이는 색으로 골랐어요'
-            : ' — 옷 색을 읽지 못해 기본 색으로 했어요';
+            ? '. 원래 옷 색(' + outfitColorsKo(au.read) + ')을 읽고, 가장 달라 보이는 색으로 골랐어요'
+            : '. 옷 색을 읽지 못해서 기본 색으로 했어요';
         }
         var cwSel = COLORWAYS[cwKey] || COLORWAYS.brown;
         var emSel = outfitEmblem || 'keep';
@@ -13617,8 +13616,8 @@
         if (wantAi) {
           if (!(await checkFluxStatus())) {
             previewAfter.src = correctionBaseUrl;
-            previewCaption.textContent = '마크 지우기·옷 바꾸기는 ' + aiProviderLabel() + ' 연동 준비 중이에요. '
-              + '지금은 «색만 바꾸기»를 골라보세요.';
+            previewCaption.textContent = '마크 지우기와 옷 바꾸기는 아직 준비 중이에요. '
+              + '지금은 «색만 바꾸기»를 골라 보세요.';
             currentCorrectionCanvas = null; lastCorrectionMeta = null;
             return;
           }
@@ -13633,8 +13632,8 @@
         var ofFaces = (lastFaceResult && lastFaceResult.faces) || [];
         if (wantAi && ofFaces.length === 0) {
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '얼굴을 찾지 못해서 옷 위치를 알 수 없어요 — 마크 지우기·옷 바꾸기는 쓸 수 없습니다. '
-            + '색만 바꾸는 것은 가능해요.';
+          previewCaption.textContent = '얼굴을 찾지 못해서 옷 위치를 알 수 없어요. 마크 지우기와 옷 바꾸기는 쓸 수 없고, '
+            + '색만 바꾸기는 쓸 수 있어요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
           return;
         }
@@ -13667,18 +13666,18 @@
             clearPreviewBusy();
             currentCorrectionCanvas = of.canvas;
             요약.push(buildOutfitSummaryKo(cwKey, 'all')
-              + (of.colors ? ' — 원래 옷 색을 사진에서 읽어 지정했어요(' + outfitColorsKo(of.colors) + ')'
-                : (cwSel.keepColors ? ' — 옷 색을 읽지 못해 AI가 무난한 색으로 그렸어요' : ''))
+              + (of.colors ? '. 원래 옷 색(' + outfitColorsKo(of.colors) + ')을 사진에서 읽어 정했어요'
+                : (cwSel.keepColors ? '. 옷 색을 읽지 못해서 AI가 무난한 색으로 그렸어요' : ''))
               + ' (약 $' + Number(of.data.estimatedCostUsd || 0).toFixed(2)
               + ', ' + Math.round(of.data.timingMs / 1000) + '초)');
           } else if (wantAi) {
-            setPreviewBusy('옷의 로고·이름표만 지우는 중이에요\n옷은 그대로 두고 그 자리만 바꿔요\n30초쯤 걸려요');
+            setPreviewBusy('옷의 로고와 이름표만 지우는 중이에요\n옷은 그대로 두고 그 자리만 바꿔요\n30초쯤 걸려요');
             var emImg = await loadImage(baseUrl);
             var em = await runEmblemRemoval(emImg, ofFaces, lastRiskResult, emSel);
             clearPreviewBusy();
             currentCorrectionCanvas = em.canvas;
             요약.push('옷의 마크를 ' + (EMBLEM_MODE_KO[emSel] || EMBLEM_MODE_KO.none)
-              + ' — 옷 모양·무늬는 그대로예요 (약 $'
+              + '. 옷 모양과 무늬는 그대로예요 (약 $'
               + Number(em.data.estimatedCostUsd || 0).toFixed(2)
               + ', ' + Math.round(em.data.timingMs / 1000) + '초)');
           }
@@ -13688,8 +13687,8 @@
             ? ' 얼굴과 자세는 그대로예요. 어느 기관 옷인지 알아볼 수 없게 됐는지 꼭 눈으로 확인해주세요.'
             : (wantAi
               ? ' 로고가 남아 있거나 옷 디자인으로 학교를 알아볼 수 있으면 아래 «옷 전체 바꾸기»를 눌러주세요.'
-              : ' 색이 있는 옷은 색조가 옮겨지고, 흰 옷·검정 옷은 살짝만 물들어요(밝기와 무늬 명암은 그대로). ⚠ 밝은 색 옷은 배경과 비슷해서 일부만 잡힐 수 있어요 — 안 바뀐 부분이 없는지 확인해주세요.'
-                + ' 가슴에 마크가 있으면 색만 바뀌어 모양이 남으니, 위에서 «색 + 마크»를 골라주세요.');
+              : ' 흰 옷과 검정 옷은 색이 살짝만 바뀌어요. 밝은 색 옷은 배경과 비슷해서 일부만 바뀔 수 있으니, 안 바뀐 곳이 없는지 봐 주세요.'
+                + ' 가슴 마크는 색만 바뀌고 모양은 남아요. 마크까지 지우려면 위에서 «색 + 마크»를 골라 주세요.');
           // AI 로고 지우기·옷 바꾸기 뒤 안내 문장은 뺐다(11-21 «이부분 없애») — 결과 사진과 아래 단추가 같은 말을 한다
           previewCaption.textContent = wantAi ? '' : '✨ ' + 요약.join(' 그리고 ') + '.' + 꼬리;
           if (wantAi && emSel !== 'all') document.getElementById('aiOutfitBtn').style.display = '';
@@ -13702,8 +13701,8 @@
           console.error('[옷 손보기] 실패:', err);
           previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = err.noClothes
-            ? '⚠ 옷 영역을 찾지 못했어요. 다른 방식을 이용해주세요.'
-            : '⚠ 옷 손보기에 실패했어요 (' + err.message + '). 다른 방식을 이용해주세요.';
+            ? '옷을 찾지 못했어요. 다른 방법으로 가려 주세요.'
+            : '옷을 고치지 못했어요. 다른 방법을 골라 주세요.';
           currentCorrectionCanvas = null; lastCorrectionMeta = null;
         }
         return;
@@ -13713,7 +13712,7 @@
         var ready = await checkFluxStatus();
         if (!ready) {
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = '✨ AI 배경교체는 ' + aiProviderLabel() + ' 연동 준비 중이에요. 지금은 원본이 그대로 보여요.';
+          previewCaption.textContent = 'AI 배경 바꾸기는 아직 준비 중이에요. 지금은 원본이 보여요.';
           editInstruction.textContent = '';
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
@@ -13755,11 +13754,11 @@
             currentCorrectionCanvas = sg.canvas;
             previewAfter.src = sg.canvas.toDataURL('image/png');
             var sgNames = sg.signs.map(function (p) { return '«' + p.text + '»'; }).join(', ');
-            previewCaption.textContent = '✨ 위치를 알려 주는 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 바꿨어요. '
+            previewCaption.textContent = '위치를 알려 주는 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 바꿨어요. '
               + '사람과 나머지 배경은 원본 그대로예요. '
               + (landmarkNames.length
-                ? '⚠ 다만 이곳은 간판이 없어도 «' + landmarkNames.join(', ') + '»(으)로 알아볼 수 있어요. 더 가리려면 «배경 전체 바꾸기»를 눌러주세요. '
-                : '다른 간판·글자가 남아 있으면 «배경 전체 바꾸기»를 눌러주세요. ')
+                ? '다만 간판이 없어도 «' + landmarkNames.join(', ') + '»(으)로 이곳을 알아볼 수 있어요. 더 가리려면 «배경 전체 바꾸기»를 눌러 주세요. '
+                : '다른 간판이나 글자가 남아 있으면 «배경 전체 바꾸기»를 눌러 주세요. ')
               + '(약 $' + Number(sg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(sg.data.timingMs / 1000) + '초)';
             lastCorrectionMeta = { method: 'ai', detail: 'AI 간판 교체 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
               + (landmarkNames.length ? ' (알아볼 수 있는 장소 «' + landmarkNames.join(', ') + '»는 남음)' : '') };
@@ -13773,7 +13772,7 @@
           clearPreviewBusy();
           currentCorrectionCanvas = bg.canvas;
           previewAfter.src = bg.canvas.toDataURL('image/png');
-          previewCaption.textContent = '✨ ' + (sgWhy ? sgWhy + ' 배경 전체를 바꿨어요. ' : '') + '사람은 원본 그대로 두고 배경만 새로 그렸어요. 간판·건물 이름이 남아 있지 않은지 꼭 눈으로 확인해주세요. (약 $'
+          previewCaption.textContent = (sgWhy ? sgWhy + ' 배경 전체를 바꿨어요. ' : '') + '사람은 원본 그대로 두고 배경만 새로 그렸어요. 간판이나 건물 이름이 남아 있지 않은지 꼭 눈으로 확인해 주세요. (약 $'
             + Number(bg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(bg.data.timingMs / 1000) + '초)';
           editInstruction.textContent = '사용된 배경 지시(영문): ' + bg.data.editPrompt;
           lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 사람은 마스크로 보존, 배경 지시: ' + bg.data.editPrompt };
@@ -13783,8 +13782,8 @@
           console.error('[배경교체] 실패:', err);
           previewAfter.src = correctionBaseUrl;
           previewCaption.textContent = err.noPerson
-            ? '⚠ 사진에서 사람을 찾지 못해서 배경을 안전하게 바꿀 수 없어요.'
-            : '⚠ AI 배경교체에 실패했어요 (' + err.message + ').';
+            ? '사진에서 사람을 찾지 못해서 배경을 안전하게 바꿀 수 없어요. 다른 방법을 골라 주세요.'
+            : '배경을 바꾸지 못했어요. 잠시 뒤 다시 눌러 주세요.';
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
         }
@@ -13808,7 +13807,7 @@
         var blurMask = null;
         try {
           if (!fullPersonMaskCache.canvas || fullPersonMaskCache.key !== correctionBaseUrl) {
-            setPreviewBusy('사람(손·팔·다리까지)과 배경을 갈라내는 중이에요\n처음 한 번은 모델을 받느라 조금 더 걸려요');
+            setPreviewBusy('사람(손, 팔, 다리까지)과 배경을 나누는 중이에요\n처음 한 번은 준비하느라 조금 더 걸려요');
           }
           blurMask = await getFullPersonMask(img, correctionBaseUrl);
         } finally {
@@ -13822,10 +13821,10 @@
         // 예전에는 얼굴을 못 찾아 사진 전체가 흐려졌는데도 "배경만 흐려진다"고 적혀 있었다.
         previewCaption.textContent = blurMask
           ? (blurMask._limbs
-            ? '사람 윤곽(손·팔·다리 포함)을 따라 배경만 흐렸어요.'
+            ? '사람 윤곽(손, 팔, 다리 포함)을 따라 배경만 흐렸어요.'
             : '사람 윤곽을 따라 배경만 흐렸어요. 팔이나 다리가 잘렸으면 흐림 정도를 낮추거나 다른 방식을 써주세요.')
           : (faces.length > 0
-            ? '사람을 정확히 갈라내지 못해 얼굴 기준으로 대략 남겼어요 — 인물 주변 배경도 함께 선명할 수 있어요.'
+            ? '사람을 정확히 나누지 못해서 얼굴을 기준으로 대략 남겼어요. 사람 주변 배경도 선명하게 남았을 수 있어요.'
             : '사람을 찾지 못해서 사진 전체가 흐려졌어요. 지금은 글자를 가리는 용도로만 쓸 수 있어요.');
       } else if (method === 'sticker') {
         canvas = applyPatchFill(img, texts, img.naturalWidth, img.naturalHeight, currentFill, currentFillPx, null);
@@ -13834,7 +13833,7 @@
           ? [cs2.swapText, cs2.coverText, cs2.keptText, cs2.leftText].filter(Boolean).join(' ')
           : (cs2.leftText
             ? '덮을 만한 글자가 없었어요. ' + cs2.leftText + ' 덮고 싶으면 위 목록에서 체크해 주세요.'
-            : '아직 덮은 곳이 없어요 — 위 목록에서 처리할 항목을 고르거나 «+ 놓친 곳 추가»를 눌러주세요.');
+            : '아직 덮은 곳이 없어요. 위 목록에서 고칠 항목을 고르거나 «놓친 곳 추가»를 눌러 주세요.');
       }
 
       currentCorrectionCanvas = canvas;
@@ -13919,7 +13918,7 @@
 
       var ready = await checkFluxStatus('sign');
       if (!ready) {
-        statusEl.textContent = '⚠ 서버 연동 준비 중이에요.';
+        statusEl.textContent = '아직 준비 중이에요.';
         return;
       }
       var agreed = await askSignAiConsent();
@@ -13949,8 +13948,8 @@
         }
         imgEl.src = currentCorrectionCanvas.toDataURL('image/png');
         statusEl.textContent = failed === 0
-          ? '✓ ' + done + '곳 더 자연스럽게 바꿨어요'
-          : '✓ ' + done + '곳 완료, ' + failed + '곳 실패(콘솔 참고)';
+          ? '간판 ' + done + '곳을 더 자연스럽게 바꿨어요'
+          : '간판 ' + done + '곳을 바꿨어요. ' + failed + '곳은 바꾸지 못했어요.';
       } finally {
         btn.disabled = false;
         setAiWait('');
@@ -13982,11 +13981,11 @@
       return {
         검증결과: pass ? '통과' : '재검토필요',
         합의: '한쪽만',
-        합의설명: '두 모델 모두 부르지 못해 규칙만으로 판단했어요.',
+        합의설명: 'AI로 확인하지 못해서 간단한 기준으로만 봤어요. 결과가 정확하지 않을 수 있어요.',
         위험요소해결: textResolved ? '해결됨' : (textReduced ? '부분해결' : '미해결'),
-        신규위험: '알수없음(규칙기반 폴백이라 판단 불가)',
-        인물보존: faceOk ? '정상' : '변형의심(얼굴 개수가 ' + beforeStats.count + '개→' + afterStats.count + '개로 바뀜)',
-        설명: '⚠️ AI 재검증 연결에 실패해서 규칙 기반으로 대략 판단한 결과예요(텍스트 개수 변화 + 얼굴 개수만 비교). 상세 근거는 제공되지 않아요.',
+        신규위험: '확인 못 함',
+        인물보존: faceOk ? '정상' : '바뀌었을 수 있음 (얼굴이 ' + beforeStats.count + '개에서 ' + afterStats.count + '개로 바뀜)',
+        설명: 'AI로 다시 검사하지 못해서 간단한 기준으로 대략 판단했어요. 글자 수와 얼굴 수가 바뀌었는지만 봤어요.',
         추가조치필요시: pass ? '' : '보정 방식을 다시 확인해보세요.',
         _fallback: true,
       };
@@ -14030,7 +14029,7 @@
       // 진단 때 "위치 정보가 박혀있다"고 경고했던 것과 짝을 맞춰, 그 경고가 실제로
       // 해소됐다고 여기서 확인해 준다. GPS가 애초에 없었으면 보일 이유가 없는 안내다.
       if (lastExifResult && lastExifResult.hasGps) {
-        addTag('파일 속 위치정보(GPS) 제거됨', true);
+        addTag('파일 속 촬영 위치 지움', true);
       }
 
       var detailEl = document.getElementById('verifyDetail');
@@ -14040,10 +14039,10 @@
       var v = who.사진보기 || {};
       var left = v.남은단서 && v.남은단서 !== '없음' ? String(v.남은단서).slice(0, 40) : '';
       var text;
-      if (result._fallback) text = '⚠️ AI 재검증을 못 해 대략 판단했어요. 눈으로 한 번 확인해 주세요.';
-      else if (split) text = '⚖ 두 AI의 판단이 갈렸어요. 눈으로 한 번 확인해 주세요.' + (left ? ' (남은 단서: ' + left + ')' : '');
-      else if (pass) text = '✅ 위치·소속 단서가 지워졌어요.';
-      else text = '⚠️ 아직 단서가 남아 있어요' + (left ? ': ' + left : '.');
+      if (result._fallback) text = 'AI로 다시 검사하지 못해서 대략 판단했어요. 눈으로 한 번 확인해 주세요.';
+      else if (split) text = '두 AI의 판단이 갈렸어요. 눈으로 한 번 확인해 주세요.' + (left ? ' (남은 단서: ' + left + ')' : '');
+      else if (pass) text = '처음에 찾은 위치와 소속 단서가 더 보이지 않아요.';
+      else text = '아직 단서가 남아 있어요' + (left ? ': ' + left + '.' : '.') + ' 보정으로 돌아가 더 고칠 수 있어요.';
       detailEl.textContent = text;
       renderVerifyRadar(result.afterRisk);
     }
@@ -14199,7 +14198,7 @@
         stampEl.querySelector('.s-text').textContent = '보정 없음';
         tagsEl.innerHTML = '';
         detailEl.classList.remove('warn');
-        detailEl.textContent = '보정을 적용하지 않고 마쳤어요 — 처음에 진단된 위험요소가 사진에 그대로 남아있을 수 있습니다. 필요하면 뒤로 가서 보정을 적용해보세요.';
+        detailEl.textContent = '보정하지 않고 마쳤어요. 처음에 찾은 단서가 사진에 그대로 남아 있을 수 있어요. 필요하면 뒤로 가서 보정해 보세요.';
         return;
       }
 
@@ -14219,7 +14218,7 @@
         stampEl.querySelector('.s-icon').textContent = '⚠';
         stampEl.querySelector('.s-text').textContent = '재검증 실패';
         detailEl.classList.add('warn');
-        detailEl.textContent = '재검증 중 오류가 발생했어요: ' + e.message + ' — "재검증 다시 실행"을 눌러보세요.';
+        detailEl.textContent = '다시 검사하지 못했어요. «한 번 더 검사»를 눌러 주세요.';
       }
     }
     document.getElementById('cycleVerifyBtn').addEventListener('click', function () { renderVerify(); });
@@ -14227,7 +14226,7 @@
     document.getElementById('restartBtn').addEventListener('click', function () {
       // 여기까지 왔다는 건 진단·보정(AI라면 비용도)이 끝난 상태다 — 확인 없이 지우면
       // 실수로 누른 손끝 하나에 그 작업이 통째로 날아간다(UX 감사 지적).
-      if (!confirm('지금까지의 진단·보정 결과가 모두 사라져요. 다른 사진으로 처음부터 다시 할까요?')) return;
+      if (!confirm('지금까지 진단하고 고친 결과가 모두 사라져요. 다른 사진으로 처음부터 할까요?')) return;
       photoInput.value = '';
       pastInput.value = '';
       pastCount = 0;
@@ -14932,7 +14931,7 @@
         chip.type = 'button';
         chip.className = 'map-chip';
         chip.setAttribute('aria-haspopup', 'dialog');
-        chip.textContent = '📍 장소 지도';
+        chip.textContent = '장소 지도';
         chip.addEventListener('click', function () { openMap(chip); });
         return chip;
       };
