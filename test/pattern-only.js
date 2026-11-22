@@ -99,7 +99,7 @@ const SHOTS = (() => {
   check('예측 가능 정보를 보여준다', rendered.predictedShown && /유치원/.test(rendered.predicted));
   check('무엇을 읽었는지 게시물마다 보여준다', rendered.read.length === 3, String(rendered.read.length));
   check('위치 태그와 사진 속 글자를 구분해 적는다',
-    /“하늘유치원”/.test(rendered.read[0]) && /📍 하늘유치원/.test(rendered.read[1]),
+    /“하늘유치원”/.test(rendered.read[0]) && /장소: 하늘유치원/.test(rendered.read[1]),
     rendered.read.slice(0, 2).join(' | '));
   check('뺀 스크린샷은 이유를 적는다',
     /얼굴을 못 찾아/.test(rendered.read[2]) && /보내지 않았어요/.test(rendered.read[2]), rendered.read[2]);

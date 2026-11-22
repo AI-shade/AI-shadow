@@ -86,7 +86,7 @@ async function 흐름(browser, 이름, ctxOpts, 옵션) {
   단계 = '후';
   const 처음요청수 = 채점요청.length;
   await page.click('#goVerifyBtn');
-  await page.waitForFunction(() => !/재검증 중/.test(document.querySelector('#verifyStamp .s-text').textContent), { timeout: 60000 });
+  await page.waitForFunction(() => !/다시 검사하는 중/.test(document.querySelector('#verifyStamp .s-text').textContent), { timeout: 60000 });
   await page.waitForTimeout(600);
 
   const 보임 = await page.evaluate(() => { const e = document.getElementById('verifyRadar'); return !!e && e.getClientRects().length > 0; });

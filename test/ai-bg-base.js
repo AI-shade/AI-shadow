@@ -69,7 +69,7 @@ function check(label, ok, detail) {
   const entryCalls = calls.filter((c) => !/flux-status|access-check/.test(c));
   check('글자 위치 계산 같은 API 호출이 없다', entryCalls.length === 0, entryCalls.join(',') || '0회');
   check('기다림 표시 없이 바로 원본이 보인다', !entered.busy && entered.same, 'busy=' + entered.busy);
-  check('무엇을 고르라고 안내한다', /골라주세요/.test(entered.caption), entered.caption.slice(0, 40));
+  check('무엇을 고르라고 안내한다', /골라 주세요/.test(entered.caption), entered.caption.slice(0, 40));
   check('AI 단추가 보인다', entered.aiShown);
 
   function clickConsent(which) {

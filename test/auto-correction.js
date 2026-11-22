@@ -68,7 +68,7 @@ function check(label, ok, detail) {
     return { a, rowA, b, rowB: document.getElementById('methodRowValue').textContent };
   });
   check('도는 단계를 한 줄씩 보여준다', shown.a.length === 2 && /3곳/.test(shown.a[0]) && /교복/.test(shown.a[1]), shown.a.join(' / '));
-  check('폰 행에도 짧게 요약된다', shown.rowA === '글자 3곳 · 교복 색', shown.rowA);
+  check('폰 행에도 짧게 요약된다', shown.rowA === '글자 3곳, 교복 색', shown.rowA);
   const sw = await page.evaluate(() => {
     window.__anshimTest.renderAutoPlanForTest({ cover: true, coverN: 3, uniform: true, blur: false });
     return Array.from(document.querySelectorAll('#methodRowList .mr-switch')).map((s) => s.dataset.step + ':' + s.checked + ':' + s.getAttribute('role'));
