@@ -93,7 +93,8 @@ function check(label, ok, detail) {
     return { caption: document.getElementById('previewCaption').textContent };
   });
   check('배경 교체 요청이 한 번 나간다', sent.length === 1, sent.length + '회');
-  check('사람은 원본 그대로라고 알린다', /사람은 원본 그대로/.test(agree.caption), agree.caption.slice(0, 40));
+  // 배경 교체 뒤 안내 문장은 뺐다(11-22 «이것도 빼줘»)
+  check('배경 교체 뒤 안내 문장이 없다', agree.caption.trim() === '', agree.caption.slice(0, 40));
   if (sent.length) {
     // Claude가 보는 사진이 원본만큼 선명한지 — 원본을 같은 크기로 줄인 것과 배경 자리(위쪽 왼편) 선명도를 비교한다
     const sharp = await page.evaluate(async ({ u, ctx }) => {

@@ -14325,12 +14325,8 @@
             currentCorrectionCanvas = sg.canvas;
             previewAfter.src = sg.canvas.toDataURL('image/png');
             var sgNames = sg.signs.map(function (p) { return '«' + p.text + '»'; }).join(', ');
-            previewCaption.textContent = '위치를 알려 주는 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 바꿨어요. '
-              + '사람과 나머지 배경은 원본 그대로예요. '
-              + (landmarkNames.length
-                ? '다만 간판이 없어도 «' + landmarkNames.join(', ') + '»(으)로 이곳을 알아볼 수 있어요. 더 가리려면 «배경 전체 바꾸기»를 눌러 주세요. '
-                : '다른 간판이나 글자가 남아 있으면 «배경 전체 바꾸기»를 눌러 주세요. ')
-              + '(약 $' + Number(sg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(sg.data.timingMs / 1000) + '초)';
+            // 간판만 바꾼 뒤 안내 문장도 뺐다(11-22 «그것도 빼») — «배경 전체 바꾸기» 단추는 그대로 나온다
+            previewCaption.textContent = '';
             lastCorrectionMeta = { method: 'ai', detail: 'AI 간판 교체 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
               + (landmarkNames.length ? ' (알아볼 수 있는 장소 «' + landmarkNames.join(', ') + '»는 남음)' : '') };
             document.getElementById('aiBgFullBtn').style.display = '';
@@ -14343,8 +14339,8 @@
           clearPreviewBusy();
           currentCorrectionCanvas = bg.canvas;
           previewAfter.src = bg.canvas.toDataURL('image/png');
-          previewCaption.textContent = (sgWhy ? sgWhy + ' 배경 전체를 바꿨어요. ' : '') + '사람은 원본 그대로 두고 배경만 새로 그렸어요. 간판이나 건물 이름이 남아 있지 않은지 꼭 눈으로 확인해 주세요. (약 $'
-            + Number(bg.data.estimatedCostUsd || 0).toFixed(2) + ', ' + Math.round(bg.data.timingMs / 1000) + '초)';
+          // 배경 교체 뒤 안내 문장은 뺐다(11-22 «이것도 빼줘») — 로고 지우기·옷 바꾸기와 같이
+          previewCaption.textContent = '';
           editInstruction.textContent = '사용된 배경 지시(영문): ' + bg.data.editPrompt;
           lastCorrectionMeta = { method: 'ai', detail: 'AI 배경교체 — 사람은 마스크로 보존, 배경 지시: ' + bg.data.editPrompt };
         } catch (err) {
