@@ -1772,6 +1772,17 @@
   .btn-ghost:hover { background: var(--soft); }
   .hero-note { font-size: 0.8rem; color: var(--muted); margin: 0; }
 
+  /* 첫 화면을 가운데 정렬로(11-22 «일단 a로 해줘봐» — 글이 왼쪽에만 몰려 오른쪽이 비어 있었다).
+     폰은 앱 화면 배치를 따로 쓰므로 넓은 화면에만 적용한다. 높이는 .hero가 이미 화면 한 장을 채운다. */
+  @media (min-width: 901px) {
+    .hero-copy { text-align: center; }
+    .hero-sub { margin-left: auto; margin-right: auto; }
+    .hero-actions { justify-content: center; }
+  }
+  /* 버튼 1번(11-22): 큰 버튼 하나 + «기능 살펴보기 →» 글자 링크 */
+  .hero-actions { align-items: center; gap: 1.4rem; }
+  .btn-ghost.hero-link { box-shadow: none; padding: 0.8rem 0.2rem; color: var(--muted); }
+  .btn-ghost.hero-link:hover { background: transparent; color: var(--ink); }
   .hero-visual { display: grid; gap: 0.8rem; }
   .hv-card {
     background: var(--card); border: 1px solid var(--line); border-radius: 20px;
@@ -2674,6 +2685,11 @@
     :root[data-view="home"] :is(main#tool, #pattern-check) { display: none; }
     :root:is([data-view="tool"], [data-view="me"]) :is(header.hero, #selfcheck, .scroll-cue, #steps, #features, #why, #faq, .cta-band) { display: none; }
     :root[data-view="tool"] #pattern-check { display: none; }
+    /* 기능 쪽: 기능 칸만 따로 한 장처럼 띄운다(11-22). 뒤로가기는 주소(#features)로 된다 */
+    :root[data-view="features"] :is(header.hero, #selfcheck, .scroll-cue, #steps, #why, #faq, .cta-band, main#tool, #pattern-check) { display: none; }
+    :root[data-view="features"] #features { animation: pageIn 0.35s ease-out; }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { :root[data-view="features"] #features { animation: none; } }
     /* 내 정보에는 과거 게시물 점검 입구가 늘 있고, 도구 카드는 검증·패턴 결과일 때만 보인다 */
     :root[data-view="me"]:not([data-screen="verify"], [data-screen="pattern"]) main#tool { display: none; }
   }
@@ -3499,7 +3515,7 @@
       </p>
       <div class="hero-actions">
         <a class="btn-primary" href="#tool">지금 진단하기</a>
-        <a class="btn-ghost" href="#features">기능 살펴보기</a>
+        <a class="btn-ghost hero-link" href="#features">기능 살펴보기 <span aria-hidden="true">→</span></a>
       </div>
       <!-- 버튼 밑 안내 줄(가입 없이 써요…)은 11-22 요청으로 뺐다(«밑에 줄 삭제시켜줘») -->
     </div>
@@ -15087,7 +15103,8 @@
     // 주소가 #tool이면(공유 링크) 도구 화면으로 시작한다. 아니면 홈.
     // 웹 주소: #tool → 사용 화면, #me·#pattern-check → 내 정보, 그 밖 → 소개.
     // 폰은 탭(data-tab)이 쪽을 정하고 data-view는 진단 탭 안의 홈 ↔ 도구만 뜻한다.
-    var 쪽주소 = function (h) { return h === '#tool' ? 'tool' : (h === '#me' || h === '#pattern-check') ? 'me' : 'home'; };
+    // #features → 기능 쪽(11-22 «기능 살펴보기 누르면 밑으로 내려가지말고 기능 살펴보는 페이지로 이동하는 느낌»)
+    var 쪽주소 = function (h) { return h === '#tool' ? 'tool' : (h === '#me' || h === '#pattern-check') ? 'me' : h === '#features' ? 'features' : 'home'; };
     setView(쪽주소(location.hash || ''));
     var 웹 = function () { return !matchMedia('(max-width: 560px), (pointer: coarse) and (hover: none) and (max-height: 560px)').matches; };
     // 앱 함수는 첫 번째 스크립트 안에 있어서 거기서 내보낸 것을 빌려 쓴다(이름에 ForTest가 붙어 있다)
