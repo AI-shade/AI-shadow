@@ -27,7 +27,8 @@ const BOXES = [
 // 고정 읽기 결과 → 고를지
 const READS = [
   { what: '기관 이름', text: '햇살어린이집', type: '기관명', pick: true },
-  { what: '못 읽은 간판', text: '(판독 불가)', type: '상호명', pick: false },
+  { what: '못 읽은 간판 (장소 종류라 가림, SIGN_PICK_UNREADABLE)', text: '(판독 불가)', type: '상호명', pick: true },
+  { what: '못 읽었고 종류도 글자없음', text: '(판독 불가)', type: '글자없음', pick: false },
   { what: '지점 없는 프랜차이즈', text: '스타벅스', type: '상호명', pick: false },
   { what: '글자 없는 상자', text: '', type: '글자없음', pick: false },
 ];

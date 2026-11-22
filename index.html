@@ -9134,11 +9134,25 @@
     }
 
     // 읽은 글자 중 장소 글자(isPlaceWord)인 상자만 고른다.
+    // SIGN_PICK_UNREADABLE: 간판·상호처럼 장소 종류인데 글자만 못 읽은 상자(«판독 불가»)도 고른다.
+    //   시험 87장에서 정답 간판이 빠진 이유 중 «판독 불가·글자없음»이 가장 컸다(마크모델-앱연결.md).
+    //   이 앱은 놓치는 쪽이 더 나쁜 실패라, 못 읽었어도 간판 자리면 가린다. «글자없음»·지점 없는 프랜차이즈는 그대로 뺀다.
+    //   끄면 예전 동작(읽은 장소 글자만).
+    var SIGN_PICK_UNREADABLE = true;
+    function isUnreadablePlaceSign(r) {
+      var text = String(r.text || ''), type = String(r.type || '');
+      if (!UNREADABLE_TEXT_RE.test(text)) return false;
+      if (/글자\s*없/.test(type)) return false;
+      return PLACE_TYPE_RE.test(type);
+    }
     function pickPlaceSigns(boxes, reads) {
       var out = [];
       reads.forEach(function (r) {
-        if (isPlaceWord({ text: r.text, type: r.type }) && out.every(function (o) { return o.n !== r.n; })) {
+        if (out.some(function (o) { return o.n === r.n; })) return;
+        if (isPlaceWord({ text: r.text, type: r.type })) {
           out.push({ n: r.n, box: boxes[r.n - 1], text: r.text, type: r.type });
+        } else if (SIGN_PICK_UNREADABLE && isUnreadablePlaceSign(r)) {
+          out.push({ n: r.n, box: boxes[r.n - 1], text: r.text, type: r.type, unreadable: true });
         }
       });
       return out;
@@ -14418,7 +14432,7 @@
             clearPreviewBusy();
             currentCorrectionCanvas = sg.canvas;
             previewAfter.src = sg.canvas.toDataURL('image/png');
-            var sgNames = sg.signs.map(function (p) { return '«' + p.text + '»'; }).join(', ');
+            var sgNames = sg.signs.map(function (p) { return p.unreadable ? '못 읽은 간판' : '«' + p.text + '»'; }).join(', ');
             // 간판만 바꾼 뒤 안내 문장도 뺐다(11-22 «그것도 빼») — «배경 전체 바꾸기» 단추는 그대로 나온다
             previewCaption.textContent = '';
             lastCorrectionMeta = { method: 'ai', detail: 'AI 간판 교체 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
