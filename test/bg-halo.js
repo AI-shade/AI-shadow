@@ -32,6 +32,8 @@ function check(label, ok, detail) {
   await page.waitForFunction(() => !!(window.__anshimTest && window.__anshimTest.runBackgroundFill));
   // 거리 지도 모델은 받지 않는다 — 실패로 두어 예전처럼 사람 밖 전체를 다시 그리게 한다(이 테스트가 재는 것은 그쪽이다)
   await page.evaluate(() => window.__anshimTest.setDepthForTest(() => { throw new Error('test: no depth'); }));
+  // 앞쪽 물체 모델도 끈다(11-22 섞기) — 이 테스트는 사람 분리만 쓰는 예전 경로의 띠 채우기를 잰다. 섞는 경로는 bg-mix.js
+  await page.evaluate(() => window.__anshimTest.setForegroundForTest(() => { throw new Error('test: no fg'); }));
   // 보낸 크기 그대로의 단색 그림을 돌려준다
   await page.route('**/api/replace-background', async (r) => {
     const body = r.request().postDataJSON();

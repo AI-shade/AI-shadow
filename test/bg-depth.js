@@ -31,6 +31,8 @@ const check = (l, ok, d) => { if (ok) { pass++; console.log('  PASS  ' + l + (d 
     sentMask = body.maskBase64;
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ imageBase64: body.imageBase64, mediaType: 'image/jpeg', editPrompt: 'x', timingMs: 1, estimatedCostUsd: 0 }) });
   });
+  // 앞쪽 물체 모델은 끈다(11-22 섞기) — 이 테스트는 그 모델이 없을 때의 거리 지도 경로를 잰다
+  await page.evaluate(() => window.__anshimTest.setForegroundForTest(() => { throw new Error('test: no fg'); }));
   const u = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, '..', PHOTO)).toString('base64');
 
   const measure = () => page.evaluate(async ({ u, m }) => {

@@ -102,9 +102,11 @@ async function run(browser, name, ctxOpts) {
   });
   check('네 번 누르면 원래 크기로 돌아온다', four.w === 600 && four.h === 400, four.w + 'x' + four.h);
 
-  console.log('\n얼굴을 못 찾았을 때 안내');
-  const hint = await page.evaluate(() => document.getElementById('noFaceConsentModal').textContent);
-  check('얼굴을 못 찾은 창이 돌려보라고 알려준다', /누워/.test(hint) && /돌리기/.test(hint));
+  // 얼굴을 못 찾았을 때 창은 11-22에 뺐다(«얼굴을 못찾으면 이것도 그냥 안띄우는게 낫지않음??») — 묻지 않고 원본으로 분석한다
+  console.log('\n얼굴을 못 찾았을 때');
+  const choice = await page.evaluate(() => window.__anshimTest.askNoFaceForTest());
+  const shown = await page.evaluate(() => getComputedStyle(document.getElementById('noFaceConsentModal')).display);
+  check('창을 띄우지 않고 원본으로 분석한다', choice === 'original' && shown === 'none', choice + ' / ' + shown);
 
   check('페이지 에러 없음', errors.length === 0, errors.join(' | '));
   await ctx.close();

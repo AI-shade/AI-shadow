@@ -1747,7 +1747,7 @@
   .hero-inner { position: relative; z-index: 1; width: 100%; }
   .hero-inner {
     width: 100%; max-width: var(--page-max); margin: 0 auto; padding: 0 1.4rem;
-    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center;
+    display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center;
   }
   .hero-badge {
     display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
@@ -3504,13 +3504,7 @@
       <p class="hero-note">계정 연동도, 비밀번호도 필요 없어요. 진단할 때는 얼굴을 가려서 보내고,
         원본은 AI 보정 · 구글 이미지 검색 단추를 누를 때만 가요. 자세한 건 «자주 묻는 질문»에 있어요.</p>
     </div>
-    <!-- 오각형 스크린샷, 실제 부품으로 채운 카드까지 시도해봤는데 사용자가 그냥
-         맨 처음(가짜 라벨+회색 막대) 그대로 되돌려달라고 했다 — 그대로 되돌린다. -->
-    <div class="hero-visual" aria-hidden="true">
-      <div class="hv-card hv-1"><span class="hv-tag risk">위치노출 82점</span><span class="hv-line"></span><span class="hv-line short"></span></div>
-      <div class="hv-card hv-2"><span class="hv-tag ok">교복 감지</span><span class="hv-line"></span></div>
-      <div class="hv-card hv-3"><span class="hv-tag">3단계 재검증</span><span class="hv-line short"></span></div>
-    </div>
+    <!-- 오른쪽 장식 카드(위치노출 82점·교복 감지·3단계 재검증)는 11-22 요청으로 뺐다(«이부분도 웹페이지에서 지워줘») -->
   </div>
   <!-- 팀 이름(네잎클로드)에서 온 장식. 스크롤을 내리면 잎 하나가 떨어져 나가 페이지를
        따라 내려가고, 맨 아래 CTA에서 다시 붙어 네잎이 완성된다.
@@ -4056,7 +4050,7 @@
     <!-- 보정은 이 세 단추뿐이다. 모두 원본이 밖으로 나가므로 누를 때마다 동의를 받는다(askFluxConsent).
          fal.ai가 준비돼 있을 때만 보인다(goCorrectBtn). 하나를 한 뒤 다른 것을 누르면 그 결과 위에 얹힌다(runAiUpgrade). -->
     <div class="ai-more" id="aiMore" style="display:none;">
-      <p class="ai-more-head">AI로 바꾸기 <span class="m-badge" style="background:var(--risk-mid);">AI · 유료 · 사진 전송</span></p>
+      <p class="ai-more-head">AI로 바꾸기</p>
       <div class="ai-more-btns">
         <button type="button" class="secondary" id="aiMarkBtn" title="옷의 로고·이름표 자리만 다시 그린다 · 옷 모양과 색은 그대로">로고 지우기</button>
         <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그린다 · 간판·건물 이름도 같이 사라진다">배경 교체하기</button>
@@ -6231,7 +6225,10 @@
     // (검토한 대안: 사진 전체를 흐림 처리해서 보내는 방식은 실험 결과 텍스트를 읽을 수 있을
     //  만큼 약하게 흐리면 얼굴이 여전히 식별되고, 얼굴을 가릴 만큼 강하게 흐리면 텍스트가
     //  이미 다 깨져서 — 그 사이의 절충점이 없어 채택하지 않음)
+    // 창은 띄우지 않는다(11-22 «얼굴을 못찾으면 이것도 그냥 안띄우는게 낫지않음??») — 동의창을 뺀 것과 같은 결정,
+    // 개인정보 설명은 설명 페이지에 있다. «그래도 원본으로 분석»을 누른 것과 같다. 아래 창 코드는 되돌릴 때를 위해 남긴다.
     function askNoFaceConsent(context) {
+      if (true) return Promise.resolve('original');
       return new Promise(function (resolve) {
         var modal = document.getElementById('noFaceConsentModal');
         var detail = document.getElementById('noFaceConsentDetail');
@@ -7154,6 +7151,100 @@
       return { closed: closed, thr: thr, haloMask: halo };
     }
 
+    // ===== 배경 교체: 앞쪽 물체 모델(RMBG-1.4)과 사람 분리를 섞는다 (11-22) =====
+    // 사람 분리(MediaPipe 256px)는 경계가 뭉툭해 사람 둘레에 옛 배경 조각이 남았고, 거리 지도는 폰에서 메모리를 330MB 더 썼다.
+    // 앞쪽 물체 모델은 사람 경계가 깔끔하고 식탁·케이크도 «앞쪽»으로 남긴다. 대신 눈에 띄는 간판도 앞쪽으로 남겼다
+    // (정답표 사진 비교: «어린이 창의 박물관» 간판, 학교 이름 기둥). 그래서 섞는다:
+    //   ① 앞쪽 물체 중 사람 분리와 맞닿은 덩어리만 남긴다 — 따로 떨어진 간판 덩어리는 다시 그린다
+    //   ② 진단에서 찾은 글자 자리는 사람이 아닌 곳이면 강제로 다시 그린다 — 사람 덩어리에 붙은 간판까지 막는다
+    //   ③ 사람 분리가 찾은 얼굴을 앞쪽 물체가 놓쳤으면 이 사진은 예전 방식(사람 분리 + 거리 지도)으로 한다
+    // 모델: briaai/RMBG-1.4 q8(약 44MB, 비상업 라이선스 — 해커톤 시연용). 받지 못하면 예전 방식으로 간다.
+    var fgModelPromise = null;
+    var fgForTest = null;               // 테스트가 앞쪽 마스크를 넣는 자리(모델을 받지 않는다) — 함수(canvas) → {data(0~255), width, height}
+    function loadForegroundModel() {
+      if (!fgModelPromise) {
+        fgModelPromise = import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1').then(function (m) {
+          m.env.allowLocalModels = false;
+          return m.pipeline('background-removal', 'briaai/RMBG-1.4', { dtype: 'q8' });
+        });
+        fgModelPromise.catch(function () { fgModelPromise = null; });
+      }
+      return fgModelPromise;
+    }
+    // 앞쪽 물체 알파: { data(앞쪽일수록 큼, 0~255, 한 픽셀 한 값), width, height }
+    async function estimateForeground(canvas) {
+      if (fgForTest) return fgForTest(canvas);
+      var seg = await loadForegroundModel();
+      var out = await seg(canvas.toDataURL('image/jpeg', 0.9));
+      var im = Array.isArray(out) ? out[0] : out;
+      var rgba = im.channels === 4 ? im.data : im.rgba().data, n = im.width * im.height, a = new Uint8Array(n);
+      for (var i = 0; i < n; i++) a[i] = rgba[i * 4 + 3];
+      return { data: a, width: im.width, height: im.height };
+    }
+    // 섞은 «남길 곳» 캔버스(w×h, 남길 곳만 흰색·불투명). 얼굴을 놓쳤으면 null — 부르는 쪽이 예전 방식으로 간다.
+    function mixForeground(fg, personMask, w, h, faceBoxes, handBoxes, words) {
+      var N = w * h, f = new Uint8Array(N), person = new Uint8Array(N);
+      for (var y = 0; y < h; y++) {
+        var sy = Math.min(fg.height - 1, Math.floor((y + 0.5) * fg.height / h));
+        for (var x = 0; x < w; x++) if (fg.data[sy * fg.width + Math.min(fg.width - 1, Math.floor((x + 0.5) * fg.width / w))] >= 128) f[y * w + x] = 1;
+      }
+      var pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+      var px = pc.getContext('2d'); px.drawImage(personMask, 0, 0, w, h);
+      var pd = px.getImageData(0, 0, w, h).data;
+      for (var i = 0; i < N; i++) if (pd[i * 4 + 3] >= 128) person[i] = 1;
+      // ① 사람과 맞닿은 덩어리만(4방향 연결, 겹침 20픽셀 이상)
+      var label = new Uint8Array(N), keep = new Uint8Array(N), order = new Int32Array(N);
+      for (var s0 = 0; s0 < N; s0++) {
+        if (!f[s0] || label[s0]) continue;
+        var head = 0, tail = 0, overlap = 0;
+        order[tail++] = s0; label[s0] = 1;
+        while (head < tail) {
+          var c = order[head++], cx = c % w;
+          if (person[c]) overlap++;
+          if (cx > 0 && f[c - 1] && !label[c - 1]) { label[c - 1] = 1; order[tail++] = c - 1; }
+          if (cx < w - 1 && f[c + 1] && !label[c + 1]) { label[c + 1] = 1; order[tail++] = c + 1; }
+          if (c >= w && f[c - w] && !label[c - w]) { label[c - w] = 1; order[tail++] = c - w; }
+          if (c < N - w && f[c + w] && !label[c + w]) { label[c + w] = 1; order[tail++] = c + w; }
+        }
+        if (overlap >= 20) for (var j = 0; j < tail; j++) keep[order[j]] = 1;
+      }
+      // ② 글자 자리(사람 아닌 곳만) 강제로 다시 그림 — 얼굴·손 상자 안은 건드리지 않는다
+      var guard = new Uint8Array(N);
+      faceBoxes.concat(handBoxes).forEach(function (b) {
+        for (var gy = Math.max(0, Math.floor(b.y)); gy < Math.min(h, Math.ceil(b.y + b.height)); gy++)
+          for (var gx = Math.max(0, Math.floor(b.x)); gx < Math.min(w, Math.ceil(b.x + b.width)); gx++) guard[gy * w + gx] = 1;
+      });
+      var opened = 0;
+      (words || []).forEach(function (t) {
+        if (!(t.wPct > 0 && t.hPct > 0)) return;
+        var bw = t.wPct / 100 * w, bh = t.hPct / 100 * h, pad = Math.max(bw, bh) * 0.1;
+        var x0 = Math.max(0, Math.floor(t.xPct / 100 * w - bw / 2 - pad)), x1 = Math.min(w, Math.ceil(t.xPct / 100 * w + bw / 2 + pad));
+        var y0 = Math.max(0, Math.floor(t.yPct / 100 * h - bh / 2 - pad)), y1 = Math.min(h, Math.ceil(t.yPct / 100 * h + bh / 2 + pad));
+        for (var yy = y0; yy < y1; yy++) for (var xx = x0; xx < x1; xx++) {
+          var k = yy * w + xx;
+          if (keep[k] && !person[k] && !guard[k]) { keep[k] = 0; opened++; }
+        }
+      });
+      // ③ 사람 분리가 잡은 얼굴을 앞쪽 물체가 덮지 못했으면 믿지 않는다
+      var missed = faceBoxes.some(function (b) {
+        var n = 0, onP = 0, onK = 0;
+        for (var yy = Math.max(0, Math.floor(b.y)); yy < Math.min(h, Math.ceil(b.y + b.height)); yy += 2)
+          for (var xx = Math.max(0, Math.floor(b.x)); xx < Math.min(w, Math.ceil(b.x + b.width)); xx += 2) {
+            n++; if (person[yy * w + xx]) onP++; if (keep[yy * w + xx]) onK++;
+          }
+        return n > 0 && onP / n >= 0.15 && onK / n < 0.5;
+      });
+      if (missed) return null;
+      // 얼굴·손 상자 안은 두 모델 중 하나라도 사람이라 하면 사람이다(얼굴 놓침 검사 뒤에 — 앞에 두면 놓친 사람의 몸이 다시 그려진다) — 머리카락 끝을 한쪽이 놓쳐도 지킨다(bg-halo: 얼굴 21픽셀이 바뀌었다)
+      for (var gi = 0; gi < N; gi++) if (guard[gi] && person[gi]) keep[gi] = 1;
+      var oc = document.createElement('canvas'); oc.width = w; oc.height = h;
+      var ox = oc.getContext('2d'), od = ox.createImageData(w, h);
+      for (var q = 0; q < N; q++) if (keep[q]) { od.data[q * 4] = od.data[q * 4 + 1] = od.data[q * 4 + 2] = 255; od.data[q * 4 + 3] = 255; }
+      ox.putImageData(od, 0, 0);
+      oc._openedText = opened;
+      return oc;
+    }
+
     async function runBackgroundFill(img, faces, riskResult, ocrResult) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
       // 사람을 못 찾으면 막을 것이 없다 — 보내지 않고 멈춘다. 부탁 방식(kontext)으로 되돌아가지 않는다.
@@ -7173,14 +7264,26 @@
       var scaledFaces = (faces || []).map(function (f) { return scale(f.box); });
       var handBoxesO = await detectHandBoxes(img);
       var handBoxes = handBoxesO.map(scale);
-      var mask = buildBackgroundMask(scaledFaces, sw, sh, personMask, handBoxes);
-      // 사람보다 앞쪽(식탁·케이크 등)은 다시 그리지 않는다 — 거리 지도로 뒤쪽만 남긴다(위 keepNearSide 설명)
-      // 띠 채우기(fillHaloFromBackground)는 거리 지도 적용 «전» 마스크로 한다. 적용 후 마스크를 주면 원본으로 남긴
-      // 식탁 전체가 «채울 띠»가 돼 배경 색으로 번져 칠해졌다(생일 사진: 30만 픽셀, 346겹 — 11-21 실측).
+      var mixed = null;
+      try {
+        var fg = await estimateForeground(ic);
+        mixed = mixForeground(fg, personMask, sw, sh, scaledFaces, handBoxes, ocrResult && ocrResult.words);
+        if (!mixed) console.warn('[배경교체] 앞쪽 물체 모델이 얼굴을 놓쳐 예전 방식으로 해요');
+      } catch (fgErr) {
+        console.warn('[배경교체] 앞쪽 물체 모델을 못 써서 예전 방식으로 해요:', fgErr && fgErr.message);
+      }
+      var haloPerson = personMask;
+      var mask = buildBackgroundMask(scaledFaces, sw, sh, mixed || personMask, handBoxes);
       var before = document.createElement('canvas'); before.width = sw; before.height = sh;
       before.getContext('2d').drawImage(mask, 0, 0);
       var haloMask = before;
-      try {
+      if (mixed) {
+        haloPerson = mixed;
+        console.log('[배경교체] 앞쪽 물체 + 사람 분리로 마스크를 만들었어요 (글자 자리 ' + mixed._openedText + '픽셀 강제로 다시 그림)');
+      } else try {
+      // 사람보다 앞쪽(식탁·케이크 등)은 다시 그리지 않는다 — 거리 지도로 뒤쪽만 남긴다(위 keepNearSide 설명)
+      // 띠 채우기(fillHaloFromBackground)는 거리 지도 적용 «전» 마스크로 한다. 적용 후 마스크를 주면 원본으로 남긴
+      // 식탁 전체가 «채울 띠»가 돼 배경 색으로 번져 칠해졌다(생일 사진: 30만 픽셀, 346겹 — 11-21 실측).
         var depth = await estimateDepth(ic);
         var near = keepNearSide(mask, personMask, depth, sw, sh, scaledFaces.concat(handBoxes));
         var left = 0, mdd = mask.getContext('2d').getImageData(0, 0, sw, sh).data;
@@ -7214,7 +7317,7 @@
       });
       var outImg = await loadImage(falImageDataUrl(data));
       var out = compositeThroughMask(img, outImg, mask, ow, oh);
-      fillHaloFromBackground(out, personMask, haloMask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
+      fillHaloFromBackground(out, haloPerson, haloMask, (faces || []).map(function (f) { return f.box; }), handBoxesO, ow, oh);
       console.log('[배경교체] 완료 — ' + Math.round(data.timingMs) + 'ms, 약 $' + data.estimatedCostUsd
         + ', ' + sw + 'x' + sh + ' 전송 -> ' + ow + 'x' + oh + ' (배경 자리에만 합성, 얼굴 ' + scaledFaces.length
         + '개·손 ' + handBoxes.length + '개 보존)', data);
@@ -14377,6 +14480,8 @@
       computeAlignmentOffset: computeAlignmentOffset,
       matchFacesForTest: matchFaces,
       runBackgroundFill: runBackgroundFill, // 실제 fal 호출 검증용 (비용 발생) — 사람이 없으면 보내기 전에 멈춘다
+      askNoFaceForTest: function () { return askNoFaceConsent('photo'); }, // 얼굴 못 찾음 창을 띄우지 않는지(11-22)
+      setForegroundForTest: function (fn) { fgForTest = fn; }, // 앞쪽 물체 마스크를 넣는다(모델을 받지 않는다) — null이면 원래대로
       setDepthForTest: function (fn) { depthForTest = fn; }, // 거리 지도를 넣는다(모델을 받지 않는다) — null이면 원래대로
       buildBackgroundMask: buildBackgroundMask,
       findSignSwapRegions: findSignSwapRegions, // 비용 0 — 순수 계산만
