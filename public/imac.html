@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>아이SHADOW 데스크톱 목업</title>
+<!-- 아이맥 목업(11-23 «아이맥 목업도 저렇게 만들어줘봐») — phone.html과 같은 방식: 같은 주소의 실제 사이트를
+     1440×810 화면으로 띄우고 창 크기에 맞춰 통째로 줄인다. ?p=#me 처럼 주면 그 화면으로 연다. -->
+<style>
+  :root { --ink: #131512; --green: #4a9a5c; --cream: #f0ead8; }
+  html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  /* 실제 크기로 그린 뒤 fit()이 줄인다 */
+  .stage { width: 1468px; transform-origin: center; display: flex; flex-direction: column; align-items: center; }
+  .imac { width: 1468px; border-radius: 26px; overflow: hidden; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6); }
+  .bezel { background: #f3f3f1; padding: 14px 14px 14px; position: relative; }
+  .cam { position: absolute; top: 4px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #2a2a2a; }
+  .screen { position: relative; width: 1440px; height: 810px; background: var(--ink); overflow: hidden; }
+  iframe { width: 1440px; height: 810px; border: 0; display: block; background: var(--ink); }
+  /* 색 없이 은색(11-23 «아이맥 컬러 빼») */
+  .chin { height: 120px; background: linear-gradient(#e4e4e2, #cfcfcd); }
+  .neck { width: 300px; height: 150px; background: linear-gradient(90deg, #b9b9b7, #e2e2e0 45%, #c9c9c7); clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%); }
+  .foot { width: 420px; height: 14px; border-radius: 0 0 10px 10px; background: #b4b4b2; }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="imac">
+      <div class="bezel"><span class="cam"></span><div class="screen"><iframe id="app" title="아이SHADOW 웹 화면"></iframe></div></div>
+      <div class="chin"></div>
+    </div>
+    <div class="neck"></div>
+    <div class="foot"></div>
+  </div>
+<script>
+  var p = new URLSearchParams(location.search).get('p') || '';
+  var app = document.getElementById('app');
+  app.src = '/' + p;
+  app.addEventListener('load', function () {
+    try {
+      var s = app.contentDocument.createElement('style');
+      s.textContent = 'html{scrollbar-width:none}html::-webkit-scrollbar{display:none}';
+      app.contentDocument.head.appendChild(s);
+    } catch (e) { /* 다른 주소면 그대로 */ }
+  });
+  // 몸체(1468×약 1160)를 창에 맞춰 줄인다
+  function fit() {
+    var st = document.getElementById('stage');
+    var s = Math.min(1, (innerWidth - 60) / 1468, (innerHeight - 40) / st.offsetHeight);
+    st.style.transform = 'scale(' + s + ')';
+  }
+  addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>
