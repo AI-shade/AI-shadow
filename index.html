@@ -3573,7 +3573,56 @@
   .nav-brand { gap: 0; }                                        /* 11-23 «S랑 붙여줘» — 그림자 끝을 S에 붙인다 */
   .nav-brand .nav-mark { margin-right: 1px; }
   header.page-header .badge-icon { --mark-shadow: #F0C83C; }    /* 11-23 «초록색말고 두번재 노란색그림자로해봐» */
-  .sns-post .sns-note { display: none; }   /* 시안에 없는 안내 줄 — 스크립트가 글을 바꿔 쓰므로 자리는 둔다 */
+  .sns-post .sns-note { display: none; }
+  /* 재검증 화면(11-23) — 검사 중: 가운데 «재검증 중» · 게시물 · 단계 체크 / 끝: 왼쪽 게시물 · 오른쪽 결과(진단 결과와 같은 5:5) */
+  #screen-verify .vf-steps { display: none; }
+  #screen-verify .vf-post { border: 2px solid var(--tb-black, var(--ink)); border-radius: 14px; overflow: hidden; background: var(--card); margin: 0 auto 1.2rem; max-width: 440px; }
+  #screen-verify .vf-post img { display: block; width: 100%; height: auto; }
+  #screen-verify .vf-post :is(.rp-head, .rp-foot) { display: block; }
+  #screen-verify .vf-post .rp-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.6rem 0.75rem; font-size: 0.86rem; }
+  #screen-verify .vf-post .rp-foot { padding: 0.55rem 0.75rem 0.7rem; }
+  #screen-verify .vf-post .rp-acts { display: flex; gap: 0.85rem; }
+  #screen-verify .vf-post .rp-acts svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linejoin: round; }
+  #screen-verify .vf-post .rp-save { margin-left: auto; }
+  #screen-verify .vf-post .rp-likes { margin: 0.4rem 0 0; font-size: 0.84rem; font-weight: 800; }
+  #screen-verify .vf-post .rp-cmt { margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--muted); }
+  /* 검사 중 */
+  #screen-verify.vf-busy { display: flex !important; flex-direction: column; align-items: center; }
+  #screen-verify.vf-busy > :not(.verify-stamp-wrap, .vf-post, .vf-steps, .app-bar) { display: none !important; }
+  #screen-verify.vf-busy .verify-stamp-wrap { order: -1; margin: 0 0 1.2rem; }
+  #screen-verify.vf-busy .verify-stamp { background: none !important; border: 0 !important; box-shadow: none !important; color: var(--ink) !important; padding: 0 !important; font-size: 2rem; font-weight: 900; }
+  #screen-verify.vf-busy .verify-stamp .s-icon { display: none; }
+  #screen-verify.vf-busy .verify-stamp .s-text { font-size: 2rem; font-weight: 900; }
+  #screen-verify.vf-busy .vf-post { width: 100%; }
+  #screen-verify.vf-busy .vf-steps { display: grid; gap: 0.7rem; min-width: 300px; margin: 0.4rem auto 0; }
+  #screen-verify .vf-steps p { display: flex; align-items: center; gap: 0.75rem; font-size: 1.05rem; padding: 0.2rem 0; background: none !important; color: var(--muted); }
+  #screen-verify .vf-steps p.active, #screen-verify .vf-steps p.done { color: var(--ink); }
+  #screen-verify .vf-steps p::before {
+    content: '' !important; flex: 0 0 auto; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%;
+    border: 2.5px solid var(--line); display: grid; place-items: center; font-size: 14px; font-weight: 900; line-height: 1;
+  }
+  #screen-verify .vf-steps p.active::before { border-top-color: #3C7F4A; animation: anspin .8s linear infinite; }
+  #screen-verify .vf-steps p.done::before { content: '\2713' !important; border-color: #3C7F4A; background: #3C7F4A; color: #fff; animation: none; }
+  @media (prefers-reduced-motion: reduce) { #screen-verify .vf-steps p.active::before { animation: none; } }
+  /* 결과: 넓은 화면은 왼쪽 게시물(붙어 따라옴) · 오른쪽 결과 */
+  @media (min-width: 761px) {
+    #screen-verify.card { border: 0; box-shadow: none; background: transparent; padding-left: 0; padding-right: 0; }
+    #screen-verify:not([style*="none"]):not(.vf-busy) {
+      display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 2rem; align-items: start;
+    }
+    #screen-verify:not(.vf-busy) > * { grid-column: 2; }
+    #screen-verify:not(.vf-busy) > .vf-post {
+      grid-column: 1; grid-row: 1 / span 40; max-width: none; margin: 0;
+      position: sticky; top: calc(var(--nav-h, 4.6rem) + 1rem); align-self: start;
+    }
+    #screen-verify:not(.vf-busy) .verify-stamp-wrap { display: flex !important; justify-content: flex-start !important; text-align: left; margin: 0 0 0.6rem !important; }
+    /* 오른쪽 결과는 진단 결과처럼 상자 없이 줄로 나눈다 */
+    #screen-verify:not(.vf-busy) > :is(.verify-radar, .verify-detail) {
+      background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+      padding: 1.4rem 0 !important; margin: 0 !important; border-top: 1px solid var(--line) !important; text-align: left; max-width: none;
+    }
+    #screen-verify:not(.vf-busy) > :is(.ghost-link, .secondary, .disclaimer) { justify-self: start; text-align: left; }
+  }   /* 시안에 없는 안내 줄 — 스크립트가 글을 바꿔 쓰므로 자리는 둔다 */
   .sns-post .sns-actions .sns-save { margin-left: auto; }
   .sns-post .sns-likes { margin: 0.35rem 0.75rem 0; font-size: 0.84rem; font-weight: 800; }
   .sns-post .sns-cap { margin: 0.15rem 0.75rem 0; font-size: 0.84rem; }
@@ -4889,6 +4938,22 @@
     <div class="app-bar" aria-hidden="true">
       <span class="app-bar-title">검증</span>
       <span class="app-bar-steps"><span>진단</span><span>보정</span><span class="on">검증</span></span>
+    </div>
+    <!-- 11-23 «진단할때랑 똑같이 위에 재검진중이라고 하고 체크표시나게, 사진은 SNS목업 그대로 가져오고
+         재검증 결과 화면도 진단 결과 화면이랑 같이» — 검사 중엔 가운데 게시물 + 단계, 끝나면 왼쪽 게시물 · 오른쪽 결과 -->
+    <div class="vf-post" id="verifyPost">
+      <div class="rp-head" aria-hidden="true"><span class="sns-avatar"></span><b>my_account</b><span class="sns-more">···</span></div>
+      <img id="verifyImg" alt="보정한 사진" />
+      <div class="rp-foot" aria-hidden="true">
+        <div class="rp-acts"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7z"/></svg><svg class="rp-save" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></div>
+        <p class="rp-likes">좋아요 0개</p>
+        <p class="rp-cmt">댓글 0개 모두 보기</p>
+      </div>
+    </div>
+    <div class="analyzing-steps vf-steps" id="verifySteps">
+      <p id="vStepFace">고친 사진에서 얼굴을 찾는 중</p>
+      <p id="vStepOcr">사진 속 글자를 찾는 중</p>
+      <p id="vStepRisk">위험도를 다시 매기는 중</p>
     </div>
     <div class="verify-stamp-wrap">
       <div class="verify-stamp" id="verifyStamp"><span class="s-icon">✓</span><span class="s-text">다시 검사 끝</span></div>
@@ -7301,6 +7366,12 @@
 
     function hasBelongClue(clues) {
       return (clues || []).some(isBelongClue);
+    }
+
+    // 옷 위의 표시(로고·마크·명찰·배지…)가 있는가 — «로고 지우기»를 띄울지. 교복·원복·«학교» 같은 단서만 있으면
+    // 지울 표시가 없는데 단추가 떠서 눌러도 돈만 들고 바뀌는 게 없었다(11-23 «로고가 없는데 로고지우기 누르면 로딩됨»).
+    function hasMarkClue(clues) {
+      return (clues || []).some(function (c) { return isBelongClue(c) && NEEDS_READ_RE.test(String((c && c.종류) || '')); });
     }
 
     // 옷 마스크에서 어깨선을 찾아 가슴만 잘라 확대한다(마크 지우기와 같은 방식).
@@ -13811,7 +13882,7 @@
       aiMoreBox.style.display = 'none';
       checkFluxStatus().then(function (ready) { aiMoreBox.style.display = ready ? 'block' : 'none'; });
       // 로고·명찰 같은 소속 단서를 못 찾았으면 «로고 지우기»와 그 안내를 숨긴다 — 지울 것이 없는데 돈과 원본이 나간다.
-      var hasLogo = hasBelongClue(lastOcrResult && lastOcrResult.visualClues);
+      var hasLogo = hasMarkClue(lastOcrResult && lastOcrResult.visualClues);
       document.getElementById('aiMarkBtn').style.display = hasLogo ? '' : 'none';
       document.getElementById('aiMarkHint').style.display = hasLogo ? '' : 'none';
 
@@ -15375,15 +15446,19 @@
       box.hidden = false;
     }
 
-    async function runVerificationPipeline(canvas, meta) {
+    async function runVerificationPipeline(canvas, meta, onStep) {
       var t0 = performance.now();
       var processedUrl = canvas.toDataURL('image/png');
+      var step = typeof onStep === 'function' ? onStep : function () {};
 
       // 처리된 이미지를 1단계와 동일한 파이프라인(얼굴검출 → 텍스트검출)에 그대로 다시 통과시킴 —
       // 얼굴 0개 감지 시 확인 모달 등 프라이버시 안전장치도 동일하게 적용됨
+      step(0);
       var newFaceResult = await runFaceDetectionPipeline(processedUrl);
+      step(1);
       var newTextResult = await runTextDetectionPipeline(processedUrl, newFaceResult.faces);
       var newOcrResult = newTextResult.primary;
+      step(2);
 
       // 보정 후 점수 — 처음 진단과 같은 채점으로 다시 잰다(제보 10-28: "재검증 단계에서 다시 오각형으로 점수화해서").
       // 처음 진단처럼 소속 단서를 못 찾으면 가슴을 확대해 한 번 더 묻는다 — 이 단계를 빼면 «다시 안 봐서» 낮게 나와
@@ -15457,6 +15532,7 @@
         stampEl.classList.remove('warn');
         stampEl.querySelector('.s-icon').textContent = 'ℹ️';
         stampEl.querySelector('.s-text').textContent = '보정 없음';
+        try { document.getElementById('verifyImg').src = uploadedPhotoUrl; } catch (e) {}
         tagsEl.innerHTML = '';
         detailEl.classList.remove('warn');
         detailEl.textContent = '보정하지 않고 마쳤어요. 처음에 찾은 단서가 사진에 그대로 남아 있을 수 있어요. 필요하면 뒤로 가서 보정해 보세요.';
@@ -15464,16 +15540,28 @@
       }
 
       stampEl.classList.remove('warn');
-      stampEl.querySelector('.s-icon').textContent = '⏳';
-      stampEl.querySelector('.s-text').textContent = '다시 검사하는 중…';
+      stampEl.querySelector('.s-icon').textContent = '';
+      stampEl.querySelector('.s-text').textContent = '재검증 중';
       tagsEl.innerHTML = '';
       detailEl.classList.remove('warn');
-      detailEl.textContent = '고친 사진을 다시 살펴보고 있어요…';
+      detailEl.textContent = '';
+      var vScreen = document.getElementById('screen-verify');
+      try { document.getElementById('verifyImg').src = currentCorrectionCanvas.toDataURL('image/jpeg', 0.9); } catch (e) {}
+      var vSteps = ['vStepFace', 'vStepOcr', 'vStepRisk'].map(function (id) { return document.getElementById(id); });
+      function vStep(idx) {
+        vSteps.forEach(function (s, i) { s.classList.toggle('done', i < idx); s.classList.toggle('active', i === idx); });
+      }
+      vStep(0);
+      vScreen.classList.add('vf-busy');
 
       try {
-        var result = await runVerificationPipeline(currentCorrectionCanvas, lastCorrectionMeta);
+        var result = await runVerificationPipeline(currentCorrectionCanvas, lastCorrectionMeta, vStep);
+        vStep(3);
+        await new Promise(function (r) { setTimeout(r, 400); });   // 마지막 체크가 보이고 넘어간다
+        vScreen.classList.remove('vf-busy');
         renderVerifyResult(result);
       } catch (e) {
+        vScreen.classList.remove('vf-busy');
         console.error('[재검증] 처리 실패:', e);
         stampEl.classList.add('warn');
         stampEl.querySelector('.s-icon').textContent = '⚠';
