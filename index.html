@@ -3370,6 +3370,73 @@
   .hist-list li:first-child { border-top: 0; }
   .hist-list .hist-when { color: var(--muted); font-size: 0.9rem; }
   .hist-list .none { color: var(--muted); justify-content: flex-start; }
+  /* 내 기록(11-23 시안) */
+  .me-title { font-size: 2rem; font-weight: 900; margin: 0 0 1.6rem; letter-spacing: -0.02em; }
+  #pattern-check .pe-card { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+  #histCard .sc-title { font-size: 1.25rem; }
+  .hist-list li { align-items: center !important; justify-content: flex-start !important; border-top: 0 !important; padding: 0.7rem 0 !important; }
+  .hist-thumb { flex: 0 0 auto; width: 64px; height: 64px; border-radius: 12px; background: var(--soft); display: grid; place-items: center; }
+  .hist-thumb svg { width: 40px; height: 40px; }
+  .hist-thumb { overflow: hidden; }
+  .hist-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #reverseCard #reverseDrop, #reverseCard .pe-field > label { display: none !important; }
+  /* 11-23 «과거게시물점검이랑 같은 배열로» — 제목 · 설명 · 기록 사진 · 단추(노랑 알약) · 작은 안내 */
+  #pattern-check #reverseCard { display: flex !important; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; }
+  #reverseCard .pe-text, #reverseCard .pe-action, #reverseCard .pe-field { display: contents; }
+  #reverseCard .sc-eyebrow { display: none; }
+  #reverseCard .sc-title { order: 1; font-size: 1.25rem; margin-bottom: 0.6rem; }
+  #reverseCard .pe-desc { order: 2; margin-bottom: 1rem; }
+  #reverseCard #reverseBtn { order: 4; display: inline-block !important; width: auto !important; padding: 0.95rem 2.2rem !important; border-radius: 999px !important;
+    background: #FAE178 !important; color: var(--ink) !important; border: 0 !important; box-shadow: none !important; font-weight: 800; font-size: 1.05rem; }
+  #reverseCard .pe-points { order: 5; margin-top: 1rem; gap: 0.2rem; font-size: 0.85rem; max-width: none; }
+  #reverseCard .pe-points li { padding-left: 0; }
+  #reverseCard .pe-points li::before { content: none; }
+  #reverseCard #reverseResult { order: 6; margin-top: 1rem; width: 100%; }
+  .hist-list li.hist-pick { cursor: pointer; border-radius: 14px; margin: 0 -0.6rem; padding-left: 0.6rem !important; padding-right: 0.6rem !important; transition: background .15s; }
+  .hist-list li.hist-pick:hover, .hist-list li.hist-pick:focus-visible { background: rgba(0,0,0,.06); outline: none; }
+  .hist-list li.hist-pick[aria-checked="true"] { box-shadow: inset 0 0 0 2px #3C7F4A; }
+  .hist-clear { font-size: 0.82rem; font-weight: 500; margin-left: 0.8rem; vertical-align: middle; }
+  .hist-txt { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+  .hist-list .hist-when { color: var(--ink) !important; font-weight: 800; font-size: 1.1rem !important; }
+  .hist-what { color: var(--muted); font-size: 0.98rem; }
+  .hist-st { color: var(--muted); font-size: 0.95rem; white-space: nowrap; }
+  #pattern-check .pe-text .sc-title { font-size: 1.25rem; margin-bottom: 0.6rem; }
+  #pattern-check .pe-desc { color: var(--ink); font-size: 1rem; margin-bottom: 1rem; }
+  #pattern-check .pe-foot { color: var(--muted); font-size: 0.85rem; margin: 0; word-break: keep-all; }
+  /* 과거 게시물 점검: 설명 → «스크린샷 선택»(테두리 알약) → «패턴 확인»(노랑 알약) → 작은 안내 */
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) { display: flex !important; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-text { display: contents; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-text .sc-title { order: 1; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-desc { order: 2; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-action { order: 3; max-width: none; flex: none; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-foot { order: 4; margin-top: 1rem; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-field { margin: 0 0 1.4rem; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-field > label { display: none; }
+  #patternOnlyDrop { display: inline-flex !important; flex-direction: row; align-items: center; justify-content: center; min-height: 0 !important; padding: 0.85rem 1.8rem !important;
+    border: 1.5px solid var(--line) !important; border-radius: 999px !important; background: transparent !important; font-weight: 800; font-size: 1.05rem; gap: 0.4rem; }
+  #patternOnlyDrop .icon { display: none; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-action { display: none !important; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) #histPatternBtn { order: 3; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .hist-pattern-out { order: 5; margin-top: 1.2rem; }
+  .hist-pattern-out b { display: block; font-size: 1.05rem; margin-bottom: 0.3rem; }
+  .hist-pattern-out p { margin: 0; color: var(--muted); line-height: 1.6; }
+  #patternOnlySubmitBtn, #histPatternBtn { display: inline-block !important; width: auto !important; padding: 0.95rem 2.2rem !important; border-radius: 999px !important;
+    background: #FAE178 !important; color: var(--ink) !important; border: 0 !important; font-weight: 800; font-size: 1.05rem; }
+  #patternOnlySubmitBtn:disabled, #histPatternBtn:disabled { opacity: 0.55; }
+  #pattern-check .pe-card:not(#histCard):not(#reverseCard) .pe-field { margin-bottom: 1rem !important; }
+  @media (max-width: 760px) {
+    #pattern-check .pe-text, #pattern-check .pe-action { flex: none !important; }
+    #pattern-check .pe-card, #pattern-check .pe-card :is(.pe-text, .sc-title, .pe-desc, .pe-foot, .hist-list) { text-align: left !important; align-items: flex-start; }
+    #pattern-check .hist-list li { align-items: center !important; }
+    #pattern-check .pe-desc { display: block !important; }
+    #pattern-check .section-inner > .pe-card { margin: 0 0 2rem !important; }
+  }
+  @media (min-width: 761px) {
+    #pattern-check .section-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 4rem; align-items: start; }
+    #pattern-check .section-inner > .me-title { grid-column: 1 / -1; }
+    #pattern-check #histCard { grid-column: 1; grid-row: 2 / span 2; margin: 0 !important; }
+    #pattern-check .section-inner > .pe-card:not(#histCard) { grid-column: 2; margin: 0 0 2.4rem !important; max-width: none; }
+  }
   .hist-link { margin: 0.8rem 0 0; }
   #verifyTags { display: none; }                               /* 재검증 결과 칩 줄(위험요소·신규위험·…) — 11-21 «이부분도 없애고» */
   /* 폰 «내 정보»: 카드가 둘이 되어 한 화면을 넘었다(1141~1222px) — 긴 설명·점 목록은 접고 제목·올리기·단추만 */
@@ -5036,35 +5103,34 @@
 <div class="app-bar app-bar--tab" id="me" data-tab-of="내정보" aria-hidden="true"><span class="app-bar-title">내 기록</span></div>
 <section class="site-section pattern-entry" id="pattern-check" data-tab-of="내정보">
   <div class="section-inner">
-    <!-- 최근 진단(11-23, 시안 neip-ux-v3의 «내 기록») — 날짜와 점수만 이 기기에 남긴다. 사진·글자·장소는 남기지 않는다. -->
+    <h2 class="me-title">내 기록</h2>
+    <!-- 최근 진단(11-23, 시안 neip-ux-v3의 «내 기록») — 날짜 · 점수 · 96px 작은 미리보기를 이 기기(localStorage)에만 남긴다.
+         서버로는 보내지 않는다. 같은 기기를 쓰는 사람에게 보이므로 «기록 지우기»로 바로 지울 수 있다. 글자·장소는 남기지 않는다. -->
     <div class="sc-card pe-card hist-card" id="histCard" style="margin-bottom:1.2rem;">
       <div class="pe-text">
-        <h2 class="sc-title">최근 진단 <small class="hist-note">이 기기에만 저장</small></h2>
+        <h2 class="sc-title">최근 진단 <small class="hist-note">이 기기에만 저장</small><button type="button" class="ghost-link hist-clear" id="histClearBtn">기록 지우기</button></h2>
         <ul class="hist-list" id="histList"></ul>
       </div>
     </div>
     <div class="sc-card pe-card">
       <div class="pe-text">
-        <span class="sc-eyebrow">사진 없이도 확인 가능</span>
-        <h2 class="sc-title">과거 게시물 패턴만 따로 확인하기</h2>
-        <p class="pe-desc">사진을 올릴 필요 없어요. 지금까지 올린 게시물 스크린샷만 있으면
-          같은 요일, 시간, 장소가 반복되는지, 그래서 다음에 언제 올릴지 알 수 있는지 짚어 드려요.</p>
-        <ul class="pe-points">
-          <li>계정 연동이나 비밀번호 없이, 직접 캡처한 화면만으로</li>
-          <li>얼굴을 가린 뒤 판독에만 쓰고 따로 보관하지 않아요</li>
-        </ul>
+        <h2 class="sc-title">과거 게시물 점검</h2>
+        <p class="pe-desc">왼쪽 최근 진단 기록으로 올리는 요일과 시간이 반복되는지 확인해요.</p>
+        <p class="pe-foot">진단한 때를 올린 때로 봐요. 기록은 이 기기 안에서만 보고 밖으로 보내지 않아요.</p>
+        <button type="button" class="primary" id="histPatternBtn">패턴 확인</button>
+        <div class="hist-pattern-out" id="histPatternOut" hidden></div>
       </div>
       <div class="pe-action">
         <div class="field pe-field">
           <label for="patternOnlyInput">과거 게시물 스크린샷 <span class="hint">여러 장</span></label>
           <div class="drop-zone" id="patternOnlyDrop">
             <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="4" y="8" width="18" height="16" rx="1"/><rect x="10" y="4" width="18" height="16" rx="1"/></svg></span>
-            <span id="patternOnlyDropLabel">스크린샷을 고르면 반복 패턴을 짚어 드려요</span>
+            <span id="patternOnlyDropLabel">스크린샷 선택</span>
             <input type="file" id="patternOnlyInput" accept="image/*" multiple />
           </div>
           <p class="file-count" id="patternOnlyCount" style="display:none;"></p>
         </div>
-        <button class="primary" id="patternOnlySubmitBtn">패턴만 확인</button>
+        <button class="primary" id="patternOnlySubmitBtn">패턴 확인</button>
       </div>
     </div>
     <!-- 이미 올린 사진 점검 — 진단 결과에 있던 «구글로 같은 사진 찾기»를 여기로 옮겼다(11-21 사용자 결정).
@@ -5074,9 +5140,9 @@
       <div class="pe-text">
         <span class="sc-eyebrow">이미 올린 사진</span>
         <h2 class="sc-title">내 사진이 다른 곳에 퍼졌는지 확인하기</h2>
-        <p class="pe-desc">이미 올린 사진을 고르면 같은 사진이나 같은 장소 사진이 인터넷에 있는지 구글로 찾아봐요.</p>
+        <p class="pe-desc">최근 진단에서 이미 올린 사진을 누르고 찾아보면, 같은 사진이나 같은 장소 사진이 인터넷에 있는지 구글로 찾아봐요.</p>
         <ul class="pe-points">
-          <li>단추를 누르면 원본 사진(얼굴 포함)이 구글로 가요</li>
+          <li>«구글로 찾아보기»를 누르면 원본 사진(얼굴 포함)이 구글로 가요</li>
           <li>구글은 이 사진을 학습에 쓰지 않고 보관하지 않는다고 밝혀요</li>
         </ul>
       </div>
@@ -5232,7 +5298,7 @@
       <article class="why-card pin-item">
         <svg class="tb-ico" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 14 C69 14 80 30 80 50 C80 71 66 87 49 86 C31 85 20 70 20 50 C20 30 32 14 50 14 Z"/><path d="M24 41 L77 39 L78 55 L23 56 Z" fill="#121412"/></g></svg>
         <h3>얼굴은 <span class="nb">가려서 보내요</span></h3>
-        <p>진단하려고 사진을 밖으로 보낼 때는 얼굴을 먼저 검게 덮어요. 얼굴을 못 찾은 사진은 덮을 곳이 없어서 원본으로 보내요. AI 보정과 구글 이미지 검색은 원본이 필요해서, 그 단추를 누르면 원본을 보내요.</p>
+        <p>진단하려고 사진을 밖으로 보낼 때는 얼굴을 먼저 검게 덮어요. 얼굴을 못 찾은 사진은 덮을 곳이 없어서 원본으로 보내요. AI 보정과 구글 이미지 검색은 원본이 필요해서, 그 버튼을 누르면 원본을 보내요.</p>
       </article>
       <article class="why-card pin-item">
         <svg class="tb-ico" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#121412" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M28 46 L72 45 L73 86 L27 86 Z"/><path d="M37 46 L37 33 C37 15 63 15 63 33 L63 46"/><path d="M50 62 L50 72"/></g></svg>
@@ -11706,7 +11772,7 @@
         patternOnlyCount.style.display = 'block';
         patternOnlyCount.textContent = '스크린샷 ' + n + '개의 생활 패턴을 살펴봐요';
       } else {
-        patternOnlyDropLabel.textContent = '스크린샷을 고르면 반복 패턴을 짚어 드려요';
+        patternOnlyDropLabel.textContent = '스크린샷 선택';
         patternOnlyCount.style.display = 'none';
       }
     });
@@ -13897,35 +13963,140 @@
     var HIST_KEY = 'anshimHist', histFor = null;
     function histLoad() { try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch (e) { return []; } }
     function histSave(h) { try { localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(0, 5))); } catch (e) { /* 저장 막힘 — 화면만 */ } renderHist(h); }
+    // 미리보기 — 가운데를 정사각으로 잘라 96px JPEG로 줄인다(장당 수 KB). 11-23 «로컬에 저장하게»
+    function histThumb(url, big) {
+      return new Promise(function (res) {
+        if (!url) return res('');
+        var im = new Image();
+        im.onload = function () {
+          try {
+            var s = Math.min(im.naturalWidth, im.naturalHeight), c = document.createElement('canvas');
+            if (big) {
+              var k = Math.min(1, 1024 / Math.max(im.naturalWidth, im.naturalHeight));
+              c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+              c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+              return res(c.toDataURL('image/jpeg', 0.8));
+            }
+            c.width = c.height = 96;
+            c.getContext('2d').drawImage(im, (im.naturalWidth - s) / 2, (im.naturalHeight - s) / 2, s, s, 0, 0, 96, 96);
+            res(c.toDataURL('image/jpeg', 0.7));
+          } catch (e) { res(''); }
+        };
+        im.onerror = function () { res(''); };
+        im.src = url;
+      });
+    }
     function histAdd(fixed) {
       var f = lastRiskResult && lastRiskResult.riskFactors;
       if (!f || !f.length) return;
       var h = histLoad();
-      var row = { t: Date.now(), b: f.reduce(function (n, x) { return n + (Number(x.점수) || 0); }, 0), a: null, fixed: fixed };
-      if (histFor === lastRiskResult && h.length) h[0] = row; else h.unshift(row);
+      var row = { t: Date.now(), b: f.reduce(function (n, x) { return n + (Number(x.점수) || 0); }, 0), a: null, fixed: fixed, v: '' };
+      var same = histFor === lastRiskResult && h.length;
+      if (same) { row.img = h[0].img; row.big = h[0].big; h[0] = row; } else h.unshift(row);
       histFor = lastRiskResult;
       histSave(h);
+      if (!row.img) {
+        var key = row.t;
+        var src = typeof uploadedPhotoUrl === 'string' ? uploadedPhotoUrl : '';
+        Promise.all([histThumb(src), histThumb(src, true)]).then(function (r) {
+          if (!r[0]) return;
+          var h2 = histLoad();
+          h2.forEach(function (x) { if (x.t === key) { x.img = r[0]; x.big = r[1]; } });
+          histSave(h2);
+        });
+      }
     }
-    function histSetAfter(score) {
+    // 재검증이 끝나면 보정 후 점수와 결과(«검증 통과» · «재검토 필요»)를 같은 줄에 적는다
+    function histSetAfter(score, verdict) {
       var h = histLoad();
-      if (histFor === lastRiskResult && h[0] && h[0].fixed) { h[0].a = score; histSave(h); }
+      if (histFor === lastRiskResult && h[0] && h[0].fixed) {
+        if (score != null) h[0].a = score;
+        if (verdict) h[0].v = verdict;
+        histSave(h);
+      }
+    }
+    // «내 사진이 다른 곳에 퍼졌는지» — 최근 진단 줄을 누르면 그 사진(찾기용 1024px)을 찾기 칸(#reverseInput)에 넣는다
+    function histPick(li, x) {
+      var ul = li.parentNode;
+      ul.querySelectorAll('li.hist-pick').forEach(function (o) { o.setAttribute('aria-checked', o === li ? 'true' : 'false'); });
+      fetch(x.big).then(function (r) { return r.blob(); }).then(function (blob) {
+        var dt = new DataTransfer();
+        dt.items.add(new File([blob], '내기록-' + x.t + '.jpg', { type: 'image/jpeg' }));
+        var inp = document.getElementById('reverseInput');
+        inp.files = dt.files;
+        inp.dispatchEvent(new Event('change'));
+      });
     }
     function renderHist(h) {
       var ul = document.getElementById('histList');
       if (!ul) return;
       h = h || histLoad();
       ul.innerHTML = '';
+      var clr = document.getElementById('histClearBtn'); if (clr) clr.hidden = !h.length;
+      var inp0 = document.getElementById('reverseInput'); if (inp0) inp0.value = '';   // 다시 그리면 고른 것이 풀린다
       if (!h.length) { var e = document.createElement('li'); e.className = 'none'; e.textContent = '아직 진단 기록이 없어요'; ul.appendChild(e); return; }
       h.forEach(function (x) {
         var d = new Date(x.t), li = document.createElement('li');
         var when = document.createElement('span'); when.className = 'hist-when';
         when.textContent = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-        var what = document.createElement('b');
-        what.textContent = !x.fixed ? '위험도 ' + x.b + ' · 보정 안 함' : (x.a == null ? '위험도 ' + x.b + ' · 보정함' : '위험도 ' + x.b + '에서 ' + x.a);
-        li.appendChild(when); li.appendChild(what); ul.appendChild(li);
+        var what = document.createElement('span'); what.className = 'hist-what';
+        what.textContent = x.a == null ? '위험도 ' + x.b : '위험도 ' + x.b + '에서 ' + x.a;
+        // 사진은 남기지 않으므로 그림 칸에는 표시 그림을 둔다
+        var thumb = document.createElement('span'); thumb.className = 'hist-thumb'; thumb.setAttribute('aria-hidden', 'true');
+        if (x.img) { var ti = document.createElement('img'); ti.src = x.img; ti.alt = ''; thumb.appendChild(ti); }
+        else thumb.innerHTML = '<svg viewBox="0 0 32 32"><use href="#ishadow-mark"/></svg>';
+        var txt = document.createElement('span'); txt.className = 'hist-txt';
+        txt.appendChild(when); txt.appendChild(what);
+        var st = document.createElement('span'); st.className = 'hist-st';
+        st.textContent = !x.fixed ? '보정 안 함' : (x.v || '보정함');
+        li.appendChild(thumb); li.appendChild(txt); li.appendChild(st);
+        if (x.big) {
+          li.className = 'hist-pick'; li.tabIndex = 0;
+          li.setAttribute('role', 'radio'); li.setAttribute('aria-checked', 'false');
+          li.title = '눌러서 «내 사진이 다른 곳에 퍼졌는지 확인하기»에 쓸 사진으로 골라요';
+          li.addEventListener('click', function () { histPick(li, x); });
+          li.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); histPick(li, x); } });
+        }
+        ul.appendChild(li);
       });
     }
     renderHist();
+    // 내 기록으로 보는 패턴 — 같은 요일 · 같은 시간대가 절반 넘게 겹치면 «올리는 때가 예측될 수 있다»
+    // ponytail: 진단 시각을 올린 시각으로 본다. 장소는 기록에 없어서 보지 않는다.
+    document.getElementById('histPatternBtn').addEventListener('click', function () {
+      var out = document.getElementById('histPatternOut');
+      var h = histLoad();
+      out.hidden = false;
+      out.innerHTML = '';
+      function line(text, strong) { var el = document.createElement(strong ? 'b' : 'p'); el.textContent = text; out.appendChild(el); }
+      if (h.length < 3) { line('진단 기록이 3개 이상 있어야 볼 수 있어요. 지금 ' + h.length + '개예요.'); return; }
+      var DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+      function slot(hr) { return hr < 6 ? '새벽' : hr < 12 ? '오전' : hr < 18 ? '오후' : '저녁'; }
+      function top(key) {
+        var c = {}; h.forEach(function (x) { var k = key(new Date(x.t)); c[k] = (c[k] || 0) + 1; });
+        var best = null; Object.keys(c).forEach(function (k) { if (!best || c[k] > c[best]) best = k; });
+        return { k: best, n: c[best] };
+      }
+      var day = top(function (t) { return DAYS[t.getDay()] + '요일'; });
+      var tm = top(function (t) { return slot(t.getHours()); });
+      var half = h.length / 2;
+      var hits = [];
+      if (day.n > half) hits.push(h.length + '번 중 ' + day.n + '번은 ' + day.k);
+      if (tm.n > half) hits.push(h.length + '번 중 ' + tm.n + '번은 ' + tm.k);
+      if (hits.length) {
+        line('올리는 때가 반복돼요', true);
+        line(hits.join(', ') + '에 진단했어요. 같은 때에 올리면 언제 어디 있는지 짐작될 수 있어요. 올리는 요일과 시간을 섞어 보세요.');
+      } else {
+        line('뚜렷하게 반복되는 때는 없어요', true);
+        line('최근 ' + h.length + '번은 요일과 시간이 흩어져 있어요.');
+      }
+    });
+    document.getElementById('histClearBtn').addEventListener('click', function () {
+      if (!confirm('이 기기에 남은 진단 기록과 미리보기 사진을 모두 지울까요?')) return;
+      try { localStorage.removeItem(HIST_KEY); } catch (e) {}
+      histFor = null;
+      renderHist([]);
+    });
 
     document.getElementById('skipCorrectBtn').addEventListener('click', function () {
       histAdd(false);
@@ -13977,7 +14148,7 @@
       btn.addEventListener('click', async function () {
         out.innerHTML = '';
         out.style.display = 'block';
-        if (!input.files[0]) { line('먼저 이미 올린 사진을 골라 주세요.'); return; }
+        if (!input.files[0]) { line('먼저 최근 진단에서 이미 올린 사진을 눌러 주세요.'); return; }
         btn.disabled = true;
         var prev = btn.textContent;
         btn.textContent = '구글에서 찾는 중…';
@@ -15376,7 +15547,7 @@
       else text = '아직 단서가 남아 있어요' + (left ? ': ' + left + '.' : '.') + ' 보정으로 돌아가 더 고칠 수 있어요.';
       detailEl.textContent = text;
       renderVerifyRadar(result.afterRisk);
-      if (result.afterRisk) histSetAfter(result.afterRisk.afterScore);
+      histSetAfter(result.afterRisk ? result.afterRisk.afterScore : null, pass && !split ? '검증 통과' : '재검토 필요');
     }
 
     // 캡션·게시 습관은 사진이 아니라 캡션·체크리스트로 매긴다 — 보정해도 입력이 같으니 처음 점수를 그대로 쓴다.
@@ -15593,7 +15764,7 @@
       document.getElementById('backgroundNotes').value = '';
       document.getElementById('debugPanel').style.display = 'none';
       patternOnlyInput.value = '';
-      patternOnlyDropLabel.textContent = '스크린샷을 고르면 반복 패턴을 짚어 드려요';
+      patternOnlyDropLabel.textContent = '스크린샷 선택';
       patternOnlyCount.style.display = 'none';
       lastPatternFiles = null;
       showScreen('form');

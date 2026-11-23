@@ -643,7 +643,7 @@ function gradeOf(score) {
 app.post('/api/diagnose-risk', async (req, res) => {
   try {
     const userPrompt = buildRiskUserPrompt(req.body || {});
-    const result = await callClaudeText(RISK_SYSTEM_PROMPT, userPrompt);
+    const result = await callClaudeText(RISK_SYSTEM_PROMPT, userPrompt, 0);   // 채점도 0 — 같은 판독이면 같은 점수(11-23)
     const factors = normalizeRiskFactors(result.parsed.위험요인);
     const total = factors.reduce((n, f) => n + f.점수, 0);
     res.json({
@@ -734,7 +734,8 @@ app.post('/api/suggest-captions', async (req, res) => {
 // 이미지 1장 + 프롬프트로 Claude Vision을 호출하는 공용 헬퍼 (간판 OCR, 스크린샷 분석에서 재사용)
 // system은 선택이다 — callClaudeText처럼 역할/규칙은 system에, 사진과 그때그때 달라지는
 // 데이터는 user에 나눠 넣고 싶은 호출(예: 배경교체 프롬프트 생성)을 위해 열어뒀다.
-async function callClaudeVision(imageBase64, mediaType, prompt, maxTokens, system) {
+// temperature는 callClaudeText와 같이 선택이다 — 진단 판독은 0으로 부른다(11-23).
+async function callClaudeVision(imageBase64, mediaType, prompt, maxTokens, system, temperature) {
   // 측정용 스위치: CLAUDE_VIA=cnu면 같은 Claude 모델을 충남대 게이트웨이로 부른다(학교 크레딧).
   // 기본(비움)은 Anthropic 직접 그대로다. 앱 배포에는 켜지 않는다 — 켜면 원본 사진이
   // 게이트웨이(mindlogic)를 거치는데 화면 설명에는 그렇게 적혀 있지 않다.
@@ -744,6 +745,7 @@ async function callClaudeVision(imageBase64, mediaType, prompt, maxTokens, syste
     model: MODEL,
     max_tokens: maxTokens || 1024,
     ...(system ? { system } : {}),
+    ...(temperature != null ? { temperature } : {}),
     messages: [
       {
         role: 'user',
@@ -845,7 +847,8 @@ app.post('/api/analyze-image', async (req, res) => {
   }
   try {
     const ocr = sanitizeOcrWords(ocrWords);
-    const result = await callClaudeVision(imageBase64, mediaType, buildPromptWithOcr(PROMPT, ocr), 1024);
+    // 같은 사진을 다시 올려도 단서가 덜 흔들리게 0으로 부른다(11-23 «같은 사진인데 위험도 점수가 왜 다르게 나오는것임»)
+    const result = await callClaudeVision(imageBase64, mediaType, buildPromptWithOcr(PROMPT, ocr), 1024, undefined, 0);
     res.json({
       ocrWordCount: ocr.length,
       감지된텍스트: result.parsed.감지된텍스트 || [],
