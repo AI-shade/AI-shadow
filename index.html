@@ -9025,6 +9025,12 @@
     // maxBoxes: 처음 12였다 — 거리 사진은 간판이 12개를 넘어, 시험 87장에서 모델이 찾은 정답 간판 425개 중 101개가 거르기·12개 제한에서 빠졌다.
     // 조각 모음(drawCropSheet)은 한 장에 30개가 들어가서 30으로 올렸다.
     var SIGN_RULE = { maxPerson: 0.5, maxArea: 0.5, maxBoxes: 30, overlap: 0.6, pad: 0.06 };
+    // 사람 둘레 여유: 사람·얼굴·손으로 막은 자리에서 사진 긴 변의 이만큼 안쪽은 간판 상자 안이라도 열지 않는다. 0이면 끈다.
+    // 간판 앞에서 폰을 든 손을 사람 분리도 손 찾기도 놓쳐서, 손이 포스터와 같이 다시 그려질 뻔했다(시험 87장, 11-23).
+    // 손은 대개 소매 끝에 붙어 있어서 둘레를 조금만 넓혀도 막힌다. 재 본 값(못 읽은 간판도 가리는 규칙과 함께):
+    //   0% 정답 간판 297/537 · 사람 손·팔이 열린 사진 2장 / 2% 286/537 · 폰 든 손은 막음 / 4% 270/537
+    // 2%로도 남는 것: 사람 분리가 윗몸을 통째로 놓친 어두운 뒷모습 1장은 어깨 끝이 살짝 닿는다(막을 기준이 없다).
+    var SIGN_PERSON_MARGIN = 0.02;
     // 빈 간판으로 채운다(글자를 새로 쓰게 하지 않는다 — AI가 그린 한글은 «쉘붇라옵»처럼 깨지고, 말이 되는 이름은
     // 실제 있는 다른 곳을 가리킬 수 있다). 부탁 대신 보내기 전에 간판 바탕색으로 미리 칠해 둔다(prefillWithSurround).
     var SIGN_BLANK_PROMPT = 'plain blank signboard surface in exactly the same colour, material and lighting as its surroundings, '
@@ -9158,7 +9164,31 @@
       return out;
     }
 
-    // 고른 간판 상자만 흰색. 사람·얼굴·손은 buildBackgroundMask가 검게 막은 것을 그대로 따른다 —
+    // 배경 마스크에서 막힌 자리(검정 = 사람·얼굴·손) 둘레 SIGN_PERSON_MARGIN 안쪽을 1로 표시한다. 끄면 null.
+    // 정사각 창 안에 검정이 하나라도 있는지를 누적합으로 센다 — 사진 크기에 비례하고 창 크기와 상관없이 한 번 훑는다.
+    function signPersonMargin(bd, w, h) {
+      if (!(SIGN_PERSON_MARGIN > 0)) return null;
+      var R = Math.max(1, Math.round(SIGN_PERSON_MARGIN * Math.max(w, h))), W1 = w + 1;
+      var P = new Int32Array(W1 * (h + 1)), x, y;
+      for (y = 0; y < h; y++) {
+        var run = 0;
+        for (x = 0; x < w; x++) {
+          if (bd[(y * w + x) * 4] <= 128) run++;
+          P[(y + 1) * W1 + x + 1] = P[y * W1 + x + 1] + run;
+        }
+      }
+      var near = new Uint8Array(w * h);
+      for (y = 0; y < h; y++) {
+        var y0 = Math.max(0, y - R), y1 = Math.min(h, y + R + 1);
+        for (x = 0; x < w; x++) {
+          var x0 = Math.max(0, x - R), x1 = Math.min(w, x + R + 1);
+          if (P[y1 * W1 + x1] - P[y0 * W1 + x1] - P[y1 * W1 + x0] + P[y0 * W1 + x0] > 0) near[y * w + x] = 1;
+        }
+      }
+      return near;
+    }
+
+    // 고른 간판 상자만 흰색. 사람·얼굴·손은 buildBackgroundMask가 검게 막은 것을 그대로 따르고, 그 둘레 여유(SIGN_PERSON_MARGIN)도 막는다 —
     // 상자와 «배경 마스크»가 둘 다 흰 곳만 열기 때문에, 얼굴을 막는 것이 마지막 단계라는 순서가 그대로 지켜진다.
     function buildSignMask(rects, bgMask, imgW, imgH) {
       var c = document.createElement('canvas'); c.width = imgW; c.height = imgH;
@@ -9173,9 +9203,10 @@
       // 겹치기는 픽셀마다 직접 한다. maskToAlpha는 가장자리를 흐려서, 얼굴을 막은 경계가 회색으로 반쯤 열린다.
       var rd = rx.getImageData(0, 0, imgW, imgH).data;
       var bd = bgMask.getContext('2d').getImageData(0, 0, imgW, imgH).data;
+      var nearPerson = signPersonMargin(bd, imgW, imgH);
       var out = x.getImageData(0, 0, imgW, imgH);
       for (var i = 0; i < rd.length; i += 4) {
-        if (rd[i + 3] > 128 && bd[i] > 128) out.data[i] = out.data[i + 1] = out.data[i + 2] = 255;
+        if (rd[i + 3] > 128 && bd[i] > 128 && !(nearPerson && nearPerson[i >> 2])) out.data[i] = out.data[i + 1] = out.data[i + 2] = 255;
       }
       x.putImageData(out, 0, 0);
       return c;

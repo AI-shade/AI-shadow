@@ -85,6 +85,22 @@ function check(label, ok, detail) {
   READS.forEach((r, i) => check(r.what + ' «' + r.text + '» — ' + (r.pick ? '고른다' : '고르지 않는다'), r1.picked.includes(i) === r.pick));
   check('조각 모음에서 아이 얼굴 자리는 검게 가려 보낸다 (자르기 전에 가림)', r1.faceDark > 0.95, (r1.faceDark * 100).toFixed(0) + '%');
 
+  // 사람 둘레 여유(SIGN_PERSON_MARGIN 2%): 사람 분리가 손을 놓쳐도, 사람 바로 옆은 간판 상자 안이라도 열지 않는다.
+  // 400×200 배경 마스크의 오른쪽 절반을 사람(검정)으로 두고, 사람에 걸친 간판 상자 하나로 본다. 긴 변 2% = 8px.
+  const mg = await page.evaluate(() => {
+    const T = window.__anshimTest;
+    const W = 400, H = 200;
+    const bg = document.createElement('canvas'); bg.width = W; bg.height = H;
+    const g = bg.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H); g.fillStyle = '#000000'; g.fillRect(200, 0, 200, H);
+    const m = T.buildSignMask([{ x: 20, y: 40, width: 360, height: 120 }], bg, W, H);
+    const d = m.getContext('2d').getImageData(0, 0, W, H).data;
+    const on = (x, y) => d[(y * W + x) * 4] > 128;
+    return { far: on(150, 100), edge: on(190, 100), near: on(196, 100), person: on(250, 100) };
+  });
+  check('사람에서 먼 간판 자리는 연다', mg.far && mg.edge);
+  check('사람 바로 옆(긴 변 2% 안)은 간판 상자 안이라도 열지 않는다', !mg.near);
+  check('사람 자리는 열지 않는다', !mg.person);
+
   const has = await page.evaluate(async (url) => { try { const r = await fetch(url, { method: 'HEAD' }); return r.ok; } catch (e) { return false; } }, BASE_URL + '/public/models/mark-int8.onnx');
   if (!has) {
     console.log('\n[2부] 건너뜀 — public/models/mark-int8.onnx 가 없다(41MB, 저장소 밖). 팀자료/모델/에서 복사하면 돈다.');
