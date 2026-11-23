@@ -10,8 +10,13 @@
     .hero { min-height: 0 !important; padding: 2.2rem 0 2.6rem !important; align-items: flex-start !important; }
     .hero .scroll-cue { display: none !important; }
   }
-  .tap-cover{display:flex;gap:1rem;flex-wrap:wrap;margin:0.4rem 0 0.2rem}
-  .tap-cover .ghost-link[aria-pressed="true"]{font-weight:700;color:var(--ink)}
+  /* 직접 가리기: 처리 후 사진 틀 오른쪽 아래 동그란 붓 단추. 켜면 짙게 바뀌고 왼쪽에 되돌리기 · 완료가 붙는다 */
+  .tap-cover{position:absolute;right:16px;bottom:16px;z-index:1;display:flex;align-items:center;gap:8px}
+  .tap-cover .tc-btn{height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+    box-shadow:0 2px 8px rgba(0,0,0,.18);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;cursor:pointer}
+  .tap-cover .tc-brush,.tap-cover .tc-undo{width:44px;padding:0}
+  .tap-cover .tc-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .tap-cover .tc-brush[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 </style>
 <!-- 탭 아이콘. 파일을 따로 두지 않고 여기에 그려 넣는다 — 이 페이지는 파일 하나로
      굴러가야 하고, 배포 경로가 바뀌어도 아이콘이 깨지지 않는다.
@@ -3320,6 +3325,11 @@
   /* 진단하는 동안에도 SNS 게시물 틀을 그대로 둔다(11-21 «진단중일때 왜 다시 sns화면이 사라짐?») —
      게시물 아래에 분석 진행만 보이고, 같은 사진을 한 번 더 보여주던 분석 화면의 사진 칸은 숨긴다 */
   :root[data-screen="analyzing"] #screen-form { display: block !important; }
+  @media (min-width: 761px) { :root[data-screen="analyzing"] #screen-form { display: grid !important; grid-template-columns: minmax(300px, 4fr) minmax(0, 6fr) !important; column-gap: 2rem; align-items: start; } }
+  :root[data-screen="analyzing"] .form-side :is(.fs-label, .fs-seg) { display: none; }
+  .form-side > #screen-analyzing { border: 0; box-shadow: none; background: transparent; padding: 0; margin: 0.4rem 0 0; text-align: left; }
+  #screen-form .form-side, #screen-form .form-side * { text-align: left !important; }
+  #screen-form .form-side #screen-analyzing :is(.analyzing, .analyzing-steps) { margin-left: 0 !important; margin-right: 0 !important; align-items: flex-start !important; justify-items: start !important; }
   :root[data-screen="analyzing"] #screen-form :is(#submitBtn, #rotateRow) { display: none !important; }
   :root[data-screen="analyzing"] #polaroidPreview { pointer-events: none; }
   :root[data-screen="analyzing"] #screen-analyzing .scan-frame { display: none; }
@@ -3347,25 +3357,11 @@
      폰은 위 세로 게시물 그대로. 여백도 줄인다(11-21 «쓸데없는 여백이 너무 크고»). */
   @media (min-width: 761px) {
     #screen-form .upload-col > .up-part > label[for="photoInput"] { display: none; }
-    #screen-form #polaroidPreview.sns-post {
-      width: min(100%, 880px); max-width: 880px; margin: 0 auto;
-      display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(240px, 1fr);
-      grid-template-rows: auto auto auto 1fr;
-      grid-template-areas: "top top" "media head" "media actions" "media note";
-    }
-    .sns-post .sns-top {
-      display: block; grid-area: top; text-align: center; font-weight: 700; font-size: 0.95rem;
-      padding: 0.7rem; border-bottom: 1px solid var(--line);
-    }
-    .sns-post .sns-head { grid-area: head; border-bottom: 1px solid var(--line); padding: 0.8rem 1rem; }
-    .sns-post .sns-actions { grid-area: actions; padding: 0.8rem 1rem 0.2rem; }
-    .sns-post .sns-note { grid-area: note; margin: 0.3rem 1rem 1rem; }
-    #screen-form .sns-post #fileDrop, #screen-form .sns-post #photoPreview {
-      grid-area: media; aspect-ratio: 1 / 1; width: 100%; height: auto; max-height: 380px;
-      border: 0; border-right: 1px solid var(--line);
-    }
-    #screen-form .sns-post #photoPreview { object-fit: contain; background: var(--soft); }
-    #screen-form .rotate-row { width: min(100%, 880px); margin: 0.5rem auto 0; }
+    /* 11-23 시안(neip-ux-v3 «사진 진단»)처럼 넓은 화면에서도 세로 게시물 한 장 — 계정 줄 · 사진 · 아이콘 · 좋아요 · 캡션 · 댓글 */
+    #screen-form #polaroidPreview.sns-post { width: 100%; max-width: none; }
+    #screen-form .sns-post #fileDrop, #screen-form .sns-post #photoPreview { aspect-ratio: 1 / 1; width: 100%; height: auto; }
+    #screen-form .sns-post #photoPreview { object-fit: cover; background: var(--soft); }
+    #screen-form .rotate-row { width: 100%; margin: 0.5rem auto 0; }
     /* 바깥 상자 안에 상자가 또 있어 여백이 두 겹이었다 — 안쪽 상자의 테두리·그림자·여백을 걷는다 */
     #screen-form.card { border: 0; box-shadow: none; background: transparent; padding: 0.4rem 0 0; }
     #screen-form > #submitBtn { width: min(100%, 880px); margin: 1rem auto 0; display: block; }
@@ -3383,7 +3379,126 @@
   #screen-form .sns-post img { width: 100%; border-radius: 0; display: block; object-fit: cover; }
   .sns-post .sns-actions { display: flex; gap: 0.85rem; padding: 0.6rem 0.75rem 0.2rem; }
   .sns-post .sns-actions svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linejoin: round; }
-  .sns-post .sns-note { margin: 0.25rem 0.75rem 0.65rem; font-size: 0.72rem; color: var(--muted); }
+  .form-side { margin-top: 1rem; }
+  .form-side .fs-title { display: none; }               /* 폰은 화면 위 제목 줄이 같은 말을 한다 */
+  .form-side .fs-label { font-weight: 700; font-size: 0.92rem; margin: 0 0 0.5rem; }
+  .form-side .fs-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .form-side .fs-seg button { padding: 0.7rem 0; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font-weight: 700; cursor: pointer; }
+  .form-side .fs-seg button[aria-checked="true"] { border: 2px solid var(--ink); color: var(--ink); }
+  @media (min-width: 761px) {
+    #screen-form:not([style*="none"]) { display: grid; grid-template-columns: minmax(300px, 4fr) minmax(0, 6fr); column-gap: 2rem; align-items: start; }
+    #screen-form > .upload-col { grid-column: 1; grid-row: 1 / span 3; margin: 0; }
+    #screen-form > .form-side { grid-column: 2; grid-row: 1; margin-top: 0.6rem; }
+    .form-side .fs-title { display: block; font-size: 1.8rem; font-weight: 900; margin: 0 0 1.6rem; }
+    #screen-form > #submitBtn { grid-column: 2; grid-row: 2; width: auto; justify-self: start; margin: 1.6rem 0 0; padding-left: 2.4rem; padding-right: 2.4rem; }
+    #screen-form #polaroidPreview.sns-post { margin-left: 0; }
+    #screen-form .rotate-row { margin-left: 0; }
+  }
+  @media (min-width: 761px) {
+    :root[data-view="tool"][data-screen="form"] main#tool {
+      min-height: calc(100svh - var(--nav-h, 4.6rem)); display: flex; flex-direction: column; justify-content: center;
+    }
+  }
+  .rp-head, .rp-foot { display: none; }
+  @media (min-width: 761px) {
+    #screen-result:not([style*="none"]) {
+      grid-template-columns: minmax(300px, 4fr) minmax(0, 6fr) !important;   /* 게시물 : 결과 = 4 : 6 (11-23) — 진단 전 화면과 같은 비율 · 간격 */
+      row-gap: 0 !important; column-gap: 2rem !important; align-items: start !important;
+    }
+    /* 오른쪽 칸: 모든 결과 카드가 오른쪽 두 칸을 다 쓰고 위아래로 쌓인다(줄 사이는 margin으로 — 왼쪽이 여러 줄을 걸쳐서 빈 줄 간격이 쌓이지 않게) */
+    #screen-result:not([style*="none"]) > :not(.rcard-detect),
+    #screen-result:not([style*="none"]) > .app-actionbar > * { grid-column: 2 / -1 !important; margin-bottom: 0.9rem; }
+    /* 왼쪽 칸: 감지 카드를 SNS 게시물 모양으로. 사진 위 상자 · 핀은 그대로 */
+    #screen-result > .rcard-detect {
+      display: block !important; order: 0 !important; grid-column: 1; grid-row: 1 / span 40;
+      position: sticky; top: calc(var(--nav-h, 4.6rem) + 1rem); align-self: start;
+      padding: 0; overflow: hidden; border: 2px solid var(--tb-black, var(--ink)); border-radius: 14px; background: var(--card);
+    }
+    #screen-result > .rcard-detect > :is(.rcard-title, .pin-legend, .pin-note, .factor-map) { display: none !important; }
+    #screen-result > .rcard-detect .rp-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.6rem 0.75rem; font-size: 0.86rem; }
+    .rp-head .sns-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--soft); border: 1px solid var(--line); flex: none; }
+    .rp-head .sns-more { margin-left: auto; color: var(--muted); letter-spacing: 1px; }
+    /* 오른쪽 칸이 좁아져 장소 카드의 지도 칸(최소 22rem)이 카드 밖으로 삐져나갔다 — 두 칸 모두 줄어들 수 있게 */
+    #screen-result > .rcard-location:not(.no-map) { grid-template-columns: 1fr !important; }   /* 한 줄로: 좁혀지는 범위 → 지도(11-23) */
+    /* 결과 화면 바깥 얇은 테두리 상자도 뺀다(11-23 «겉에 둘러 싸고 있는 … 네모 없애주고»와 같이) */
+    #screen-result.card { border: 0; box-shadow: none; background: transparent; padding-left: 0; padding-right: 0; }
+    #screen-result > :is(.rcard, .result-section):not(.rcard-detect) {
+      background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+      padding: 1.6rem 0 !important; margin-bottom: 0 !important; border-top: 1px solid var(--line) !important;
+    }
+    #screen-result > .rcard-score.rcard:not(.rcard-detect) { border-top: 0 !important; padding-top: 0.2rem !important; }
+    #screen-result > .app-actionbar > :first-child { margin-top: 0.6rem; }
+    #screen-result > .rcard-detect .risk-photo-wrap { width: 100%; max-width: none; max-height: none; margin: 0; }
+    #screen-result > .rcard-detect .risk-photo-wrap img { width: 100%; height: auto; max-height: none; border-radius: 0; display: block; }
+    #screen-result > .rcard-detect .rp-foot { display: block; padding: 0.55rem 0.75rem 0.7rem; }
+    .rp-foot .rp-acts { display: flex; gap: 0.85rem; }
+    .rp-foot .rp-acts svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linejoin: round; }
+    .rp-foot .rp-save { margin-left: auto; }
+    .rp-foot .rp-likes { margin: 0.4rem 0 0; font-size: 0.84rem; font-weight: 800; }
+    .rp-foot .rp-cmt { margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--muted); }
+  }
+  /* 오각형 색으로 위험 정도를 말한다(11-23 «안전하면 초록 중간이면 주황») — 하 초록 · 중 주황 · 상 빨강 */
+  /* setGauge가 점수로 인라인 색을 넣는다 — 등급 색이 이기게 !important */
+  #screen-result[data-grade="하"] .radar-shape { fill: #2f8f4e !important; stroke: #2f8f4e !important; fill-opacity: 0.35; }
+  #screen-result[data-grade="하"] .radar-dot { fill: #2f8f4e !important; }
+  #screen-result[data-grade="중"] .radar-shape { fill: #e0841a !important; stroke: #e0841a !important; fill-opacity: 0.35; }
+  #screen-result[data-grade="중"] .radar-dot { fill: #e0841a !important; }
+  #screen-result[data-grade="상"] .radar-shape { fill: var(--risk-high) !important; stroke: var(--risk-high) !important; fill-opacity: 0.35; }
+  #screen-result[data-grade="상"] .radar-dot { fill: var(--risk-high) !important; }
+  #screen-result .gauge-meta { display: none !important; }
+  #scoreBreakdown { display: none !important; }
+  .rcard-location .loc-left > :is(.sub-score-line, .bar-track, #locationEvidence) { display: none !important; }
+  /* 좁혀지는 범위 칸: 누를 수 있는 칸은 위험 항목과 같은 모양(평소 바탕 없음 · 손 올리면 진하게 · 누르면 초록) */
+  #locChain li.lc-pick { cursor: pointer; }
+  #locChain li.lc-pick:hover .lc-what, #locChain li.lc-pick:focus-visible .lc-what { text-decoration: underline; text-underline-offset: 3px; }
+  #locChain li.lc-pick:focus-visible { outline: none; }
+  #locChain li.lc-pick[aria-pressed="true"] .lc-what { color: #2f8f4e; }
+  #locChain li.lc-pick[aria-pressed="true"] .lc-tag { color: #fff; background: #2f8f4e; }
+  #factorCard:not(:has(#factorMap:not([hidden]))) { display: none !important; }
+  @media (min-width: 761px) { #factorCard { display: none !important; } }   /* 좁혀지는 범위 칸이 같은 일(누르면 사진 표시)을 한다 */
+  #factorCard .fc-hint { font-size: 0.8rem; font-weight: 500; color: var(--muted); margin-left: 0.4rem; }
+  #factorCard .fm-head, #factorCard .fm-note { display: none; }   /* 칸 제목이 같은 말을 한다 */
+  #factorCard .fm-list { display: block !important; }
+
+  @media (min-width: 761px) {
+    #screen-result > .rcard-score { grid-template-columns: 1fr !important; }
+    #screen-result > .rcard-location { grid-template-columns: 1fr !important; row-gap: 1.2rem; border-top: 0 !important; padding-top: 0 !important; }
+    /* 권장 조치: 점 대신 1, 2, 3, 4 번호(11-23 «권장조치 1,2,3,4로 해줘») */
+    #screen-result #actionList { list-style: decimal; padding-left: 1.5rem; }
+    #screen-result #actionList li::marker { font-weight: 800; }
+    /* 칸이 반으로 줄어 오각형 축 이름이 잘렸다 — 오각형은 제 칸 안에서 줄어들게, 목록 글자는 한 줄로 */
+    #screen-result > .rcard-score .gauge-wrap { min-width: 0; padding: 0 1.6rem; }
+    #screen-result > .rcard-score .gauge-ring { width: 100%; max-width: 300px; height: auto; aspect-ratio: 1 / 1; }
+    #factorCard .fm-name, #factorCard .fm-score, #factorCard .fm-where { white-space: nowrap; }
+    #factorCard .fm-name { flex: 1; }
+  }
+  .rcard-score > #factorCard { background: none !important; border: 0 !important; padding: 0 !important; margin: 0.8rem 0 0 !important; box-shadow: none !important; }
+  #factorCard .rcard-title { font-size: 1rem; margin-bottom: 0.6rem; }
+  /* 11-23: 공개 범위 단추 글자는 가운데(오른쪽 칸 왼쪽 정렬 규칙이 단추 안까지 먹었다) */
+  #screen-form .form-side .fs-seg button { text-align: center !important; }
+  /* 공개 범위 단추도 위험 항목과 같게: 평소 바탕 없음 · 손을 올리면 진하게 · 고르면 초록(11-23 «그것도 바꿔») */
+  /* 글자는 «위험도 진단» 단추와 비슷한 크기, 테두리는 검정으로 되돌린다(11-23 «글자 크기가 칸에 비해 너무 작음 … 검은 테두리도그냥 다시되돌려줘») */
+  #screen-form .form-side .fs-seg button { background: transparent; border: 2px solid var(--tb-black, var(--ink)); color: var(--ink); font-size: 1.05rem; font-weight: 800; padding: 0.85rem 0; transition: background .15s, color .15s; }
+  #screen-form .form-side .fs-seg button:hover, #screen-form .form-side .fs-seg button:focus-visible { background: rgba(0,0,0,.08); }
+  #screen-form .form-side .fs-seg button[aria-checked="true"] { background: #2f8f4e; border: 2px solid var(--tb-black, var(--ink)); color: #fff; }
+  /* 위험 항목 줄: 점수 · «사진에서 N곳»은 뺀다(11-23 «이부분 삭제») */
+  #factorCard .fm-score, #factorCard .fm-where { display: none !important; }
+  /* 평소엔 바탕 없이, 손을 올리면 진하게, 누르면 초록(11-23) */
+  #factorCard .fm-row { background: transparent; border: 1px solid transparent; transition: background .15s, color .15s; }
+  #factorCard .fm-row:hover, #factorCard .fm-row:focus-visible { background: rgba(0,0,0,.08); border-color: transparent; }
+  #factorCard .fm-row[aria-pressed="true"] { background: #2f8f4e; border-color: #2f8f4e; color: #fff; }
+  #factorCard .fm-row[aria-pressed="true"] .fm-swatch { box-shadow: 0 0 0 2px #fff; }
+  /* 사진에 자리가 없는 항목(사진 밖 · 해당 없음 · 자리 미확인)은 띄우지 않는다(11-23 «사진에 없으면 그냥 띄우지마») */
+  #factorCard li:has(.fm-row:is(.outside, .none, .no-spot)) { display: none; }
+  #factorCard:not(:has(.fm-row:not(.outside, .none, .no-spot))) { display: none !important; }   /* «위험 등급 · 상/중/하» 알약 — 색으로 위험 정도가 보여 뺐다(11-23 «이것도 그냥 지워줘»). 글은 화면 읽기용으로 남는다 */
+  .sns-post .sns-note { display: none; }   /* 시안에 없는 안내 줄 — 스크립트가 글을 바꿔 쓰므로 자리는 둔다 */
+  .sns-post .sns-actions .sns-save { margin-left: auto; }
+  .sns-post .sns-likes { margin: 0.35rem 0.75rem 0; font-size: 0.84rem; font-weight: 800; }
+  .sns-post .sns-cap { margin: 0.15rem 0.75rem 0; font-size: 0.84rem; }
+  .sns-post .sns-cap b { margin-right: 0.35rem; }
+  .sns-post .sns-cmt { margin: 0.2rem 0.75rem 0.75rem; font-size: 0.8rem; color: var(--muted); }
+  /* 키가 낮은 화면(가로 폰 등)에서는 «사진 돌리기»가 첫 화면 밖으로 밀렸다(photo-rotate, 610px에서 25px) — 댓글 줄은 뺀다 */
+  @media (max-height: 700px) { .sns-post .sns-cmt { display: none; } .sns-post .sns-cap { margin-bottom: 0.5rem; } .sns-post .sns-likes { margin-top: 0.15rem; } .sns-post .sns-actions { padding-top: 0.45rem; } }
   .sns-post:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
   /* AI 단추: 3칸 자리에 2개만 보이면 오른쪽이 비었다(11-21 «배열이 이상해») — 보이는 단추 수만큼 칸을 나눈다 */
   #aiMore .ai-more-btns, #screen-correct #aiMore .ai-more-btns { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
@@ -3755,7 +3870,7 @@
     #selfcheck .sc-eyebrow { margin-bottom: 14px; }
 
     /* 진단 화면: 둥근 판 → 검정 2px 테두리, 모서리 작게 */
-    main#tool { border: 2px solid var(--tb-black); border-radius: 6px; box-shadow: none; }
+    main#tool { border: 0; border-radius: 0; box-shadow: none; background: transparent; }   /* 바깥 검정 네모는 뺐다(11-23) */
     #tool .card { border-radius: 6px; }
     #tool .polaroid { border: 2px solid var(--tb-black); border-radius: 6px; }
     #tool .primary, #tool button.primary, #pattern-check .primary, #pattern-check .btn-primary { border: 2px solid var(--tb-black); font-weight: 800; }
@@ -4191,7 +4306,7 @@
              예전 «우리 아이 오늘» 글자는 캡션 칸이 없는데 떠서 뺐다. -->
         <div class="polaroid sns-post empty" id="polaroidPreview" role="group" aria-label="올릴 게시물 미리보기">
           <div class="sns-top" aria-hidden="true">새 게시물 만들기</div>
-          <div class="sns-head" aria-hidden="true"><span class="sns-avatar"></span><b>내 계정</b><span class="sns-more">···</span></div>
+          <div class="sns-head" aria-hidden="true"><span class="sns-avatar"></span><b>my_account</b><span class="sns-more">···</span></div>
           <div class="drop-zone" id="fileDrop">
             <span class="icon" aria-hidden="true"><svg class="mono-icon" viewBox="0 0 32 32"><rect x="3.5" y="6" width="25" height="20" rx="1"/><circle cx="11" cy="13" r="2.4"/><path d="M6 23.5 L13 16.5 L17.5 21 L21.5 17.5 L28 23"/></svg></span>
             <span id="fileDropLabel">사진을 눌러 고르세요</span>
@@ -4202,7 +4317,11 @@
             <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
             <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>
             <svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7z"/></svg>
+            <svg class="sns-save" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg>
           </div>
+          <p class="sns-likes" aria-hidden="true">좋아요 0개</p>
+          
+          <p class="sns-cmt" aria-hidden="true">댓글 0개 모두 보기</p>
           <p class="sns-note" id="snsNote">올리기 전에 이 게시물을 먼저 살펴봐요</p>
         </div>
         <!-- 누운 사진은 얼굴 검출·인물 분리가 깨진다. 방향을 자동으로 판단하는 것은 재봤더니
@@ -4224,6 +4343,18 @@
           <input type="file" id="pastInput" accept="image/*" multiple />
         </div>
         <p class="file-count" id="fileCount" style="display:none;"></p>
+      </div>
+    </div>
+
+    <!-- 오른쪽 칸(11-23 시안 «왼 SNS목업, 우 사진진단 공개범위 설정하고 위험도 진단하는 버튼도»).
+         공개 범위는 11-21에 뺐다가 되살린다 — 고르기는 세 단추, 값은 아래 숨은 select에 넣는다. -->
+    <div class="form-side">
+      <h2 class="fs-title">사진 진단</h2>
+      <p class="fs-label" id="privacySegLabel">계정 공개 범위</p>
+      <div class="fs-seg" role="radiogroup" aria-labelledby="privacySegLabel">
+        <button type="button" role="radio" aria-checked="true" data-v="전체공개">전체공개</button>
+        <button type="button" role="radio" aria-checked="false" data-v="친구공개">친구공개</button>
+        <button type="button" role="radio" aria-checked="false" data-v="비공개">비공개</button>
       </div>
     </div>
 
@@ -4260,7 +4391,7 @@
       <input type="text" id="backgroundNotes" placeholder="예: 놀이터, 어린이집 앞" />
     </div>
 
-    <button class="primary" id="submitBtn">진단</button>
+    <button class="primary" id="submitBtn">위험도 진단</button>
   </div>
 
   <!-- 화면 2: 분석 중 -->
@@ -4271,7 +4402,7 @@
       <!-- 진행 막대 — 단계가 넘어갈 때만 앞으로 간다(시간으로 꾸며 채우지 않는다). -->
       <div class="an-bar" aria-hidden="true"><div class="an-bar-fill" id="anBarFill"></div></div>
       <div class="analyzing-steps">
-        <p id="stepFace">이 기기 안에서 얼굴을 찾는 중 (밖으로 보내지 않음)</p>
+        <p id="stepFace">이 기기 안에서 얼굴을 찾는 중</p>
         <p id="stepOcr">사진 속 글자를 찾는 중</p>
         <p id="stepPast" style="display:none;">과거 게시물에서 올린 때와 캡션을 읽는 중</p>
       </div>
@@ -4326,7 +4457,8 @@
       </div>
       <!-- 왜 이 점수인지 — 항목 점수의 합이 곧 종합 점수다 -->
       <div class="score-breakdown" id="scoreBreakdown" style="display:none;">
-        <p class="sb-head">이 점수는 이렇게 나왔어요
+        <!-- 제목 «이 점수는 이렇게 나왔어요»는 뺐다(11-23 «이 점수는 이렇게 나와요도 지워줘») — 폰의 펼치기 단추만 남긴다 -->
+        <p class="sb-head">
           <!-- 폰에서는 오각형이 같은 다섯 항목을 값까지 적어 보여주므로 막대 목록을
                접는다. 데스크톱에서는 둘이 좌우로 나란히 놓여 자리 다툼이 없어
                이 단추가 안 보인다. -->
@@ -4339,6 +4471,7 @@
     </div>
 
     <div class="rcard rcard-detect">
+      <div class="rp-head" aria-hidden="true"><span class="sns-avatar"></span><b>my_account</b><span class="sns-more">···</span></div>
       <h3 class="rcard-title">사진에서 찾은 항목</h3>
       <div class="risk-photo-wrap" id="riskPhotoWrap">
         <img id="resultThumb" alt="분석한 사진" />
@@ -4346,6 +4479,11 @@
         <div class="rgn-layer" id="riskRegions" aria-hidden="true">
           <p class="rgn-outside" id="rgnOutside"></p>
         </div>
+      </div>
+      <div class="rp-foot" aria-hidden="true">
+        <div class="rp-acts"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><svg viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-7z"/></svg><svg class="rp-save" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></div>
+        <p class="rp-likes">좋아요 0개</p>
+        <p class="rp-cmt">댓글 0개 모두 보기</p>
       </div>
       <ul class="pin-legend" id="pinLegend"></ul>
       <p class="pin-note">검게 채운 핀은 얼굴, 테두리만 있는 핀은 글자예요. 둘 다 사진에서 실제로 찾은 자리예요.</p>
@@ -4363,6 +4501,11 @@
           캡션과 게시 습관 점수는 적어주신 글과 설정에서 나왔어요.</p>
       </div>
     </div>
+
+    <!-- 위험 항목(11-23 «위험항목은 누르면 사진에서 어느부분인지 표시해줘») — 감지 카드 안에 있던 #factorMap을 여기로 옮긴다 -->
+    <section class="result-section rcard-factors" id="factorCard">
+      <h3 class="rcard-title">위험 항목 <span class="fc-hint">누르면 사진에 표시</span></h3>
+    </section>
 
     <section class="result-section rcard-location">
       <!-- 왼쪽 내역의 "간판·주소 노출"과 이름이 겹치면 같은 것으로 오해한다.
@@ -4552,6 +4695,12 @@
         <p class="preview-label is-after">처리 후</p>
         <div class="preview-frame" id="previewFrame">
           <img id="previewAfter" alt="처리 결과" />
+          <!-- 직접 가리기 단추(11-23 «A(사진 위 붓 단추)로 해줘») — 사진 오른쪽 아래 붓. 켜면 옆에 되돌리기 · 완료가 나온다 -->
+          <div class="tap-cover" id="tapCoverBar" style="display:none;">
+            <button type="button" class="tc-btn tc-undo" id="tapCoverUndo" style="display:none;" aria-label="하나 되돌리기" title="하나 되돌리기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
+            <button type="button" class="tc-btn tc-done" id="tapCoverDone" style="display:none;">완료</button>
+            <button type="button" class="tc-btn tc-brush" id="tapCoverBtn" aria-pressed="false" aria-label="남은 곳 문질러서 가리기" title="남은 곳 문질러서 가리기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5L10 19H5v-5z"/><path d="M12.5 6.5l5 5"/></svg></button>
+          </div>
           <div class="preview-busy" id="previewBusy" hidden>
             <span class="busy-spin"></span>
             <span class="busy-text" id="previewBusyText">처리 중…</span>
@@ -4573,10 +4722,6 @@
     <p class="preview-caption" id="previewCaption">점선 안쪽만 남기고 자연스럽게 잘라내요.</p>
     <!-- 남은 곳 눌러서 가리기(멘토 제안 11-22). 예전 «놓친 곳 추가»는 반영이 늦고 다루기 불편해 숨겼다(10-27).
          이건 보정이 끝난 사진에서 누른 자리만 폰 안에서 바로 흐리게 한다 — AI 호출 없음, 기다림 없음, 아이 얼굴 근처는 막는다. -->
-    <div class="tap-cover" id="tapCoverBar" style="display:none;">
-      <button type="button" class="ghost-link" id="tapCoverBtn" aria-pressed="false">남은 곳 눌러서 가리기</button>
-      <button type="button" class="ghost-link" id="tapCoverUndo" style="display:none;">하나 되돌리기</button>
-    </div>
 
     <div class="edit-instruction" id="editInstruction" style="display:none;">
       <strong>Claude가 생성할 편집 지시문 (fal.ai 연동 후 사용 예정)</strong>
@@ -9032,12 +9177,27 @@
     var SIGN_READ_URL = '/api/read-sign-boxes';
     // maxBoxes: 처음 12였다 — 거리 사진은 간판이 12개를 넘어, 시험 87장에서 모델이 찾은 정답 간판 425개 중 101개가 거르기·12개 제한에서 빠졌다.
     // 조각 모음(drawCropSheet)은 한 장에 30개가 들어가서 30으로 올렸다.
-    var SIGN_RULE = { maxPerson: 0.5, maxArea: 0.5, maxBoxes: 30, overlap: 0.6, pad: 0.06 };
+    var SIGN_RULE_BASE = { maxPerson: 0.5, maxArea: 0.5, maxBoxes: 30, overlap: 0.6, pad: 0.06 };
+    var SIGN_RULE = Object.assign({}, SIGN_RULE_BASE);
     // 거르기 규칙 비교용(멘토 제안 11-23). 'relaxed'로 바꾸면 개수 제한 40, 겹침은 80% 넘을 때만 하나로 친다.
+    // 'relaxed'는 두 규칙을 한꺼번에 바꿔서, 좋아져도 어느 쪽 덕인지 알 수 없었다(11-23) — 하나씩 켜는 'limit'·'overlap'을 더한다.
+    //   base: 지금 그대로 · limit: 개수 제한만 40 · overlap: 겹침만 80% · relaxed: 둘 다
     // 기본은 'base'(지금 그대로). 정답표로 두 값을 같은 사진에 돌려 «되살린 정답 / 새로 잘못 연 곳»을 비교한 뒤 고른다.
     // 거른 이유별 개수는 매번 window.__anshimSignFilterStats와 콘솔 [간판만 거르기]에 남는다.
     var SIGN_RULE_PRESET = 'base';
-    if (SIGN_RULE_PRESET === 'relaxed') { SIGN_RULE.maxBoxes = 40; SIGN_RULE.overlap = 0.8; }
+    var SIGN_RULE_PRESETS = {
+      base: {},
+      limit: { maxBoxes: 40 },
+      overlap: { overlap: 0.8 },
+      relaxed: { maxBoxes: 40, overlap: 0.8 },
+    };
+    function setSignRulePreset(name) {
+      if (!SIGN_RULE_PRESETS[name]) throw new Error('모르는 거르기 설정: ' + name);
+      SIGN_RULE_PRESET = name;
+      SIGN_RULE = Object.assign({}, SIGN_RULE_BASE, SIGN_RULE_PRESETS[name]);
+      return SIGN_RULE;
+    }
+    setSignRulePreset(SIGN_RULE_PRESET);
     // 빈 간판으로 채운다(글자를 새로 쓰게 하지 않는다 — AI가 그린 한글은 «쉘붇라옵»처럼 깨지고, 말이 되는 이름은
     // 실제 있는 다른 곳을 가리킬 수 있다). 부탁 대신 보내기 전에 간판 바탕색으로 미리 칠해 둔다(prefillWithSurround).
     var SIGN_BLANK_PROMPT = 'plain blank signboard surface in exactly the same colour, material and lighting as its surroundings, '
@@ -11161,11 +11321,31 @@
     var photoPreview = document.getElementById('photoPreview');
     var pastInput = document.getElementById('pastInput');
     // 사진 없이 스크린샷만 올린 상태면 버튼이 무엇을 할지 미리 알려준다
+    // 위험 항목 목록을 오른쪽 «위험 항목» 칸으로 옮긴다 — 사진 위 표시(#riskRegions)는 왼쪽 게시물에 그대로
+    (function () {
+      var card = document.getElementById('factorCard'), fm = document.getElementById('factorMap');
+      if (card && fm) card.appendChild(fm);
+      // 오각형 옆에 둔다(11-23 «위험항목을 5각형 옆에 두면 안되나»)
+      var score = document.querySelector('#screen-result > .rcard-score');
+      if (card && score) score.appendChild(card);
+    })();
+    // 진행 화면을 오른쪽 칸 안으로 옮긴다 — 화면 전환은 id로 하므로 자리만 바뀐다
+    (function () {
+      var side = document.querySelector('#screen-form .form-side'), an = document.getElementById('screen-analyzing');
+      if (side && an) side.appendChild(an);
+    })();
+    (function () {
+      var sel = document.getElementById('privacySetting');
+      var btns = document.querySelectorAll('.form-side .fs-seg button');
+      function show() { btns.forEach(function (b) { b.setAttribute('aria-checked', b.getAttribute('data-v') === sel.value ? 'true' : 'false'); }); }
+      btns.forEach(function (b) { b.addEventListener('click', function () { sel.value = b.getAttribute('data-v'); show(); }); });
+      show();
+    })();
     function syncSubmitLabel() {
       var btn = document.getElementById('submitBtn');
       var hasPhoto = !!(photoInput.files && photoInput.files[0]);
       var hasPast = !!(pastInput.files && pastInput.files.length > 0);
-      btn.textContent = (!hasPhoto && hasPast) ? '생활 패턴만 분석' : '진단';
+      btn.textContent = (!hasPhoto && hasPast) ? '생활 패턴만 분석' : '위험도 진단';
     }
     var pastDropLabel = document.getElementById('pastDropLabel');
     var fileCount = document.getElementById('fileCount');
@@ -11696,6 +11876,7 @@
         if (n && n.textContent === '소속 노출') {
           var w = b.querySelector('.fm-where');
           if (w) w.textContent = text;
+          b.classList.toggle('no-spot', text === '자리 미확인');
         }
       });
     }
@@ -11748,7 +11929,8 @@
         var li = document.createElement('li');
         var row = document.createElement('button');
         row.type = 'button';
-        row.className = 'fm-row' + (def.kind === 'outside' ? ' outside' : '') + (pt === 0 ? ' none' : '');
+        row.className = 'fm-row' + (def.kind === 'outside' ? ' outside' : '') + (pt === 0 ? ' none' : '')
+          + (def.kind !== 'outside' && def.kind !== 'clothes' && regions.length === 0 ? ' no-spot' : '');
         row.style.setProperty('--rgn-color', def.color);
         row.setAttribute('aria-pressed', 'false');
         if (pending) row.disabled = true;
@@ -12052,6 +12234,7 @@
       var badge = document.getElementById('riskBadge');
       badge.textContent = r.grade;
       badge.className = 'risk-chip risk-' + r.grade;
+      document.getElementById('screen-result').setAttribute('data-grade', r.grade); // 오각형 색(11-23)
       숫자굴리기(document.getElementById('riskScore'), r.score);
       setGauge(r.score);
 
@@ -12605,7 +12788,7 @@
         },
         {
           on: belong.length > 0,
-          what: '소속 단서',
+          what: '소속 단서', factor: '소속 노출',
           tag: belong.length > 0 ? belong.length + '개 감지' : '없음',
           why: belong.length > 0
             ? belong.map(function (c) { return c.종류; }).join(', ') + ': 다니는 기관까지 좁혀질 수 있어요.'
@@ -12624,7 +12807,7 @@
         },
         {
           on: shownWords.length > 0,
-          what: '장소를 알려 주는 글자',
+          what: '장소를 알려 주는 글자', factor: '간판·주소 노출',
           tag: shownWords.length > 0 ? shownWords.length + '곳' : '없음',
           why: shownWords.length === 0
             ? '간판, 주소, 전화번호 같은 글자를 찾지 못해서 건물까지는 좁혀지지 않아요.'
@@ -12665,6 +12848,28 @@
         why.className = 'lc-why';
         why.textContent = st.why;
         li.appendChild(what); li.appendChild(tag); li.appendChild(why);
+        if (st.on && st.factor) {
+          li.classList.add('lc-pick');
+          li.tabIndex = 0;
+          li.setAttribute('role', 'button');
+          li.setAttribute('aria-pressed', 'false');
+          li.dataset.factor = st.factor;
+          var pick = function () {
+            var on = li.getAttribute('aria-pressed') !== 'true';
+            Array.prototype.forEach.call(el.querySelectorAll('.lc-pick'), function (o) { o.setAttribute('aria-pressed', 'false'); });
+            li.setAttribute('aria-pressed', on ? 'true' : 'false');
+            if (on && st.factor === '소속 노출') ensureClothesRegion();
+            focusFactor(on ? st.factor : null);
+          };
+          li.addEventListener('click', pick);
+          li.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+          li.addEventListener('mouseenter', function () {
+            if (el.querySelector('.lc-pick[aria-pressed="true"]')) return;
+            if (st.factor === '소속 노출') ensureClothesRegion();
+            focusFactor(st.factor);
+          });
+          li.addEventListener('mouseleave', function () { if (!el.querySelector('.lc-pick[aria-pressed="true"]')) focusFactor(null); });
+        }
         el.appendChild(li);
       });
       // 드러나지 않은 칸(.off)은 CSS가 숨긴다 — 다 숨으면 빈 목록 대신 한 줄로 말한다
@@ -14426,7 +14631,7 @@
           return;
         }
 
-        previewCaption.textContent = 'AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요.';
+        previewCaption.textContent = ''; // 기다리는 동안 사진 아래 안내 문장은 뺐다(11-23 «이거 없애») — 사진 위 처리 중 표시로 충분하다
         setPreviewBusy('AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요');
         editInstruction.textContent = '';
         currentCorrectionCanvas = null;
@@ -14594,66 +14799,156 @@
       tapCoverOn = on;
       var b = document.getElementById('tapCoverBtn');
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.textContent = on ? '가리기 끝내기' : '남은 곳 눌러서 가리기';
-      document.getElementById('previewAfter').style.cursor = on ? 'crosshair' : '';
-      if (on) previewCaption.textContent = '사진에서 남은 간판이나 글자를 누르면 그 자리를 흐리게 가려요.';
+      var lab = on ? '가리기 끝내기' : '남은 곳 문질러서 가리기';
+      b.setAttribute('aria-label', lab); b.title = lab;
+      document.getElementById('tapCoverDone').style.display = on ? '' : 'none';
+      var pa = document.getElementById('previewAfter');
+      pa.style.cursor = on ? 'crosshair' : '';
+      pa.style.touchAction = on ? 'none' : '';
+      if (on) previewCaption.textContent = '사진에서 남은 간판이나 글자를 누르거나 문지르면 그 자리를 흐리게 가려요.';
     }
-    async function tapCoverAt(ev) {
-      if (!tapCoverOn) return;
-      var el = ev.currentTarget, rect = el.getBoundingClientRect();
-      if (!currentCorrectionCanvas) currentCorrectionCanvas = await getFinalCanvas();
-      var c = currentCorrectionCanvas;
-      if (!c) return;
-      if (tapCoverCanvasRef !== c) { tapCoverStack = []; tapCoverCanvasRef = c; }
-      var W = c.width, H = c.height;
-      var px = (ev.clientX - rect.left) / rect.width * W, py = (ev.clientY - rect.top) / rect.height * H;
-      var side = Math.round(Math.min(W, H) * TAP_COVER_RATIO);
+    // 문질러서 가리기(11-23): 한 번 누르면 네모 하나만 흐려져서, 간판 한 줄을 가리려면 서너 번 눌러야 했다.
+    // 이제 누른 채로 문지르면 지나간 자리가 다 흐려진다. 한 번 문지른 것(누름~뗌)이 «하나 되돌리기» 한 번이다.
+    // 얼굴 상자(15% 넓힘)에 닿는 칸은 문지르는 도중에도 칠하지 않는다.
+    var tapCoverStroke = null;
+    function tapCoverPoint(st, ev) {
+      var rect = st.el.getBoundingClientRect();
+      return { x: (ev.clientX - rect.left) / rect.width * st.W, y: (ev.clientY - rect.top) / rect.height * st.H };
+    }
+    function tapCoverDab(st, px, py) {
+      var side = st.side, W = st.W, H = st.H;
       var x0 = Math.max(0, Math.round(px - side / 2)), y0 = Math.max(0, Math.round(py - side / 2));
       var w = Math.min(W - x0, side), h = Math.min(H - y0, side);
-      // 아이 얼굴은 건드리지 않는다
-      var faces = (lastFaceResult && lastFaceResult.faces) || [];
-      if (faces.length && uploadedPhotoUrl) {
-        var orig = await loadImage(uploadedPhotoUrl);
-        var sx = W / orig.naturalWidth, sy = H / orig.naturalHeight;
-        var hit = faces.some(function (f) {
-          var b = f.box, mx = b.width * 0.15, my = b.height * 0.15;
-          var fx0 = (b.x - mx) * sx, fy0 = (b.y - my) * sy, fx1 = (b.x + b.width + mx) * sx, fy1 = (b.y + b.height + my) * sy;
-          return x0 < fx1 && x0 + w > fx0 && y0 < fy1 && y0 + h > fy0;
-        });
-        if (hit) { previewCaption.textContent = '아이 얼굴 근처는 가리지 않아요. 조금 떨어진 곳을 눌러 주세요.'; return; }
-      }
-      var ctx = c.getContext('2d');
-      tapCoverStack.push({ x: x0, y: y0, data: ctx.getImageData(x0, y0, w, h) });
-      var copy = document.createElement('canvas'); copy.width = W; copy.height = H; copy.getContext('2d').drawImage(c, 0, 0);
+      if (w <= 0 || h <= 0) return;
+      var hit = st.faces.some(function (f) { return x0 < f.x1 && x0 + w > f.x0 && y0 < f.y1 && y0 + h > f.y0; });
+      if (hit) { st.blocked = true; return; }
+      var ctx = st.c.getContext('2d');
       ctx.save();
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(x0, y0, w, h, Math.round(side * 0.18)); else ctx.rect(x0, y0, w, h);
       ctx.clip();
-      ctx.filter = 'blur(' + Math.max(8, Math.round(side / 5)) + 'px)';
-      ctx.drawImage(copy, 0, 0);
+      ctx.drawImage(st.blurred, 0, 0);
       ctx.restore();
+      st.painted++;
+    }
+    // 앞 점에서 이번 점까지 칸 크기의 1/3 간격으로 촘촘히 찍는다 — 빨리 문질러도 빈틈이 없게
+    function tapCoverLine(st, pt) {
+      var from = st.last || pt, dx = pt.x - from.x, dy = pt.y - from.y;
+      var n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / (st.side / 3)));
+      for (var i = st.last ? 1 : 0; i <= n; i++) tapCoverDab(st, from.x + dx * i / n, from.y + dy * i / n);
+      st.last = pt;
+    }
+    var tapCoverFramePending = false;
+    function tapCoverRefreshSoon(c) {
+      if (tapCoverFramePending) return;
+      tapCoverFramePending = true;
+      requestAnimationFrame(function () { tapCoverFramePending = false; tapCoverShow(c); });
+    }
+    async function tapCoverBegin(ev) {
+      if (!tapCoverOn) return null;
+      var el = ev.currentTarget;
+      var st = { el: el, pts: [tapCoverPointRaw(ev)], ready: false, ended: false, painted: 0, blocked: false, last: null };
+      tapCoverStroke = st;
+      if (!currentCorrectionCanvas) currentCorrectionCanvas = await getFinalCanvas();
+      var c = currentCorrectionCanvas;
+      if (!c) { tapCoverStroke = null; return null; }
+      if (tapCoverCanvasRef !== c) { tapCoverStack = []; tapCoverCanvasRef = c; }
+      var W = c.width, H = c.height, side = Math.round(Math.min(W, H) * TAP_COVER_RATIO);
+      var faces = [];
+      var fr = (lastFaceResult && lastFaceResult.faces) || [];
+      if (fr.length && uploadedPhotoUrl) {
+        var orig = await loadImage(uploadedPhotoUrl);
+        var sx = W / orig.naturalWidth, sy = H / orig.naturalHeight;
+        faces = fr.map(function (f) {
+          var b = f.box, mx = b.width * 0.15, my = b.height * 0.15;
+          return { x0: (b.x - mx) * sx, y0: (b.y - my) * sy, x1: (b.x + b.width + mx) * sx, y1: (b.y + b.height + my) * sy };
+        });
+      }
+      var ctx = c.getContext('2d');
+      var blurred = document.createElement('canvas'); blurred.width = W; blurred.height = H;
+      var bx = blurred.getContext('2d');
+      bx.filter = 'blur(' + Math.max(8, Math.round(side / 5)) + 'px)';
+      bx.drawImage(c, 0, 0);
+      st.c = c; st.W = W; st.H = H; st.side = side; st.faces = faces; st.blurred = blurred;
+      st.snap = ctx.getImageData(0, 0, W, H);
+      st.ready = true;
+      st.pts.forEach(function (raw) { tapCoverLine(st, tapCoverPoint(st, raw)); });
+      st.pts = [];
+      if (st.ended) tapCoverFinish(st); else tapCoverRefreshSoon(c);
+      return st;
+    }
+    // 이벤트 객체는 다시 쓰이므로 좌표만 떼어 둔다
+    function tapCoverPointRaw(ev) { return { clientX: ev.clientX, clientY: ev.clientY }; }
+    function tapCoverMove(ev) {
+      var st = tapCoverStroke;
+      if (!st || st.ended) return;
+      if (!st.ready) { st.pts.push(tapCoverPointRaw(ev)); return; }
+      tapCoverLine(st, tapCoverPoint(st, ev));
+      tapCoverRefreshSoon(st.c);
+    }
+    function tapCoverEnd() {
+      var st = tapCoverStroke;
+      if (!st || st.ended) return;
+      st.ended = true;
+      if (st.ready) tapCoverFinish(st);
+    }
+    function tapCoverFinish(st) {
+      if (tapCoverStroke === st) tapCoverStroke = null;
+      if (!st.painted) {
+        if (st.blocked) previewCaption.textContent = '아이 얼굴 근처는 가리지 않아요. 조금 떨어진 곳을 눌러 주세요.';
+        return;
+      }
+      tapCoverStack.push({ data: st.snap });
       tapCoverCount++;
-      tapCoverShow(c);
+      tapCoverShow(st.c);
       var note = '사용자가 직접 흐리게 가린 곳 ' + tapCoverCount + '곳';
       if (lastCorrectionMeta) lastCorrectionMeta.detail = String(lastCorrectionMeta.detail || '').replace(/ \+ 사용자가 직접 흐리게 가린 곳 \d+곳$/, '') + ' + ' + note;
       else lastCorrectionMeta = { method: 'tapcover', detail: note };
-      previewCaption.textContent = '가렸어요. 남은 곳이 있으면 더 누르고, 다 됐으면 «가리기 끝내기»를 눌러 주세요.';
+      previewCaption.textContent = st.blocked
+        ? '가렸어요. 아이 얼굴 근처는 빼고 가렸어요.'
+        : '가렸어요. 남은 곳이 있으면 더 문지르고, 다 됐으면 «완료»를 눌러 주세요.';
       tapCoverSync();
+    }
+    // 한 번 누르기(테스트도 이 길로 부른다) = 누르고 바로 떼기
+    async function tapCoverAt(ev) {
+      if (!tapCoverOn) return;
+      var p = tapCoverBegin(ev);
+      tapCoverEnd();
+      await p;
     }
     function tapCoverShow(c) {
       var url = c.toDataURL('image/png');
-      document.getElementById('previewAfter').src = url;
+      var el = document.getElementById('previewAfter');
+      // 그림을 바꾸는 순간 높이가 잠깐 0이 되어 화면이 위로 밀렸다(컴퓨터에서 26px) — 바뀌는 동안 높이를 붙잡아 둔다
+      if (el.offsetHeight) {
+        el.style.minHeight = el.offsetHeight + 'px';
+        el.addEventListener('load', function release() { el.style.minHeight = ''; el.removeEventListener('load', release); });
+      }
+      el.src = url;
       var cs = document.getElementById('csAfter'); if (cs) cs.src = url;
     }
     document.getElementById('tapCoverBtn').addEventListener('click', function () { tapCoverSet(!tapCoverOn); tapCoverSync(); });
+    document.getElementById('tapCoverDone').addEventListener('click', function () { tapCoverSet(false); tapCoverSync(); });
     document.getElementById('tapCoverUndo').addEventListener('click', function () {
       var c = currentCorrectionCanvas, last = tapCoverStack.pop();
       if (!c || !last || tapCoverCanvasRef !== c) { tapCoverStack = []; tapCoverSync(); return; }
-      c.getContext('2d').putImageData(last.data, last.x, last.y);
+      c.getContext('2d').putImageData(last.data, 0, 0);
       tapCoverCount = Math.max(0, tapCoverCount - 1);
       tapCoverShow(c); tapCoverSync();
     });
-    document.getElementById('previewAfter').addEventListener('click', tapCoverAt);
+    (function () {
+      var el = document.getElementById('previewAfter');
+      el.addEventListener('pointerdown', function (ev) {
+        if (!tapCoverOn) return;
+        ev.preventDefault();
+        try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+        tapCoverBegin(ev);
+      });
+      el.addEventListener('pointermove', function (ev) { if (tapCoverStroke) { ev.preventDefault(); tapCoverMove(ev); } });
+      el.addEventListener('pointerup', tapCoverEnd);
+      el.addEventListener('pointercancel', tapCoverEnd);
+      el.addEventListener('dragstart', function (ev) { if (tapCoverOn) ev.preventDefault(); });
+    })();
     if (typeof METHOD_LABEL === 'object' && METHOD_LABEL && !METHOD_LABEL.tapcover) METHOD_LABEL.tapcover = '직접 가리기';
     // 보정 결과가 바뀔 때마다 단추를 보이거나 숨긴다(미리보기 그림이 바뀌는 순간을 본다)
     document.getElementById('previewAfter').addEventListener('load', tapCoverSync);
@@ -15201,7 +15496,8 @@
       detectMarkBoxes: detectMarkBoxes,       // 마크 찾기 모델 (브라우저 안, 비용 0) — 모델 파일이 없으면 []
       markRectsOnClothes: markRectsOnClothes, // 모델 상자 중 옷 위 로고·이름표만 남기기
       // 배경 교체 «간판 자리만» 검증용
-      signRectsOffPerson: signRectsOffPerson, drawNumberedBoxes: drawNumberedBoxes, drawCropSheet: drawCropSheet, pickPlaceSigns: pickPlaceSigns,
+      signRectsOffPerson: signRectsOffPerson, setSignRulePreset: setSignRulePreset, // 거르기 설정 하나씩 비교(11-23)
+      drawNumberedBoxes: drawNumberedBoxes, drawCropSheet: drawCropSheet, pickPlaceSigns: pickPlaceSigns,
       buildSignMask: buildSignMask, buildBackgroundMask: buildBackgroundMask, getFullPersonMask: getFullPersonMask,
       runSignReplace: runSignReplace,
       prefillWithSurround: prefillWithSurround,

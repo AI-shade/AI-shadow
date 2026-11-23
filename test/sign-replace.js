@@ -175,6 +175,33 @@ function check(label, ok, detail) {
     check('보정 요청이 나가지 않는다 (돈이 안 든다)', !sentFill);
   }
 
+  // 거르기 설정을 하나씩(11-23): 'relaxed'는 개수·겹침을 한꺼번에 바꿔서 어느 쪽 덕인지 알 수 없었다.
+  // 사람·얼굴 없이 상자만: 따로 떨어진 35개 + 70% 겹치는 한 쌍. 설정마다 남는 수와 거른 이유가 달라야 한다.
+  console.log('\n[거르기 설정 하나씩]');
+  const pr = await page.evaluate(() => {
+    const T = window.__anshimTest, boxes = [];
+    for (let i = 0; i < 35; i++) boxes.push({ x: (i % 7) * 140, y: Math.floor(i / 7) * 140, width: 100, height: 100, confidence: 0.9 - i * 0.001 });
+    boxes.push({ x: 1000, y: 0, width: 100, height: 100, confidence: 0.99 }, { x: 1030, y: 0, width: 100, height: 100, confidence: 0.98 }); // 70% 겹침
+    const out = {};
+    ['base', 'limit', 'overlap', 'relaxed'].forEach((n) => {
+      T.setSignRulePreset(n);
+      const kept = T.signRectsOffPerson(boxes, [], null, 1200, 800).length, s = window.__anshimSignFilterStats;
+      out[n] = { kept, dup: s.dup, limit: s.limit, preset: s.preset };
+    });
+    T.setSignRulePreset('base');
+    let bad = '';
+    try { T.setSignRulePreset('nope'); } catch (e) { bad = 'throws'; }
+    out.bad = bad;
+    return out;
+  });
+  console.log('  ' + JSON.stringify(pr));
+  check('기본(base): 30개까지, 겹친 한 쌍은 하나로', pr.base.kept === 30 && pr.base.dup === 1 && pr.base.limit === 6);
+  check('개수만(limit): 40개까지 — 겹침 규칙은 그대로', pr.limit.kept === 36 && pr.limit.dup === 1 && pr.limit.limit === 0);
+  check('겹침만(overlap): 70% 겹친 한 쌍을 둘로 — 개수 제한은 30 그대로', pr.overlap.kept === 30 && pr.overlap.dup === 0 && pr.overlap.limit === 7);
+  check('둘 다(relaxed): 37개 다 남는다', pr.relaxed.kept === 37 && pr.relaxed.dup === 0 && pr.relaxed.limit === 0);
+  check('통계에 지금 설정 이름이 남는다', pr.limit.preset === 'limit' && pr.overlap.preset === 'overlap');
+  check('모르는 설정 이름은 거절한다', pr.bad === 'throws');
+
   check('페이지 에러 없음', errs.length === 0, errs.join(' | '));
   await browser.close();
   console.log('\n' + pass + '개 통과, ' + fail + '개 실패');
