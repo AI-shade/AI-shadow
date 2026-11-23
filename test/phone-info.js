@@ -114,12 +114,12 @@ const 보임 = (page, sel) => page.evaluate((s) => {
     const 단추 = await page.evaluate(() => {
       const bar = document.querySelector('#screen-correct > .app-actionbar').getBoundingClientRect().top;
       // 로고 지우기는 로고·명찰을 찾았을 때만 나온다(11-20) — 이 진단은 소속 단서가 없다
-      return ['#aiBgBtn'].map((s) => { // 옷 전체 바꾸기는 로고 지우기 뒤에만 나온다(11-19)
+      return ['#aiSignBtn', '#aiBgBtn'].map((s) => { // 옷 전체 바꾸기는 로고 지우기 뒤에만 나온다(11-19)
         const r = document.querySelector(s).getBoundingClientRect();
         return r.height > 0 && r.bottom <= bar;
       });
     });
-    ok(단추.every(Boolean), '배경 교체 단추가 누르지 않아도 바로 보인다(아래 고정 바에 안 가린다)', JSON.stringify(단추));
+    ok(단추.every(Boolean), '간판 가리기·배경 교체 단추가 누르지 않아도 바로 보인다(아래 고정 바에 안 가린다)', JSON.stringify(단추));
     ok(!(await 보임(page, '#aiMarkBtn')), '로고를 못 찾았으면 «로고 지우기» 단추가 없다');
     await page.click('#aiBgBtn');
     await page.waitForTimeout(600);

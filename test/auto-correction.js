@@ -83,9 +83,9 @@ function check(label, ok, detail) {
     blurSlider: !!document.getElementById('blurRange'),
     outfitRow: !!document.getElementById('outfitStyle') || document.querySelectorAll('.of-btn').length > 0,
     stackBtn: !!document.getElementById('applyStepBtn'),
-    // 보이는 단추만 센다. «배경 전체 바꾸기»(11-18)는 «배경 교체하기»가 간판만 바꿨을 때만 나타난다.
+    // 보이는 단추만 센다. 11-23: «간판 가리기»와 «배경 교체»로 나누고 «배경 전체 바꾸기»는 뺐다.
     aiBtns: Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button')).filter((b) => b.style.display !== 'none').map((b) => (b.querySelector('.ai-name') || b).textContent.trim()),   // 단추가 «이름 · 설명 · 적용» 줄이 됐다(11-23) — 이름만 본다
-    bgFullHidden: document.getElementById('aiBgFullBtn').style.display === 'none',
+    bgFullGone: !document.getElementById('aiBgFullBtn'),
     outfitHidden: document.getElementById('aiOutfitBtn').style.display === 'none',
     title: (document.querySelector('.correct-left h3') || {}).textContent.trim(),
     autoHidden: getComputedStyle(document.getElementById('autoPlan')).display === 'none'
@@ -97,9 +97,9 @@ function check(label, ok, detail) {
   // 위 자동 보정 검사는 함수(planAutoCorrection·selectMethod('auto'))가 남아 있어 그대로 두지만, 화면에서는 부르지 않는다
   // (11-23에 잠깐 되살렸다가 같은 날 «이 부분을 그냥 빼줘»로 다시 뺐다).
   // 11-19 요청 "옷교체하기를 로고보정기능안에 넣어줘 왜냐면 로고가 안지워지면 옷을 교체하게" — 옷 전체 바꾸기는 로고 지우기 뒤에만 나온다.
-  check('처음 보이는 AI 단추는 로고 지우기·배경 교체 둘이다', gone.aiBtns.join(',') === '로고 지우기,배경 교체', gone.aiBtns.join(','));
+  check('처음 보이는 AI 단추는 간판 가리기·로고 지우기·배경 교체 셋이다', gone.aiBtns.join(',') === '간판 가리기,로고 지우기,배경 교체', gone.aiBtns.join(','));
   check('«옷 전체 바꾸기»는 처음에는 숨어 있다 (로고 지우기 뒤에만 보인다)', gone.outfitHidden);
-  check('«배경 전체 바꾸기»는 처음에는 숨어 있다 (간판만 바꾼 뒤에만 보인다)', gone.bgFullHidden);
+  check('«배경 전체 바꾸기» 단추는 없다 («배경 교체»가 배경 전체를 맡는다, 11-23)', gone.bgFullGone);
   check('제목이 무엇을 바꿀지 묻는다', gone.title === '무엇을 바꿀까요?', gone.title);
   check('자동 보정 단계 목록·찾은 곳 목록은 화면에 없다', gone.autoHidden);
 

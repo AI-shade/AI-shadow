@@ -4974,17 +4974,18 @@
       </div>
     </div>
 
-    <!-- 보정은 이 세 단추뿐이다. 모두 원본이 밖으로 나가므로 누를 때마다 동의를 받는다(askFluxConsent).
-         fal.ai가 준비돼 있을 때만 보인다(goCorrectBtn). 하나를 한 뒤 다른 것을 누르면 그 결과 위에 얹힌다(runAiUpgrade). -->
+    <!-- 보정은 이 세 단추뿐이다(사진을 적게 바꾸는 순서: 간판 가리기 · 로고 지우기 · 배경 교체). 모두 원본이 밖으로 나간다.
+         fal.ai가 준비돼 있을 때만 보인다(goCorrectBtn). 하나를 한 뒤 다른 것을 누르면 그 결과 위에 얹힌다(runAiUpgrade).
+         11-23: 예전 «배경 교체»는 누르면 간판만 가리고, 간판을 못 찾으면 말없이 배경 전체를 바꿨다. 같은 단추가 사진마다 다른 일을 해서
+         «간판 가리기»(간판만)와 «배경 교체»(배경 전체)로 나눴다. «배경 전체 바꾸기» 단추는 «배경 교체»가 맡아서 뺐다. -->
     <div class="ai-more" id="aiMore" style="display:none;">
       <p class="ai-more-head">AI로 더 바꾸기 <span class="ai-more-sub">사진을 외부 AI로 보내요</span></p>
       <div class="ai-more-btns">
+        <button type="button" class="secondary" id="aiSignBtn" title="사람과 나머지 배경은 그대로 두고, 위치를 알려 주는 간판 자리만 빈 판으로 다시 그려요"><span class="ai-name">간판 가리기</span><span class="ai-desc">위치를 알려 주는 간판만 빈 판으로</span><span class="ai-apply" aria-hidden="true">적용</span></button>
         <button type="button" class="secondary" id="aiMarkBtn" title="옷의 로고와 이름표 자리만 다시 그려요. 옷 모양과 색은 그대로예요"><span class="ai-name">로고 지우기</span><span class="ai-desc">원복 마크만 지워요</span><span class="ai-apply" aria-hidden="true">적용</span></button>
-        <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 배경만 새로 그려요. 간판과 건물 이름도 같이 사라져요"><span class="ai-name">배경 교체</span><span class="ai-desc">아이 뒤 건물과 간판을 새 배경으로</span><span class="ai-apply" aria-hidden="true">적용</span></button>
+        <button type="button" class="secondary" id="aiBgBtn" title="사람은 그대로 두고 뒤 배경 전체를 새로 그려요. 간판과 건물도 같이 바뀌어요"><span class="ai-name">배경 교체</span><span class="ai-desc">아이 뒤 배경을 모두 새로</span><span class="ai-apply" aria-hidden="true">적용</span></button>
         <!-- «로고 지우기»를 한 뒤에만 보인다(11-19 요청: "로고가 안지워지면 옷을 교체하게"). 누르면 그 결과 위에서 옷 전체를 다시 그린다. -->
         <button type="button" class="secondary" id="aiOutfitBtn" style="display:none;" title="옷 전체를 원래와 비슷한 차분한 색의 다른 옷으로 바꿔요. 얼굴과 손은 그대로예요"><span class="ai-name">옷 전체 바꾸기</span><span class="ai-desc">옷 전체를 비슷한 차분한 색으로</span><span class="ai-apply" aria-hidden="true">적용</span></button>
-        <!-- «배경 교체하기»가 간판 자리만 바꿨을 때만 보인다. 누르면 그 결과 위에서 배경 전체를 새로 그린다. -->
-        <button type="button" class="secondary" id="aiBgFullBtn" style="display:none;" title="사람 뒤 배경 전체를 새로 그려요"><span class="ai-name">배경 전체 바꾸기</span><span class="ai-desc">사람 뒤 배경을 모두 새로</span><span class="ai-apply" aria-hidden="true">적용</span></button>
       </div>
       <p class="hint" id="aiMarkHint" style="margin:0.5rem 0 0; font-size:0.78rem; color:var(--muted); line-height:1.6;">먼저 «로고 지우기»로 로고 자리만 고쳐 보세요. 로고가 남았거나 칼라나 배색 같은 교복 디자인으로 학교를 알아볼 수 있으면, 그다음 나오는 «옷 전체 바꾸기»를 눌러 주세요.</p>
       <div class="is-gone">
@@ -5412,7 +5413,7 @@
         <svg class="tb-ico" width="84" height="84" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="#EFEBDC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 12 L24 76 L88 76"/><path d="M12 24 L76 24 L76 88"/><path d="M40 60 L56 40 L64 50"/></g></svg>
         <span class="tb-label" aria-hidden="true">5 ways</span>
         <h3>5가지 보정</h3>
-        <p>사진 자르기, 배경 흐림, 주변 색 채우기, AI 옷 바꾸기, AI 배경 교체. 무엇을 고칠지는 직접 고를 수 있어요.</p>
+        <p>사진 자르기, 배경 흐림, 주변 색 채우기, AI 옷 바꾸기, AI 간판 가리기, AI 배경 교체. 무엇을 고칠지는 직접 고를 수 있어요.</p>
       </article>
     </div>
     <!-- 폰에서 설명을 두 줄로 자르므로 펼 수단을 둔다. 방식 카드·검증 설명과
@@ -9773,7 +9774,7 @@
       return c;
     }
 
-    // 간판 자리만 다시 그린다. 고칠 간판이 없으면 { none: true, ... }를 돌려주고 보내지 않는다(호출부가 배경 전체로 넘어간다).
+    // 간판 자리만 다시 그린다. 고칠 간판이 없으면 { none: true, ... }를 돌려주고 보내지 않는다(호출부 «간판 가리기»가 알리고 멈춘다).
     async function runSignReplace(img, faces, riskResult) {
       var ow = img.naturalWidth, oh = img.naturalHeight;
       var boxes = await detectMarkBoxes(img);
@@ -15037,19 +15038,21 @@
       return { swapText: swapText, coverText: coverText, keptText: keptText, leftText: leftText };
     }
 
-    // 세 AI 단추(로고 지우기 'mark' · 배경 교체하기 'ai' · 옷 전체 바꾸기 'outfit'). 앞서 만든 결과가 있으면 먼저
-    // 확정해서 그 위에 얹는다(보정 쌓기 — 배경을 바꾼 뒤 로고까지 지우기). 동의를 취소하면 확정했던 것을 되돌린다.
+    // AI 단추(간판 가리기 'sign' · 로고 지우기 'mark' · 배경 교체 'ai' · 옷 전체 바꾸기 'outfit'). 앞서 만든 결과가 있으면 먼저
+    // 확정해서 그 위에 얹는다(보정 쌓기 — 간판을 가린 뒤 로고까지 지우기). 동의를 취소하면 확정했던 것을 되돌린다.
     // 자동 보정은 10-27에 뺐다 — 그 전에는 자동 결과(배경 흐림 포함) 위에서 시작해 배경 교체가 뿌옇게 나왔다
     // (팀 테스트 "자동보정된 결과를 기준으로 바껴서 뿌옇게 보이는거같아"). 이제 원본 또는 앞선 AI 결과에서만 시작한다.
-    // 'bgfull': «배경 전체 바꾸기» — 간판만 바꾼 결과 위에서 배경 전체를 다시 그린다(간판 단계를 건너뛴다).
-    var bgFullNext = false;
+    // 간판 가리기와 배경 교체는 같은 'ai' 방식 안에서 aiBgMode로 가른다: 'sign' = 간판 자리만, 'full' = 배경 전체.
+    // 'bg'·'bgfull'은 예전 이름(테스트·옛 호출) — 배경 전체로 친다.
+    var aiBgMode = 'full';
     async function runAiUpgrade(kind) {
       var committed = false;
-      // 배경 교체(ai · bgfull)는 자동 보정 결과 위에서 시작하지 않는다 — 흐린 배경 위에서 다시 그리면 뿌옇게 나왔다(10-27 팀 테스트)
+      var isBg = kind === 'sign' || kind === 'ai' || kind === 'bg' || kind === 'bgfull';
+      // 배경 쪽(간판 가리기 · 배경 교체)은 자동 보정 결과 위에서 시작하지 않는다 — 흐린 배경 위에서 다시 그리면 뿌옇게 나왔다(10-27 팀 테스트)
       var fromAuto = currentMethod === 'auto';
-      if (currentCorrectionCanvas && lastCorrectionMeta && !(fromAuto && (kind === 'ai' || kind === 'bgfull' || kind === 'bg'))) { applyStep(); committed = true; }
-      bgFullNext = kind === 'bgfull';
-      var target = kind === 'mark' || kind === 'outfit' ? 'outfit' : 'ai'; // 배경은 버튼이 'ai'·'bgfull', 테스트가 'bg'로 부른다
+      if (currentCorrectionCanvas && lastCorrectionMeta && !(fromAuto && isBg)) { applyStep(); committed = true; }
+      aiBgMode = kind === 'sign' ? 'sign' : 'full';
+      var target = kind === 'mark' || kind === 'outfit' ? 'outfit' : 'ai';
       if (kind === 'mark') { outfitColorway = 'keep'; outfitEmblem = 'none'; } // 가슴만 다시 그린다(runEmblemRemoval)
       if (kind === 'outfit') { outfitColorway = 'keep'; outfitEmblem = 'all'; } // 옷 전체, 원래와 비슷한 차분한 색
       await selectMethod(target);
@@ -15065,8 +15068,7 @@
     async function selectMethod(method) {
       var mySeq = ++methodSeq;
       showTargetRedo(false);
-      var wantBgFull = bgFullNext; bgFullNext = false;
-      document.getElementById('aiBgFullBtn').style.display = 'none';
+      var bgMode = aiBgMode; aiBgMode = 'full';
       document.getElementById('aiOutfitBtn').style.display = 'none'; // «로고 지우기»가 끝나면 다시 보인다
       var previousMethod = currentMethod;
       currentMethod = method;
@@ -15319,42 +15321,50 @@
         }
 
         previewCaption.textContent = ''; // 기다리는 동안 사진 아래 안내 문장은 뺐다(11-23 «이거 없애») — 사진 위 처리 중 표시로 충분하다
-        setPreviewBusy('AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요');
         editInstruction.textContent = '';
         currentCorrectionCanvas = null;
+        var bgImg = null, bgFaces = (lastFaceResult && lastFaceResult.faces) || [];
+        // «간판 가리기» — 간판 자리만. 못 찾으면 알리고 멈춘다(11-23). 예전에는 말없이 배경 전체로 넘어가서, 누른 단추와
+        // 다른 일(배경 전체)이 일어났다. 사용자가 고르지 않은 보정은 하지 않는다 — 더 가릴지는 «배경 교체»로 부모가 고른다.
+        // 이름 댈 수 있는 장소(랜드마크)가 보여도 간판만 가린다 — 폰 테스트(11-18, 삿포로 스스키노 거리) «B 간판이 다사라졌어»:
+        // 거리가 통째로 다른 곳이 되어 쓸 수 없는 사진이 됐다.
+        if (bgMode === 'sign') {
+          setPreviewBusy('위치를 알려 주는 간판을 찾는 중이에요\n찾으면 그 자리만 가려요');
+          var landmarkNames = ((lastOcrResult && lastOcrResult.landmarks) || [])
+            .map(function (l) { return String((l && (l.이름 || l.name)) || '').trim(); }).filter(Boolean);
+          var sg = null, sgFail = false;
+          try {
+            bgImg = await loadImage(correctionBaseUrl);
+            sg = await runSignReplace(bgImg, bgFaces, lastRiskResult);
+          } catch (se) { console.warn('[간판 가리기] 실패:', se.message); sgFail = true; }
+          if (mySeq !== methodSeq) return;
+          clearPreviewBusy();
+          if (sg && !sg.none) {
+            currentCorrectionCanvas = sg.canvas;
+            previewAfter.src = sg.canvas.toDataURL('image/png');
+            var sgNames = sg.signs.map(function (p) { return p.unreadable ? '못 읽은 간판' : '«' + p.text + '»'; }).join(', ');
+            previewCaption.textContent = ''; // 간판만 가린 뒤 안내 문장도 뺐다(11-22 «그것도 빼»)
+            lastCorrectionMeta = { method: 'sign', detail: 'AI 간판 가리기 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
+              + (landmarkNames.length ? ' (알아볼 수 있는 장소 «' + landmarkNames.join(', ') + '»는 남음)' : '') };
+            return;
+          }
+          // 못 찾았거나 실패 — 사진은 그대로(앞서 쌓은 결과가 있으면 그것), 다음에 할 일을 알린다. 이미지 AI는 부르지 않았다.
+          previewAfter.src = correctionBaseUrl;
+          previewCaption.textContent = sgFail
+            ? '간판을 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.'
+            : '가릴 간판을 찾지 못했어요. 간판이 남아 있으면 «배경 교체»를 눌러 보세요.';
+          currentCorrectionCanvas = null;
+          lastCorrectionMeta = null;
+          return;
+        }
+
+        // «배경 교체» — 사람 뒤 배경 전체를 새로 그린다.
+        setPreviewBusy('AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요');
         try {
           // 예전 kontext 경로의 후처리(원본에 없던 아이 지우기·인물 어긋남 맞추기·원본 인물 덮어쓰기·비율 가드)는
           // 필요 없다 — fill은 마스크 바깥(사람)을 바꾸지 않고 출력 크기도 입력과 같다(2026-08-21 실측).
           // 그 덮어쓰기가 이중 테두리의 원인이었다(위 buildBackgroundMask 설명).
-          var bgImg = await loadImage(correctionBaseUrl);
-          var bgFaces = (lastFaceResult && lastFaceResult.faces) || [];
-          // 먼저 «간판 자리만». 간판을 못 찾거나(모델 없음·장소 글자 없음) 읽기가 실패하면 예전처럼 배경 전체를 바꾼다.
-          // 이름 댈 수 있는 장소(랜드마크)가 보여도 간판부터 바꾸고, 간판 없이도 알아볼 수 있다고 알린 뒤 «배경 전체 바꾸기»를 내민다.
-          // 예전에는 랜드마크가 있으면 바로 배경 전체로 갔다 — 폰 테스트(11-18, 삿포로 스스키노 거리) «B 간판이 다사라졌어»:
-          // 거리가 통째로 다른 곳이 되어 쓸 수 없는 사진이 됐다. 더 가릴지는 부모가 고른다.
-          var landmarkNames = ((lastOcrResult && lastOcrResult.landmarks) || [])
-            .map(function (l) { return String((l && (l.이름 || l.name)) || '').trim(); }).filter(Boolean);
-          var sg = null, sgWhy = '';
-          if (!wantBgFull) {
-            setPreviewBusy('위치를 알려 주는 간판을 찾는 중이에요\n찾으면 그 자리만 바꿔요');
-            try { sg = await runSignReplace(bgImg, bgFaces, lastRiskResult); }
-            catch (se) { console.warn('[간판만] 실패 — 배경 전체로 바꿉니다:', se.message); sgWhy = '간판을 읽지 못해서'; }
-            if (mySeq !== methodSeq) return;
-          }
-          if (sg && !sg.none) {
-            clearPreviewBusy();
-            currentCorrectionCanvas = sg.canvas;
-            previewAfter.src = sg.canvas.toDataURL('image/png');
-            var sgNames = sg.signs.map(function (p) { return p.unreadable ? '못 읽은 간판' : '«' + p.text + '»'; }).join(', ');
-            // 간판만 바꾼 뒤 안내 문장도 뺐다(11-22 «그것도 빼») — «배경 전체 바꾸기» 단추는 그대로 나온다
-            previewCaption.textContent = '';
-            lastCorrectionMeta = { method: 'ai', detail: 'AI 간판 교체 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
-              + (landmarkNames.length ? ' (알아볼 수 있는 장소 «' + landmarkNames.join(', ') + '»는 남음)' : '') };
-            document.getElementById('aiBgFullBtn').style.display = '';
-            return;
-          }
-          if (sg && sg.none) sgWhy = sg.why === 'noplace' ? '위치를 알려 주는 간판을 찾지 못해서' : '간판 자리를 찾지 못해서';
-          setPreviewBusy('AI가 사람은 그대로 두고 배경만 새로 그리는 중이에요\n10~20초 정도 걸릴 수 있어요');
+          bgImg = await loadImage(correctionBaseUrl);
           var bg = await runBackgroundFill(bgImg, (lastFaceResult && lastFaceResult.faces) || [], lastRiskResult, lastOcrResult);
           if (mySeq !== methodSeq) return;
           clearPreviewBusy();
@@ -15429,10 +15439,10 @@
         previewAfter.onload = renderCoverHandles;
       lastCorrectionMeta = { method: method, detail: previewCaption.textContent };
     }
+    document.getElementById('aiSignBtn').addEventListener('click', function () { runAiUpgrade('sign'); });
     document.getElementById('aiMarkBtn').addEventListener('click', function () { runAiUpgrade('mark'); });
     document.getElementById('aiBgBtn').addEventListener('click', function () { runAiUpgrade('ai'); });
     document.getElementById('aiOutfitBtn').addEventListener('click', function () { runAiUpgrade('outfit'); });
-    document.getElementById('aiBgFullBtn').addEventListener('click', function () { runAiUpgrade('bgfull'); });
 
     // "고른 것으로 다시 만들기" — AI 방식에서 체크를 고친 뒤 직접 누를 때만 돈이 나간다
     (function () {
@@ -15718,7 +15728,7 @@
 
     // ===== 3단계: 결과 재검증 (프롬프트 문서 5번) =====
     var VERIFY_BACKEND_URL = '/api/verify-correction';
-    var METHOD_LABEL = { auto: '자동 보정', blur: '배경 흐림', sticker: '자연스럽게 덮기', outfit: 'AI 마크 지우기', ai: 'AI 배경교체' };
+    var METHOD_LABEL = { auto: '자동 보정', blur: '배경 흐림', sticker: '자연스럽게 덮기', outfit: 'AI 마크 지우기', ai: 'AI 배경교체', sign: 'AI 간판 가리기' };
 
     // 여러 얼굴 중 가장 큰(주요) 얼굴 기준으로 개수/크기/각도 요약 — 원본·처리후 비교용
     function pickPrimaryFaceStats(faces) {

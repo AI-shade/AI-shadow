@@ -60,8 +60,8 @@ function ok(cond, name, detail) {
       if (sc) sc.style.display = 'flex';
       const am = document.getElementById('aiMore');
       if (am) am.style.display = 'block';
-      // AI 단추 넷을 잰다: 로고 지우기·배경 교체하기 + 앞 단계를 한 뒤에만 나오는 배경 전체 바꾸기(11-18)·옷 전체 바꾸기(11-19).
-      // 뒤의 둘은 처음엔 숨어 있지만 나왔을 때도 이름이 넘치면 안 되므로 강제로 보이게 해서 잰다.
+      // AI 단추 넷을 잰다: 간판 가리기·로고 지우기·배경 교체(11-23) + 로고 지우기 뒤에만 나오는 옷 전체 바꾸기(11-19).
+      // 옷 전체 바꾸기는 처음엔 숨어 있지만 나왔을 때도 이름이 넘치면 안 되므로 강제로 보이게 해서 잰다.
       // 간판 글자 단추는 자동 보정과 함께 빠져 DOM만 숨겨 남아 있다(.is-gone) — 여기 셈에는 안 든다.
       const btns = Array.from(document.querySelectorAll('#aiMore .ai-more-btns > button'));
       btns.forEach(b => { b.style.display = ''; });
