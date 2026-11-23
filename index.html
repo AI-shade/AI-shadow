@@ -4282,6 +4282,11 @@
     #pattern-check .primary, #tool .primary, #tool button.primary { border: 2px solid var(--tb-black); font-weight: 800; }
   }
   /* ===== 테마 끝 ===== */
+  /* «보이는 간판 전부 가리기»(11-23) — 단추 공통 display 규칙이 hidden을 이기지 못하게 */
+  #signAllBox[hidden] { display: none !important; }
+  #signAllBox { margin: 0.6rem 0 0.25rem; }
+  #signAllBox .sign-all-note { margin: 0 0 0.45rem; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+  #signAllBtn { display: block; width: 100%; }
 </style>
 
 <script>
@@ -5044,6 +5049,13 @@
       <div class="cs-handle" id="csHandle"><span class="cs-handle-grip">↔</span></div>
     </div>
     <p class="preview-caption" id="previewCaption">점선 안쪽만 남기고 자연스럽게 잘라내요.</p>
+    <!-- «간판 가리기»가 위치를 알려 주는 간판은 못 찾고, 상표·체인점 이름 같은 다른 간판만 찾았을 때만 보인다(11-23).
+         누르면 그 간판들을 전부 가린다 — 방금 읽은 결과를 다시 써서 간판을 다시 읽지 않는다.
+         안내 문장을 단추 위에 따로 두는 이유: 넓은 화면은 #previewCaption을 숨긴다(사진 칸 정리) — 거기 쓰면 컴퓨터에서 안 보인다. -->
+    <div class="sign-all-box" id="signAllBox" hidden>
+      <p class="sign-all-note">위치를 알려 주는 간판은 없어요. 다른 간판은 <b id="signAllCount">0</b>곳 보여요.</p>
+      <button type="button" class="secondary" id="signAllBtn">보이는 간판 전부 가리기</button>
+    </div>
     <!-- 남은 곳 눌러서 가리기(멘토 제안 11-22). 예전 «놓친 곳 추가»는 반영이 늦고 다루기 불편해 숨겼다(10-27).
          이건 보정이 끝난 사진에서 누른 자리만 폰 안에서 바로 흐리게 한다 — AI 호출 없음, 기다림 없음, 아이 얼굴 근처는 막는다. -->
 
@@ -9715,6 +9727,19 @@
       });
       return out;
     }
+    // «보이는 간판 전부 가리기»(11-23) — 장소 글자가 아니어도(상표·체인점 이름 등) 글자가 있는 간판은 모두 고른다.
+    // 부모가 단추를 눌러 고를 때만 쓴다. 기본 «간판 가리기»는 위 pickPlaceSigns 그대로다.
+    // «글자없음»은 뺀다 — 시험 87장에서 글자없음 상자를 다 가리면 진짜 간판 100 / 간판 아닌 것 161이었다(창문·차 등).
+    // 짧은 분류 필드(유형)만 본다. 읽은 글자(내용)는 키워드로 검사하지 않는다.
+    function pickAllSigns(boxes, reads) {
+      var out = [];
+      reads.forEach(function (r) {
+        if (out.some(function (o) { return o.n === r.n; })) return;
+        if (/글자\s*없/.test(String(r.type || ''))) return;
+        out.push({ n: r.n, box: boxes[r.n - 1], text: r.text, type: r.type, unreadable: UNREADABLE_TEXT_RE.test(String(r.text || '')) || !String(r.text || '').trim() });
+      });
+      return out;
+    }
 
     // 배경 마스크에서 막힌 자리(검정 = 사람·얼굴·손) 둘레 SIGN_PERSON_MARGIN 안쪽을 1로 표시한다. 끄면 null.
     // 정사각 창 안에 검정이 하나라도 있는지를 누적합으로 센다 — 사진 크기에 비례하고 창 크기와 상관없이 한 번 훑는다.
@@ -9775,18 +9800,26 @@
     }
 
     // 간판 자리만 다시 그린다. 고칠 간판이 없으면 { none: true, ... }를 돌려주고 보내지 않는다(호출부 «간판 가리기»가 알리고 멈춘다).
-    async function runSignReplace(img, faces, riskResult) {
+    // opt.all = 장소 글자가 아닌 간판까지 전부(pickAllSigns). opt.cand·opt.reads가 있으면 앞서 찾고 읽은 것을 다시 쓴다
+    // («전부 가리기»는 방금 «간판 가리기»가 읽은 결과로 한다 — 같은 사진을 한 번 더 읽느라 돈·시간을 쓰지 않는다).
+    async function runSignReplace(img, faces, riskResult, opt) {
+      opt = opt || {};
       var ow = img.naturalWidth, oh = img.naturalHeight;
-      var boxes = await detectMarkBoxes(img);
-      if (!boxes.length) return { none: true, why: 'model' };
-      var personMask = await getFullPersonMask(img, imageCacheKey('bg', img.src));
       var faceBoxes = (faces || []).map(function (f) { return f.box; });
-      var cand = signRectsOffPerson(boxes, faceBoxes, personMask, ow, oh);
-      if (!cand.length) return { none: true, why: 'nobox' };
-      var reads = await readSignBoxes(img, faces, cand);
-      var picked = pickPlaceSigns(cand, reads);
-      console.log('[간판만] 후보 ' + cand.length + '곳 · 읽음 ' + reads.length + ' · 장소 글자 ' + picked.length + '곳', reads);
-      if (!picked.length) return { none: true, why: 'noplace', reads: reads };
+      var cand = opt.cand, reads = opt.reads, personMask;
+      if (!cand || !reads) {
+        var boxes = await detectMarkBoxes(img);
+        if (!boxes.length) return { none: true, why: 'model' };
+        personMask = await getFullPersonMask(img, imageCacheKey('bg', img.src));
+        cand = signRectsOffPerson(boxes, faceBoxes, personMask, ow, oh);
+        if (!cand.length) return { none: true, why: 'nobox' };
+        reads = await readSignBoxes(img, faces, cand);
+      } else {
+        personMask = await getFullPersonMask(img, imageCacheKey('bg', img.src)); // 캐시에 있다 — 앞선 «간판 가리기»가 만들었다
+      }
+      var picked = opt.all ? pickAllSigns(cand, reads) : pickPlaceSigns(cand, reads);
+      console.log('[간판만] 후보 ' + cand.length + '곳 · 읽음 ' + reads.length + ' · ' + (opt.all ? '전부' : '장소 글자') + ' ' + picked.length + '곳', reads);
+      if (!picked.length) return { none: true, why: 'noplace', reads: reads, cand: cand, others: pickAllSigns(cand, reads).length };
 
       var send = falSendSize(ow, oh);
       var sw = send.w, sh = send.h;
@@ -15043,15 +15076,18 @@
     // 자동 보정은 10-27에 뺐다 — 그 전에는 자동 결과(배경 흐림 포함) 위에서 시작해 배경 교체가 뿌옇게 나왔다
     // (팀 테스트 "자동보정된 결과를 기준으로 바껴서 뿌옇게 보이는거같아"). 이제 원본 또는 앞선 AI 결과에서만 시작한다.
     // 간판 가리기와 배경 교체는 같은 'ai' 방식 안에서 aiBgMode로 가른다: 'sign' = 간판 자리만, 'full' = 배경 전체.
-    // 'bg'·'bgfull'은 예전 이름(테스트·옛 호출) — 배경 전체로 친다.
+    // 'bg'·'bgfull'은 예전 이름(테스트·옛 호출) — 배경 전체로 친다. 'signall' = 장소 글자가 아닌 간판까지 전부(#signAllBtn).
     var aiBgMode = 'full';
+    // «간판 가리기»가 장소 간판은 못 찾고 다른 간판만 찾았을 때, 그 찾고 읽은 결과({ base, cand, reads }).
+    // «보이는 간판 전부 가리기»가 다시 읽지 않고 이걸 쓴다. 다른 사진·다른 단계로 넘어가면 base가 달라져 안 쓴다.
+    var signAllPending = null;
     async function runAiUpgrade(kind) {
       var committed = false;
-      var isBg = kind === 'sign' || kind === 'ai' || kind === 'bg' || kind === 'bgfull';
+      var isBg = kind === 'sign' || kind === 'signall' || kind === 'ai' || kind === 'bg' || kind === 'bgfull';
       // 배경 쪽(간판 가리기 · 배경 교체)은 자동 보정 결과 위에서 시작하지 않는다 — 흐린 배경 위에서 다시 그리면 뿌옇게 나왔다(10-27 팀 테스트)
       var fromAuto = currentMethod === 'auto';
       if (currentCorrectionCanvas && lastCorrectionMeta && !(fromAuto && isBg)) { applyStep(); committed = true; }
-      aiBgMode = kind === 'sign' ? 'sign' : 'full';
+      aiBgMode = kind === 'sign' || kind === 'signall' ? kind : 'full';
       var target = kind === 'mark' || kind === 'outfit' ? 'outfit' : 'ai';
       if (kind === 'mark') { outfitColorway = 'keep'; outfitEmblem = 'none'; } // 가슴만 다시 그린다(runEmblemRemoval)
       if (kind === 'outfit') { outfitColorway = 'keep'; outfitEmblem = 'all'; } // 옷 전체, 원래와 비슷한 차분한 색
@@ -15070,6 +15106,7 @@
       showTargetRedo(false);
       var bgMode = aiBgMode; aiBgMode = 'full';
       document.getElementById('aiOutfitBtn').style.display = 'none'; // «로고 지우기»가 끝나면 다시 보인다
+      document.getElementById('signAllBox').hidden = true;          // «간판 가리기»가 장소 간판을 못 찾았을 때만 다시 보인다
       var previousMethod = currentMethod;
       currentMethod = method;
       methodCards.forEach(function (c) { c.classList.toggle('selected', c.dataset.method === method); });
@@ -15328,31 +15365,46 @@
         // 다른 일(배경 전체)이 일어났다. 사용자가 고르지 않은 보정은 하지 않는다 — 더 가릴지는 «배경 교체»로 부모가 고른다.
         // 이름 댈 수 있는 장소(랜드마크)가 보여도 간판만 가린다 — 폰 테스트(11-18, 삿포로 스스키노 거리) «B 간판이 다사라졌어»:
         // 거리가 통째로 다른 곳이 되어 쓸 수 없는 사진이 됐다.
-        if (bgMode === 'sign') {
-          setPreviewBusy('위치를 알려 주는 간판을 찾는 중이에요\n찾으면 그 자리만 가려요');
+        // «보이는 간판 전부 가리기»(bgMode 'signall', 11-23) — 장소 간판이 없을 때 그 자리에 뜨는 단추. 사용자 «맨하튼에서 찍은 사진을
+        // 간판가리기 할려고했는데 간판이 하나도 안가려져서 … 간판에 정보가 없다고 안 가려주네». 기본은 그대로 두고, 부모가 누를 때만 전부 가린다.
+        if (bgMode === 'sign' || bgMode === 'signall') {
+          var signAll = bgMode === 'signall';
+          setPreviewBusy(signAll ? '보이는 간판을 가리는 중이에요' : '위치를 알려 주는 간판을 찾는 중이에요\n찾으면 그 자리만 가려요');
           var landmarkNames = ((lastOcrResult && lastOcrResult.landmarks) || [])
             .map(function (l) { return String((l && (l.이름 || l.name)) || '').trim(); }).filter(Boolean);
+          // 방금 «간판 가리기»가 같은 사진에서 찾고 읽은 것이 있으면 다시 쓴다(다시 읽으면 돈이 한 번 더 든다)
+          var pend = signAll && signAllPending && signAllPending.base === correctionBaseUrl ? signAllPending : null;
           var sg = null, sgFail = false;
           try {
             bgImg = await loadImage(correctionBaseUrl);
-            sg = await runSignReplace(bgImg, bgFaces, lastRiskResult);
+            sg = await runSignReplace(bgImg, bgFaces, lastRiskResult, signAll ? { all: true, cand: pend && pend.cand, reads: pend && pend.reads } : null);
           } catch (se) { console.warn('[간판 가리기] 실패:', se.message); sgFail = true; }
           if (mySeq !== methodSeq) return;
           clearPreviewBusy();
+          signAllPending = null;
           if (sg && !sg.none) {
             currentCorrectionCanvas = sg.canvas;
             previewAfter.src = sg.canvas.toDataURL('image/png');
             var sgNames = sg.signs.map(function (p) { return p.unreadable ? '못 읽은 간판' : '«' + p.text + '»'; }).join(', ');
             previewCaption.textContent = ''; // 간판만 가린 뒤 안내 문장도 뺐다(11-22 «그것도 빼»)
-            lastCorrectionMeta = { method: 'sign', detail: 'AI 간판 가리기 — 장소 간판 ' + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
+            lastCorrectionMeta = { method: 'sign', detail: 'AI 간판 가리기' + (signAll ? '(보이는 간판 전부)' : '') + ' — ' + (signAll ? '간판 ' : '장소 간판 ') + sg.signs.length + '곳(' + sgNames + ')만 빈 간판으로 다시 그림, 사람·나머지 배경은 원본'
               + (landmarkNames.length ? ' (알아볼 수 있는 장소 «' + landmarkNames.join(', ') + '»는 남음)' : '') };
             return;
           }
           // 못 찾았거나 실패 — 사진은 그대로(앞서 쌓은 결과가 있으면 그것), 다음에 할 일을 알린다. 이미지 AI는 부르지 않았다.
           previewAfter.src = correctionBaseUrl;
-          previewCaption.textContent = sgFail
-            ? '간판을 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.'
-            : '가릴 간판을 찾지 못했어요. 간판이 남아 있으면 «배경 교체»를 눌러 보세요.';
+          var others = !signAll && sg && sg.why === 'noplace' ? (sg.others || 0) : 0;
+          if (others > 0) {
+            // 장소 글자는 없지만 글자가 있는 간판(상표·체인점 이름 등)은 찾았다 — 전부 가릴지 부모가 고른다
+            signAllPending = { base: correctionBaseUrl, cand: sg.cand, reads: sg.reads };
+            previewCaption.textContent = ''; // 안내는 단추 위 문장이 한다(넓은 화면은 이 칸을 숨긴다)
+            document.getElementById('signAllCount').textContent = String(others);
+            document.getElementById('signAllBox').hidden = false;
+          } else {
+            previewCaption.textContent = sgFail
+              ? '간판을 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.'
+              : '가릴 간판을 찾지 못했어요. 간판이 남아 있으면 «배경 교체»를 눌러 보세요.';
+          }
           currentCorrectionCanvas = null;
           lastCorrectionMeta = null;
           return;
@@ -15440,6 +15492,7 @@
       lastCorrectionMeta = { method: method, detail: previewCaption.textContent };
     }
     document.getElementById('aiSignBtn').addEventListener('click', function () { runAiUpgrade('sign'); });
+    document.getElementById('signAllBtn').addEventListener('click', function () { runAiUpgrade('signall'); });
     document.getElementById('aiMarkBtn').addEventListener('click', function () { runAiUpgrade('mark'); });
     document.getElementById('aiBgBtn').addEventListener('click', function () { runAiUpgrade('ai'); });
     document.getElementById('aiOutfitBtn').addEventListener('click', function () { runAiUpgrade('outfit'); });

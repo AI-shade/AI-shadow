@@ -38,7 +38,10 @@ function check(label, ok, detail) {
     if (/read-sign-boxes/.test(url)) {
       hit.read++;
       const n = (route.request().postDataJSON() || {}).count || 0;
-      const 상자 = Array.from({ length: n }, (_, i) => readAs === 'place' ? { 번호: i + 1, 내용: '햇살어린이집', 유형: '기관명' } : { 번호: i + 1, 내용: '', 유형: '글자없음' });
+      // 'brand' = 첫 상자만 체인점 상표, 나머지는 글자없음 — 맨해튼 거리처럼 장소 글자는 없고 상표 간판만 있는 사진(11-23)
+      const 상자 = Array.from({ length: n }, (_, i) => readAs === 'place' ? { 번호: i + 1, 내용: '햇살어린이집', 유형: '기관명' }
+        : readAs === 'brand' && i === 0 ? { 번호: i + 1, 내용: 'STARBUCKS', 유형: '상표' }
+        : { 번호: i + 1, 내용: '', 유형: '글자없음' });
       return ok({ 상자 });
     }
     if (/inpaint-regions/.test(url)) { hit.sign++; return ok({ imageBase64: GRAY, mediaType: 'image/png', width: 8, height: 8, editPrompt: 'x', timingMs: 1, estimatedCostUsd: 0, attempts: 1 }); }
@@ -78,6 +81,7 @@ function check(label, ok, detail) {
   check('간판 보정 요청이 나가지 않는다', hit.sign === 0, hit.sign + '회');
   check('배경 전체로 넘어가지 않는다 (배경 교체 요청 0회)', hit.bg === 0, hit.bg + '회');
   check('못 찾았다고 알리고 «배경 교체»를 안내한다', /가릴 간판을 찾지 못했어요/.test(none.caption) && /배경 교체/.test(none.caption), none.caption.slice(0, 50));
+  check('글자없음뿐이면 «보이는 간판 전부 가리기»는 안 보인다', await page.evaluate(() => document.getElementById('signAllBox').hidden));
 
   if (!hasModel) {
     console.log('\n[3] 건너뜀 — public/models/mark-int8.onnx 가 없다(41MB, 저장소 밖). 팀자료/모델/에서 복사하면 돈다.');
@@ -99,6 +103,31 @@ function check(label, ok, detail) {
   check('간판 보정 요청은 나가지 않는다', hit.sign === 0, hit.sign + '회');
   const steps = await page.evaluate(() => window.__anshimTest.stackState().steps.map((s) => s.method));
   if (hasModel) check('앞선 «간판 가리기» 결과가 먼저 확정되고 그 위에 배경 교체가 얹힌다', steps[0] === 'sign', steps.join(','));
+
+  // 사용자(11-23): «맨하튼에서 찍은 사진을 간판가리기 할려고했는데 간판이 하나도 안가려져서 … 간판에 정보가 없다고 안 가려주네»
+  if (hasModel) {
+    console.log('\n[5] 간판 가리기 — 장소 글자는 없고 상표 간판만 있으면');
+    // [4]의 가짜 회색 배경 위에서는 간판이 없다 — 원본 사진에서 다시 시작한다
+    await page.evaluate((u) => { const T = window.__anshimTest; T.stackPending(null, null); T.stackSeed(u); }, u);
+    readAs = 'brand'; Object.assign(hit, { read: 0, sign: 0, bg: 0 });
+    const brand = await press('sign');
+    const btnShown = await page.evaluate(() => { const b = document.getElementById('signAllBtn'); return !document.getElementById('signAllBox').hidden && b.getClientRects().length > 0; });
+    const note = await page.evaluate(() => document.querySelector('#signAllBox .sign-all-note').textContent.trim());
+    check('기본 «간판 가리기»는 상표 간판을 가리지 않는다 (보정 요청 0회)', hit.sign === 0, hit.sign + '회');
+    check('단추 위에 «위치를 알려 주는 간판은 없어요. 다른 간판은 1곳»이라고 알린다 (넓은 화면은 사진 아래 안내 칸을 숨겨서 거기 쓰면 안 보인다)', /위치를 알려 주는 간판은 없어요/.test(note) && /다른 간판은 1곳/.test(note), note);
+    check('«보이는 간판 전부 가리기» 단추가 보인다', btnShown);
+
+    console.log('\n[6] «보이는 간판 전부 가리기»를 누르면');
+    const all = await press('signall');
+    check('간판을 다시 읽지 않는다 (읽기는 처음 1회뿐)', hit.read === 1, hit.read + '회');
+    check('간판 보정 요청이 한 번 나간다', hit.sign === 1, hit.sign + '회');
+    check('배경 교체 요청은 나가지 않는다', hit.bg === 0, hit.bg + '회');
+    check('결과 사진이 보이고 단추는 다시 숨는다', all.png && await page.evaluate(() => document.getElementById('signAllBox').hidden), all.caption.slice(0, 40));
+    // 다음 보정(배경 교체)을 누르면 이 결과가 단계로 확정된다 — 확정된 기록에서 읽는다
+    await press('ai');
+    const meta = await page.evaluate(() => JSON.stringify(window.__anshimTest.stackState().steps.slice(-1)[0] || {}));
+    check('기록에 «보이는 간판 전부»와 상표 이름이 남는다', /보이는 간판 전부/.test(meta) && /STARBUCKS/.test(meta), meta.slice(0, 140));
+  }
 
   check('페이지 에러 없음', errs.length === 0, errs.join(' | '));
   await browser.close();
