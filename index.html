@@ -3506,7 +3506,7 @@
   #screen-pattern .pt-cap { font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem; }
   #screen-pattern .pt-cap span { font-weight: 500; color: var(--muted); }
   #screen-pattern .pt-doc .pt-time { font-size: 1rem; }
-  #screen-pattern .pt-doc .pt-time td { text-align: center; }
+  #screen-pattern .pt-doc .pt-time td { text-align: center; white-space: nowrap; }
   #screen-pattern .pt-doc .pt-time thead th { border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); }
   #screen-pattern .pt-doc .pt-list thead th { text-align: center; color: inherit; font-size: 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); padding: 0.65rem 0.8rem; }
   #screen-pattern .pt-doc .pt-list td { padding: 0.65rem 0.8rem; }
@@ -5106,8 +5106,8 @@
       </section>
 
       <section class="pt-sec pt-num">
-        <h3>게시물별 판독 내용 <small class="pt-count" id="pReadCount"></small></h3>
-        <p class="pt-cap">〈표 2〉 게시물별 판독 내용</p>
+        <h3><span id="pReadTitle">게시물별 판독 내용</span> <small class="pt-count" id="pReadCount"></small></h3>
+        <p class="pt-cap" id="pReadCap">〈표 2〉 게시물별 판독 내용</p>
         <table class="pt-grid pt-list">
           <thead><tr><th scope="col">번호</th><th scope="col">올린 때</th><th scope="col">읽어낸 단서</th></tr></thead>
           <tbody id="pReadList"></tbody>
@@ -12201,6 +12201,23 @@
         if (!mask) return false;
         var w = mask.width, h = mask.height;
 
+        // 소속 단서(원복·명찰·로고)는 가슴에 붙는다. 사진 속 옷을 전부 칠하면 부모 정장 · 원피스까지 큰 테두리가
+        // 둘렀다(11-23 제보: 졸업식 사진 «표시가 이상하게됨»). «로고 지우기»가 다시 그리는 자리 —
+        // 얼굴마다 어깨선부터의 가슴 띠 ∩ 옷(buildEmblemMask) — 만 표시해, 표시와 고치는 자리를 같게 한다.
+        // 얼굴을 못 찾았으면 예전처럼 옷 전체.
+        var fcs = ((lastFaceResult && lastFaceResult.faces) || []).filter(function (f) { return f.wPct; });
+        if (fcs.length) {
+          var boxes = fcs.map(function (f) {
+            var fh = f.hPct || f.wPct;
+            return { x: (f.xPct - f.wPct / 2) / 100 * w, y: (f.yPct - fh / 2) / 100 * h, width: f.wPct / 100 * w, height: fh / 100 * h };
+          });
+          var em = buildEmblemMask(boxes, w, h, mask, []);
+          var ex = em.getContext('2d'), ed = ex.getImageData(0, 0, w, h);
+          for (var pi = 0; pi < ed.data.length; pi += 4) ed.data[pi + 3] = ed.data[pi]; // 흰 = 칠할 자리 → 불투명
+          ex.putImageData(ed, 0, 0);
+          mask = em;
+        }
+
         // 옷 실루엣을 색으로 채운 판
         var solid = document.createElement('canvas');
         solid.width = w; solid.height = h;
@@ -13651,14 +13668,20 @@
 
     function renderPatternOnly(r, count) {
       var total = r.totalCount || count, skippedN = r.skippedCount || 0, today = new Date();
-      document.getElementById('pMetaTarget').textContent = '스크린샷 ' + total + '장' + (skippedN ? ' (분석 ' + (total - skippedN) + '장)' : '');
+      document.getElementById('pMetaTarget').textContent = r.target || ('스크린샷 ' + total + '장' + (skippedN ? ' (분석 ' + (total - skippedN) + '장)' : ''));
+      var whenTh = document.querySelector('#screen-pattern .pt-list thead th:nth-child(2)');
+      if (whenTh) whenTh.textContent = r.whenLabel || '올린 때';
+      var cueTh = document.querySelector('#screen-pattern .pt-list thead th:nth-child(3)');
+      if (cueTh) cueTh.textContent = r.whenLabel ? '위험도' : '읽어낸 단서';
+      document.getElementById('pReadTitle').textContent = r.whenLabel ? '진단 기록' : '게시물별 판독 내용';
+      document.getElementById('pReadCap').textContent = r.whenLabel ? '〈표 2〉 최근 진단 기록' : '〈표 2〉 게시물별 판독 내용';
       document.getElementById('pMetaDate').textContent = today.getFullYear() + '. ' + (today.getMonth() + 1) + '. ' + today.getDate() + '.';
 
       var flag = document.getElementById('pScheduleFlag');
       flag.textContent = r.scheduleOn ? '경고' : '양호';
       flag.className = r.scheduleOn ? 'schedule-flag on' : 'schedule-flag';
       document.getElementById('pFlagText').textContent = r.scheduleOn
-        ? '— 다음 게시 시점 · 장소 예측 가능'
+        ? (r.whenLabel ? '— 다음 게시 시점 예측 가능' : '— 다음 게시 시점 · 장소 예측 가능')
         : '— 반복되는 요일 · 시간 · 장소 없음';
 
       // 1. 분석 결과 — □ 반복 패턴 / ○ 각 패턴(근거) · □ 다음 게시 예상 / ○ 내용
@@ -13668,7 +13691,7 @@
       if (pats.length) {
         ptItem(sum, 0, '반복 패턴 ' + pats.length + '건 확인');
         pats.forEach(function (pt) {
-          ptItem(sum, 1, pt.내용 || '', (pt.근거게시물 || []).length ? '근거: ' + pt.근거게시물.join('·') + '번 게시물' : '');
+          ptItem(sum, 1, pt.내용 || '', (pt.근거게시물 || []).length ? '근거: ' + pt.근거게시물.join('·') + (r.whenLabel ? '번 기록' : '번 게시물') : '');
         });
       } else {
         ptItem(sum, 0, '반복 패턴 없음');
@@ -13697,6 +13720,7 @@
         if (e.skippedNoFaceConsent) return;
         readN++;
         var bits = [];
+        if (e.note) bits.push(e.note); // 최근 진단 기록에서 온 줄(위험도)
         if (e.placeTag) { bits.push('위치 태그 ' + e.placeTag); hasTag = true; }
         (e.backgroundTexts || []).forEach(function (t) { bits.push('배경 글자 "' + t + '"'); hasBg = true; });
         if (e.caption) bits.push('캡션 "' + e.caption + '"');
@@ -13706,7 +13730,7 @@
         });
         read.appendChild(tr);
       });
-      document.getElementById('pReadCount').textContent = readN ? readN + '장' : '';
+      document.getElementById('pReadCount').textContent = readN ? readN + (r.whenLabel ? '건' : '장') : '';
       if (readN === 0) {
         var tr0 = document.createElement('tr'), c0 = document.createElement('td');
         c0.colSpan = 3; c0.className = 'pt-none'; c0.textContent = '스크린샷 ' + count + '장에서 읽어낸 정보 없음';
@@ -14296,13 +14320,29 @@
       var hits = [];
       if (day.n > half) hits.push(h.length + '번 중 ' + day.n + '번은 ' + day.k);
       if (tm.n > half) hits.push(h.length + '번 중 ' + tm.n + '번은 ' + tm.k);
-      if (hits.length) {
-        line('올리는 때가 반복돼요', true);
-        line(hits.join(', ') + '에 진단했어요. 같은 때에 올리면 언제 어디 있는지 짐작될 수 있어요. 올리는 요일과 시간을 섞어 보세요.');
-      } else {
-        line('뚜렷하게 반복되는 때는 없어요', true);
-        line('최근 ' + h.length + '번은 요일과 시간이 흩어져 있어요.');
-      }
+      // 결과는 과거 게시물 점검 보고서(#screen-pattern)로 보인다(11-23 «패턴분석 누르면 보고서 형식으로 안뜨는겨?»).
+      // 스크린샷 분석과 같은 그리기(renderPatternOnly)에 기록에서 만든 값을 넣는다 — API 호출 없음, 기기 밖으로 안 나감.
+      // 번호는 기록 목록 순서(1번 = 가장 최근)다.
+      out.hidden = true;
+      var nums = function (key, want) { var r = []; h.forEach(function (x, i) { if (key(new Date(x.t)) === want) r.push(i + 1); }); return r; };
+      var pats = [];
+      if (day.n > half) pats.push({ 유형: '요일패턴', 내용: day.k + '에 반복 (' + h.length + '번 중 ' + day.n + '번)', 근거게시물: nums(function (t) { return DAYS[t.getDay()] + '요일'; }, day.k) });
+      if (tm.n > half) pats.push({ 유형: '시간대패턴', 내용: tm.k + '에 반복 (' + h.length + '번 중 ' + tm.n + '번)', 근거게시물: nums(function (t) { return slot(t.getHours()); }, tm.k) });
+      var pred = day.n > half && tm.n > half ? '다음 ' + day.k + ' ' + tm.k : day.n > half ? '다음 ' + day.k : tm.n > half ? '다음에도 ' + tm.k : '';
+      showScreen('pattern');
+      renderPatternOnly({
+        target: '최근 진단 기록 ' + h.length + '건 (진단한 때를 올린 때로 봄)', whenLabel: '진단한 때',
+        scheduleOn: pats.length > 0, patterns: pats, predictedInfo: pred,
+        evidence: '최근 ' + h.length + '번은 요일과 시간이 흩어져 있어요.',
+        postTimes: h.map(function (x, i) { var t = new Date(x.t); return { 번호: i + 1, 요일: DAYS[t.getDay()], 시: t.getHours() }; }),
+        extracted: h.map(function (x) {
+          var t = new Date(x.t);
+          return { relativeTime: (t.getMonth() + 1) + '월 ' + t.getDate() + '일 ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2),
+            note: x.a != null ? '위험도 ' + x.b + ' → ' + x.a : '위험도 ' + x.b + (x.fixed ? '' : ' (보정 안 함)') };
+        }),
+        totalCount: h.length, skippedCount: 0,
+      }, h.length);
+      window.scrollTo(0, 0);
     });
     document.getElementById('histClearBtn').addEventListener('click', function () {
       if (!confirm('이 기기에 남은 진단 기록과 미리보기 사진을 모두 지울까요?')) return;
@@ -16101,6 +16141,17 @@
       chooseColorwayAgainstForTest: chooseColorwayAgainst, // 옷 색 «자동» 선택 로직(순수 함수) 검증용
       setFaceForTest: function (f) { lastFaceResult = f; },
       setRiskForTest: function (r) { lastRiskResult = r; }, // 내 기록(최근 진단) 검증용 // 자동 보정 흐름을 API 없이 구동하는 테스트용
+      // 소속 단서 표시(가슴 띠) 검증용 — 얼굴 찾기·옷 분할은 기기 안에서만 돈다(API 없음). 사진 위에 표시를 얹은 그림을 돌려준다.
+      paintBelongForTest: async function (url) {
+        lastFaceResult = await runFaceDetectionPipeline(url);
+        var th = document.getElementById('resultThumb'); if (th) th.src = url;
+        var layer = document.createElement('div');
+        var ok = await paintClothesRegion(layer, '#2f6fdc');
+        var img = await loadImage(url), ov = layer.querySelector('canvas');
+        var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+        var x = c.getContext('2d'); x.drawImage(img, 0, 0); if (ov) x.drawImage(ov, 0, 0, c.width, c.height);
+        return { ok: ok, faces: lastFaceResult.faces.length, png: c.toDataURL('image/jpeg', 0.85) };
+      },
       planAutoCorrectionForTest: planAutoCorrection, // 자동 보정이 어떤 단계를 돌릴지(순수 함수)
       renderAutoPlanForTest: renderAutoPlan,
       runAiUpgradeForTest: runAiUpgrade,
