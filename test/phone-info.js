@@ -75,9 +75,23 @@ const 보임 = (page, sel) => page.evaluate((s) => {
     await page.waitForTimeout(500);
 
     ok(await 보임(page, '#screen-result > .rcard-location'), '장소 특정 카드가 보인다');
-    ok(await 보임(page, '#summaryCard'), '종합 설명이 보인다');
+    // 11-23 «텍스트로 읽힌정보들이 쭈욱 나열되는데 나열하지말고 접기 열기창같은거 만들어서» —
+    // 처음엔 제목 줄만 보이고, 제목 줄을 누르면 전부 보인다. 지운 게 아니라 접은 것인지를 잰다.
+    ok(!(await 보임(page, '#summaryCard')), '권장 조치는 처음에 접혀 있다');
+    ok(await 보임(page, '#actionCard .fold-head .clamp-more'), '권장 조치에 펼치기 단추가 보인다');
+    ok(await 보임(page, '#locCard .fold-head .clamp-more'), '장소 특정에 펼치기 단추가 보인다');
+    for (const id of ['locCard', 'actionCard']) {
+      // behavior:'instant' — 페이지가 부드러운 스크롤이라 그냥 부르면 스크롤 도중에 누른다(375x667에서 «보정 없이 마치기»를 눌렀다)
+      await page.$eval('#' + id + ' .fold-head', (e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      const b = await page.$eval('#' + id + ' .fold-head', (e) => { const r = e.getBoundingClientRect(); return { x: r.left + 20, y: r.top + r.height / 2 }; });
+      await page.mouse.click(b.x, b.y); // 단추가 아니라 제목 글자를 누른다 — 줄 전체가 눌려야 한다
+      await page.waitForTimeout(150);
+    }
+    // 근거 문장·좁혀지는 범위는 폰에서 다른 규칙이 따로 숨기기도 해서(최신판) 보임 대신 카드가 열렸는지를 잰다
+    ok(await page.$eval('#locCard', (e) => e.classList.contains('open')), '제목 줄을 누르면 장소 카드가 열린다');
+    ok(await 보임(page, '#summaryCard'), '제목 줄을 누르면 종합 설명이 보인다');
     const 할일 = await page.$$eval('#actionList li', (ls) => ls.filter((l) => l.getClientRects().length).length);
-    ok(할일 === 3, '권장 조치가 전부 보인다', 할일 + '/3');
+    ok(할일 === 3, '펼치면 권장 조치가 전부 보인다', 할일 + '/3');
 
     // 맨 아래까지 내렸을 때 마지막 카드가 고정 바(보정하러 가기)에 가리지 않아야 한다
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
@@ -128,6 +142,27 @@ const 보임 = (page, sel) => page.evaluate((s) => {
     ok(await 보임(page, '#previewCaption'), '결과·오류 안내 문구가 보인다',
       (await page.textContent('#previewCaption')).slice(0, 50));
     ok(errs.length === 0, '페이지 에러 없음', errs.join(' | '));
+  }
+
+  // 11-23 «핸드폰에서는 컴퓨터에서 나오는 내 사진 이라는페이지 가서 패턴확인 구글로찾아보기 기능이 안보여» —
+  // 11-22에 탭바가 사라지고 860px 이하에서는 위 메뉴도 숨어서, 폰에서 «내 기록»으로 가는 길이 맨 아래 푸터뿐이었다.
+  for (const [w, h] of [[390, 844], [360, 610]]) {
+    console.log('\n폰 메뉴 → 내 기록 ' + w + 'x' + h);
+    const { page } = await open(browser, w, h);
+    const 메뉴 = await page.evaluate(() => {
+      const a = [...document.querySelectorAll('.site-nav .nav-links a')].find((x) => x.getAttribute('href') === '#me');
+      if (!a) return null;
+      const r = a.getBoundingClientRect();
+      return { shown: a.getClientRects().length > 0 && r.top >= 0 && r.bottom <= innerHeight, h: Math.round(r.height), text: a.textContent.trim() };
+    });
+    ok(메뉴 && 메뉴.shown, '첫 화면 위 메뉴에 «내 기록»이 보인다', 메뉴 && 메뉴.text);
+    ok(메뉴 && 메뉴.h < 40, '메뉴 글자가 한 줄이다(칸이 줄어 세 줄로 꺾이던 것)', 메뉴 && 메뉴.h + 'px');
+    if (메뉴 && 메뉴.shown) {
+      await page.click('.site-nav .nav-links a[href="#me"]');
+      await page.waitForTimeout(800);
+      ok(await 보임(page, '#histPatternBtn'), '누르면 «패턴 확인»이 보인다');
+      ok(await 보임(page, '#reverseBtn'), '누르면 «구글로 찾아보기»가 보인다');
+    }
   }
 
   // 다운로드 — 보정 결과가 있는 상태를 만든다

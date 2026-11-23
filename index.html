@@ -3843,6 +3843,27 @@
     .vr-list li { font-size: 0.95rem; padding: 0.6rem 0; }
     .vr-note { grid-column: 1 / -1; }
   }
+  /* 폰 진단 결과 (11-23) — 결과 화면은 이제 아래로 스크롤하므로(10-28) 한 화면에 맞추려고 줄였던 것을 되돌린다.
+     ① «오각형 방사형차트 너무 작은거같아 글씨에비해»: 240 단위 그림을 168px로 줄여 축 이름 10px가 실제 7px로 보였다
+        (본문 14~16px). 250px + 축 이름 13px → 실제 약 13.5px.
+     ② «텍스트로 읽힌정보들이 쭈욱 나열되는데 나열하지말고 접기 열기창같은거 만들어서»: 사진에서 찾은 항목(사진 아래 글 목록)·
+        장소를 알아볼 가능성(근거 문장·좁혀지는 범위·AI 추측 글)·권장 조치를 제목 줄만 남기고 접는다. 제목 줄 전체를 누르면 펼친다(단추가 줄을 덮는다). */
+  @media (max-width: 560px), ((pointer: coarse) and (hover: none) and (max-height: 560px)) {
+    /* 11-22부터 폰도 컴퓨터 배치라 460px 이하의 118px 규칙이 걸린다 — 폭·높이를 같이 적어야 이긴다(실측 118→250) */
+    #screen-result .gauge-ring { width: 100%; max-width: 250px; height: auto; aspect-ratio: 1 / 1; margin: 0 auto; }
+    #screen-result .radar-label { font-size: 13px; }
+    /* 장소 카드는 지도와 단계 단추는 두고 글만 접는다. #locWebResult는 스크립트가 인라인 display를 넣어 !important가 필요하다 */
+    #screen-result > #locCard:not(.open) :is(#locationEvidence, .chain-head, #locChain, #mapWhyInline) { display: none; }
+    #screen-result > #locCard:not(.open) #locWebResult { display: none !important; }
+    #screen-result > #actionCard:not(.open) :is(#summaryCard, #actionList) { display: none; }
+    /* 사진에서 찾은 항목: 사진(번호 표시)은 두고 아래 글 목록만 접는다 */
+    #screen-result > #detectCard:not(.open) :is(#pinLegend, .pin-note) { display: none !important; }
+    #screen-result .fold-head { display: flex; align-items: baseline; gap: 0.5rem; position: relative; }
+    /* display를 직접 준다 — 폰에서 .clamp-more를 보이게 하던 규칙은 앱 배치와 함께 꺼졌다(3db5bac). 안 주면 접힌 채 단추가 없다 */
+    #screen-result .fold-head > .clamp-more { display: inline-block; margin-left: auto; white-space: nowrap; font-size: 0.8rem; }
+    #screen-result .fold-head > .clamp-more::after { content: ""; position: absolute; inset: -0.6rem -0.4rem; }
+    #screen-result > #actionCard:not(.open) > .fold-head { margin-bottom: 0; }
+  }
 
 
   /* ===== 테마: BETHESDA 결 (윤서 시안, yunseo-design 브랜치) =====
@@ -4283,6 +4304,20 @@
   }
   /* ===== 테마 끝 ===== */
   /* «보이는 간판 전부 가리기»(11-23) — 단추 공통 display 규칙이 hidden을 이기지 못하게 */
+  /* 폰 폭 메뉴 (11-23) — 11-22에 폰도 컴퓨터 배치로 바꾸면서(3db5bac) 아래 탭바가 사라졌는데, 860px 이하에서는 위 메뉴도
+     숨어 있어 폰에서 «내 기록»(패턴 확인 · 구글로 찾아보기)으로 가는 길이 맨 아래 푸터 링크뿐이었다.
+     사용자 «핸드폰에서는 … 패턴확인 구글로찾아보기 기능이 안보여». 메뉴를 로고 아래 한 줄로 내리고, 넘치면 옆으로 민다.
+     --nav-h는 스크립트가 네비 높이를 재서 넣으므로 높이가 늘어도 아래 내용이 가려지지 않는다. */
+  @media (max-width: 860px) {
+    .site-nav .nav-inner { flex-wrap: wrap; row-gap: 0.35rem; }
+    .site-nav .nav-links {
+      display: flex; order: 3; flex: 0 0 100%; margin: 0; gap: 1.15rem;
+      overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .site-nav .nav-links::-webkit-scrollbar { display: none; }
+    .site-nav .nav-links > li { flex: 0 0 auto; }          /* 안 주면 칸이 줄어 «자주/묻는/질문»처럼 세 줄로 꺾였다(390px 캡처) */
+    .site-nav .nav-links a { font-size: 0.9rem; padding: 0.3rem 0 0.45rem; display: inline-block; white-space: nowrap; }
+  }
   #signAllBox[hidden] { display: none !important; }
   #signAllBox { margin: 0.6rem 0 0.25rem; }
   #signAllBox .sign-all-note { margin: 0 0 0.45rem; font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
@@ -4793,9 +4828,11 @@
       </div>
     </div>
 
-    <div class="rcard rcard-detect">
+    <div class="rcard rcard-detect" id="detectCard">
       <div class="rp-head" aria-hidden="true"><span class="sns-avatar"></span><b>my_account</b><span class="sns-more">···</span></div>
-      <h3 class="rcard-title">사진에서 찾은 항목</h3>
+      <!-- 폰에서는 사진 아래 찾은 항목 목록(얼굴 각도 · 읽은 글자 · 옷 단서)을 접는다 — 사진 위 번호가 같은 자리를 가리킨다(11-23) -->
+      <h3 class="rcard-title fold-head">사진에서 찾은 항목<button type="button" class="ghost-link clamp-more" aria-expanded="false"
+          aria-controls="detectCard">자세히 ⌄</button></h3>
       <div class="risk-photo-wrap" id="riskPhotoWrap">
         <img id="resultThumb" alt="분석한 사진" />
         <!-- 점수 항목별 영역. aria-hidden — 같은 내용을 아래 목록이 글로 말한다. -->
@@ -4830,14 +4867,17 @@
       <h3 class="rcard-title">위험 항목 <span class="fc-hint">누르면 사진에 표시</span></h3>
     </section>
 
-    <section class="result-section rcard-location">
+    <section class="result-section rcard-location" id="locCard">
       <!-- 왼쪽 내역의 "간판·주소 노출"과 이름이 겹치면 같은 것으로 오해한다.
            이쪽은 사진 한 장으로 아이가 있는 곳을 얼마나 좁힐 수 있는지를 본다. -->
       <!-- 세로로 너무 길어져서(점수+사슬+지도+역추적 확인이 한 줄로 쌓임) 데스크톱에서는
            둘로 나눈다 — 왼쪽 점수·근거, 오른쪽 지도·역추적. 사용자 요청. 폰은 이 카드
            자체가 숨어 있어서(위 주석) 이 나눔은 폰에 영향이 없다. -->
       <div class="loc-left">
-        <h3>장소를 알아볼 가능성</h3>
+        <!-- 폰에서는 근거 문장·좁혀지는 범위를 접는다(11-23 «나열하지말고 접기 열기창같은거 만들어서»).
+             단추는 공용 .clamp-more 장치 — 데스크톱에서는 안 보인다. -->
+        <h3 class="fold-head">장소를 알아볼 가능성<button type="button" class="ghost-link clamp-more" aria-expanded="false"
+            aria-controls="locCard">자세히 ⌄</button></h3>
         <div class="sub-score-line"><strong><span id="locationScore">65</span>점</strong></div>
         <div class="bar-track"><div class="bar-fill" id="locationBar" style="width:65%"></div></div>
         <p class="evidence" id="locationEvidence"></p>
@@ -4891,7 +4931,8 @@
     </section>
 
     <section class="result-section" id="actionCard">
-      <h3>권장 조치</h3>
+      <h3 class="fold-head">권장 조치<button type="button" class="ghost-link clamp-more" aria-expanded="false"
+          aria-controls="actionCard">자세히 ⌄</button></h3>
       <!-- 종합 설명과 권장 조치가 두 칸으로 나뉘어 있던 것을 한 칸으로 합친다 — 결론 한 줄, 그 아래 할 일 한 줄씩 -->
       <div id="summaryCard"><p class="evidence" id="summaryText"></p></div>
       <ul class="action-list" id="actionList"></ul>
