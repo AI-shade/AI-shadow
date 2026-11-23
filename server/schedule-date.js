@@ -11,13 +11,15 @@
 const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = (n) => String(n).padStart(2, '0');
 
-function build(d, now, approx) {
+function build(d, now, approx, hour) {
   const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return {
     날짜: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
     요일: WEEKDAY[d.getDay()],
     며칠전: Math.round((t0 - d) / 86400000),
     어림값: !!approx,
+    // 올린 시(0~23). «N시간 전 · N분 전»일 때만 안다 — «3주 전»은 시를 모른다(null). 지어내지 않는다.
+    시: hour == null ? null : hour,
   };
 }
 
@@ -88,8 +90,12 @@ export function resolvePostDate(relativeText, now) {
   }
   if (daysAgo !== null) {
     const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() - daysAgo);
+    // 시: «N시간 전 · N분 전»만 기준 시각에서 거꾸로 셀 수 있다(요일별 시간대 표, 11-23).
+    // ponytail: 날짜는 예전처럼 «오늘»로 둔다 — 자정 근처 «5시간 전»은 실제로 어제일 수 있다.
+    const hm = t.match(/^(\d+)(시간|분)전$/);
+    const hour = hm ? new Date(base.getTime() - parseInt(hm[1], 10) * (hm[2] === '시간' ? 3600000 : 60000)).getHours() : null;
     // 개월·년 단위는 30일·365일로 어림한 값이라 요일을 믿으면 안 된다
-    return build(d, base, /개월전|달전|년전/.test(t));
+    return build(d, base, /개월전|달전|년전/.test(t), hour);
   }
 
   // ── 절대 날짜 표기

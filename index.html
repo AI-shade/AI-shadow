@@ -3438,6 +3438,124 @@
     #pattern-check .section-inner > .pe-card:not(#histCard) { grid-column: 2; margin: 0 0 2.4rem !important; max-width: none; }
   }
   .hist-link { margin: 0.8rem 0 0; }
+  /* 과거 게시물 점검 결과(11-23 시안) */
+  #screen-pattern .pt-crumb { display: flex; align-items: center; gap: 0.9rem; margin: 0 0 2rem; font-size: 1.3rem; }
+  #screen-pattern .pt-crumb button { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); text-decoration: underline; text-underline-offset: 5px; cursor: pointer; }
+  #screen-pattern .pt-crumb span { color: var(--muted); }
+  #screen-pattern .pt-crumb b { font-weight: 900; }
+  #screen-pattern .pt-sec { border: 0; background: none; padding: 0; margin: 0 0 2.6rem; box-shadow: none; }
+  #screen-pattern .pt-sec h3 { display: flex; align-items: center; gap: 0.7rem; font-size: 1.3rem; font-weight: 900; margin: 0 0 1rem; }
+  #screen-pattern .pt-sec h3 .schedule-flag { margin: 0; }
+  #screen-pattern .pt-count { font-size: 0.95rem; font-weight: 500; color: var(--muted); }
+  #screen-pattern .pt-pred { font-weight: 800; font-size: 1.05rem; margin: 0 0 1.2rem; }
+  #screen-pattern .pt-rows { list-style: none; margin: 0; padding: 0; }
+  #screen-pattern .pt-rows li { padding: 0.6rem 0; font-size: 1.05rem; }
+  #screen-pattern .pt-rows small { color: var(--muted); font-size: 0.92rem; margin-left: 0.6rem; }
+  #screen-pattern .pt-read li { display: flex; justify-content: space-between; gap: 1.5rem; }
+  #screen-pattern .pt-read .pt-what { color: var(--muted); text-align: right; }
+  #screen-pattern .pt-read li > span:first-child { flex: none; white-space: nowrap; }
+  /* 보고서처럼(11-23 «도형이나 동그라미 상자같은거 씌우지 말고») — 바깥 카드 · 경고 알약을 걷고 선만 남긴다 */
+  #screen-pattern.card { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; }
+  #screen-pattern .schedule-flag { background: none !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; font-size: 1rem; font-weight: 800; color: var(--muted); }
+  #screen-pattern .schedule-flag.on { color: #c0392b; }
+  #screen-pattern .schedule-flag::before { display: none !important; }
+  #screen-pattern .pt-read li { border-top: 1px solid var(--line); }
+  #screen-pattern .pt-read li:first-child { border-top: 0; }
+  #screen-pattern .pt-time { width: 100%; max-width: 720px; border-collapse: collapse; table-layout: fixed; font-size: 0.95rem; }
+  #screen-pattern .pt-time th, #screen-pattern .pt-time td { border-bottom: 1px solid var(--line); padding: 0.7rem 0.2rem; text-align: center; font-weight: 600; }
+  #screen-pattern .pt-time thead th { border-bottom: 2px solid var(--ink); font-weight: 800; }
+  #screen-pattern .pt-time tbody th { text-align: left; width: 7.5rem; font-weight: 800; }
+  #screen-pattern .pt-time tbody th small { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); }
+  #screen-pattern .pt-time td.lv1 { background: color-mix(in srgb, var(--ink) 12%, transparent); }
+  #screen-pattern .pt-time td.lv2 { background: color-mix(in srgb, var(--ink) 30%, transparent); }
+  #screen-pattern .pt-time td.lv3 { background: color-mix(in srgb, var(--ink) 75%, transparent); color: #fff; }
+  #screen-pattern .pt-note { color: var(--muted); font-size: 0.88rem; margin: 0.8rem 0 0; }
+  /* 보고서처럼 가운데 한 줄기로(11-23 «좀더 가시성 좋게 보고서 형식으로 가운데로») — 폭을 줄여 가운데, 칸마다 위에 굵은 선 */
+  #screen-pattern:not([style*="none"]) { max-width: 760px; margin-left: auto !important; margin-right: auto !important; }
+  #screen-pattern .pt-crumb { justify-content: center; margin-bottom: 2.4rem; }
+  #screen-pattern .pt-sec { border-top: 2px solid var(--ink) !important; padding-top: 1.4rem !important; border-radius: 0 !important; }
+  #screen-pattern .pt-sec h3 { font-size: 1.45rem; }
+  #screen-pattern .pt-pred { font-size: 1.2rem; }
+  #screen-pattern .pt-rows li { font-size: 1.1rem; }
+  #screen-pattern .pt-time { max-width: none; font-size: 1.05rem; }
+  #screen-pattern .pt-time th, #screen-pattern .pt-time td { padding: 0.95rem 0.2rem; }
+  #screen-pattern .correct-actions { justify-content: center !important; }
+  #screen-pattern .disclaimer { text-align: center; }
+  /* 개조식 보고서 — 문서 제목(위아래 두 줄) · 개요 표 · 번호 칸 · 칸 선이 다 보이는 표 */
+  #screen-pattern .pt-doc { counter-reset: ptsec; }
+  #screen-pattern .pt-doc .pt-title { text-align: center; font-size: 1.9rem; font-weight: 900; letter-spacing: 0.02em; margin: 0 0 1.6rem; padding: 0.9rem 0; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }
+  #screen-pattern .pt-grid { width: 100%; border-collapse: collapse; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); font-size: 1rem; }
+  #screen-pattern .pt-grid th, #screen-pattern .pt-grid td { border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); padding: 0.65rem 0.8rem; vertical-align: middle; }
+  #screen-pattern .pt-grid tr > :first-child { border-left: 0; }
+  #screen-pattern .pt-grid tr > :last-child { border-right: 0; }
+  #screen-pattern .pt-grid th { background: color-mix(in srgb, var(--ink) 7%, transparent); font-weight: 800; white-space: nowrap; }
+  #screen-pattern .pt-over { margin-bottom: 2.2rem; }
+  #screen-pattern .pt-over th { width: 6.5rem; text-align: center; }
+  #screen-pattern .pt-doc .pt-sec { border: 0 !important; padding: 0 !important; margin: 0 0 2.2rem; }
+  #screen-pattern .pt-doc .pt-num h3 { counter-increment: ptsec; font-size: 1.3rem; font-weight: 900; margin: 0 0 0.8rem; display: block; }
+  #screen-pattern .pt-doc .pt-num h3::before { content: counter(ptsec) ". "; }
+  #screen-pattern .pt-gae { list-style: none; margin: 0; padding: 0; font-size: 1.05rem; line-height: 1.6; }
+  #screen-pattern .pt-gae li { position: relative; margin: 0 0 0.45rem; }
+  #screen-pattern .pt-gae li.lv0 { padding-left: 1.4rem; font-weight: 800; margin-top: 0.7rem; }
+  #screen-pattern .pt-gae li.lv0:first-child { margin-top: 0; }
+  #screen-pattern .pt-gae li.lv0::before { content: "□"; position: absolute; left: 0; font-weight: 400; }
+  #screen-pattern .pt-gae li.lv1 { padding-left: 2.8rem; font-weight: 600; }
+  #screen-pattern .pt-gae li.lv1::before { content: "○"; position: absolute; left: 1.4rem; font-weight: 400; }
+  #screen-pattern .pt-gae small { display: block; font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+  #screen-pattern .pt-gae small::before { content: "- "; }
+  #screen-pattern .pt-cap { font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem; }
+  #screen-pattern .pt-cap span { font-weight: 500; color: var(--muted); }
+  #screen-pattern .pt-doc .pt-time { font-size: 1rem; }
+  #screen-pattern .pt-doc .pt-time td { text-align: center; }
+  #screen-pattern .pt-doc .pt-time thead th { border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); }
+  #screen-pattern .pt-doc .pt-list thead th { text-align: center; color: inherit; font-size: 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); padding: 0.65rem 0.8rem; }
+  #screen-pattern .pt-doc .pt-list td { padding: 0.65rem 0.8rem; }
+  #screen-pattern .pt-doc .pt-list td:first-child, #screen-pattern .pt-doc .pt-list td:nth-child(2) { text-align: center; }
+  #screen-pattern .pt-ref { border-top: 1px solid var(--line) !important; padding-top: 1rem !important; }
+  #screen-pattern .pt-ref .evidence { font-size: 0.95rem; }
+  @media (max-width: 760px) {
+    #screen-pattern .pt-doc .pt-title { font-size: 1.4rem; }
+    #screen-pattern .pt-over th { width: 4.6rem; padding: 0.55rem 0.3rem; font-size: 0.88rem; }
+    #screen-pattern .pt-grid td { padding: 0.55rem 0.5rem; font-size: 0.92rem; }
+    #screen-pattern .pt-doc .pt-list td, #screen-pattern .pt-doc .pt-list thead th { padding: 0.55rem 0.4rem; }
+    #screen-pattern .pt-doc .pt-time th, #screen-pattern .pt-doc .pt-time td { padding: 0.55rem 0.1rem; font-size: 0.88rem; }
+    #screen-pattern .pt-doc .pt-time td { white-space: nowrap; font-size: 0.78rem; letter-spacing: -0.03em; }
+    #screen-pattern .correct-actions > button { font-size: 0.95rem !important; white-space: nowrap; }
+  }
+  /* (아래는 앞 판의 규칙 — 새 틀에서 안 쓰는 것은 남아도 걸리지 않는다) */
+  #screen-pattern .pt-head { text-align: center; margin: 0 0 2.4rem; }
+  #screen-pattern .pt-title { font-size: 2rem; font-weight: 900; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+  #screen-pattern .pt-meta { color: var(--muted); font-size: 0.98rem; margin: 0; }
+  #screen-pattern .pt-no { display: inline-block; min-width: 1.6rem; color: var(--muted); font-weight: 800; }
+  #screen-pattern .pt-sec { line-height: 1.7; }
+  #screen-pattern .pt-kv, #screen-pattern .pt-list { width: 100%; border-collapse: collapse; font-size: 1.05rem; }
+  #screen-pattern .pt-kv th { width: 9rem; text-align: left; vertical-align: top; color: var(--muted); font-weight: 700; padding: 0.85rem 1rem 0.85rem 0; border-bottom: 1px solid var(--line); }
+  #screen-pattern .pt-kv td { padding: 0.85rem 0; border-bottom: 1px solid var(--line); font-weight: 600; line-height: 1.5; }
+  #screen-pattern .pt-kv .pt-pred { font-weight: 800; font-size: 1.12rem; margin: 0; }
+  #screen-pattern .pt-kv .pt-rows li { padding: 0 0 0.3rem; font-size: 1.05rem; }
+  #screen-pattern .pt-kv .pt-rows li:last-child { padding-bottom: 0; }
+  #screen-pattern .pt-flag-text { margin-left: 0.7rem; font-weight: 600; }
+  #screen-pattern .pt-list thead th { text-align: left; font-size: 0.9rem; color: var(--muted); font-weight: 700; padding: 0 0.6rem 0.6rem 0; border-bottom: 2px solid var(--ink); }
+  #screen-pattern .pt-list td { padding: 0.8rem 0.6rem 0.8rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  #screen-pattern .pt-list td:first-child { width: 4rem; font-weight: 800; white-space: nowrap; }
+  #screen-pattern .pt-list td:nth-child(2) { width: 6.5rem; white-space: nowrap; }
+  #screen-pattern .pt-list .pt-none { color: var(--muted); }
+  #screen-pattern .pt-sec-note { border-top-width: 1px !important; }
+  #screen-pattern .pt-sec-note h3 { font-size: 1.05rem; color: var(--muted); }
+  @media (max-width: 760px) {
+    #screen-pattern .pt-title { font-size: 1.5rem; }
+    #screen-pattern .pt-kv th { width: 5.6rem; font-size: 0.92rem; }
+    #screen-pattern .pt-flag-text { display: block; margin: 0.2rem 0 0; }
+    #screen-pattern .pt-list td:nth-child(2) { width: 4.8rem; }
+    #screen-pattern .pt-crumb { font-size: 1rem; gap: 0.5rem; white-space: nowrap; }
+    #screen-pattern .pt-kv .pt-rows small { display: block; margin: 0; }
+  }
+  @media (max-width: 760px) { #screen-pattern .pt-time tbody th { width: 4.2rem; } #screen-pattern .pt-time tbody th small { display: none; } }
+  /* 단추 둘은 나란히, 글자 폭만큼(시안) */
+  #screen-pattern .correct-actions { display: flex !important; flex-direction: row !important; justify-content: flex-start !important; gap: 0.8rem; }
+  #screen-pattern .correct-actions > button { flex: 0 0 auto !important; width: auto !important; margin: 0 !important; padding: 0 2.2rem !important; height: 60px; font-size: 1.05rem !important; font-weight: 800 !important; }
+  /* 폰: 단추 둘이 화면 밖으로 나갔다 — 반씩 나눠 갖는다 */
+  @media (max-width: 760px) { #screen-pattern .correct-actions > button { flex: 1 1 0 !important; padding: 0 0.6rem !important; } }
   #verifyTags { display: none; }                               /* 재검증 결과 칩 줄(위험요소·신규위험·…) — 11-21 «이부분도 없애고» */
   /* 폰 «내 정보»: 카드가 둘이 되어 한 화면을 넘었다(1141~1222px) — 긴 설명·점 목록은 접고 제목·올리기·단추만 */
   @media (max-width: 560px) {
@@ -4963,31 +5081,49 @@
   <!-- 과거 게시물만 올렸을 때 — 사진 진단 없이 패턴만 본다.
        얼굴·글자 검출이나 보정은 올릴 사진이 있어야 의미가 있어서 여기서는 건너뛴다. -->
   <div class="card" id="screen-pattern" style="display:none;">
-    <header class="app-hero">
-      <div>
-        <h2 class="rcard-title" style="margin:0;">분석 결과</h2>
-        <p class="pin-note" style="margin:0.2rem 0 0;">반복되는 요일, 시간대, 장소를 짚어 봤어요.</p>
-      </div>
-    </header>
+    <!-- 개조식 보고서(11-23 «너 보고서 몰라?») — 제목 · 개요 표 · 1. 분석 결과(□ ○) · 〈표 1〉〈표 2〉 · 권고 사항 · ※ 참고.
+         칸 번호는 CSS counter가 매긴다 — 숨은 칸(표가 없을 때)은 건너뛴다. -->
+    <p class="pt-crumb"><button type="button" id="pCrumbBtn">내 기록</button><span aria-hidden="true">&gt;</span><b>과거 게시물 점검 결과</b></p>
+    <div class="pt-doc">
+      <h2 class="pt-title">과거 게시물 점검 보고서</h2>
+      <table class="pt-grid pt-over">
+        <tr><th scope="row">분석 대상</th><td id="pMetaTarget"></td></tr>
+        <tr><th scope="row">분석 일자</th><td id="pMetaDate"></td></tr>
+        <tr><th scope="row">판정</th><td><span class="schedule-flag" id="pScheduleFlag">없음</span><span class="pt-flag-text" id="pFlagText"></span></td></tr>
+      </table>
 
-    <section class="result-section">
-      <h3>생활 패턴 단서</h3>
-      <span class="schedule-flag" id="pScheduleFlag">없음</span>
-      <ul class="action-list" id="pPatternList" style="margin-top:0.5rem; display:none;"></ul>
-      <p class="evidence" id="pPredicted" style="font-weight:700; display:none;"></p>
-      <p class="evidence" id="pEvidence"></p>
-    </section>
+      <section class="pt-sec pt-num">
+        <h3>분석 결과</h3>
+        <ul class="pt-gae" id="pSummary"></ul>
+        <p class="evidence" id="pEvidence"></p>
+      </section>
 
-    <section class="result-section" id="pSkipNotice" style="display:none;">
-      <h3>분석에서 뺀 스크린샷</h3>
-      <p class="evidence" id="pSkipText"></p>
-      <button class="ghost-link" id="pIncludeBtn">포함해서 다시 분석</button>
-    </section>
+      <section class="pt-sec pt-num" id="pTimeSec" style="display:none;">
+        <h3>요일 · 시간대별 게시 현황</h3>
+        <p class="pt-cap">〈표 1〉 요일 · 시간대별 게시 현황 <span>(칸 안 숫자: 게시물 번호, 진할수록 많이 올림)</span></p>
+        <table class="pt-grid pt-time" id="pTimeTable"></table>
+        <p class="pt-note" id="pTimeNote"></p>
+      </section>
 
-    <section class="result-section">
-      <h3>무엇을 읽어냈나</h3>
-      <ul class="action-list" id="pReadList"></ul>
-    </section>
+      <section class="pt-sec pt-num">
+        <h3>게시물별 판독 내용 <small class="pt-count" id="pReadCount"></small></h3>
+        <p class="pt-cap">〈표 2〉 게시물별 판독 내용</p>
+        <table class="pt-grid pt-list">
+          <thead><tr><th scope="col">번호</th><th scope="col">올린 때</th><th scope="col">읽어낸 단서</th></tr></thead>
+          <tbody id="pReadList"></tbody>
+        </table>
+      </section>
+
+      <section class="pt-sec pt-num" id="pAdviceSec" style="display:none;">
+        <h3>권고 사항</h3>
+        <ul class="pt-gae" id="pAdvice"></ul>
+      </section>
+
+      <section class="pt-sec pt-ref" id="pSkipNotice" style="display:none;">
+        <p class="evidence"><b>※ 참고</b> <span id="pSkipText"></span></p>
+        <button class="ghost-link" id="pIncludeBtn">그래도 포함해서 다시 분석</button>
+      </section>
+    </div>
 
     <div class="correct-actions">
       <button class="primary" id="pWithPhotoBtn">사진도 함께 진단</button>
@@ -7685,6 +7821,7 @@
         patterns: pattern.발견된패턴 || [],
         predictedInfo: pattern.예측가능정보 || '',
         evidence: pattern.부모에게전할설명 || '',
+        postTimes: pattern.게시물 || [],
         extracted: extracted, timingMs: timingMs,
         skippedCount: skipped, totalCount: extracted.length,
       };
@@ -13476,11 +13613,18 @@
       // 대신 결과 화면을 먼저 띄우고 기다리는 표시를 남긴다.
       document.getElementById('pScheduleFlag').textContent = '분석 중';
       document.getElementById('pScheduleFlag').className = 'schedule-flag';
-      document.getElementById('pPatternList').style.display = 'none';
-      document.getElementById('pPredicted').style.display = 'none';
+      document.getElementById('pSummary').innerHTML = '';
       document.getElementById('pEvidence').textContent =
         '스크린샷 ' + files.length + '장을 읽고 있어요. 10초 안팎 걸려요.';
+      document.getElementById('pEvidence').style.display = '';
       document.getElementById('pReadList').innerHTML = '';
+      document.getElementById('pReadCount').textContent = '';
+      document.getElementById('pTimeSec').style.display = 'none';
+      document.getElementById('pAdviceSec').style.display = 'none';
+      document.getElementById('pSkipNotice').style.display = 'none';
+      document.getElementById('pFlagText').textContent = '';
+      document.getElementById('pMetaTarget').textContent = '스크린샷 ' + files.length + '장';
+      document.getElementById('pMetaDate').textContent = '';
       showScreen('pattern');
 
       try {
@@ -13496,59 +13640,128 @@
       }
     }
 
+    // 개조식 한 줄. lv 0 = □, 1 = ○, 2 = -
+    function ptItem(ul, lv, text, sub) {
+      var li = document.createElement('li');
+      li.className = 'lv' + lv;
+      li.appendChild(document.createTextNode(text));
+      if (sub) { var s = document.createElement('small'); s.textContent = sub; li.appendChild(s); }
+      ul.appendChild(li);
+    }
+
     function renderPatternOnly(r, count) {
+      var total = r.totalCount || count, skippedN = r.skippedCount || 0, today = new Date();
+      document.getElementById('pMetaTarget').textContent = '스크린샷 ' + total + '장' + (skippedN ? ' (분석 ' + (total - skippedN) + '장)' : '');
+      document.getElementById('pMetaDate').textContent = today.getFullYear() + '. ' + (today.getMonth() + 1) + '. ' + today.getDate() + '.';
+
       var flag = document.getElementById('pScheduleFlag');
-      flag.textContent = r.scheduleOn ? '경고' : '없음';
+      flag.textContent = r.scheduleOn ? '경고' : '양호';
       flag.className = r.scheduleOn ? 'schedule-flag on' : 'schedule-flag';
-      document.getElementById('pEvidence').textContent = r.evidence || '';
+      document.getElementById('pFlagText').textContent = r.scheduleOn
+        ? '— 다음 게시 시점 · 장소 예측 가능'
+        : '— 반복되는 요일 · 시간 · 장소 없음';
 
-      var list = document.getElementById('pPatternList');
-      list.innerHTML = '';
-      (r.patterns || []).forEach(function (pt) {
-        var li = document.createElement('li');
-        var posts = (pt.근거게시물 || []).map(function (n) { return n + '번'; }).join(', ');
-        li.textContent = '[' + (pt.유형 || '') + '] ' + (pt.내용 || '') + (posts ? ' (근거: ' + posts + ' 게시물)' : '');
-        list.appendChild(li);
-      });
-      list.style.display = (r.patterns || []).length > 0 ? 'block' : 'none';
+      // 1. 분석 결과 — □ 반복 패턴 / ○ 각 패턴(근거) · □ 다음 게시 예상 / ○ 내용
+      var pats = r.patterns || [];
+      var sum = document.getElementById('pSummary');
+      sum.innerHTML = '';
+      if (pats.length) {
+        ptItem(sum, 0, '반복 패턴 ' + pats.length + '건 확인');
+        pats.forEach(function (pt) {
+          ptItem(sum, 1, pt.내용 || '', (pt.근거게시물 || []).length ? '근거: ' + pt.근거게시물.join('·') + '번 게시물' : '');
+        });
+      } else {
+        ptItem(sum, 0, '반복 패턴 없음');
+      }
+      var pi = String(r.predictedInfo || '').trim().replace(/^다음\s*게시\s*예상\s*[:：]\s*/, '');
+      if (pi) { ptItem(sum, 0, '다음 게시 예상'); ptItem(sum, 1, pi); }
+      // 반복이 있으면 위 줄들이 곧 근거라 긴 설명은 뺀다. 반복이 없을 때만 설명을 보인다.
+      var ev = document.getElementById('pEvidence');
+      ev.textContent = r.evidence || '';
+      ev.style.display = pats.length ? 'none' : '';
 
-      var pred = document.getElementById('pPredicted');
-      pred.textContent = r.predictedInfo || '';
-      pred.style.display = r.predictedInfo ? 'block' : 'none';
-
-      // 무엇을 읽었는지 보여준다. 패턴이 없다고 나왔을 때 "제대로 읽긴 한 건가"를
-      // 확인할 방법이 없으면 결과를 믿을 수 없다.
-      // 뺀 장이 있으면 그 사실과 되돌릴 방법을 함께 알린다.
-      // 조용히 빼버리면 왜 결과가 빈약한지 알 수 없다.
+      // ※ 참고 — 뺀 스크린샷
       var skipBox = document.getElementById('pSkipNotice');
-      if (skipBox) {
-        if (r.skippedCount > 0) {
-          document.getElementById('pSkipText').textContent =
-            '스크린샷 ' + r.totalCount + '장 중 ' + r.skippedCount + '장은 얼굴을 찾지 못해 분석에서 뺐어요. '
-            + '얼굴을 가릴 수 없는 사진은 밖으로 보내지 않아요.';
-          skipBox.style.display = 'block';
-        } else {
-          skipBox.style.display = 'none';
-        }
+      if (skippedN > 0) {
+        document.getElementById('pSkipText').textContent = '스크린샷 ' + total + '장 중 ' + skippedN + '장은 얼굴을 찾지 못해 분석에서 제외함. 얼굴을 가릴 수 없는 사진은 외부로 보내지 않음.';
+        skipBox.style.display = '';
+      } else {
+        skipBox.style.display = 'none';
       }
 
+      // 〈표 2〉 게시물별 판독 내용 — 번호는 올린 순서 그대로(위 «근거 N번»이 뺀 장까지 센다)
       var read = document.getElementById('pReadList');
       read.innerHTML = '';
+      var readN = 0, hasTag = false, hasBg = false, hasCap = false;
       (r.extracted || []).forEach(function (e, i) {
-        var li = document.createElement('li');
+        if (e.skippedNoFaceConsent) return;
+        readN++;
         var bits = [];
-        if (e.relativeTime) bits.push(e.relativeTime);
-        if (e.placeTag) bits.push('장소: ' + e.placeTag);
-        (e.backgroundTexts || []).forEach(function (t) { bits.push('“' + t + '”'); });
-        if (e.skippedNoFaceConsent) bits.push('얼굴을 못 찾아 분석에서 뺐어요. 가릴 수 없어서 보내지 않았어요');
-        li.textContent = (i + 1) + '번: ' + (bits.length ? bits.join(', ') : '읽어낸 정보 없음');
-        read.appendChild(li);
+        if (e.placeTag) { bits.push('위치 태그 ' + e.placeTag); hasTag = true; }
+        (e.backgroundTexts || []).forEach(function (t) { bits.push('배경 글자 "' + t + '"'); hasBg = true; });
+        if (e.caption) bits.push('캡션 "' + e.caption + '"');
+        var tr = document.createElement('tr');
+        [(i + 1) + '번', e.relativeTime || '모름', bits.length ? bits.join(' · ') : '없음'].forEach(function (t, k) {
+          var c = document.createElement('td'); c.textContent = t; if (k === 2 && !bits.length) c.className = 'pt-none'; tr.appendChild(c);
+        });
+        read.appendChild(tr);
       });
-      if ((r.extracted || []).length === 0) {
-        var li0 = document.createElement('li');
-        li0.textContent = '스크린샷 ' + count + '장에서 읽어낸 정보가 없어요.';
-        read.appendChild(li0);
+      document.getElementById('pReadCount').textContent = readN ? readN + '장' : '';
+      if (readN === 0) {
+        var tr0 = document.createElement('tr'), c0 = document.createElement('td');
+        c0.colSpan = 3; c0.className = 'pt-none'; c0.textContent = '스크린샷 ' + count + '장에서 읽어낸 정보 없음';
+        tr0.appendChild(c0); read.appendChild(tr0);
       }
+      renderPatternTimeTable(r);
+
+      // 권고 사항 — 패턴의 짧은 분류(«유형»)와 실제로 읽어낸 것에서만 고른다. 설명 문장은 검사하지 않는다(AGENTS.md).
+      var kinds = pats.map(function (pt) { return String(pt.유형 || ''); }).join(' ');
+      var adv = document.getElementById('pAdvice');
+      adv.innerHTML = '';
+      if (/요일|시간/.test(kinds)) ptItem(adv, 0, '올리는 요일 · 시간을 바꾸거나 며칠 늦춰 올리기', '같은 요일 · 시간에 반복하면 다음에 어디 있을지 짐작할 수 있음');
+      if (/장소/.test(kinds) || hasTag) ptItem(adv, 0, '위치 태그 빼고 올리기', hasTag ? '스크린샷에 위치 태그가 보임' : '같은 장소가 여러 게시물에 나옴');
+      if (hasBg) ptItem(adv, 0, '배경 간판 · 글자는 가리고 올리기', '«사진 진단»의 보정으로 가릴 수 있음');
+      if (/캡션|일정/.test(kinds)) ptItem(adv, 0, '캡션에 요일 · 시간 · 장소 쓰지 않기');
+      document.getElementById('pAdviceSec').style.display = adv.children.length ? '' : 'none';
+    }
+
+    // 요일(가로) × 시간대(세로) 표. 칸에는 그 때 올린 게시물 번호, 많을수록 진하게.
+    // 요일·시는 서버가 «3주 전» 같은 표기에서 거꾸로 센 값이다(resolvePostDate) — «N시간 전»이 아니면 시는 모른다.
+    var PT_DAYS = ['월', '화', '수', '목', '금', '토', '일'];
+    var PT_BANDS = [['오전', '6~12시'], ['오후', '12~18시'], ['저녁', '18~24시'], ['새벽', '0~6시'], ['시간 모름', '']];
+    function ptBand(h) { return h == null ? 4 : h < 6 ? 3 : h < 12 ? 0 : h < 18 ? 1 : 2; }
+    function renderPatternTimeTable(r) {
+      var sec = document.getElementById('pTimeSec');
+      var skipped = {};
+      (r.extracted || []).forEach(function (e, i) { if (e.skippedNoFaceConsent) skipped[i + 1] = true; });
+      var cells = {}, max = 0, noDay = [];
+      (r.postTimes || []).forEach(function (p) {
+        if (skipped[p.번호]) return;
+        if (!p.요일 || p.어림값) { noDay.push(p.번호 + '번'); return; }
+        var k = p.요일 + ptBand(p.시);
+        (cells[k] = cells[k] || []).push(p.번호);
+        max = Math.max(max, cells[k].length);
+      });
+      if (!max && !noDay.length) { sec.style.display = 'none'; return; }
+      // 시를 아는 게시물이 하나도 없으면 «시간 모름» 한 줄만 남는다 — 빈 줄 넷을 그리지 않는다
+      var hasHour = Object.keys(cells).some(function (k) { return +k.slice(-1) < 4; });
+      var bands = (hasHour ? [0, 1, 2, 3] : []).concat(PT_DAYS.some(function (dd) { return cells[dd + 4]; }) ? [4] : []);
+      var html = '<thead><tr><th></th>' + PT_DAYS.map(function (dd) { return '<th scope="col">' + dd + '</th>'; }).join('') + '</tr></thead><tbody>';
+      bands.forEach(function (bi) {
+        html += '<tr><th scope="row">' + PT_BANDS[bi][0] + (PT_BANDS[bi][1] ? '<small>' + PT_BANDS[bi][1] + '</small>' : '') + '</th>';
+        PT_DAYS.forEach(function (dd) {
+          var c = cells[dd + bi] || [];
+          var lv = c.length ? Math.max(1, Math.round(c.length / max * 3)) : 0;
+          html += '<td class="lv' + lv + '"' + (c.length ? ' title="' + dd + '요일 ' + PT_BANDS[bi][0] + ' ' + c.length + '개"' : '') + '>' + c.join('·') + '</td>';
+        });
+        html += '</tr>';
+      });
+      document.getElementById('pTimeTable').innerHTML = html + '</tbody>';
+      var notes = [];
+      if (!hasHour && max) notes.push('스크린샷에 «3주 전»처럼 날짜만 있어 올린 시각은 알 수 없음.');
+      if (noDay.length) notes.push(noDay.join(', ') + ' 게시물은 요일을 알 수 없어 표에서 제외.');
+      document.getElementById('pTimeNote').textContent = notes.join(' ');
+      sec.style.display = '';
     }
 
     document.getElementById('submitBtn').addEventListener('click', async function () {
@@ -14393,6 +14606,11 @@
       // 들어온 경우엔 pastInput이 아예 비어 있다.
       var files = lastPatternFiles;
       if (files && files.length > 0) runPatternOnly(files);
+    });
+    document.getElementById('pCrumbBtn').addEventListener('click', function () {
+      showScreen('form'); // 패턴 결과를 닫으면 내 기록 카드(#pattern-check)가 다시 보인다
+      if (location.hash !== '#me') location.hash = '#me';
+      window.scrollTo(0, 0);
     });
     document.getElementById('pRestartBtn').addEventListener('click', function () {
       document.getElementById('restartBtn').click();

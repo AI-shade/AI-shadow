@@ -1039,7 +1039,14 @@ app.post('/api/analyze-schedule-pattern', async (req, res) => {
     const currentDatetime = localDatetimeLabel(new Date());
     const userPrompt = buildScheduleUserPrompt(posts, currentDatetime, new Date());
     const result = await callClaudeText(SCHEDULE_SYSTEM_PROMPT, userPrompt);
+    // 화면의 «요일별 게시 시간» 표용 — 모델에 준 것과 같은 계산(resolvePostDate)이다. 모델 답이 아니다.
+    const now = new Date();
+    const 게시물 = posts.map((p, i) => {
+      const w = resolvePostDate(p.relativeTime, now);
+      return { 번호: i + 1, 요일: w ? w.요일 : null, 어림값: w ? w.어림값 : false, 시: w ? w.시 : null };
+    });
     res.json({
+      게시물,
       패턴발견여부: result.parsed.패턴발견여부 || '없음',
       발견된패턴: result.parsed.발견된패턴 || [],
       예측가능정보: result.parsed.예측가능정보 || '',
